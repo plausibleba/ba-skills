@@ -111,3 +111,53 @@ describe("POST /v1/validate", () => {
     ).toBe(true);
   });
 });
+
+describe("POST /v1/canvas/generate", () => {
+  it("golden scaffold → 200 with valid CanvasViewModel", async () => {
+    const res = await request(app)
+      .post("/v1/canvas/generate")
+      .send({
+        scaffold: goldenScaffold,
+        valueStreamId: "vs_credit_risk_assessment_mgmt",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.schemaVersion).toBe("1.0.0");
+    expect(res.body.scaffoldId).toBe("scaffold_credit_risk_v5");
+    expect(res.body.valueStreamId).toBe("vs_credit_risk_assessment_mgmt");
+    expect(res.body.groupingMode).toBe("OutcomeProgression");
+    expect(res.body.columns.length).toBe(9);
+    expect(res.body.summary.totalActivities).toBe(9);
+  });
+
+  it("missing scaffold → 400", async () => {
+    const res = await request(app)
+      .post("/v1/canvas/generate")
+      .send({ valueStreamId: "vs_credit_risk_assessment_mgmt" });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/scaffold/);
+  });
+
+  it("missing valueStreamId → 400", async () => {
+    const res = await request(app)
+      .post("/v1/canvas/generate")
+      .send({ scaffold: goldenScaffold });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/valueStreamId/);
+  });
+
+  it("invalid scaffold → 422 with validation report", async () => {
+    const res = await request(app)
+      .post("/v1/canvas/generate")
+      .send({
+        scaffold: { scaffoldId: "bad" },
+        valueStreamId: "vs1",
+      });
+
+    expect(res.status).toBe(422);
+    expect(res.body.error).toMatch(/validation failed/i);
+    expect(res.body.report.status).toBe("Invalid");
+  });
+});

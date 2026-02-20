@@ -3,8 +3,10 @@ import cors from "cors";
 import {
   validate,
   computeScaffoldHash,
+  generateCanvasViewModel,
   type ScaffoldInput,
   type ValidationReport,
+  type GroupingMode,
 } from "@vcc/shared";
 
 const app = express();
@@ -47,6 +49,52 @@ app.post("/v1/validate", (req, res) => {
   }
 
   res.json(report);
+});
+
+app.post("/v1/canvas/generate", (req, res) => {
+  const body = req.body as Record<string, unknown> | undefined;
+
+  if (!body || typeof body.scaffold !== "object" || body.scaffold === null) {
+    res.status(400).json({ error: "Request body must include a scaffold object" });
+    return;
+  }
+
+  if (typeof body.valueStreamId !== "string" || body.valueStreamId === "") {
+    res.status(400).json({ error: "Request body must include a valueStreamId string" });
+    return;
+  }
+
+  const scaffoldData: unknown = body.scaffold;
+  const valueStreamId = body.valueStreamId;
+  const groupingMode = (body.groupingMode as GroupingMode | undefined) ?? "OutcomeProgression";
+
+  // Validate scaffold first
+  let report: ValidationReport;
+  try {
+    report = validate(scaffoldData);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Internal validation error";
+    res.status(500).json({ error: message });
+    return;
+  }
+
+  if (report.status === "Invalid") {
+    res.status(422).json({ error: "Scaffold validation failed", report });
+    return;
+  }
+
+  try {
+    const viewModel = generateCanvasViewModel(
+      scaffoldData as ScaffoldInput,
+      valueStreamId,
+      groupingMode,
+    );
+    res.json(viewModel);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Canvas generation error";
+    res.status(400).json({ error: message });
+    return;
+  }
 });
 
 // Error handling middleware

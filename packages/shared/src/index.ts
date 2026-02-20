@@ -14,3 +14,11 @@ export {
   validateHeatmapSchema,
   type SchemaFinding,
 } from "./schema-validator.js";
+
+export {
+  generateCanvasViewModel,
+  type CanvasViewModel,
+  type CanvasColumn,
+  type CanvasSummary,
+  type GroupingMode,
+} from "./canvas-generator.js";
