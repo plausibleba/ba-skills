@@ -1,20 +1,21 @@
 import { create } from "zustand";
 import type {
   ScaffoldData,
+  HeatmapData,
   CanvasViewModel,
   ValidationReport,
 } from "../types.ts";
 
 interface CanvasState {
   scaffoldData: ScaffoldData | null;
-  heatmapData: unknown | null;
+  heatmapData: HeatmapData | null;
   canvasViewModel: CanvasViewModel | null;
   validationReport: ValidationReport | null;
   loading: boolean;
   error: string | null;
 
   loadScaffold: (json: ScaffoldData) => Promise<void>;
-  loadHeatmap: (json: unknown) => void;
+  loadHeatmap: (json: HeatmapData) => Promise<void>;
   generateCanvas: () => Promise<void>;
   validate: () => Promise<void>;
   reset: () => void;
@@ -52,8 +53,19 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     }
   },
 
-  loadHeatmap: (json: unknown) => {
-    set({ heatmapData: json });
+  loadHeatmap: async (json: HeatmapData) => {
+    set({ heatmapData: json, error: null, loading: true });
+
+    try {
+      // Re-validate with both scaffold + heatmap
+      await get().validate();
+    } catch (err) {
+      set({
+        error: err instanceof Error ? err.message : "Failed to load heatmap",
+      });
+    } finally {
+      set({ loading: false });
+    }
   },
 
   generateCanvas: async () => {

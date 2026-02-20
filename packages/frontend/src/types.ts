@@ -63,6 +63,51 @@ export interface ValidationReport {
   findings: Finding[];
 }
 
+// --- Heatmap types ---
+
+export interface AnchorRef {
+  anchorType: string;
+  anchorId: string;
+}
+
+export interface Intensity {
+  scale: "0-10" | "ordinal";
+  score?: number;
+  severity?: "Low" | "Medium" | "High" | "Critical";
+}
+
+export interface FrictionObservation {
+  observationId: string;
+  category: string;
+  primaryAnchor: AnchorRef;
+  contributingAnchors?: AnchorRef[];
+  intensity: Intensity;
+  confidence?: number;
+  rationale: string;
+  observedAt?: string;
+}
+
+export interface BindingConstraint {
+  findingId: string;
+  bindingAnchor: AnchorRef;
+  bindingAnchorObservationId: string;
+  justification: string;
+  confidence?: number;
+}
+
+export interface HeatmapData {
+  schemaVersion: string;
+  heatmapId: string;
+  scaffoldId: string;
+  scaffoldIntegrityHash?: string;
+  valueStreamId: string;
+  createdAt: string;
+  observations: FrictionObservation[];
+  bindingConstraint: BindingConstraint;
+}
+
+// --- Scaffold types ---
+
 // Minimal scaffold types for the data we need in the frontend
 export interface ScaffoldActivity {
   id: string;

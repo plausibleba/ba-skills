@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/components/canvasview.tsx","./src/components/fileloader.tsx","./src/store/canvas-store.ts"],"version":"5.9.3"}
+{"root":["./src/app.tsx","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/components/canvasview.tsx","./src/components/fileloader.tsx","./src/components/frictionoverlay.tsx","./src/components/frictionpanel.tsx","./src/store/canvas-store.ts"],"version":"5.9.3"}

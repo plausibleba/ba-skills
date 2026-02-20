@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
-import type { ScaffoldData } from "../types.ts";
+import type { ScaffoldData, HeatmapData } from "../types.ts";
 
 export function FileLoader() {
   const { loadScaffold, loadHeatmap, loading, error, scaffoldData } =
@@ -18,7 +18,7 @@ export function FileLoader() {
         if ("scaffoldId" in json && "elements" in json) {
           await loadScaffold(json as unknown as ScaffoldData);
         } else if ("heatmapId" in json) {
-          loadHeatmap(json);
+          void loadHeatmap(json as unknown as HeatmapData);
         } else {
           useCanvasStore.setState({
             error:
