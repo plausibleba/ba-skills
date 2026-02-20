@@ -1,4 +1,8 @@
 import { randomUUID, createHash } from "node:crypto";
+import {
+  validateScaffoldSchema,
+  validateHeatmapSchema,
+} from "./schema-validator.js";
 
 // --- Types ---
 
@@ -777,7 +781,7 @@ export function checkScaffoldIntegrityHash(
 
 // --- Orchestrator ---
 
-export function validate(
+export function validateSemantic(
   scaffold: ScaffoldInput,
   heatmap?: HeatmapInput,
 ): ValidationReport {
@@ -870,4 +874,99 @@ export function validate(
     },
     findings,
   };
+}
+
+// --- Full pipeline: schema (Layer 1) + semantic (Layer 2) ---
+
+function buildSchemaErrorReport(
+  scaffoldData: unknown,
+  heatmapData: unknown | undefined,
+  findings: Finding[],
+): ValidationReport {
+  const sObj =
+    typeof scaffoldData === "object" && scaffoldData !== null
+      ? (scaffoldData as Record<string, unknown>)
+      : ({} as Record<string, unknown>);
+  const hObj =
+    typeof heatmapData === "object" && heatmapData !== null
+      ? (heatmapData as Record<string, unknown>)
+      : undefined;
+
+  let errorCount = 0;
+  let warningCount = 0;
+  const errorsByRule: Record<string, number> = {};
+  const warningsByRule: Record<string, number> = {};
+
+  for (const f of findings) {
+    if (f.severity === "Error") {
+      errorCount++;
+      errorsByRule[f.ruleId] = (errorsByRule[f.ruleId] ?? 0) + 1;
+    } else {
+      warningCount++;
+      warningsByRule[f.ruleId] = (warningsByRule[f.ruleId] ?? 0) + 1;
+    }
+  }
+
+  const status: ValidationReport["status"] =
+    errorCount > 0
+      ? "Invalid"
+      : warningCount > 0
+        ? "ValidWithWarnings"
+        : "Valid";
+
+  return {
+    reportId: randomUUID(),
+    schemaVersion: "3.0.0",
+    createdAt: new Date().toISOString(),
+    status,
+    summary: {
+      errorCount,
+      warningCount,
+      ruleCounts: { errorsByRule, warningsByRule },
+    },
+    artifacts: {
+      scaffold: {
+        scaffoldId:
+          typeof sObj.scaffoldId === "string" ? sObj.scaffoldId : "unknown",
+        modelIntegrityHash:
+          typeof sObj.modelIntegrityHash === "string"
+            ? sObj.modelIntegrityHash
+            : PLACEHOLDER_HASH,
+      },
+      ...(hObj != null
+        ? {
+            heatmap: {
+              heatmapId:
+                typeof hObj.heatmapId === "string" ? hObj.heatmapId : "unknown",
+              scaffoldIntegrityHash:
+                typeof hObj.scaffoldIntegrityHash === "string"
+                  ? hObj.scaffoldIntegrityHash
+                  : PLACEHOLDER_HASH,
+            },
+          }
+        : {}),
+    },
+    findings,
+  };
+}
+
+export function validate(
+  scaffoldData: unknown,
+  heatmapData?: unknown,
+): ValidationReport {
+  // Layer 1: Schema validation
+  const schemaFindings: Finding[] = [...validateScaffoldSchema(scaffoldData)];
+  if (heatmapData !== undefined) {
+    schemaFindings.push(...validateHeatmapSchema(heatmapData));
+  }
+
+  if (schemaFindings.length > 0) {
+    return buildSchemaErrorReport(scaffoldData, heatmapData, schemaFindings);
+  }
+
+  // Layer 2: Semantic validation (schema passed, safe to cast)
+  return validateSemantic(
+    scaffoldData as ScaffoldInput,
+    heatmapData as HeatmapInput | undefined,
+  );
 }

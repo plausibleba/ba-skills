@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { validate, ScaffoldInput, HeatmapInput } from "../validator.js";
+import { validateSemantic as validate, ScaffoldInput, HeatmapInput } from "../validator.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const GOLDEN_DIR = resolve(__dirname, "../../../../fixtures/golden");

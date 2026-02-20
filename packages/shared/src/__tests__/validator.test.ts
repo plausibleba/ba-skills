@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  validate,
+  validateSemantic as validate,
   type ScaffoldInput,
   type ScaffoldElements,
   type HeatmapInput,
