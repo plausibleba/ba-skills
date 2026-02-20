@@ -22,3 +22,13 @@ export {
   type CanvasSummary,
   type GroupingMode,
 } from "./canvas-generator.js";
+
+export {
+  createExportBundle,
+  packBundle,
+  unpackBundle,
+  validateImportBundle,
+  type ExportBundleOptions,
+  type ExportBundleMetadata,
+  type UnpackResult,
+} from "./export-bundle.js";
