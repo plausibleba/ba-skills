@@ -1,5 +1,7 @@
 # Value Cognition Canvas (VCC)
 
+Read SPAR_PROTOCOL.md when design decisions are being discussed.
+
 ## Project Overview
 Governance intelligence tool for boards to visualize governing friction in AI-accelerated enterprises. Built on CAPSICUM Framework (Roach 2011) — treats enterprise as finite state machine where stakeholder value interactions evolve through bounded states.
 

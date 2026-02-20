@@ -1,0 +1,1 @@
+{"root":["./src/cli.ts","./src/types.ts","./src/__tests__/cli.test.ts","./src/commands/assemble.ts","./src/commands/bundle.ts","./src/commands/init.ts","./src/commands/validate.ts","./src/utils/canonical-json.ts","./src/utils/format.ts","./src/utils/fs-helpers.ts"],"errors":true,"version":"5.9.3"}

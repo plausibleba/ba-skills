@@ -73,3 +73,128 @@
 - **14 semantic validation rules** + schema validation layer
 - **Full UI operational**: scaffold loading → validation → canvas rendering → heatmap overlay → friction detail panel
 - Frontend builds cleanly (`npx tsc -b` + `npx vite build`)
+
+
+# SESSION_LOG Update — 2026-02-20
+
+Append the following to your existing SESSION_LOG.md:
+
+---
+
+## Session 6: Schema Validation Layer + Backend API (continued)
+
+- Added AJV schema validation as Layer 1 (gates semantic rules)
+- 14 schema-level negative fixture tests
+- Backend API: POST /v1/validate, GET /health (Express + supertest)
+- 71 tests total
+
+Commit: `feat: schema validation layer (AJV) + 14 negative fixture tests, full pipeline`
+Commit: `feat: backend API — POST /v1/validate + health endpoint, 5 API tests`
+
+## Session 7: Canvas Generator + Export/Import
+
+- Canvas generator: pure function ScaffoldModel → CanvasViewModel
+- OutcomeProgression grouping mode, deterministic viewId, column aggregates
+- POST /v1/canvas/generate endpoint (validates scaffold first, returns 422 if invalid)
+- Export/Import: ZIP bundles with SHA-256 per-artifact + concatenated bundle hash
+- V-EXPORT-01..04 rules: bundle errors, hash mismatch, scaffold hash, cross-references
+- POST /v1/export (returns application/zip) and POST /v1/import (multipart/form-data)
+- Round-trip test: export then import with byte-identical verification
+- 104 tests total
+
+Commits:
+- `feat: canvas generator (OutcomeProgression) + POST /v1/canvas/generate endpoint`
+- `feat: export/import with ZIP bundles, integrity hashes, V-EXPORT rules, round-trip tests`
+
+## Session 8: Frontend
+
+- React 18 + Vite + Zustand + Tailwind CSS
+- Canvas column layout rendering CanvasViewModel
+- FileLoader with drag-and-drop, auto-detects scaffold vs heatmap
+- Friction overlay: heatmap loading, color-coded badges (amber=execution, red=governing)
+- Binding constraint pulse animation
+- FrictionPanel slide-out with observation details, intensity bars, contributing anchors
+- Sidebar with scaffold info, summary stats, Load Heatmap button
+- Production build: 154 KB JS + 12 KB CSS gzipped
+- First live demo: golden scaffold + heatmap rendered in browser
+- 104 tests (frontend has no tests yet — visual verification only)
+
+Commits:
+- `feat: frontend — React canvas with column layout, file loader, Zustand store`
+- `feat: friction overlay — heatmap loading, color-coded badges, binding constraint highlight, detail panel`
+
+## Session 9: Documentation + Session Log
+
+- DECISIONS.md updated with DEC-008 through DEC-014
+- SESSION_LOG.md created with full build arc
+
+Commit: `docs: decisions + session log`
+
+## Session 10: Prompt Pack + Design Sparring
+
+### Prompt Pack Evolution
+- v1: Initial 14-file pack (schema dependency order)
+- v2: Revised to analytical discovery order (ValueStream → Stages → Roles → Capabilities → Outcomes → Activities)
+- v3: Added evidence classification (EVIDENCED/INFERRED/ASSUMED), constraint scoring rubric, determinism requirements
+- v3.1: Tightened per reviewer feedback — structuralPattern object required for INFERRED, ASSUMED intensity hard-capped at 5, downstream dependency eligibility rule, capacity evidence rule, confidence clarification
+
+### Design Sparring Sessions
+- CLI orchestration architecture reviewed against external design document
+- Reconciled enterprise-grade orchestration vision with minimal compiler CLI
+- Locked: 4 commands (init, validate, assemble, bundle), no LLM calls, immutable run folders
+- Mapping files: JSON Patch-style with target/op/path/values, separate from element fragments
+- Formalised sparring protocol (SPAR_PROTOCOL.md)
+
+### Decisions Recorded
+- DEC-015: Generation sequence (analytical discovery order)
+- DEC-016: Evidence classification for friction
+- DEC-017: Structural constraint scoring
+- DEC-018: CLI architecture — compiler first
+- DEC-019: Sparring protocol formalised
+
+Commits:
+- `docs: scaffold generation prompt pack — 12-step engagement workflow`
+- `docs: prompt pack v2 — revised analytical sequence`
+- `docs: prompt pack v3.1 — evidence classification, constraint scoring, epistemic tightening`
+- `docs: spar protocol + decisions DEC-015 through DEC-019`
+
+## Current Project State (end of day 2026-02-20)
+
+### What's Built and Working
+| Layer | Status | Tests |
+|-------|--------|-------|
+| JSON Schemas (6 contracts) | ✅ | 2 |
+| Schema validation (AJV Layer 1) | ✅ | 14 |
+| Semantic validation (14 rules) | ✅ | 35 |
+| Negative fixture coverage | ✅ | 15 |
+| Canvas generator | ✅ | 9 |
+| Export/Import + V-EXPORT rules | ✅ | 14 |
+| Backend API (4 endpoints) | ✅ | 15 |
+| Frontend (React canvas + friction overlay) | ✅ | visual |
+| **Total tests** | | **104** |
+
+### API Endpoints
+- POST /v1/validate — scaffold + optional heatmap → ValidationReport
+- POST /v1/canvas/generate — scaffold + valueStreamId → CanvasViewModel
+- POST /v1/export — scaffold + heatmap → ZIP bundle
+- POST /v1/import — ZIP → ValidationReport + extracted artifacts
+- GET /health — status check
+
+### Prompt Pack (v3.1)
+- 15 files covering 13-step generation workflow
+- Evidence classification (EVIDENCED/INFERRED/ASSUMED)
+- Structural constraint scoring rubric (5 factors, 0-15)
+- Determinism requirements for structural packs
+- Committed to repo at prompts/
+
+### CLI (in progress)
+- packages/cli/ — 4 commands: init, validate, assemble, bundle
+- Claude Code building during this session
+- Design locked per DEC-018
+
+### What's Next
+1. Complete CLI build and tests
+2. Update CLAUDE.md with SPAR_PROTOCOL.md reference
+3. Frontend polish: board-appropriate typography, friction summary view, binding constraint callout
+4. Second golden fixture (different industry for demo variety)
+5. First real presales engagement using the prompt pack + CLI workflow
