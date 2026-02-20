@@ -302,7 +302,6 @@
     },
     {
       "observationId": "fr_013_incentive_misalignment",
-      "title": "Incentives misaligned between deal velocity and portfolio quality",
       "category": "IncentiveCapacityFriction",
       "primaryAnchor": {
         "anchorType": "Role",
@@ -330,7 +329,6 @@
         "scale": "0-10",
         "score": 6
       },
-      "severity": "Medium",
       "rationale": "Relationship managers are rewarded for deal volume and speed, while risk functions are measured on portfolio quality and losses. This creates pressure to accelerate approvals, drives escalation and rework, and increases decision contention at committee."
     }
   ],
