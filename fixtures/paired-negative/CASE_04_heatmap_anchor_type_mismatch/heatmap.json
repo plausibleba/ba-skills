@@ -1,0 +1,315 @@
+{
+  "schemaVersion": "1.0.0",
+  "heatmapId": "heatmap_credit_risk_v5",
+  "scaffoldId": "scaffold_credit_risk_v5",
+  "scaffoldIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "valueStreamId": "vs_credit_risk_assessment_mgmt",
+  "createdAt": "2026-02-19T05:57:04Z",
+  "observations": [
+    {
+      "observationId": "fr_001_incomplete_data_pack",
+      "category": "DataSignalFriction",
+      "primaryAnchor": {
+        "anchorType": "Measure",
+        "anchorId": "act_compile_credit_data_profile"
+      },
+      "intensity": {
+        "scale": "0-10",
+        "score": 8.0
+      },
+      "rationale": "Incomplete or inconsistent counterparty data requires manual remediation and delays downstream risk parameter estimation.",
+      "observedAt": "2026-02-19T05:57:04Z",
+      "contributingAnchors": [
+        {
+          "anchorType": "Control",
+          "anchorId": "ctrl_data_quality_gate"
+        },
+        {
+          "anchorType": "Capability",
+          "anchorId": "cap_information_mgmt"
+        }
+      ]
+    },
+    {
+      "observationId": "fr_002_model_version_inconsistency",
+      "category": "GovernanceRiskFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_estimate_pd"
+      },
+      "intensity": {
+        "scale": "0-10",
+        "score": 7.0
+      },
+      "rationale": "Different teams use different approved model versions, creating inconsistent PD outputs and rework during review.",
+      "observedAt": "2026-02-19T05:57:04Z",
+      "contributingAnchors": [
+        {
+          "anchorType": "Control",
+          "anchorId": "ctrl_model_governance_check"
+        },
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric_pd"
+        }
+      ]
+    },
+    {
+      "observationId": "fr_003_manual_pd_overrides",
+      "category": "DecisionAuthorityFriction",
+      "primaryAnchor": {
+        "anchorType": "Metric",
+        "anchorId": "metric_pd"
+      },
+      "intensity": {
+        "scale": "0-10",
+        "score": 6.0
+      },
+      "rationale": "Manual PD overrides lack consistent justification capture, reducing auditability and increasing approval churn.",
+      "observedAt": "2026-02-19T05:57:04Z",
+      "contributingAnchors": [
+        {
+          "anchorType": "Role",
+          "anchorId": "role_credit_analyst"
+        },
+        {
+          "anchorType": "Control",
+          "anchorId": "ctrl_model_governance_check"
+        }
+      ],
+      "confidence": 0.72
+    },
+    {
+      "observationId": "fr_004_exposure_fragmentation",
+      "category": "TechnologyIntegrationFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_profile_exposure_concentration"
+      },
+      "intensity": {
+        "scale": "0-10",
+        "score": 7.0
+      },
+      "rationale": "EAD inputs are fragmented across systems requiring reconciliation, producing delays and inconsistent exposure snapshots.",
+      "observedAt": "2026-02-19T05:57:04Z",
+      "contributingAnchors": [
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric_ead"
+        },
+        {
+          "anchorType": "Capability",
+          "anchorId": "cap_information_mgmt"
+        }
+      ]
+    },
+    {
+      "observationId": "fr_005_concentration_threshold_disputes",
+      "category": "DecisionAuthorityFriction",
+      "primaryAnchor": {
+        "anchorType": "Metric",
+        "anchorId": "metric_concentration"
+      },
+      "intensity": {
+        "scale": "0-10",
+        "score": 5.0
+      },
+      "rationale": "Business units interpret concentration thresholds differently, driving escalations and delayed portfolio actions.",
+      "observedAt": "2026-02-19T05:57:04Z",
+      "contributingAnchors": [
+        {
+          "anchorType": "Role",
+          "anchorId": "role_risk_manager"
+        },
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_profile_exposure_concentration"
+        }
+      ]
+    },
+    {
+      "observationId": "fr_006_lgd_assumptions_unaligned",
+      "category": "DataSignalFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_estimate_lgd_rwa"
+      },
+      "intensity": {
+        "scale": "0-10",
+        "score": 6.0
+      },
+      "rationale": "LGD assumptions do not reflect portfolio-specific recovery conditions, weakening capital impact accuracy.",
+      "observedAt": "2026-02-19T05:57:04Z",
+      "contributingAnchors": [
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric_lgd"
+        },
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric_rwa"
+        }
+      ]
+    },
+    {
+      "observationId": "fr_007_rwa_recalc_latency",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Metric",
+        "anchorId": "metric_rwa"
+      },
+      "intensity": {
+        "scale": "0-10",
+        "score": 7.0
+      },
+      "rationale": "Batch processing and handoffs delay RWA updates, limiting timely mitigation decisions.",
+      "observedAt": "2026-02-19T05:57:04Z",
+      "contributingAnchors": [
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_estimate_lgd_rwa"
+        },
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_monitor_risk_signals"
+        }
+      ]
+    },
+    {
+      "observationId": "fr_008_alert_noise",
+      "category": "DataSignalFriction",
+      "primaryAnchor": {
+        "anchorType": "Metric",
+        "anchorId": "metric_threshold_breach"
+      },
+      "intensity": {
+        "scale": "0-10",
+        "score": 8.0
+      },
+      "rationale": "High alert noise reduces attention to true threshold breaches and delays escalation.",
+      "observedAt": "2026-02-19T05:57:04Z",
+      "contributingAnchors": [
+        {
+          "anchorType": "Role",
+          "anchorId": "role_portfolio_manager"
+        },
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_monitor_risk_signals"
+        }
+      ]
+    },
+    {
+      "observationId": "fr_009_migration_lag",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Metric",
+        "anchorId": "metric_migration"
+      },
+      "intensity": {
+        "scale": "0-10",
+        "score": 6.0
+      },
+      "rationale": "Migration analysis is produced after key decisions, limiting usefulness for proactive intervention.",
+      "observedAt": "2026-02-19T05:57:04Z",
+      "contributingAnchors": [
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_monitor_risk_signals"
+        }
+      ]
+    },
+    {
+      "observationId": "fr_010_mitigation_approval_delay",
+      "category": "DecisionAuthorityFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_approve_mitigation_action"
+      },
+      "intensity": {
+        "scale": "0-10",
+        "score": 9.0
+      },
+      "rationale": "Ambiguous delegation thresholds and unclear approval paths create queueing and escalation, delaying mitigation during breaches.",
+      "observedAt": "2026-02-19T05:57:04Z",
+      "contributingAnchors": [
+        {
+          "anchorType": "Control",
+          "anchorId": "ctrl_delegation_of_authority"
+        },
+        {
+          "anchorType": "Role",
+          "anchorId": "role_credit_committee"
+        },
+        {
+          "anchorType": "Role",
+          "anchorId": "role_risk_manager"
+        },
+        {
+          "anchorType": "Role",
+          "anchorId": "role_portfolio_manager"
+        }
+      ],
+      "confidence": 0.78
+    },
+    {
+      "observationId": "fr_011_reporting_rework",
+      "category": "GovernanceRiskFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_produce_risk_reports"
+      },
+      "intensity": {
+        "scale": "0-10",
+        "score": 7.0
+      },
+      "rationale": "Late corrections trigger reporting rework and missed windows, increasing compliance risk.",
+      "observedAt": "2026-02-19T05:57:04Z",
+      "contributingAnchors": [
+        {
+          "anchorType": "Control",
+          "anchorId": "ctrl_regulatory_reporting_obligation"
+        },
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric_reporting_timeliness"
+        },
+        {
+          "anchorType": "Role",
+          "anchorId": "role_compliance_officer"
+        }
+      ]
+    },
+    {
+      "observationId": "fr_012_review_slippage",
+      "category": "GovernanceRiskFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_review_thresholds_models"
+      },
+      "intensity": {
+        "scale": "0-10",
+        "score": 5.0
+      },
+      "rationale": "Review cadence slips allow drift between portfolio reality and governance thresholds/model settings.",
+      "observedAt": "2026-02-19T05:57:04Z",
+      "contributingAnchors": [
+        {
+          "anchorType": "Role",
+          "anchorId": "role_risk_manager"
+        }
+      ]
+    }
+  ],
+  "bindingConstraint": {
+    "findingId": "bc_001",
+    "bindingAnchor": {
+      "anchorType": "Activity",
+      "anchorId": "act_approve_mitigation_action"
+    },
+    "bindingAnchorObservationId": "fr_010_mitigation_approval_delay",
+    "justification": "Approval delays are the binding constraint because mitigation cannot proceed until authority is exercised; delays increase exposure and worsen risk profiles, driving higher capital consumption.",
+    "confidence": 0.78,
+    "observedAt": "2026-02-19T05:57:04Z"
+  }
+}

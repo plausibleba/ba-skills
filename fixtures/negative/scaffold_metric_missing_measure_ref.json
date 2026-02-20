@@ -1,0 +1,838 @@
+{
+  "schemaVersion": "1.0.0",
+  "scaffoldId": "scaffold_credit_risk_v5",
+  "name": "Credit Risk Assessment & Management (Golden Fixture)",
+  "description": "Fully schema-conformant golden fixture for validation/rendering/testing of VCC.",
+  "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "createdAt": "2026-02-19T05:57:04Z",
+  "elements": {
+    "valueStreams": {
+      "vs_credit_risk_assessment_mgmt": {
+        "id": "vs_credit_risk_assessment_mgmt",
+        "elementType": "ValueStream",
+        "name": "Credit Risk Assessment and Management",
+        "description": "Governance abstraction of credit risk lifecycle; underlying risk parameter estimation may be concurrent, but represented here as governance checkpoints. Trigger assumed: Threshold Breach / escalation.",
+        "activityIds": [
+          "act_compile_credit_data_profile",
+          "act_estimate_pd",
+          "act_profile_exposure_concentration",
+          "act_estimate_lgd_rwa",
+          "act_monitor_risk_signals",
+          "act_approve_mitigation_action",
+          "act_execute_mitigation_actions",
+          "act_produce_risk_reports",
+          "act_review_thresholds_models"
+        ],
+        "capabilityIds": [
+          "cap_credit_assessment_mgmt",
+          "cap_creditworthiness_assurance",
+          "cap_credit_application_oversight",
+          "cap_counterparty_risk_assessment",
+          "cap_risk_countermeasure_deployment",
+          "cap_credit_application_mgmt",
+          "cap_information_mgmt",
+          "cap_regulatory_compliance_mgmt"
+        ],
+        "metricIds": [
+          "metric_pd",
+          "metric_ead",
+          "metric_lgd",
+          "metric_rwa",
+          "metric_concentration",
+          "metric_delinquency",
+          "metric_migration",
+          "metric_threshold_breach",
+          "metric_reporting_timeliness"
+        ]
+      }
+    },
+    "activities": {
+      "act_compile_credit_data_profile": {
+        "id": "act_compile_credit_data_profile",
+        "elementType": "Activity",
+        "name": "Compile Credit Data Profile",
+        "performedByRoleIds": [
+          "role_data_steward",
+          "role_relationship_manager",
+          "role_credit_analyst"
+        ],
+        "preOutcomeId": "outcome_risk_case_initiated",
+        "postOutcomeId": "outcome_data_profile_compiled",
+        "requiresCapabilityIds": [
+          "cap_creditworthiness_assurance",
+          "cap_information_mgmt",
+          "cap_credit_application_mgmt"
+        ],
+        "metricIds": [],
+        "controlIds": [
+          "ctrl_data_quality_gate"
+        ],
+        "constraintIds": [],
+        "nextActivityId": "act_estimate_pd",
+        "exitConditionIds": [
+          "cond_data_minimum_complete"
+        ]
+      },
+      "act_estimate_pd": {
+        "id": "act_estimate_pd",
+        "elementType": "Activity",
+        "name": "Estimate Probability of Default",
+        "performedByRoleIds": [
+          "role_credit_analyst",
+          "role_risk_manager"
+        ],
+        "preOutcomeId": "outcome_data_profile_compiled",
+        "postOutcomeId": "outcome_pd_estimated",
+        "requiresCapabilityIds": [
+          "cap_credit_assessment_mgmt",
+          "cap_counterparty_risk_assessment",
+          "cap_creditworthiness_assurance"
+        ],
+        "metricIds": [
+          "metric_pd"
+        ],
+        "controlIds": [
+          "ctrl_model_governance_check"
+        ],
+        "constraintIds": [],
+        "nextActivityId": "act_profile_exposure_concentration",
+        "entryConditionIds": [
+          "cond_data_minimum_complete"
+        ],
+        "exitConditionIds": [
+          "cond_model_version_approved"
+        ]
+      },
+      "act_profile_exposure_concentration": {
+        "id": "act_profile_exposure_concentration",
+        "elementType": "Activity",
+        "name": "Profile Exposure and Concentration",
+        "performedByRoleIds": [
+          "role_risk_manager",
+          "role_credit_analyst"
+        ],
+        "preOutcomeId": "outcome_pd_estimated",
+        "postOutcomeId": "outcome_exposure_profiled",
+        "requiresCapabilityIds": [
+          "cap_counterparty_risk_assessment",
+          "cap_credit_assessment_mgmt",
+          "cap_information_mgmt"
+        ],
+        "metricIds": [
+          "metric_ead",
+          "metric_concentration"
+        ],
+        "controlIds": [],
+        "constraintIds": [],
+        "nextActivityId": "act_estimate_lgd_rwa"
+      },
+      "act_estimate_lgd_rwa": {
+        "id": "act_estimate_lgd_rwa",
+        "elementType": "Activity",
+        "name": "Estimate Loss and Capital Impact",
+        "performedByRoleIds": [
+          "role_risk_manager",
+          "role_portfolio_manager"
+        ],
+        "preOutcomeId": "outcome_exposure_profiled",
+        "postOutcomeId": "outcome_capital_impact_estimated",
+        "requiresCapabilityIds": [
+          "cap_credit_assessment_mgmt",
+          "cap_counterparty_risk_assessment",
+          "cap_regulatory_compliance_mgmt"
+        ],
+        "metricIds": [
+          "metric_lgd",
+          "metric_rwa"
+        ],
+        "controlIds": [
+          "ctrl_model_governance_check"
+        ],
+        "constraintIds": [],
+        "nextActivityId": "act_monitor_risk_signals"
+      },
+      "act_monitor_risk_signals": {
+        "id": "act_monitor_risk_signals",
+        "elementType": "Activity",
+        "name": "Monitor Portfolio Risk Signals",
+        "performedByRoleIds": [
+          "role_portfolio_manager",
+          "role_risk_manager"
+        ],
+        "preOutcomeId": "outcome_capital_impact_estimated",
+        "postOutcomeId": "outcome_risk_monitored",
+        "requiresCapabilityIds": [
+          "cap_creditworthiness_assurance",
+          "cap_information_mgmt",
+          "cap_regulatory_compliance_mgmt"
+        ],
+        "metricIds": [
+          "metric_delinquency",
+          "metric_migration",
+          "metric_threshold_breach"
+        ],
+        "controlIds": [
+          "ctrl_data_quality_gate"
+        ],
+        "constraintIds": [],
+        "nextActivityId": "act_approve_mitigation_action",
+        "entryConditionIds": [
+          "cond_model_version_approved"
+        ],
+        "exitConditionIds": [
+          "cond_threshold_breached"
+        ]
+      },
+      "act_approve_mitigation_action": {
+        "id": "act_approve_mitigation_action",
+        "elementType": "Activity",
+        "name": "Approve Mitigation Action",
+        "performedByRoleIds": [
+          "role_credit_committee",
+          "role_risk_manager",
+          "role_portfolio_manager"
+        ],
+        "preOutcomeId": "outcome_risk_monitored",
+        "postOutcomeId": "outcome_mitigation_approved",
+        "requiresCapabilityIds": [
+          "cap_credit_application_oversight",
+          "cap_regulatory_compliance_mgmt",
+          "cap_credit_assessment_mgmt"
+        ],
+        "metricIds": [],
+        "controlIds": [
+          "ctrl_delegation_of_authority"
+        ],
+        "constraintIds": [],
+        "nextActivityId": "act_execute_mitigation_actions"
+      },
+      "act_execute_mitigation_actions": {
+        "id": "act_execute_mitigation_actions",
+        "elementType": "Activity",
+        "name": "Execute Mitigation Actions",
+        "performedByRoleIds": [
+          "role_risk_manager",
+          "role_portfolio_manager"
+        ],
+        "preOutcomeId": "outcome_mitigation_approved",
+        "postOutcomeId": "outcome_mitigation_executed",
+        "requiresCapabilityIds": [
+          "cap_risk_countermeasure_deployment",
+          "cap_regulatory_compliance_mgmt",
+          "cap_credit_application_oversight"
+        ],
+        "metricIds": [],
+        "controlIds": [
+          "ctrl_delegation_of_authority"
+        ],
+        "constraintIds": [],
+        "nextActivityId": "act_produce_risk_reports"
+      },
+      "act_produce_risk_reports": {
+        "id": "act_produce_risk_reports",
+        "elementType": "Activity",
+        "name": "Produce Risk Reports and Compliance Outputs",
+        "performedByRoleIds": [
+          "role_compliance_officer",
+          "role_risk_manager"
+        ],
+        "preOutcomeId": "outcome_mitigation_executed",
+        "postOutcomeId": "outcome_risk_reported",
+        "requiresCapabilityIds": [
+          "cap_regulatory_compliance_mgmt",
+          "cap_information_mgmt",
+          "cap_credit_application_oversight"
+        ],
+        "metricIds": [
+          "metric_reporting_timeliness"
+        ],
+        "controlIds": [
+          "ctrl_regulatory_reporting_obligation"
+        ],
+        "constraintIds": [],
+        "nextActivityId": "act_review_thresholds_models"
+      },
+      "act_review_thresholds_models": {
+        "id": "act_review_thresholds_models",
+        "elementType": "Activity",
+        "name": "Review Thresholds and Model Settings",
+        "performedByRoleIds": [
+          "role_risk_manager",
+          "role_compliance_officer"
+        ],
+        "preOutcomeId": "outcome_risk_reported",
+        "postOutcomeId": "outcome_thresholds_refreshed",
+        "requiresCapabilityIds": [
+          "cap_credit_assessment_mgmt",
+          "cap_regulatory_compliance_mgmt",
+          "cap_counterparty_risk_assessment"
+        ],
+        "metricIds": [],
+        "controlIds": [],
+        "constraintIds": [],
+        "nextActivityId": null
+      }
+    },
+    "outcomes": {
+      "outcome_risk_case_initiated": {
+        "id": "outcome_risk_case_initiated",
+        "elementType": "Outcome",
+        "name": "Risk Case Initiated"
+      },
+      "outcome_data_profile_compiled": {
+        "id": "outcome_data_profile_compiled",
+        "elementType": "Outcome",
+        "name": "Data Profile Compiled"
+      },
+      "outcome_pd_estimated": {
+        "id": "outcome_pd_estimated",
+        "elementType": "Outcome",
+        "name": "PD Estimated"
+      },
+      "outcome_exposure_profiled": {
+        "id": "outcome_exposure_profiled",
+        "elementType": "Outcome",
+        "name": "Exposure Profiled"
+      },
+      "outcome_capital_impact_estimated": {
+        "id": "outcome_capital_impact_estimated",
+        "elementType": "Outcome",
+        "name": "Capital Impact Estimated"
+      },
+      "outcome_risk_monitored": {
+        "id": "outcome_risk_monitored",
+        "elementType": "Outcome",
+        "name": "Risk Monitored"
+      },
+      "outcome_mitigation_approved": {
+        "id": "outcome_mitigation_approved",
+        "elementType": "Outcome",
+        "name": "Mitigation Approved"
+      },
+      "outcome_mitigation_executed": {
+        "id": "outcome_mitigation_executed",
+        "elementType": "Outcome",
+        "name": "Mitigation Executed"
+      },
+      "outcome_risk_reported": {
+        "id": "outcome_risk_reported",
+        "elementType": "Outcome",
+        "name": "Risk Reported"
+      },
+      "outcome_thresholds_refreshed": {
+        "id": "outcome_thresholds_refreshed",
+        "elementType": "Outcome",
+        "name": "Thresholds Refreshed"
+      }
+    },
+    "roles": {
+      "role_relationship_manager": {
+        "id": "role_relationship_manager",
+        "elementType": "Role",
+        "name": "Relationship Manager"
+      },
+      "role_credit_analyst": {
+        "id": "role_credit_analyst",
+        "elementType": "Role",
+        "name": "Credit Analyst"
+      },
+      "role_risk_manager": {
+        "id": "role_risk_manager",
+        "elementType": "Role",
+        "name": "Risk Manager"
+      },
+      "role_portfolio_manager": {
+        "id": "role_portfolio_manager",
+        "elementType": "Role",
+        "name": "Portfolio Manager"
+      },
+      "role_compliance_officer": {
+        "id": "role_compliance_officer",
+        "elementType": "Role",
+        "name": "Compliance Officer"
+      },
+      "role_credit_committee": {
+        "id": "role_credit_committee",
+        "elementType": "Role",
+        "name": "Credit Committee"
+      },
+      "role_data_steward": {
+        "id": "role_data_steward",
+        "elementType": "Role",
+        "name": "Data Steward"
+      }
+    },
+    "capabilities": {
+      "cap_credit_assessment_mgmt": {
+        "id": "cap_credit_assessment_mgmt",
+        "elementType": "Capability",
+        "name": "Credit Assessment Management"
+      },
+      "cap_creditworthiness_assurance": {
+        "id": "cap_creditworthiness_assurance",
+        "elementType": "Capability",
+        "name": "Creditworthiness Assurance"
+      },
+      "cap_credit_application_oversight": {
+        "id": "cap_credit_application_oversight",
+        "elementType": "Capability",
+        "name": "Credit Application Oversight"
+      },
+      "cap_counterparty_risk_assessment": {
+        "id": "cap_counterparty_risk_assessment",
+        "elementType": "Capability",
+        "name": "Counterparty Risk Assessment"
+      },
+      "cap_risk_countermeasure_deployment": {
+        "id": "cap_risk_countermeasure_deployment",
+        "elementType": "Capability",
+        "name": "Risk Countermeasure Deployment"
+      },
+      "cap_credit_application_mgmt": {
+        "id": "cap_credit_application_mgmt",
+        "elementType": "Capability",
+        "name": "Credit Application Management"
+      },
+      "cap_information_mgmt": {
+        "id": "cap_information_mgmt",
+        "elementType": "Capability",
+        "name": "Information Management"
+      },
+      "cap_regulatory_compliance_mgmt": {
+        "id": "cap_regulatory_compliance_mgmt",
+        "elementType": "Capability",
+        "name": "Regulatory Compliance Management"
+      }
+    },
+    "controls": {
+      "ctrl_data_quality_gate": {
+        "id": "ctrl_data_quality_gate",
+        "elementType": "Control",
+        "name": "Data Quality Gate"
+      },
+      "ctrl_model_governance_check": {
+        "id": "ctrl_model_governance_check",
+        "elementType": "Control",
+        "name": "Model Governance Check"
+      },
+      "ctrl_delegation_of_authority": {
+        "id": "ctrl_delegation_of_authority",
+        "elementType": "Control",
+        "name": "Delegation of Authority Approval"
+      },
+      "ctrl_regulatory_reporting_obligation": {
+        "id": "ctrl_regulatory_reporting_obligation",
+        "elementType": "Control",
+        "name": "Regulatory Reporting Obligation"
+      }
+    },
+    "constraints": {},
+    "directives": {},
+    "deonticLogic": {},
+    "flowLogic": {},
+    "concepts": {},
+    "properties": {},
+    "metrics": {
+      "metric_pd": {
+        "id": "metric_pd",
+        "elementType": "Metric",
+        "name": "Probability of Default (PD)",
+        "metricDirection": "Decrease",
+        "measures": {
+          "targets": [
+            {
+              "targetType": "Activity",
+              "targetId": "act_estimate_pd"
+            }
+          ],
+          "baselineMeasureId": "ms_metric_pd_baseline",
+          "currentMeasureId": "ms_missing_current",
+          "targetMeasureId": "ms_metric_pd_target"
+        }
+      },
+      "metric_ead": {
+        "id": "metric_ead",
+        "elementType": "Metric",
+        "name": "Exposure at Default (EAD)",
+        "metricDirection": "Decrease",
+        "measures": {
+          "targets": [
+            {
+              "targetType": "Activity",
+              "targetId": "act_profile_exposure_concentration"
+            }
+          ],
+          "baselineMeasureId": "ms_metric_ead_baseline",
+          "currentMeasureId": "ms_metric_ead_current",
+          "targetMeasureId": "ms_metric_ead_target"
+        }
+      },
+      "metric_lgd": {
+        "id": "metric_lgd",
+        "elementType": "Metric",
+        "name": "Loss Given Default (LGD)",
+        "metricDirection": "Decrease",
+        "measures": {
+          "targets": [
+            {
+              "targetType": "Activity",
+              "targetId": "act_estimate_lgd_rwa"
+            }
+          ],
+          "baselineMeasureId": "ms_metric_lgd_baseline",
+          "currentMeasureId": "ms_metric_lgd_current",
+          "targetMeasureId": "ms_metric_lgd_target"
+        }
+      },
+      "metric_rwa": {
+        "id": "metric_rwa",
+        "elementType": "Metric",
+        "name": "Risk-Weighted Assets (RWA)",
+        "metricDirection": "Decrease",
+        "measures": {
+          "targets": [
+            {
+              "targetType": "Activity",
+              "targetId": "act_estimate_lgd_rwa"
+            }
+          ],
+          "baselineMeasureId": "ms_metric_rwa_baseline",
+          "currentMeasureId": "ms_metric_rwa_current",
+          "targetMeasureId": "ms_metric_rwa_target"
+        }
+      },
+      "metric_concentration": {
+        "id": "metric_concentration",
+        "elementType": "Metric",
+        "name": "Counterparty Concentration Ratio",
+        "metricDirection": "Decrease",
+        "measures": {
+          "targets": [
+            {
+              "targetType": "Activity",
+              "targetId": "act_profile_exposure_concentration"
+            }
+          ],
+          "baselineMeasureId": "ms_metric_concentration_baseline",
+          "currentMeasureId": "ms_metric_concentration_current",
+          "targetMeasureId": "ms_metric_concentration_target"
+        }
+      },
+      "metric_delinquency": {
+        "id": "metric_delinquency",
+        "elementType": "Metric",
+        "name": "Loan Delinquency Rate",
+        "metricDirection": "Decrease",
+        "measures": {
+          "targets": [
+            {
+              "targetType": "Activity",
+              "targetId": "act_monitor_risk_signals"
+            }
+          ],
+          "baselineMeasureId": "ms_metric_delinquency_baseline",
+          "currentMeasureId": "ms_metric_delinquency_current",
+          "targetMeasureId": "ms_metric_delinquency_target"
+        }
+      },
+      "metric_migration": {
+        "id": "metric_migration",
+        "elementType": "Metric",
+        "name": "Credit Migration Index",
+        "metricDirection": "Decrease",
+        "measures": {
+          "targets": [
+            {
+              "targetType": "Activity",
+              "targetId": "act_monitor_risk_signals"
+            }
+          ],
+          "baselineMeasureId": "ms_metric_migration_baseline",
+          "currentMeasureId": "ms_metric_migration_current",
+          "targetMeasureId": "ms_metric_migration_target"
+        }
+      },
+      "metric_threshold_breach": {
+        "id": "metric_threshold_breach",
+        "elementType": "Metric",
+        "name": "Threshold Breach Frequency",
+        "metricDirection": "Decrease",
+        "measures": {
+          "targets": [
+            {
+              "targetType": "Activity",
+              "targetId": "act_monitor_risk_signals"
+            }
+          ],
+          "baselineMeasureId": "ms_metric_threshold_breach_baseline",
+          "currentMeasureId": "ms_metric_threshold_breach_current",
+          "targetMeasureId": "ms_metric_threshold_breach_target"
+        }
+      },
+      "metric_reporting_timeliness": {
+        "id": "metric_reporting_timeliness",
+        "elementType": "Metric",
+        "name": "Risk Reporting Timeliness",
+        "metricDirection": "Attain",
+        "measures": {
+          "targets": [
+            {
+              "targetType": "Activity",
+              "targetId": "act_produce_risk_reports"
+            }
+          ],
+          "baselineMeasureId": "ms_metric_reporting_timeliness_baseline",
+          "currentMeasureId": "ms_metric_reporting_timeliness_current",
+          "targetMeasureId": "ms_metric_reporting_timeliness_target"
+        }
+      }
+    },
+    "measures": {
+      "ms_metric_pd_baseline": {
+        "id": "ms_metric_pd_baseline",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Probability of Default (PD) Baseline",
+        "measureValue": "0.032",
+        "unitOfMeasure": "ratio"
+      },
+      "ms_metric_pd_current": {
+        "id": "ms_metric_pd_current",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Probability of Default (PD) Current",
+        "measureValue": "0.038",
+        "unitOfMeasure": "ratio",
+        "measureAsOf": "2026-02-19T05:57:04Z"
+      },
+      "ms_metric_pd_target": {
+        "id": "ms_metric_pd_target",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Probability of Default (PD) Target",
+        "measureValue": "0.03",
+        "unitOfMeasure": "ratio"
+      },
+      "ms_metric_ead_baseline": {
+        "id": "ms_metric_ead_baseline",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Exposure at Default (EAD) Baseline",
+        "measureValue": "2100000000.0",
+        "unitOfMeasure": "AUD"
+      },
+      "ms_metric_ead_current": {
+        "id": "ms_metric_ead_current",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Exposure at Default (EAD) Current",
+        "measureValue": "2250000000.0",
+        "unitOfMeasure": "AUD",
+        "measureAsOf": "2026-02-19T05:57:04Z"
+      },
+      "ms_metric_ead_target": {
+        "id": "ms_metric_ead_target",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Exposure at Default (EAD) Target",
+        "measureValue": "2000000000.0",
+        "unitOfMeasure": "AUD"
+      },
+      "ms_metric_lgd_baseline": {
+        "id": "ms_metric_lgd_baseline",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Loss Given Default (LGD) Baseline",
+        "measureValue": "0.42",
+        "unitOfMeasure": "ratio"
+      },
+      "ms_metric_lgd_current": {
+        "id": "ms_metric_lgd_current",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Loss Given Default (LGD) Current",
+        "measureValue": "0.45",
+        "unitOfMeasure": "ratio",
+        "measureAsOf": "2026-02-19T05:57:04Z"
+      },
+      "ms_metric_lgd_target": {
+        "id": "ms_metric_lgd_target",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Loss Given Default (LGD) Target",
+        "measureValue": "0.4",
+        "unitOfMeasure": "ratio"
+      },
+      "ms_metric_rwa_baseline": {
+        "id": "ms_metric_rwa_baseline",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Risk-Weighted Assets (RWA) Baseline",
+        "measureValue": "4800000000.0",
+        "unitOfMeasure": "AUD"
+      },
+      "ms_metric_rwa_current": {
+        "id": "ms_metric_rwa_current",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Risk-Weighted Assets (RWA) Current",
+        "measureValue": "5100000000.0",
+        "unitOfMeasure": "AUD",
+        "measureAsOf": "2026-02-19T05:57:04Z"
+      },
+      "ms_metric_rwa_target": {
+        "id": "ms_metric_rwa_target",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Risk-Weighted Assets (RWA) Target",
+        "measureValue": "4500000000.0",
+        "unitOfMeasure": "AUD"
+      },
+      "ms_metric_concentration_baseline": {
+        "id": "ms_metric_concentration_baseline",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Counterparty Concentration Ratio Baseline",
+        "measureValue": "0.18",
+        "unitOfMeasure": "ratio"
+      },
+      "ms_metric_concentration_current": {
+        "id": "ms_metric_concentration_current",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Counterparty Concentration Ratio Current",
+        "measureValue": "0.21",
+        "unitOfMeasure": "ratio",
+        "measureAsOf": "2026-02-19T05:57:04Z"
+      },
+      "ms_metric_concentration_target": {
+        "id": "ms_metric_concentration_target",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Counterparty Concentration Ratio Target",
+        "measureValue": "0.16",
+        "unitOfMeasure": "ratio"
+      },
+      "ms_metric_delinquency_baseline": {
+        "id": "ms_metric_delinquency_baseline",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Loan Delinquency Rate Baseline",
+        "measureValue": "0.024",
+        "unitOfMeasure": "ratio"
+      },
+      "ms_metric_delinquency_current": {
+        "id": "ms_metric_delinquency_current",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Loan Delinquency Rate Current",
+        "measureValue": "0.031",
+        "unitOfMeasure": "ratio",
+        "measureAsOf": "2026-02-19T05:57:04Z"
+      },
+      "ms_metric_delinquency_target": {
+        "id": "ms_metric_delinquency_target",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Loan Delinquency Rate Target",
+        "measureValue": "0.02",
+        "unitOfMeasure": "ratio"
+      },
+      "ms_metric_migration_baseline": {
+        "id": "ms_metric_migration_baseline",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Credit Migration Index Baseline",
+        "measureValue": "1.0",
+        "unitOfMeasure": "index"
+      },
+      "ms_metric_migration_current": {
+        "id": "ms_metric_migration_current",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Credit Migration Index Current",
+        "measureValue": "1.18",
+        "unitOfMeasure": "index",
+        "measureAsOf": "2026-02-19T05:57:04Z"
+      },
+      "ms_metric_migration_target": {
+        "id": "ms_metric_migration_target",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Credit Migration Index Target",
+        "measureValue": "0.95",
+        "unitOfMeasure": "index"
+      },
+      "ms_metric_threshold_breach_baseline": {
+        "id": "ms_metric_threshold_breach_baseline",
+        "elementType": "Measure",
+        "measureDataType": "integer",
+        "name": "Threshold Breach Frequency Baseline",
+        "measureValue": "12",
+        "unitOfMeasure": "count/month"
+      },
+      "ms_metric_threshold_breach_current": {
+        "id": "ms_metric_threshold_breach_current",
+        "elementType": "Measure",
+        "measureDataType": "integer",
+        "name": "Threshold Breach Frequency Current",
+        "measureValue": "18",
+        "unitOfMeasure": "count/month",
+        "measureAsOf": "2026-02-19T05:57:04Z"
+      },
+      "ms_metric_threshold_breach_target": {
+        "id": "ms_metric_threshold_breach_target",
+        "elementType": "Measure",
+        "measureDataType": "integer",
+        "name": "Threshold Breach Frequency Target",
+        "measureValue": "8",
+        "unitOfMeasure": "count/month"
+      },
+      "ms_metric_reporting_timeliness_baseline": {
+        "id": "ms_metric_reporting_timeliness_baseline",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Risk Reporting Timeliness Baseline",
+        "measureValue": "0.86",
+        "unitOfMeasure": "ratio"
+      },
+      "ms_metric_reporting_timeliness_current": {
+        "id": "ms_metric_reporting_timeliness_current",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Risk Reporting Timeliness Current",
+        "measureValue": "0.79",
+        "unitOfMeasure": "ratio",
+        "measureAsOf": "2026-02-19T05:57:04Z"
+      },
+      "ms_metric_reporting_timeliness_target": {
+        "id": "ms_metric_reporting_timeliness_target",
+        "elementType": "Measure",
+        "measureDataType": "number",
+        "name": "Risk Reporting Timeliness Target",
+        "measureValue": "0.95",
+        "unitOfMeasure": "ratio"
+      }
+    },
+    "conditions": {
+      "cond_data_minimum_complete": {
+        "id": "cond_data_minimum_complete",
+        "elementType": "Condition",
+        "conditionExpression": "exists(counterpartyData) AND completenessScore >= 0.95",
+        "references": []
+      },
+      "cond_model_version_approved": {
+        "id": "cond_model_version_approved",
+        "elementType": "Condition",
+        "conditionExpression": "modelVersion IN approvedModelRegister",
+        "references": []
+      },
+      "cond_threshold_breached": {
+        "id": "cond_threshold_breached",
+        "elementType": "Condition",
+        "conditionExpression": "thresholdBreachFrequency > 0",
+        "references": []
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+case,intendedFailure
+CASE_01_scaffold_cycle_nextActivity,Semantic failure: nextActivityId chain contains a cycle (last -> first).
+CASE_02_scaffold_broken_chain_unreachable,Semantic failure: chain terminates early; remaining activities in valueStream.activityIds become unreachable.
+CASE_03_scaffold_duplicate_activityIds,Semantic failure: valueStream.activityIds contains duplicates (exactly-once violation).
+CASE_04_heatmap_anchor_type_mismatch,Semantic failure: heatmap primaryAnchor.anchorType=Measure but anchorId references an Activity ID.
+CASE_05_heatmap_unknown_anchor_id,Semantic failure: heatmap contributingAnchors includes an anchorId not present in scaffold elements.
+CASE_06_heatmap_bindingConstraint_inconsistent,Semantic failure: bindingConstraint.bindingAnchor does not match the referenced observation's primaryAnchor.
+CASE_07_crossfile_hash_mismatch,Semantic failure: heatmap scaffoldIntegrityHash intentionally mismatched to scaffold (integrity check should fail).
+CASE_08_crossfile_missing_metric_element,Semantic failure: scaffold missing metric element 'metric_pd' that is referenced by activities/heatmap (cross-ref integrity should fail).
