@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from "node:crypto";
 
 // --- Types ---
 
@@ -35,6 +35,10 @@ export interface ValidationReport {
     scaffold: {
       scaffoldId: string;
       modelIntegrityHash: string;
+    };
+    heatmap?: {
+      heatmapId: string;
+      scaffoldIntegrityHash: string;
     };
   };
   findings: Finding[];
@@ -74,6 +78,12 @@ export interface MetricElement extends BaseElement {
   };
 }
 
+export interface MeasureElement extends BaseElement {
+  measureDataType: string;
+  measureValue?: string | number | boolean;
+  measureAsOf?: string;
+}
+
 export interface ScaffoldElements {
   valueStreams: Record<string, ValueStreamElement>;
   activities: Record<string, ActivityElement>;
@@ -88,7 +98,7 @@ export interface ScaffoldElements {
   concepts: Record<string, BaseElement>;
   properties: Record<string, BaseElement>;
   metrics: Record<string, MetricElement>;
-  measures: Record<string, BaseElement>;
+  measures: Record<string, MeasureElement>;
   conditions: Record<string, BaseElement>;
 }
 
@@ -100,9 +110,70 @@ export interface ScaffoldInput {
   elements: ScaffoldElements;
 }
 
+export interface FrictionObservation {
+  observationId: string;
+  primaryAnchor: AnchorRef;
+  contributingAnchors?: AnchorRef[];
+}
+
+export interface BindingConstraint {
+  findingId: string;
+  bindingAnchor: AnchorRef;
+  bindingAnchorObservationId: string;
+  justification: string;
+}
+
+export interface HeatmapInput {
+  heatmapId: string;
+  scaffoldId: string;
+  scaffoldIntegrityHash?: string;
+  valueStreamId: string;
+  observations: FrictionObservation[];
+  bindingConstraint: BindingConstraint;
+}
+
 // --- Helpers ---
 
 const PLACEHOLDER_HASH = "0".repeat(64);
+
+const ANCHOR_TYPE_TO_MAP: Record<string, keyof ScaffoldElements> = {
+  Activity: "activities",
+  Role: "roles",
+  Metric: "metrics",
+  Control: "controls",
+  Capability: "capabilities",
+  ValueStream: "valueStreams",
+  Constraint: "constraints",
+  Outcome: "outcomes",
+  Directive: "directives",
+  DeonticLogic: "deonticLogic",
+  FlowLogic: "flowLogic",
+  Concept: "concepts",
+  Property: "properties",
+  Condition: "conditions",
+  Measure: "measures",
+};
+
+function canonicalize(value: unknown): string {
+  if (value === null || value === undefined) return JSON.stringify(value);
+  if (typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) {
+    return "[" + value.map(canonicalize).join(",") + "]";
+  }
+  const obj = value as Record<string, unknown>;
+  const keys = Object.keys(obj).sort();
+  return "{" + keys.map((k) => JSON.stringify(k) + ":" + canonicalize(obj[k])).join(",") + "}";
+}
+
+function computeScaffoldHash(scaffold: ScaffoldInput): string {
+  const { modelIntegrityHash: _, ...rest } = scaffold;
+  const canonical = canonicalize(rest);
+  return createHash("sha256").update(canonical).digest("hex");
+}
+
+function anchorMatchesRef(a: AnchorRef, b: AnchorRef): boolean {
+  return a.anchorType === b.anchorType && a.anchorId === b.anchorId;
+}
 
 function refError(
   refId: string,
@@ -415,10 +486,302 @@ export function checkOutcomeChainConsistency(
   return findings;
 }
 
+// --- Measure Rules ---
+
+export function checkCurrentMeasuresHaveTimestamp(
+  elements: ScaffoldElements,
+): Finding[] {
+  const findings: Finding[] = [];
+
+  for (const [metricId, metric] of Object.entries(elements.metrics)) {
+    const currentId = metric.measures.currentMeasureId;
+    if (currentId == null) continue;
+
+    const measure = elements.measures[currentId];
+    if (!measure) continue; // unresolved ref caught by V-SCAFFOLD-01
+
+    if (!measure.measureAsOf) {
+      findings.push({
+        severity: "Warning",
+        ruleId: "V-MEASURE-01",
+        code: "MISSING_MEASURE_TIMESTAMP",
+        message: `Current measure '${currentId}' for metric '${metricId}' is missing measureAsOf timestamp`,
+        path: `/elements/measures/${currentId}/measureAsOf`,
+        anchor: { anchorType: "Metric", anchorId: metricId },
+        remediationHint:
+          "Add a measureAsOf timestamp to the current measure.",
+      });
+    }
+  }
+
+  return findings;
+}
+
+export function checkMeasureValueTypes(
+  elements: ScaffoldElements,
+): Finding[] {
+  const findings: Finding[] = [];
+
+  for (const [measureId, measure] of Object.entries(elements.measures)) {
+    if (measure.measureValue == null) continue;
+
+    const { measureDataType, measureValue } = measure;
+    let valid = true;
+
+    switch (measureDataType) {
+      case "number": {
+        const num =
+          typeof measureValue === "number"
+            ? measureValue
+            : Number(measureValue);
+        valid = !isNaN(num);
+        break;
+      }
+      case "integer": {
+        const num =
+          typeof measureValue === "number"
+            ? measureValue
+            : Number(measureValue);
+        valid = !isNaN(num) && Number.isInteger(num);
+        break;
+      }
+      case "boolean": {
+        if (typeof measureValue === "boolean") {
+          valid = true;
+        } else if (typeof measureValue === "string") {
+          valid = measureValue === "true" || measureValue === "false";
+        } else {
+          valid = false;
+        }
+        break;
+      }
+      // string and other types: always valid
+    }
+
+    if (!valid) {
+      findings.push({
+        severity: "Warning",
+        ruleId: "V-MEASURE-02",
+        code: "MEASURE_TYPE_MISMATCH",
+        message: `Measure '${measureId}' value '${String(measureValue)}' does not match declared type '${measureDataType}'`,
+        path: `/elements/measures/${measureId}/measureValue`,
+        anchor: { anchorType: "Measure", anchorId: measureId },
+        remediationHint: `Ensure measureValue is a valid ${measureDataType}.`,
+      });
+    }
+  }
+
+  return findings;
+}
+
+// --- Friction Rules ---
+
+export function checkAnchorReferentialIntegrity(
+  elements: ScaffoldElements,
+  heatmap: HeatmapInput,
+): Finding[] {
+  const findings: Finding[] = [];
+
+  function checkAnchor(
+    anchor: AnchorRef,
+    observationId: string,
+    anchorRole: string,
+    index?: number,
+  ): void {
+    const mapName = ANCHOR_TYPE_TO_MAP[anchor.anchorType];
+    if (!mapName) {
+      findings.push({
+        severity: "Error",
+        ruleId: "V-FRICTION-01",
+        code: "UNKNOWN_ANCHOR_TYPE",
+        message: `Observation '${observationId}' ${anchorRole} has unknown anchorType '${anchor.anchorType}'`,
+        path: `/observations/${observationId}/${anchorRole}`,
+        anchor: { anchorType: anchor.anchorType, anchorId: anchor.anchorId },
+      });
+      return;
+    }
+    const elementMap = elements[mapName];
+    if (!(anchor.anchorId in elementMap)) {
+      const pathSuffix =
+        index != null
+          ? `/contributingAnchors/${index}`
+          : `/${anchorRole}`;
+      findings.push({
+        severity: "Error",
+        ruleId: "V-FRICTION-01",
+        code: "UNRESOLVED_ANCHOR",
+        message: `Observation '${observationId}' references '${anchor.anchorId}' as ${anchor.anchorType} but it does not exist in elements.${mapName}`,
+        path: `/observations/${observationId}${pathSuffix}`,
+        anchor: { anchorType: anchor.anchorType, anchorId: anchor.anchorId },
+      });
+    }
+  }
+
+  for (const obs of heatmap.observations) {
+    checkAnchor(obs.primaryAnchor, obs.observationId, "primaryAnchor");
+    if (obs.contributingAnchors) {
+      for (let i = 0; i < obs.contributingAnchors.length; i++) {
+        checkAnchor(
+          obs.contributingAnchors[i],
+          obs.observationId,
+          "contributingAnchors",
+          i,
+        );
+      }
+    }
+  }
+
+  return findings;
+}
+
+export function checkBindingAnchorInObservations(
+  heatmap: HeatmapInput,
+): Finding[] {
+  const findings: Finding[] = [];
+  const ba = heatmap.bindingConstraint.bindingAnchor;
+
+  const found = heatmap.observations.some((obs) => {
+    if (anchorMatchesRef(obs.primaryAnchor, ba)) return true;
+    if (obs.contributingAnchors) {
+      return obs.contributingAnchors.some((ca) => anchorMatchesRef(ca, ba));
+    }
+    return false;
+  });
+
+  if (!found) {
+    findings.push({
+      severity: "Error",
+      ruleId: "V-FRICTION-02",
+      code: "BINDING_ANCHOR_NOT_OBSERVED",
+      message: `Binding anchor '${ba.anchorId}' (${ba.anchorType}) does not appear in any observation`,
+      path: "/bindingConstraint/bindingAnchor",
+      anchor: ba,
+      remediationHint:
+        "Ensure the binding anchor appears as primaryAnchor or contributingAnchor in at least one observation.",
+    });
+  }
+
+  return findings;
+}
+
+export function checkBindingAnchorSpecificity(
+  heatmap: HeatmapInput,
+): Finding[] {
+  const findings: Finding[] = [];
+  const bc = heatmap.bindingConstraint;
+  const ba = bc.bindingAnchor;
+
+  const targetObs = heatmap.observations.find(
+    (obs) => obs.observationId === bc.bindingAnchorObservationId,
+  );
+
+  if (!targetObs) {
+    findings.push({
+      severity: "Error",
+      ruleId: "V-FRICTION-03",
+      code: "BINDING_OBSERVATION_NOT_FOUND",
+      message: `bindingAnchorObservationId '${bc.bindingAnchorObservationId}' does not match any observation`,
+      path: "/bindingConstraint/bindingAnchorObservationId",
+      anchor: ba,
+      remediationHint:
+        "Ensure bindingAnchorObservationId references a valid observationId.",
+    });
+    return findings;
+  }
+
+  const inObs =
+    anchorMatchesRef(targetObs.primaryAnchor, ba) ||
+    (targetObs.contributingAnchors?.some((ca) =>
+      anchorMatchesRef(ca, ba),
+    ) ??
+      false);
+
+  if (!inObs) {
+    findings.push({
+      severity: "Error",
+      ruleId: "V-FRICTION-03",
+      code: "BINDING_ANCHOR_NOT_IN_OBSERVATION",
+      message: `Binding anchor '${ba.anchorId}' (${ba.anchorType}) does not appear in observation '${bc.bindingAnchorObservationId}'`,
+      path: "/bindingConstraint/bindingAnchor",
+      anchor: ba,
+      remediationHint:
+        "Ensure the binding anchor appears in the referenced observation as primaryAnchor or contributingAnchor.",
+    });
+  }
+
+  return findings;
+}
+
+export function checkValueStreamIdExists(
+  elements: ScaffoldElements,
+  heatmap: HeatmapInput,
+): Finding[] {
+  const findings: Finding[] = [];
+
+  if (!(heatmap.valueStreamId in elements.valueStreams)) {
+    findings.push({
+      severity: "Error",
+      ruleId: "V-FRICTION-04",
+      code: "INVALID_VALUE_STREAM_REF",
+      message: `Heatmap valueStreamId '${heatmap.valueStreamId}' not found in scaffold valueStreams`,
+      path: "/valueStreamId",
+      anchor: {
+        anchorType: "ValueStream",
+        anchorId: heatmap.valueStreamId,
+      },
+      remediationHint:
+        "Ensure valueStreamId references a value stream defined in the scaffold.",
+    });
+  }
+
+  return findings;
+}
+
+export function checkScaffoldIntegrityHash(
+  scaffold: ScaffoldInput,
+  heatmap: HeatmapInput,
+): Finding[] {
+  const findings: Finding[] = [];
+
+  if (!heatmap.scaffoldIntegrityHash) return findings;
+
+  if (heatmap.scaffoldIntegrityHash === PLACEHOLDER_HASH) {
+    findings.push({
+      severity: "Warning",
+      ruleId: "V-FRICTION-05",
+      code: "PLACEHOLDER_HASH",
+      message:
+        "Heatmap scaffoldIntegrityHash is a placeholder (all zeros); integrity not verified",
+      path: "/scaffoldIntegrityHash",
+      remediationHint:
+        "Compute and set the real scaffold integrity hash for production use.",
+    });
+    return findings;
+  }
+
+  const computed = computeScaffoldHash(scaffold);
+  if (heatmap.scaffoldIntegrityHash !== computed) {
+    findings.push({
+      severity: "Error",
+      ruleId: "V-FRICTION-05",
+      code: "HASH_MISMATCH",
+      message: `Heatmap scaffoldIntegrityHash '${heatmap.scaffoldIntegrityHash}' does not match computed scaffold hash '${computed}'`,
+      path: "/scaffoldIntegrityHash",
+      remediationHint:
+        "Recompute the scaffold integrity hash or verify the scaffold has not changed.",
+    });
+  }
+
+  return findings;
+}
+
 // --- Orchestrator ---
 
-export function validate(scaffold: ScaffoldInput): ValidationReport {
-  // Phase 1: independent rules
+export function validate(
+  scaffold: ScaffoldInput,
+  heatmap?: HeatmapInput,
+): ValidationReport {
+  // Phase 1: independent scaffold rules
   const refFindings = checkReferentialIntegrity(scaffold.elements);
   const noopFindings = checkNoNoOpTransitions(scaffold.elements);
   const cycleFindings = checkNoCycles(scaffold.elements);
@@ -438,6 +801,23 @@ export function validate(scaffold: ScaffoldInput): ValidationReport {
     findings.push(
       ...checkChainReachability(scaffold.elements),
       ...checkOutcomeChainConsistency(scaffold.elements),
+    );
+  }
+
+  // Phase 3: measure rules
+  findings.push(
+    ...checkCurrentMeasuresHaveTimestamp(scaffold.elements),
+    ...checkMeasureValueTypes(scaffold.elements),
+  );
+
+  // Phase 4: friction rules (require heatmap)
+  if (heatmap) {
+    findings.push(
+      ...checkAnchorReferentialIntegrity(scaffold.elements, heatmap),
+      ...checkBindingAnchorInObservations(heatmap),
+      ...checkBindingAnchorSpecificity(heatmap),
+      ...checkValueStreamIdExists(scaffold.elements, heatmap),
+      ...checkScaffoldIntegrityHash(scaffold, heatmap),
     );
   }
 
@@ -478,6 +858,15 @@ export function validate(scaffold: ScaffoldInput): ValidationReport {
         scaffoldId: scaffold.scaffoldId,
         modelIntegrityHash: scaffold.modelIntegrityHash ?? PLACEHOLDER_HASH,
       },
+      ...(heatmap
+        ? {
+            heatmap: {
+              heatmapId: heatmap.heatmapId,
+              scaffoldIntegrityHash:
+                heatmap.scaffoldIntegrityHash ?? PLACEHOLDER_HASH,
+            },
+          }
+        : {}),
     },
     findings,
   };
