@@ -296,15 +296,150 @@ export function checkValueStreamHasActivities(
   return findings;
 }
 
+export function checkNoOrphanMetrics(
+  elements: ScaffoldElements,
+): Finding[] {
+  const findings: Finding[] = [];
+  const referenced = new Set<string>();
+
+  for (const act of Object.values(elements.activities)) {
+    if (act.metricIds) {
+      for (const id of act.metricIds) referenced.add(id);
+    }
+  }
+
+  for (const vs of Object.values(elements.valueStreams)) {
+    if (vs.metricIds) {
+      for (const id of vs.metricIds) referenced.add(id);
+    }
+  }
+
+  for (const metricId of Object.keys(elements.metrics)) {
+    if (!referenced.has(metricId)) {
+      findings.push({
+        severity: "Warning",
+        ruleId: "V-SCAFFOLD-06",
+        code: "ORPHAN_METRIC",
+        message: `Metric '${metricId}' is not referenced by any activity or value stream`,
+        path: `/elements/metrics/${metricId}`,
+        anchor: { anchorType: "Metric", anchorId: metricId },
+        remediationHint:
+          "Add this metric to an activity's metricIds or a value stream's metricIds, or remove it.",
+      });
+    }
+  }
+
+  return findings;
+}
+
+export function checkChainReachability(
+  elements: ScaffoldElements,
+): Finding[] {
+  const findings: Finding[] = [];
+
+  for (const [vsId, vs] of Object.entries(elements.valueStreams)) {
+    if (vs.activityIds.length === 0) continue;
+
+    const head = vs.activityIds[0];
+    const reachable = new Set<string>();
+    let current: string | null = head;
+
+    while (current != null && current in elements.activities) {
+      if (reachable.has(current)) break;
+      reachable.add(current);
+      current = elements.activities[current].nextActivityId ?? null;
+    }
+
+    for (let i = 0; i < vs.activityIds.length; i++) {
+      const actId = vs.activityIds[i];
+      if (!reachable.has(actId)) {
+        findings.push({
+          severity: "Error",
+          ruleId: "V-SCAFFOLD-07",
+          code: "UNREACHABLE_ACTIVITY",
+          message: `Activity '${actId}' in ValueStream '${vsId}' is not reachable via nextActivityId from chain head '${head}'`,
+          path: `/elements/valueStreams/${vsId}/activityIds/${i}`,
+          anchor: { anchorType: "Activity", anchorId: actId },
+          relatedAnchors: [{ anchorType: "ValueStream", anchorId: vsId }],
+          remediationHint:
+            "Link this activity into the nextActivityId chain or remove it from the value stream.",
+        });
+      }
+    }
+  }
+
+  return findings;
+}
+
+export function checkOutcomeChainConsistency(
+  elements: ScaffoldElements,
+): Finding[] {
+  const findings: Finding[] = [];
+  const checked = new Set<string>();
+
+  for (const vs of Object.values(elements.valueStreams)) {
+    if (vs.activityIds.length === 0) continue;
+
+    const head = vs.activityIds[0];
+    if (checked.has(head)) continue;
+
+    let current: string | null = head;
+    while (current != null && current in elements.activities) {
+      if (checked.has(current)) break;
+      checked.add(current);
+
+      const act = elements.activities[current];
+      const nextId = act.nextActivityId ?? null;
+
+      if (nextId != null && nextId in elements.activities) {
+        const nextAct = elements.activities[nextId];
+        if (act.postOutcomeId !== nextAct.preOutcomeId) {
+          findings.push({
+            severity: "Error",
+            ruleId: "V-SCAFFOLD-08",
+            code: "OUTCOME_MISMATCH",
+            message: `Outcome chain break between '${current}' (postOutcomeId '${act.postOutcomeId}') and '${nextId}' (preOutcomeId '${nextAct.preOutcomeId}')`,
+            path: `/elements/activities/${nextId}/preOutcomeId`,
+            anchor: { anchorType: "Activity", anchorId: nextId },
+            relatedAnchors: [{ anchorType: "Activity", anchorId: current }],
+            remediationHint:
+              "Ensure adjacent activities have matching outcome transitions.",
+          });
+        }
+      }
+
+      current = nextId;
+    }
+  }
+
+  return findings;
+}
+
 // --- Orchestrator ---
 
 export function validate(scaffold: ScaffoldInput): ValidationReport {
+  // Phase 1: independent rules
+  const refFindings = checkReferentialIntegrity(scaffold.elements);
+  const noopFindings = checkNoNoOpTransitions(scaffold.elements);
+  const cycleFindings = checkNoCycles(scaffold.elements);
+  const vsActFindings = checkValueStreamHasActivities(scaffold.elements);
+  const orphanFindings = checkNoOrphanMetrics(scaffold.elements);
+
   const findings: Finding[] = [
-    ...checkReferentialIntegrity(scaffold.elements),
-    ...checkNoNoOpTransitions(scaffold.elements),
-    ...checkNoCycles(scaffold.elements),
-    ...checkValueStreamHasActivities(scaffold.elements),
+    ...refFindings,
+    ...noopFindings,
+    ...cycleFindings,
+    ...vsActFindings,
+    ...orphanFindings,
   ];
+
+  // Phase 2: chain-dependent rules (require clean refs and no cycles)
+  if (refFindings.length === 0 && cycleFindings.length === 0) {
+    findings.push(
+      ...checkChainReachability(scaffold.elements),
+      ...checkOutcomeChainConsistency(scaffold.elements),
+    );
+  }
 
   let errorCount = 0;
   let warningCount = 0;

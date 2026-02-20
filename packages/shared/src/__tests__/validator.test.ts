@@ -55,7 +55,7 @@ function makeScaffold(
 
 describe("Scaffold semantic validation", () => {
   describe("Golden scaffold", () => {
-    it("passes all 4 rules with zero errors", () => {
+    it("passes all 7 rules with zero errors", () => {
       const scaffold = loadGoldenScaffold();
       const report = validate(scaffold);
 
@@ -253,6 +253,182 @@ describe("Scaffold semantic validation", () => {
       expect(findings[0].path).toBe(
         "/elements/valueStreams/vs1/activityIds",
       );
+    });
+  });
+
+  describe("V-SCAFFOLD-06: No Orphan Metrics", () => {
+    it("detects metric not referenced by any activity or value stream", () => {
+      const scaffold = makeScaffold({
+        metrics: {
+          orphan_m: {
+            id: "orphan_m",
+            measures: { targets: [] },
+          },
+        },
+      });
+
+      const report = validate(scaffold);
+      expect(report.status).toBe("ValidWithWarnings");
+      expect(report.summary.errorCount).toBe(0);
+      expect(report.summary.warningCount).toBe(1);
+
+      const findings = report.findings.filter(
+        (f) => f.ruleId === "V-SCAFFOLD-06",
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0].severity).toBe("Warning");
+      expect(findings[0].code).toBe("ORPHAN_METRIC");
+      expect(findings[0].anchor?.anchorType).toBe("Metric");
+      expect(findings[0].anchor?.anchorId).toBe("orphan_m");
+    });
+
+    it("does not warn when metric is referenced by an activity", () => {
+      const scaffold = makeScaffold({
+        activities: {
+          a1: {
+            id: "a1",
+            preOutcomeId: "o1",
+            postOutcomeId: "o2",
+            performedByRoleIds: ["r1"],
+            metricIds: ["m1"],
+            nextActivityId: null,
+          },
+        },
+        metrics: {
+          m1: {
+            id: "m1",
+            measures: { targets: [] },
+          },
+        },
+      });
+
+      const report = validate(scaffold);
+      const findings = report.findings.filter(
+        (f) => f.ruleId === "V-SCAFFOLD-06",
+      );
+      expect(findings).toHaveLength(0);
+    });
+  });
+
+  describe("V-SCAFFOLD-07: Chain Reachability", () => {
+    it("detects unreachable activity in value stream", () => {
+      const scaffold = makeScaffold({
+        outcomes: { o1: { id: "o1" }, o2: { id: "o2" }, o3: { id: "o3" } },
+        valueStreams: {
+          vs1: { id: "vs1", activityIds: ["a1", "a2"] },
+        },
+        activities: {
+          a1: {
+            id: "a1",
+            preOutcomeId: "o1",
+            postOutcomeId: "o2",
+            performedByRoleIds: ["r1"],
+            nextActivityId: null,
+          },
+          a2: {
+            id: "a2",
+            preOutcomeId: "o2",
+            postOutcomeId: "o3",
+            performedByRoleIds: ["r1"],
+            nextActivityId: null,
+          },
+        },
+      });
+
+      const report = validate(scaffold);
+      expect(report.status).toBe("Invalid");
+
+      const findings = report.findings.filter(
+        (f) => f.ruleId === "V-SCAFFOLD-07",
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0].code).toBe("UNREACHABLE_ACTIVITY");
+      expect(findings[0].anchor?.anchorId).toBe("a2");
+      expect(findings[0].message).toContain("a2");
+      expect(findings[0].message).toContain("a1");
+    });
+
+    it("is skipped when referential integrity errors exist", () => {
+      const scaffold = makeScaffold({
+        valueStreams: {
+          vs1: { id: "vs1", activityIds: ["a1", "ghost"] },
+        },
+      });
+
+      const report = validate(scaffold);
+      const findings = report.findings.filter(
+        (f) => f.ruleId === "V-SCAFFOLD-07",
+      );
+      expect(findings).toHaveLength(0);
+    });
+  });
+
+  describe("V-SCAFFOLD-08: Outcome Chain Consistency", () => {
+    it("detects mismatched outcome between adjacent activities", () => {
+      const scaffold = makeScaffold({
+        outcomes: { o1: { id: "o1" }, o2: { id: "o2" }, o3: { id: "o3" } },
+        valueStreams: {
+          vs1: { id: "vs1", activityIds: ["a1", "a2"] },
+        },
+        activities: {
+          a1: {
+            id: "a1",
+            preOutcomeId: "o1",
+            postOutcomeId: "o2",
+            performedByRoleIds: ["r1"],
+            nextActivityId: "a2",
+          },
+          a2: {
+            id: "a2",
+            preOutcomeId: "o3",
+            postOutcomeId: "o1",
+            performedByRoleIds: ["r1"],
+            nextActivityId: null,
+          },
+        },
+      });
+
+      const report = validate(scaffold);
+      expect(report.status).toBe("Invalid");
+
+      const findings = report.findings.filter(
+        (f) => f.ruleId === "V-SCAFFOLD-08",
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0].code).toBe("OUTCOME_MISMATCH");
+      expect(findings[0].anchor?.anchorId).toBe("a2");
+      expect(findings[0].message).toContain("o2");
+      expect(findings[0].message).toContain("o3");
+    });
+
+    it("is skipped when cycle errors exist", () => {
+      const scaffold = makeScaffold({
+        valueStreams: {
+          vs1: { id: "vs1", activityIds: ["a1", "a2"] },
+        },
+        activities: {
+          a1: {
+            id: "a1",
+            preOutcomeId: "o1",
+            postOutcomeId: "o2",
+            performedByRoleIds: ["r1"],
+            nextActivityId: "a2",
+          },
+          a2: {
+            id: "a2",
+            preOutcomeId: "o2",
+            postOutcomeId: "o1",
+            performedByRoleIds: ["r1"],
+            nextActivityId: "a1",
+          },
+        },
+      });
+
+      const report = validate(scaffold);
+      const findings = report.findings.filter(
+        (f) => f.ruleId === "V-SCAFFOLD-08",
+      );
+      expect(findings).toHaveLength(0);
     });
   });
 
