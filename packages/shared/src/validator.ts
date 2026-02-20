@@ -169,7 +169,7 @@ function canonicalize(value: unknown): string {
   return "{" + keys.map((k) => JSON.stringify(k) + ":" + canonicalize(obj[k])).join(",") + "}";
 }
 
-function computeScaffoldHash(scaffold: ScaffoldInput): string {
+export function computeScaffoldHash(scaffold: ScaffoldInput): string {
   const { modelIntegrityHash: _, ...rest } = scaffold;
   const canonical = canonicalize(rest);
   return createHash("sha256").update(canonical).digest("hex");
