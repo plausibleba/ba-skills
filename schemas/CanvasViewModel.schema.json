@@ -1,0 +1,220 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/value-cognition/schemas/CanvasViewModel.schema.json",
+  "title": "CanvasViewModel",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "viewId",
+    "scaffoldId",
+    "scaffoldIntegrityHash",
+    "valueStreamId",
+    "groupingMode",
+    "columns"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^1\\.\\d+\\.\\d+$"
+    },
+
+    "viewId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this view instance."
+    },
+
+    "scaffoldId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "ID of the ScaffoldModel this view renders."
+    },
+
+    "scaffoldIntegrityHash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hash of ScaffoldModel used to generate this view. Must match ScaffoldModel.modelIntegrityHash (enforced by V-CANVAS-01)."
+    },
+
+    "valueStreamId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "ValueStream element ID being visualized."
+    },
+
+    "groupingMode": {
+      "type": "string",
+      "enum": [
+        "OutcomeProgression",
+        "RoleOwnership",
+        "CapabilityDependency",
+        "SequentialChain"
+      ],
+      "description": "Deterministic grouping logic used to derive columns. Canvas does not allow manual column editing."
+    },
+
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this view was generated."
+    },
+
+    "columns": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/CanvasColumn" },
+      "description": "Visual columns derived from groupingMode. Each Activity appears in exactly one column (enforced by V-CANVAS-03)."
+    },
+
+    "summary": {
+      "$ref": "#/$defs/CanvasSummary",
+      "description": "Optional precomputed summary statistics for the entire ValueStream."
+    }
+  },
+
+  "$defs": {
+    "Id": { "type": "string", "minLength": 1 },
+
+    "CanvasColumn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "columnId",
+        "label",
+        "activityIds"
+      ],
+      "properties": {
+        "columnId": { 
+          "$ref": "#/$defs/Id",
+          "description": "Unique identifier for this column within the view."
+        },
+
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Display label for the column (e.g., 'Application Submitted', 'Credit Review', 'Final Approval')."
+        },
+
+        "description": {
+          "type": "string",
+          "description": "Optional explanatory text for the column."
+        },
+
+        "derivedFrom": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "outcomeIds": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/Id" },
+              "uniqueItems": true,
+              "description": "Outcome IDs used to derive this column (for OutcomeProgression mode)."
+            },
+            "roleIds": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/Id" },
+              "uniqueItems": true,
+              "description": "Role IDs used to derive this column (for RoleOwnership mode)."
+            },
+            "capabilityIds": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/Id" },
+              "uniqueItems": true,
+              "description": "Capability IDs used to derive this column (for CapabilityDependency mode)."
+            }
+          },
+          "description": "Metadata describing how this column was derived from the groupingMode."
+        },
+
+        "activityIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Id" },
+          "uniqueItems": true,
+          "description": "Ordered list of Activity IDs rendered in this column. All IDs must belong to the referenced ValueStream (enforced by V-CANVAS-02)."
+        },
+
+        "aggregates": {
+          "$ref": "#/$defs/ColumnAggregates",
+          "description": "Precomputed rollups for rendering summary panels and friction overlay anchoring."
+        }
+      }
+    },
+
+    "ColumnAggregates": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "roleIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Id" },
+          "uniqueItems": true,
+          "description": "All Roles involved in Activities within this column."
+        },
+        "capabilityIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Id" },
+          "uniqueItems": true,
+          "description": "All Capabilities required by Activities within this column."
+        },
+        "metricIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Id" },
+          "uniqueItems": true,
+          "description": "All Metrics anchored to Activities within this column."
+        },
+        "controlIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Id" },
+          "uniqueItems": true,
+          "description": "All Controls referenced by Activities within this column."
+        },
+        "constraintIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Id" },
+          "uniqueItems": true,
+          "description": "All Constraints referenced by Activities within this column."
+        }
+      },
+      "description": "Precomputed rollups for rendering summary panels and enabling friction overlay anchoring."
+    },
+
+    "CanvasSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "totalActivities": { 
+          "type": "integer", 
+          "minimum": 0,
+          "description": "Total number of Activities in this ValueStream."
+        },
+        "totalRoles": { 
+          "type": "integer", 
+          "minimum": 0,
+          "description": "Total number of distinct Roles involved."
+        },
+        "totalCapabilities": { 
+          "type": "integer", 
+          "minimum": 0,
+          "description": "Total number of distinct Capabilities required."
+        },
+        "totalMetrics": { 
+          "type": "integer", 
+          "minimum": 0,
+          "description": "Total number of Metrics anchored to this ValueStream or its Activities."
+        },
+        "totalControls": { 
+          "type": "integer", 
+          "minimum": 0,
+          "description": "Total number of distinct Controls referenced."
+        },
+        "totalConstraints": { 
+          "type": "integer", 
+          "minimum": 0,
+          "description": "Total number of distinct Constraints referenced."
+        }
+      },
+      "description": "Optional summary statistics for the entire ValueStream view."
+    }
+  }
+}

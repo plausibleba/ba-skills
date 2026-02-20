@@ -1,0 +1,236 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://valuecognitioncanvas.ai/schemas/ValidationReport.schema.json",
+  "title": "ValidationReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reportId",
+    "schemaVersion",
+    "createdAt",
+    "status",
+    "summary",
+    "artifacts",
+    "findings"
+  ],
+  "properties": {
+    "reportId": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Valid",
+        "ValidWithWarnings",
+        "Invalid"
+      ]
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "build": {
+          "type": "string"
+        },
+        "gitCommit": {
+          "type": "string"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "errorCount",
+        "warningCount",
+        "ruleCounts"
+      ],
+      "properties": {
+        "errorCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warningCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ruleCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "errorsByRule",
+            "warningsByRule"
+          ],
+          "properties": {
+            "errorsByRule": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "warningsByRule": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scaffold"
+      ],
+      "properties": {
+        "scaffold": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scaffoldId",
+            "modelIntegrityHash"
+          ],
+          "properties": {
+            "scaffoldId": {
+              "type": "string"
+            },
+            "modelIntegrityHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "schemaVersion": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "heatmap": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "heatmapId",
+            "scaffoldIntegrityHash"
+          ],
+          "properties": {
+            "heatmapId": {
+              "type": "string"
+            },
+            "scaffoldIntegrityHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "schemaVersion": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "severity",
+          "ruleId",
+          "code",
+          "message"
+        ],
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "Error",
+              "Warning"
+            ]
+          },
+          "ruleId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "description": "JSON Pointer or dotted path to offending field, when applicable."
+          },
+          "anchor": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "anchorType",
+              "anchorId"
+            ],
+            "properties": {
+              "anchorType": {
+                "type": "string"
+              },
+              "anchorId": {
+                "type": "string"
+              }
+            }
+          },
+          "relatedAnchors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "anchorType",
+                "anchorId"
+              ],
+              "properties": {
+                "anchorType": {
+                  "type": "string"
+                },
+                "anchorId": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "remediationHint": {
+            "type": "string"
+          },
+          "testReferences": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/value-cognition/schemas/ExportBundle.schema.json",
+  "title": "ExportBundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "bundleId",
+    "createdAt",
+    "createdBy",
+    "bundleFormatVersion",
+    "manifest",
+    "artifacts",
+    "integrity"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^1\\.\\d+\\.\\d+$",
+      "description": "Version of this ExportBundle contract."
+    },
+
+    "bundleId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable identifier for the bundle (UUID recommended)."
+    },
+
+    "bundleFormatVersion": {
+      "type": "string",
+      "const": "1.0",
+      "description": "ZIP layout version. Increment only if file structure changes. Determines layout parsing logic."
+    },
+
+    "createdAt": { 
+      "type": "string", 
+      "format": "date-time",
+      "description": "Timestamp when bundle was created."
+    },
+    
+    "createdBy": { 
+      "type": "string",
+      "description": "User or system that created this bundle."
+    },
+
+    "notes": { 
+      "type": "string",
+      "description": "Optional human-readable notes about this export (e.g., 'Board presentation package for Q1 2026')."
+    },
+
+    "manifest": { "$ref": "#/$defs/Manifest" },
+
+    "artifacts": { "$ref": "#/$defs/Artifacts" },
+
+    "integrity": { "$ref": "#/$defs/Integrity" }
+  },
+
+  "$defs": {
+    "Id": { "type": "string", "minLength": 1 },
+
+    "Manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "zipLayout",
+        "requiredPaths",
+        "optionalPaths",
+        "tooling"
+      ],
+      "properties": {
+        "zipLayout": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["root", "paths"],
+          "properties": {
+            "root": {
+              "type": "string",
+              "const": "/",
+              "description": "ZIP root. Always '/'."
+            },
+            "paths": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["manifest", "scaffold", "validation", "canvas", "heatmap"],
+              "properties": {
+                "manifest": { "type": "string", "const": "manifest.json" },
+                "scaffold": { "type": "string", "const": "data/scaffold.json" },
+                "validation": { "type": "string", "const": "data/validation.json" },
+                "canvas": { "type": "string", "const": "data/canvas.json" },
+                "heatmap": { "type": "string", "const": "data/heatmap.json" },
+
+                "ttlSchema": { "type": "string", "const": "ttl/ontology-schema.ttl" },
+                "ttlConstraints": { "type": "string", "const": "ttl/ontology-constraints.ttl" },
+                "ttlExampleData": { "type": "string", "const": "ttl/example-data.ttl" },
+
+                "readme": { "type": "string", "const": "README.md" }
+              },
+              "description": "Deterministic path mapping within ZIP. Paths are fixed for bundleFormatVersion 1.0."
+            }
+          }
+        },
+
+        "requiredPaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "default": [
+            "manifest.json",
+            "data/scaffold.json",
+            "data/validation.json",
+            "data/canvas.json",
+            "data/heatmap.json"
+          ],
+          "description": "All paths that MUST exist in the ZIP. Missing required paths = invalid bundle (V-EXPORT-01)."
+        },
+
+        "optionalPaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "default": [
+            "README.md",
+            "ttl/ontology-schema.ttl",
+            "ttl/ontology-constraints.ttl",
+            "ttl/example-data.ttl"
+          ],
+          "description": "Paths that MAY exist in the ZIP. Absence is permitted."
+        },
+
+        "tooling": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["appName", "appVersion"],
+          "properties": {
+            "appName": { 
+              "type": "string",
+              "description": "Name of application that generated this bundle (e.g., 'EVSIP Agent Pipeline')."
+            },
+            "appVersion": { 
+              "type": "string",
+              "description": "Version of application that generated this bundle (e.g., '1.0.0')."
+            },
+            "schemaSetVersion": { 
+              "type": "string", 
+              "description": "Version tag for the schema bundle used (e.g., '1.0.0')."
+            },
+            "validator": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "jsonSchemaValidator": { 
+                  "type": "string", 
+                  "description": "JSON Schema validator library and version (e.g., 'AJV 8.12.0')."
+                },
+                "shaclValidator": { 
+                  "type": "string", 
+                  "description": "SHACL validator library and version (e.g., 'pyshacl 0.25.0')."
+                },
+                "customRuleEngine": { 
+                  "type": "string", 
+                  "description": "Custom semantic rule validator version (e.g., 'Appendix E v1.2')."
+                }
+              },
+              "description": "Provenance: which validators were used to validate artifacts before export."
+            }
+          }
+        }
+      }
+    },
+
+    "Artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scaffold", "validationReport", "canvasView", "frictionHeatmap"],
+      "properties": {
+        "scaffold": { "$ref": "#/$defs/ArtifactRef" },
+        "validationReport": { "$ref": "#/$defs/ArtifactRef" },
+        "canvasView": { "$ref": "#/$defs/ArtifactRef" },
+        "frictionHeatmap": { "$ref": "#/$defs/ArtifactRef" },
+
+        "ttl": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "ontologySchema": { "$ref": "#/$defs/ArtifactRef" },
+            "ontologyConstraints": { "$ref": "#/$defs/ArtifactRef" },
+            "exampleData": { "$ref": "#/$defs/ArtifactRef" }
+          },
+          "description": "Optional Turtle (RDF) artifacts for Protégé, SPARQL, or RDF workflows."
+        },
+
+        "readme": { 
+          "$ref": "#/$defs/ArtifactRef",
+          "description": "Optional README.md providing human-readable context for this bundle."
+        }
+      }
+    },
+
+    "ArtifactRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "contentType", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path inside ZIP (e.g., 'data/scaffold.json')."
+        },
+        "contentType": {
+          "type": "string",
+          "minLength": 1,
+          "description": "MIME type (e.g., 'application/json', 'text/turtle', 'text/markdown')."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of the artifact bytes. Must match actual file contents (V-EXPORT-02)."
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Size of artifact in bytes (optional but recommended for integrity checks)."
+        }
+      }
+    },
+
+    "Integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundleSha256",
+        "scaffoldIntegrityHash",
+        "crossReferences"
+      ],
+      "properties": {
+        "bundleSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of the entire ZIP file bytes. Enables tamper detection."
+        },
+
+        "scaffoldIntegrityHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Must match ScaffoldModel.modelIntegrityHash and be referenced by CanvasViewModel, ValidationReport, and FrictionHeatmap (V-EXPORT-03)."
+        },
+
+        "crossReferences": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["scaffoldId", "valueStreamId"],
+          "properties": {
+            "scaffoldId": { 
+              "$ref": "#/$defs/Id",
+              "description": "Must match scaffold.scaffoldId inside data/scaffold.json (V-EXPORT-04)."
+            },
+            "valueStreamId": { 
+              "$ref": "#/$defs/Id",
+              "description": "Must match canvasView.valueStreamId and heatmap.valueStreamId (V-EXPORT-04)."
+            },
+
+            "canvasViewId": { 
+              "$ref": "#/$defs/Id",
+              "description": "Must match canvasView.viewId inside data/canvas.json (V-EXPORT-04)."
+            },
+            "heatmapId": { 
+              "$ref": "#/$defs/Id",
+              "description": "Must match heatmap.heatmapId inside data/heatmap.json (V-EXPORT-04)."
+            },
+            "validationReportId": { 
+              "$ref": "#/$defs/Id",
+              "description": "Must match validationReport.reportId inside data/validation.json (V-EXPORT-04)."
+            }
+          },
+          "description": "Convenience linkage for importers. IDs must match those inside artifacts (enforced by V-EXPORT-04)."
+        }
+      }
+    }
+  }
+}

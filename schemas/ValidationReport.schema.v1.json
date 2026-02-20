@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/value-cognition/schemas/ValidationReport.schema.json",
+  "title": "ValidationReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "reportId",
+    "scaffoldId",
+    "validatedAt",
+    "status",
+    "results"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^1\\.\\d+\\.\\d+$"
+    },
+    "reportId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scaffoldId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "ID of the ScaffoldModel validated."
+    },
+    "scaffoldIntegrityHash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hash of the scaffold at validation time to ensure report applies to unchanged baseline."
+    },
+    "heatmapId": {
+      "type": ["string", "null"],
+      "description": "Optional: ID of heatmap validated (if applicable)."
+    },
+    "validatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "validatedBy": {
+      "type": "string",
+      "description": "System, user, or agent that performed validation."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Valid", "Invalid", "ValidWithWarnings"],
+      "description": "Valid = no errors; Invalid = 1+ errors; ValidWithWarnings = no errors but 1+ warnings."
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["errorCount", "warningCount", "infoCount"],
+      "properties": {
+        "errorCount": { "type": "integer", "minimum": 0 },
+        "warningCount": { "type": "integer", "minimum": 0 },
+        "infoCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "results": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ValidationResult" },
+      "description": "Array of validation results. Empty array if status is Valid with no warnings."
+    }
+  },
+  "$defs": {
+    "ValidationResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ruleId",
+        "severity",
+        "message"
+      ],
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "pattern": "^V-(SCAFFOLD|FRICTION|MEASURE|CANVAS|EXPORT)-\\d+$",
+          "description": "Stable validation rule identifier (e.g., V-SCAFFOLD-01). Maps to Appendix E."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["Error", "Warning", "Info"],
+          "description": "Error blocks publish/export; Warning allows save but surfaces risk; Info is advisory."
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable explanation of the issue."
+        },
+        "help": {
+          "type": "string",
+          "description": "Optional remediation guidance (e.g., 'Ensure state transition changes the record to a different Outcome')."
+        },
+        "focusElement": {
+          "$ref": "#/$defs/ElementRef",
+          "description": "Primary element associated with this issue (enables UI navigation to offending element)."
+        },
+        "relatedElements": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ElementRef" },
+          "uniqueItems": true,
+          "description": "Additional elements relevant to this issue (enables graph highlight in Canvas)."
+        },
+        "location": {
+          "$ref": "#/$defs/JsonPointerRef",
+          "description": "Optional JSON Pointer (RFC 6901) path within the payload for precise error location."
+        },
+        "source": {
+          "type": "string",
+          "enum": ["JSON_SCHEMA", "REFERENTIAL", "SEMANTIC_RULE", "SHACL"],
+          "description": "Origin of the validation rule (enables multi-source validation merging)."
+        }
+      }
+    },
+    "ElementRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["elementType", "elementId"],
+      "properties": {
+        "elementType": {
+          "type": "string",
+          "enum": [
+            "ValueStream", "Activity", "Outcome", "Role", "Capability",
+            "Control", "Constraint", "Directive",
+            "DeonticLogic", "FlowLogic",
+            "Concept", "Property",
+            "Metric", "CompositeMetric", "Measure",
+            "Condition"
+          ]
+        },
+        "elementId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "JsonPointerRef": {
+      "type": "string",
+      "pattern": "^(/[^/~]*(~[01][^/~]*)*)*$",
+      "description": "JSON Pointer (RFC 6901) location of the error (e.g., /elements/activities/act_123/preOutcomeId)."
+    }
+  }
+}
