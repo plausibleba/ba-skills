@@ -1,0 +1,128 @@
+{
+  "metric_triage_cycle_time": {
+    "id": "metric_triage_cycle_time",
+    "elementType": "Metric",
+    "name": "Finding Triage Cycle Time",
+    "description": "Elapsed time from finding receipt to triage completion and analyst assignment. Measures the responsiveness of the intake process.",
+    "metricPeriod": "Per finding",
+    "metricDirection": "Decrease",
+    "metricType": "Lagging",
+    "measures": {
+      "targets": [
+        { "elementType": "Activity", "elementId": "act_intake_and_triage_finding" }
+      ],
+      "baselineMeasureId": "ms_triage_cycle_time_baseline",
+      "targetMeasureId": "ms_triage_cycle_time_target",
+      "currentMeasureId": "ms_triage_cycle_time_current"
+    },
+    "tags": ["timeliness"]
+  },
+  "metric_risk_model_update_completeness": {
+    "id": "metric_risk_model_update_completeness",
+    "elementType": "Metric",
+    "name": "Risk Model Update Completeness",
+    "description": "Percentage of applicable risk categories explicitly reviewed and scored during each risk model update cycle. Measures analytical thoroughness.",
+    "metricPeriod": "Per assessment cycle",
+    "metricDirection": "Attain",
+    "metricType": "Lagging",
+    "measures": {
+      "targets": [
+        { "elementType": "Activity", "elementId": "act_update_risk_model" }
+      ],
+      "baselineMeasureId": "ms_model_completeness_baseline",
+      "targetMeasureId": "ms_model_completeness_target",
+      "currentMeasureId": "ms_model_completeness_current"
+    },
+    "tags": ["quality"]
+  },
+  "metric_rating_peer_deviation": {
+    "id": "metric_rating_peer_deviation",
+    "elementType": "Metric",
+    "name": "Rating Peer Deviation Rate",
+    "description": "Percentage of proposed ratings that deviate significantly from peer group norms, requiring documented justification under the peer calibration control. Measures cross-entity consistency of risk judgement.",
+    "metricPeriod": "Quarterly",
+    "metricDirection": "Decrease",
+    "metricType": "Lagging",
+    "measures": {
+      "targets": [
+        { "elementType": "Activity", "elementId": "act_determine_risk_ratings" }
+      ],
+      "baselineMeasureId": "ms_peer_deviation_baseline",
+      "targetMeasureId": "ms_peer_deviation_target",
+      "currentMeasureId": "ms_peer_deviation_current"
+    },
+    "tags": ["consistency"]
+  },
+  "metric_stance_change_frequency": {
+    "id": "metric_stance_change_frequency",
+    "elementType": "Metric",
+    "name": "Stance Change Frequency",
+    "description": "Number of entities crossing supervisory response stance boundaries per period. Measures system-level volatility in supervisory positioning — high frequency may indicate environmental stress or calibration instability.",
+    "metricPeriod": "Quarterly",
+    "metricDirection": "Attain",
+    "metricType": "Leading",
+    "measures": {
+      "targets": [
+        { "elementType": "Activity", "elementId": "act_calibrate_response_stance" }
+      ],
+      "baselineMeasureId": "ms_stance_change_baseline",
+      "targetMeasureId": "ms_stance_change_target",
+      "currentMeasureId": "ms_stance_change_current"
+    },
+    "tags": ["systemic"]
+  },
+  "metric_approval_cycle_time": {
+    "id": "metric_approval_cycle_time",
+    "elementType": "Metric",
+    "name": "Review & Approval Cycle Time",
+    "description": "Elapsed time from submission of the review package to formal approval. Measures the efficiency of the governance process and identifies bottlenecks in the delegation authority chain.",
+    "metricPeriod": "Per assessment cycle",
+    "metricDirection": "Decrease",
+    "metricType": "Lagging",
+    "measures": {
+      "targets": [
+        { "elementType": "Activity", "elementId": "act_review_and_approve" }
+      ],
+      "baselineMeasureId": "ms_approval_cycle_time_baseline",
+      "targetMeasureId": "ms_approval_cycle_time_target",
+      "currentMeasureId": "ms_approval_cycle_time_current"
+    },
+    "tags": ["timeliness", "governance"]
+  },
+  "metric_sap_obligation_completion_rate": {
+    "id": "metric_sap_obligation_completion_rate",
+    "elementType": "Metric",
+    "name": "SAP Obligation Completion Rate",
+    "description": "Percentage of entity obligations from the Supervisory Action Plan completed within their specified timelines. Measures entity compliance and the effectiveness of supervisory follow-through.",
+    "metricPeriod": "Per assessment cycle",
+    "metricDirection": "Increase",
+    "metricType": "Lagging",
+    "measures": {
+      "targets": [
+        { "elementType": "Activity", "elementId": "act_monitor_and_reassess" }
+      ],
+      "baselineMeasureId": "ms_obligation_completion_baseline",
+      "targetMeasureId": "ms_obligation_completion_target",
+      "currentMeasureId": "ms_obligation_completion_current"
+    },
+    "tags": ["effectiveness"]
+  },
+  "metric_escalation_rate": {
+    "id": "metric_escalation_rate",
+    "elementType": "Metric",
+    "name": "Escalation Rate",
+    "description": "Percentage of assessment cycles requiring escalation beyond the standard delegation authority (to chief supervisor or executive leadership). High rates may indicate either systemic risk elevation or delegation framework miscalibration.",
+    "metricPeriod": "Quarterly",
+    "metricDirection": "Attain",
+    "metricType": "Leading",
+    "measures": {
+      "targets": [
+        { "elementType": "Activity", "elementId": "act_review_and_approve" }
+      ],
+      "baselineMeasureId": "ms_escalation_rate_baseline",
+      "targetMeasureId": "ms_escalation_rate_target",
+      "currentMeasureId": "ms_escalation_rate_current"
+    },
+    "tags": ["governance"]
+  }
+}

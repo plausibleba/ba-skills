@@ -1,0 +1,58 @@
+{
+  "cap_finding_intake_classification": {
+    "id": "cap_finding_intake_classification",
+    "elementType": "Capability",
+    "name": "Finding Intake & Classification",
+    "description": "Ability to receive, log, categorise, and prioritise incoming supervisory findings from multiple source value streams (examination, off-site analysis, engagement, enforcement). Includes linking new findings to existing entity risks and issues.",
+    "tags": ["operational"]
+  },
+  "cap_risk_model_management": {
+    "id": "cap_risk_model_management",
+    "elementType": "Capability",
+    "name": "Risk Model Management",
+    "description": "Ability to maintain and update multi-category entity risk models — scoring inherent risk, management and control quality, and significance weightings across risk domains. Includes model versioning and audit trail.",
+    "tags": ["analytical"]
+  },
+  "cap_risk_rating_calculation": {
+    "id": "cap_risk_rating_calculation",
+    "elementType": "Capability",
+    "name": "Risk Rating Calculation",
+    "description": "Ability to derive composite risk ratings from the entity risk model — calculating probability of failure, impact of failure, and overall risk of failure scores using defined methodologies and weightings.",
+    "tags": ["analytical"]
+  },
+  "cap_response_framework_application": {
+    "id": "cap_response_framework_application",
+    "elementType": "Capability",
+    "name": "Response Framework Application",
+    "description": "Ability to map calculated risk ratings to the graduated supervisory response framework, determining the appropriate supervisory stance and prescribed activity levels for the entity.",
+    "tags": ["analytical", "governance"]
+  },
+  "cap_supervisory_action_planning": {
+    "id": "cap_supervisory_action_planning",
+    "elementType": "Capability",
+    "name": "Supervisory Action Planning",
+    "description": "Ability to formulate structured supervisory action plans specifying key risks, baseline and reactive activities, entity obligations with graduated obligation levels, timelines, and responsible teams.",
+    "tags": ["operational"]
+  },
+  "cap_delegation_authority_management": {
+    "id": "cap_delegation_authority_management",
+    "elementType": "Capability",
+    "name": "Delegation Authority Management",
+    "description": "Ability to determine eligible reviewers and approvers based on delegation rules governed by entity risk rating, rating history, entity characteristics, and nature of the items under review. Includes escalation path determination.",
+    "tags": ["governance"]
+  },
+  "cap_supervisory_communication": {
+    "id": "cap_supervisory_communication",
+    "elementType": "Capability",
+    "name": "Supervisory Communication",
+    "description": "Ability to produce formal supervisory communications — internal notifications to supervisory teams, formal letters to regulated entities, and reporting to governance bodies — appropriate to the supervisory stance and delegation framework.",
+    "tags": ["operational"]
+  },
+  "cap_entity_monitoring_surveillance": {
+    "id": "cap_entity_monitoring_surveillance",
+    "elementType": "Capability",
+    "name": "Entity Monitoring & Surveillance",
+    "description": "Ability to track entity compliance with supervisory action plan obligations, monitor early warning indicators and exception triggers, and detect material changes requiring reassessment.",
+    "tags": ["operational", "analytical"]
+  }
+}

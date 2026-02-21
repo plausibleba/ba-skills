@@ -1,0 +1,54 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-02-21T10:00:00Z",
+  "patches": [
+    {
+      "target": { "elementType": "Activity", "id": "act_intake_and_triage_finding" },
+      "op": "set",
+      "path": "/controlIds",
+      "values": ["ctrl_finding_source_attribution"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_update_risk_model" },
+      "op": "set",
+      "path": "/controlIds",
+      "values": ["ctrl_risk_category_completeness", "ctrl_audit_trail_integrity"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_determine_risk_ratings" },
+      "op": "set",
+      "path": "/controlIds",
+      "values": ["ctrl_rating_change_materiality_threshold", "ctrl_peer_calibration", "ctrl_audit_trail_integrity"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_calibrate_response_stance" },
+      "op": "set",
+      "path": "/controlIds",
+      "values": ["ctrl_stance_boundary_governance"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_formulate_action_plan" },
+      "op": "set",
+      "path": "/controlIds",
+      "values": ["ctrl_obligation_level_consistency"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_review_and_approve" },
+      "op": "set",
+      "path": "/controlIds",
+      "values": ["ctrl_delegation_authority_compliance", "ctrl_stance_boundary_governance", "ctrl_audit_trail_integrity"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_communicate_and_activate" },
+      "op": "set",
+      "path": "/controlIds",
+      "values": ["ctrl_communication_completeness"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_monitor_and_reassess" },
+      "op": "set",
+      "path": "/controlIds",
+      "values": ["ctrl_reassessment_trigger_timeliness"]
+    }
+  ]
+}

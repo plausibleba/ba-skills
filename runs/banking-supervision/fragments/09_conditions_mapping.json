@@ -1,0 +1,60 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-02-21T10:00:00Z",
+  "patches": [
+    {
+      "target": { "elementType": "Activity", "id": "act_update_risk_model" },
+      "op": "set",
+      "path": "/entryConditionIds",
+      "values": ["cond_finding_has_source_attribution"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_determine_risk_ratings" },
+      "op": "set",
+      "path": "/entryConditionIds",
+      "values": ["cond_all_applicable_categories_reviewed"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_calibrate_response_stance" },
+      "op": "set",
+      "path": "/entryConditionIds",
+      "values": ["cond_peer_calibration_completed", "cond_material_change_enhanced_review"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_formulate_action_plan" },
+      "op": "set",
+      "path": "/entryConditionIds",
+      "values": ["cond_stance_boundary_authority"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_review_and_approve" },
+      "op": "set",
+      "path": "/entryConditionIds",
+      "values": ["cond_obligation_stance_consistency"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_review_and_approve" },
+      "op": "set",
+      "path": "/exitConditionIds",
+      "values": ["cond_eligible_approver_confirmed"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_communicate_and_activate" },
+      "op": "set",
+      "path": "/exitConditionIds",
+      "values": ["cond_all_communications_dispatched"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_monitor_and_reassess" },
+      "op": "set",
+      "path": "/entryConditionIds",
+      "values": ["cond_all_communications_dispatched"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_monitor_and_reassess" },
+      "op": "set",
+      "path": "/exitConditionIds",
+      "values": ["cond_material_finding_triage_sla"]
+    }
+  ]
+}

@@ -1,0 +1,184 @@
+{
+  "ms_triage_cycle_time_baseline": {
+    "id": "ms_triage_cycle_time_baseline",
+    "elementType": "Measure",
+    "name": "Triage Cycle Time — Baseline",
+    "measureDataType": "Duration",
+    "unitOfMeasure": "business days",
+    "measureValue": 5,
+    "measureAsOf": "2025-01-01T00:00:00Z"
+  },
+  "ms_triage_cycle_time_target": {
+    "id": "ms_triage_cycle_time_target",
+    "elementType": "Measure",
+    "name": "Triage Cycle Time — Target",
+    "measureDataType": "Duration",
+    "unitOfMeasure": "business days",
+    "measureValue": 2
+  },
+  "ms_triage_cycle_time_current": {
+    "id": "ms_triage_cycle_time_current",
+    "elementType": "Measure",
+    "name": "Triage Cycle Time — Current",
+    "measureDataType": "Duration",
+    "unitOfMeasure": "business days",
+    "measureValue": 4,
+    "measureAsOf": "2025-12-01T00:00:00Z"
+  },
+  "ms_model_completeness_baseline": {
+    "id": "ms_model_completeness_baseline",
+    "elementType": "Measure",
+    "name": "Risk Model Completeness — Baseline",
+    "measureDataType": "Percentage",
+    "unitOfMeasure": "%",
+    "measureValue": 75,
+    "measureAsOf": "2025-01-01T00:00:00Z"
+  },
+  "ms_model_completeness_target": {
+    "id": "ms_model_completeness_target",
+    "elementType": "Measure",
+    "name": "Risk Model Completeness — Target",
+    "measureDataType": "Percentage",
+    "unitOfMeasure": "%",
+    "measureValue": 100
+  },
+  "ms_model_completeness_current": {
+    "id": "ms_model_completeness_current",
+    "elementType": "Measure",
+    "name": "Risk Model Completeness — Current",
+    "measureDataType": "Percentage",
+    "unitOfMeasure": "%",
+    "measureValue": 88,
+    "measureAsOf": "2025-12-01T00:00:00Z"
+  },
+  "ms_peer_deviation_baseline": {
+    "id": "ms_peer_deviation_baseline",
+    "elementType": "Measure",
+    "name": "Peer Deviation Rate — Baseline",
+    "measureDataType": "Percentage",
+    "unitOfMeasure": "%",
+    "measureValue": 22,
+    "measureAsOf": "2025-01-01T00:00:00Z"
+  },
+  "ms_peer_deviation_target": {
+    "id": "ms_peer_deviation_target",
+    "elementType": "Measure",
+    "name": "Peer Deviation Rate — Target",
+    "measureDataType": "Percentage",
+    "unitOfMeasure": "%",
+    "measureValue": 10
+  },
+  "ms_peer_deviation_current": {
+    "id": "ms_peer_deviation_current",
+    "elementType": "Measure",
+    "name": "Peer Deviation Rate — Current",
+    "measureDataType": "Percentage",
+    "unitOfMeasure": "%",
+    "measureValue": 18,
+    "measureAsOf": "2025-12-01T00:00:00Z"
+  },
+  "ms_stance_change_baseline": {
+    "id": "ms_stance_change_baseline",
+    "elementType": "Measure",
+    "name": "Stance Change Frequency — Baseline",
+    "measureDataType": "Count",
+    "unitOfMeasure": "entities per quarter",
+    "measureValue": 12,
+    "measureAsOf": "2025-01-01T00:00:00Z"
+  },
+  "ms_stance_change_target": {
+    "id": "ms_stance_change_target",
+    "elementType": "Measure",
+    "name": "Stance Change Frequency — Target",
+    "measureDataType": "Count",
+    "unitOfMeasure": "entities per quarter",
+    "measureValue": 8
+  },
+  "ms_stance_change_current": {
+    "id": "ms_stance_change_current",
+    "elementType": "Measure",
+    "name": "Stance Change Frequency — Current",
+    "measureDataType": "Count",
+    "unitOfMeasure": "entities per quarter",
+    "measureValue": 15,
+    "measureAsOf": "2025-12-01T00:00:00Z"
+  },
+  "ms_approval_cycle_time_baseline": {
+    "id": "ms_approval_cycle_time_baseline",
+    "elementType": "Measure",
+    "name": "Approval Cycle Time — Baseline",
+    "measureDataType": "Duration",
+    "unitOfMeasure": "business days",
+    "measureValue": 15,
+    "measureAsOf": "2025-01-01T00:00:00Z"
+  },
+  "ms_approval_cycle_time_target": {
+    "id": "ms_approval_cycle_time_target",
+    "elementType": "Measure",
+    "name": "Approval Cycle Time — Target",
+    "measureDataType": "Duration",
+    "unitOfMeasure": "business days",
+    "measureValue": 7
+  },
+  "ms_approval_cycle_time_current": {
+    "id": "ms_approval_cycle_time_current",
+    "elementType": "Measure",
+    "name": "Approval Cycle Time — Current",
+    "measureDataType": "Duration",
+    "unitOfMeasure": "business days",
+    "measureValue": 12,
+    "measureAsOf": "2025-12-01T00:00:00Z"
+  },
+  "ms_obligation_completion_baseline": {
+    "id": "ms_obligation_completion_baseline",
+    "elementType": "Measure",
+    "name": "SAP Obligation Completion — Baseline",
+    "measureDataType": "Percentage",
+    "unitOfMeasure": "%",
+    "measureValue": 65,
+    "measureAsOf": "2025-01-01T00:00:00Z"
+  },
+  "ms_obligation_completion_target": {
+    "id": "ms_obligation_completion_target",
+    "elementType": "Measure",
+    "name": "SAP Obligation Completion — Target",
+    "measureDataType": "Percentage",
+    "unitOfMeasure": "%",
+    "measureValue": 90
+  },
+  "ms_obligation_completion_current": {
+    "id": "ms_obligation_completion_current",
+    "elementType": "Measure",
+    "name": "SAP Obligation Completion — Current",
+    "measureDataType": "Percentage",
+    "unitOfMeasure": "%",
+    "measureValue": 72,
+    "measureAsOf": "2025-12-01T00:00:00Z"
+  },
+  "ms_escalation_rate_baseline": {
+    "id": "ms_escalation_rate_baseline",
+    "elementType": "Measure",
+    "name": "Escalation Rate — Baseline",
+    "measureDataType": "Percentage",
+    "unitOfMeasure": "%",
+    "measureValue": 18,
+    "measureAsOf": "2025-01-01T00:00:00Z"
+  },
+  "ms_escalation_rate_target": {
+    "id": "ms_escalation_rate_target",
+    "elementType": "Measure",
+    "name": "Escalation Rate — Target",
+    "measureDataType": "Percentage",
+    "unitOfMeasure": "%",
+    "measureValue": 12
+  },
+  "ms_escalation_rate_current": {
+    "id": "ms_escalation_rate_current",
+    "elementType": "Measure",
+    "name": "Escalation Rate — Current",
+    "measureDataType": "Percentage",
+    "unitOfMeasure": "%",
+    "measureValue": 20,
+    "measureAsOf": "2025-12-01T00:00:00Z"
+  }
+}

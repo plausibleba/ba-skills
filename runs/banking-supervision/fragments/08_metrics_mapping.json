@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-02-21T10:00:00Z",
+  "patches": [
+    {
+      "target": { "elementType": "Activity", "id": "act_intake_and_triage_finding" },
+      "op": "set",
+      "path": "/metricIds",
+      "values": ["metric_triage_cycle_time"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_update_risk_model" },
+      "op": "set",
+      "path": "/metricIds",
+      "values": ["metric_risk_model_update_completeness"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_determine_risk_ratings" },
+      "op": "set",
+      "path": "/metricIds",
+      "values": ["metric_rating_peer_deviation"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_calibrate_response_stance" },
+      "op": "set",
+      "path": "/metricIds",
+      "values": ["metric_stance_change_frequency"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_review_and_approve" },
+      "op": "set",
+      "path": "/metricIds",
+      "values": ["metric_approval_cycle_time", "metric_escalation_rate"]
+    },
+    {
+      "target": { "elementType": "Activity", "id": "act_monitor_and_reassess" },
+      "op": "set",
+      "path": "/metricIds",
+      "values": ["metric_sap_obligation_completion_rate"]
+    }
+  ]
+}

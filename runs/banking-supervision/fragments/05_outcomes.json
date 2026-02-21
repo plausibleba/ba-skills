@@ -1,0 +1,65 @@
+{
+  "outcome_finding_received": {
+    "id": "outcome_finding_received",
+    "elementType": "Outcome",
+    "name": "Finding Received",
+    "description": "A new supervisory finding, signal, or trigger has been received from a source value stream or external event but has not yet been categorised or prioritised.",
+    "tags": ["initial"]
+  },
+  "outcome_finding_triaged": {
+    "id": "outcome_finding_triaged",
+    "elementType": "Outcome",
+    "name": "Finding Triaged",
+    "description": "The finding has been categorised by risk domain, prioritised by urgency, linked to existing entity risks/issues where applicable, and assigned to the responsible supervisory analyst.",
+    "tags": []
+  },
+  "outcome_risk_model_updated": {
+    "id": "outcome_risk_model_updated",
+    "elementType": "Outcome",
+    "name": "Risk Model Updated",
+    "description": "The entity risk model has been updated with current inherent risk scores, management and control quality assessments, and significance weightings across all affected risk categories.",
+    "tags": []
+  },
+  "outcome_ratings_proposed": {
+    "id": "outcome_ratings_proposed",
+    "elementType": "Outcome",
+    "name": "Ratings Proposed",
+    "description": "Composite risk ratings (probability of failure, impact of failure, overall risk of failure) have been calculated from the updated risk model with supporting rationale documented.",
+    "tags": []
+  },
+  "outcome_response_stance_determined": {
+    "id": "outcome_response_stance_determined",
+    "elementType": "Outcome",
+    "name": "Response Stance Determined",
+    "description": "The entity's supervisory response stance has been determined by applying the graduated response framework to the proposed risk ratings, with prescribed activity levels identified.",
+    "tags": []
+  },
+  "outcome_action_plan_drafted": {
+    "id": "outcome_action_plan_drafted",
+    "elementType": "Outcome",
+    "name": "Action Plan Drafted",
+    "description": "A Supervisory Action Plan has been formulated specifying key risks/issues, baseline and reactive activities, entity obligations with obligation levels and timelines, and responsible supervisory teams.",
+    "tags": []
+  },
+  "outcome_ratings_and_plan_approved": {
+    "id": "outcome_ratings_and_plan_approved",
+    "elementType": "Outcome",
+    "name": "Ratings & Plan Approved",
+    "description": "Risk ratings and the Supervisory Action Plan have been formally reviewed and approved through the delegation authority framework by the appropriate level of authority.",
+    "tags": []
+  },
+  "outcome_position_communicated": {
+    "id": "outcome_position_communicated",
+    "elementType": "Outcome",
+    "name": "Position Communicated & Activated",
+    "description": "Approved supervisory positions have been communicated to all stakeholders — supervisory teams notified, downstream value streams triggered, entity notified where required — and the SAP is the active supervisory programme.",
+    "tags": []
+  },
+  "outcome_cycle_complete": {
+    "id": "outcome_cycle_complete",
+    "elementType": "Outcome",
+    "name": "Assessment Cycle Complete",
+    "description": "Monitoring confirms entity is being supervised in accordance with the active SAP. The assessment cycle is complete until a reassessment trigger is received (scheduled review date, material new finding, or macroeconomic event).",
+    "tags": ["terminal"]
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "cond_finding_has_source_attribution": {
+    "id": "cond_finding_has_source_attribution",
+    "elementType": "Condition",
+    "conditionExpression": "Finding must have a documented source value stream, originating activity reference, and responsible analyst before it can proceed to risk model update.",
+    "references": [
+      { "elementType": "Control", "elementId": "ctrl_finding_source_attribution" }
+    ]
+  },
+  "cond_all_applicable_categories_reviewed": {
+    "id": "cond_all_applicable_categories_reviewed",
+    "elementType": "Condition",
+    "conditionExpression": "All applicable risk categories for the entity type must be explicitly reviewed and scored (or confirmed unchanged with documented rationale) before ratings can be calculated.",
+    "references": [
+      { "elementType": "Control", "elementId": "ctrl_risk_category_completeness" }
+    ]
+  },
+  "cond_material_change_enhanced_review": {
+    "id": "cond_material_change_enhanced_review",
+    "elementType": "Condition",
+    "conditionExpression": "If the proposed rating change exceeds the materiality threshold (more than one notch movement on probability or impact scale), enhanced review by the senior supervisor must be completed before submission to the formal approval chain.",
+    "references": [
+      { "elementType": "Control", "elementId": "ctrl_rating_change_materiality_threshold" },
+      { "elementType": "Role", "elementId": "role_senior_supervisor" }
+    ]
+  },
+  "cond_peer_calibration_completed": {
+    "id": "cond_peer_calibration_completed",
+    "elementType": "Condition",
+    "conditionExpression": "Proposed ratings must be calibrated against the entity's peer group before response stance can be determined. Significant deviations from peer norms must have documented justification.",
+    "references": [
+      { "elementType": "Control", "elementId": "ctrl_peer_calibration" }
+    ]
+  },
+  "cond_stance_boundary_authority": {
+    "id": "cond_stance_boundary_authority",
+    "elementType": "Condition",
+    "conditionExpression": "If the entity is crossing a supervisory response stance boundary, the review package must be routed to a higher delegation authority than standard rating updates. Systemically important entities crossing stance boundaries require executive-level approval.",
+    "references": [
+      { "elementType": "Control", "elementId": "ctrl_stance_boundary_governance" },
+      { "elementType": "Role", "elementId": "role_executive_leadership" }
+    ]
+  },
+  "cond_obligation_stance_consistency": {
+    "id": "cond_obligation_stance_consistency",
+    "elementType": "Condition",
+    "conditionExpression": "SAP obligation levels must be consistent with the supervisory response stance. Directed obligations require the entity to be at mandated corrective action stance or above. Advisory obligations at restructure stance require explicit justification.",
+    "references": [
+      { "elementType": "Control", "elementId": "ctrl_obligation_level_consistency" }
+    ]
+  },
+  "cond_eligible_approver_confirmed": {
+    "id": "cond_eligible_approver_confirmed",
+    "elementType": "Condition",
+    "conditionExpression": "The designated approver must be confirmed as eligible under the delegation authority framework (based on entity risk rating, rating history, entity location, and nature of items) before the approval decision is valid.",
+    "references": [
+      { "elementType": "Control", "elementId": "ctrl_delegation_authority_compliance" },
+      { "elementType": "Capability", "elementId": "cap_delegation_authority_management" }
+    ]
+  },
+  "cond_all_communications_dispatched": {
+    "id": "cond_all_communications_dispatched",
+    "elementType": "Condition",
+    "conditionExpression": "Before the assessment cycle transitions to monitoring, all required communications must be confirmed dispatched: internal supervisory team notifications, downstream value stream triggers, and entity communications where the stance or obligations require it.",
+    "references": [
+      { "elementType": "Control", "elementId": "ctrl_communication_completeness" }
+    ]
+  },
+  "cond_material_finding_triage_sla": {
+    "id": "cond_material_finding_triage_sla",
+    "elementType": "Condition",
+    "conditionExpression": "Material new findings received during monitoring must be triaged within the defined service level (5 business days standard, 24 hours critical). SLA breach triggers automatic escalation to senior supervisor for re-entry to the assessment cycle.",
+    "references": [
+      { "elementType": "Control", "elementId": "ctrl_reassessment_trigger_timeliness" },
+      { "elementType": "Role", "elementId": "role_senior_supervisor" }
+    ]
+  }
+}

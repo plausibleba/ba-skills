@@ -1,0 +1,72 @@
+{
+  "ctrl_finding_source_attribution": {
+    "id": "ctrl_finding_source_attribution",
+    "elementType": "Control",
+    "name": "Finding Source Attribution",
+    "description": "Every finding entering the RA&R process must be traceable to a source value stream, originating activity, and responsible analyst. Findings without source attribution are rejected at intake.",
+    "tags": ["traceability"]
+  },
+  "ctrl_risk_category_completeness": {
+    "id": "ctrl_risk_category_completeness",
+    "elementType": "Control",
+    "name": "Risk Category Completeness Check",
+    "description": "Risk model updates must address all applicable risk categories for the entity type. Analyst must explicitly confirm categories reviewed and document rationale for any category scored as 'no change' when a finding relates to that domain.",
+    "tags": ["quality"]
+  },
+  "ctrl_rating_change_materiality_threshold": {
+    "id": "ctrl_rating_change_materiality_threshold",
+    "elementType": "Control",
+    "name": "Rating Change Materiality Threshold",
+    "description": "Any proposed rating change exceeding the defined materiality threshold (e.g., movement of more than one notch on probability or impact scales) must trigger enhanced review by the senior supervisor before submission to the approval chain.",
+    "tags": ["governance", "escalation"]
+  },
+  "ctrl_peer_calibration": {
+    "id": "ctrl_peer_calibration",
+    "elementType": "Control",
+    "name": "Peer Calibration Review",
+    "description": "Proposed risk ratings must be calibrated against peer entities of comparable size, complexity, and risk profile to ensure cross-entity consistency. Significant deviations from peer group norms require documented justification.",
+    "tags": ["quality", "consistency"]
+  },
+  "ctrl_stance_boundary_governance": {
+    "id": "ctrl_stance_boundary_governance",
+    "elementType": "Control",
+    "name": "Stance Boundary Governance",
+    "description": "Any entity crossing a supervisory response stance boundary (e.g., from normal monitoring to heightened oversight, or from mandated action to restructure) requires approval from a higher delegation authority than routine rating updates. Stance boundary crossings for systemically important entities require executive-level approval.",
+    "tags": ["governance", "escalation"]
+  },
+  "ctrl_obligation_level_consistency": {
+    "id": "ctrl_obligation_level_consistency",
+    "elementType": "Control",
+    "name": "Obligation Level Consistency",
+    "description": "Entity obligations specified in the Supervisory Action Plan must be consistent with the supervisory response stance. Directed obligations (highest enforcement level) may only be applied to entities at mandated corrective action stance or above. Advisory obligations at restructure stance must be justified.",
+    "tags": ["governance", "consistency"]
+  },
+  "ctrl_delegation_authority_compliance": {
+    "id": "ctrl_delegation_authority_compliance",
+    "elementType": "Control",
+    "name": "Delegation Authority Compliance",
+    "description": "Review and approval must follow the delegation authority framework. Eligible approvers are determined by entity risk rating, rating history, entity location, and nature of items under review. Approval by an ineligible authority renders the decision invalid and requires re-routing.",
+    "tags": ["governance", "compliance"]
+  },
+  "ctrl_communication_completeness": {
+    "id": "ctrl_communication_completeness",
+    "elementType": "Control",
+    "name": "Communication Completeness Check",
+    "description": "Before a supervisory cycle is considered complete, all required communications must be confirmed: internal supervisory team notifications sent, downstream value stream triggers activated, and entity communications dispatched where the stance or obligations require it.",
+    "tags": ["operational", "completeness"]
+  },
+  "ctrl_reassessment_trigger_timeliness": {
+    "id": "ctrl_reassessment_trigger_timeliness",
+    "elementType": "Control",
+    "name": "Reassessment Trigger Timeliness",
+    "description": "Material new findings received during the monitoring phase must be triaged within the defined service level (e.g., 5 business days for standard, 24 hours for critical). Breach of the triage SLA triggers automatic escalation to the senior supervisor.",
+    "tags": ["operational", "timeliness"]
+  },
+  "ctrl_audit_trail_integrity": {
+    "id": "ctrl_audit_trail_integrity",
+    "elementType": "Control",
+    "name": "Audit Trail Integrity",
+    "description": "All risk model changes, rating proposals, stance determinations, and approval decisions must be recorded with timestamp, responsible officer, and supporting rationale. The audit trail must be immutable and available for internal audit and external review.",
+    "tags": ["traceability", "compliance"]
+  }
+}

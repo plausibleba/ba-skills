@@ -1,0 +1,44 @@
+{
+  "role_supervisory_analyst": {
+    "id": "role_supervisory_analyst",
+    "elementType": "Role",
+    "name": "Supervisory Analyst",
+    "description": "Primary operator of the entity risk model. Responsible for gathering findings, updating risk assessments, drafting risk ratings and supervisory action plans. The analyst maintains day-to-day knowledge of the entity's risk profile and is the first point of contact for incoming supervisory intelligence.",
+    "tags": ["execution", "analysis"]
+  },
+  "role_senior_supervisor": {
+    "id": "role_senior_supervisor",
+    "elementType": "Role",
+    "name": "Senior Supervisor",
+    "description": "Team lead responsible for review and quality assurance of risk model updates, ratings, and supervisory action plans. Provides peer calibration of risk judgements and ensures consistency across entities within the portfolio. First-level review authority in the delegation framework.",
+    "tags": ["review", "calibration"]
+  },
+  "role_chief_supervisor": {
+    "id": "role_chief_supervisor",
+    "elementType": "Role",
+    "name": "Chief Supervisor",
+    "description": "Division head with formal approval authority for risk ratings and supervisory response stance changes. Approves supervisory action plans for entities at or above defined risk thresholds. Escalation point for contested ratings or significant stance changes.",
+    "tags": ["approval", "governance"]
+  },
+  "role_executive_leadership": {
+    "id": "role_executive_leadership",
+    "elementType": "Role",
+    "name": "Executive Leadership",
+    "description": "Senior executive or committee with authority over systemically important entities and significant enforcement escalations. Approves stance changes to the highest intervention levels. Responsible for cross-entity and cross-jurisdictional coordination decisions.",
+    "tags": ["escalation", "governance"]
+  },
+  "role_specialist_risk_team": {
+    "id": "role_specialist_risk_team",
+    "elementType": "Role",
+    "name": "Specialist Risk Team",
+    "description": "Domain experts in specific risk categories (credit risk, market risk, operational risk, liquidity risk, insurance risk). Provide technical assessment input to the risk model update process. May be called upon for horizontal thematic reviews across multiple entities.",
+    "tags": ["specialist", "analysis"]
+  },
+  "role_legal_compliance": {
+    "id": "role_legal_compliance",
+    "elementType": "Role",
+    "name": "Legal & Compliance",
+    "description": "Advises on delegation authority rules, enforcement triggers, and regulatory interpretation. Ensures supervisory actions and communications comply with legislative frameworks. Prepares statutory instruments when formal enforcement is triggered.",
+    "tags": ["advisory", "governance"]
+  }
+}
