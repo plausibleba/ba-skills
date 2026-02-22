@@ -2,7 +2,7 @@
   "schemaVersion": "1.0.0",
   "scaffoldId": "scaffold_credit_risk_v5",
   "name": "Credit Risk Assessment & Management (Golden Fixture)",
-  "description": "Fully schema-conformant golden fixture for validation/rendering/testing of VCC.",
+  "description": "Fully schema-conformant golden fixture for validation/rendering/testing of VCC. [v3.1: added throughputMetricId, approval cycle time metric + measures for binding constraint activity]",
   "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
   "createdAt": "2026-02-19T05:57:04Z",
   "elements": {
@@ -101,7 +101,8 @@
         ],
         "exitConditionIds": [
           "cond_model_version_approved"
-        ]
+        ],
+        "throughputMetricId": "metric_pd"
       },
       "act_profile_exposure_concentration": {
         "id": "act_profile_exposure_concentration",
@@ -181,7 +182,8 @@
         ],
         "exitConditionIds": [
           "cond_threshold_breached"
-        ]
+        ],
+        "throughputMetricId": "metric_threshold_breach"
       },
       "act_approve_mitigation_action": {
         "id": "act_approve_mitigation_action",
@@ -199,12 +201,19 @@
           "cap_regulatory_compliance_mgmt",
           "cap_credit_assessment_mgmt"
         ],
-        "metricIds": [],
+        "metricIds": [
+          "metric_approval_cycle_time",
+          "metric_approval_escalation_rate"
+        ],
         "controlIds": [
           "ctrl_delegation_of_authority"
         ],
         "constraintIds": [],
-        "nextActivityId": "act_execute_mitigation_actions"
+        "nextActivityId": "act_execute_mitigation_actions",
+        "throughputMetricId": "metric_approval_cycle_time",
+        "secondaryMetricIds": [
+          "metric_approval_escalation_rate"
+        ]
       },
       "act_execute_mitigation_actions": {
         "id": "act_execute_mitigation_actions",
@@ -250,7 +259,8 @@
           "ctrl_regulatory_reporting_obligation"
         ],
         "constraintIds": [],
-        "nextActivityId": "act_review_thresholds_models"
+        "nextActivityId": "act_review_thresholds_models",
+        "throughputMetricId": "metric_reporting_timeliness"
       },
       "act_review_thresholds_models": {
         "id": "act_review_thresholds_models",
@@ -585,6 +595,54 @@
           "currentMeasureId": "ms_metric_reporting_timeliness_current",
           "targetMeasureId": "ms_metric_reporting_timeliness_target"
         }
+      },
+      "metric_approval_cycle_time": {
+        "id": "metric_approval_cycle_time",
+        "elementType": "Metric",
+        "name": "Mitigation Approval Cycle Time",
+        "description": "Elapsed business days from mitigation recommendation submission to formal approval decision.",
+        "metricDirection": "Decrease",
+        "metricType": "Lagging",
+        "metricPeriod": "quarterly",
+        "measures": {
+          "targets": [
+            {
+              "targetType": "Activity",
+              "targetId": "act_approve_mitigation_action"
+            }
+          ],
+          "baselineMeasureId": "ms_approval_cycle_baseline",
+          "currentMeasureId": "ms_approval_cycle_current",
+          "targetMeasureId": "ms_approval_cycle_target"
+        },
+        "tags": [
+          "throughput",
+          "cycle-time"
+        ]
+      },
+      "metric_approval_escalation_rate": {
+        "id": "metric_approval_escalation_rate",
+        "elementType": "Metric",
+        "name": "Approval Escalation Rate",
+        "description": "Percentage of mitigation approvals requiring escalation beyond delegated authority.",
+        "metricDirection": "Decrease",
+        "metricType": "Leading",
+        "metricPeriod": "quarterly",
+        "measures": {
+          "targets": [
+            {
+              "targetType": "Activity",
+              "targetId": "act_approve_mitigation_action"
+            }
+          ],
+          "baselineMeasureId": "ms_approval_esc_baseline",
+          "currentMeasureId": "ms_approval_esc_current",
+          "targetMeasureId": "ms_approval_esc_target"
+        },
+        "tags": [
+          "escalation",
+          "governance"
+        ]
       }
     },
     "measures": {
@@ -593,7 +651,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Probability of Default (PD) Baseline",
-        "measureValue": "0.032",
+        "measureValue": 0.032,
         "unitOfMeasure": "ratio"
       },
       "ms_metric_pd_current": {
@@ -601,7 +659,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Probability of Default (PD) Current",
-        "measureValue": "0.038",
+        "measureValue": 0.038,
         "unitOfMeasure": "ratio",
         "measureAsOf": "2026-02-19T05:57:04Z"
       },
@@ -610,7 +668,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Probability of Default (PD) Target",
-        "measureValue": "0.03",
+        "measureValue": 0.03,
         "unitOfMeasure": "ratio"
       },
       "ms_metric_ead_baseline": {
@@ -618,7 +676,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Exposure at Default (EAD) Baseline",
-        "measureValue": "2100000000.0",
+        "measureValue": 2100000000.0,
         "unitOfMeasure": "AUD"
       },
       "ms_metric_ead_current": {
@@ -626,7 +684,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Exposure at Default (EAD) Current",
-        "measureValue": "2250000000.0",
+        "measureValue": 2250000000.0,
         "unitOfMeasure": "AUD",
         "measureAsOf": "2026-02-19T05:57:04Z"
       },
@@ -635,7 +693,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Exposure at Default (EAD) Target",
-        "measureValue": "2000000000.0",
+        "measureValue": 2000000000.0,
         "unitOfMeasure": "AUD"
       },
       "ms_metric_lgd_baseline": {
@@ -643,7 +701,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Loss Given Default (LGD) Baseline",
-        "measureValue": "0.42",
+        "measureValue": 0.42,
         "unitOfMeasure": "ratio"
       },
       "ms_metric_lgd_current": {
@@ -651,7 +709,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Loss Given Default (LGD) Current",
-        "measureValue": "0.45",
+        "measureValue": 0.45,
         "unitOfMeasure": "ratio",
         "measureAsOf": "2026-02-19T05:57:04Z"
       },
@@ -660,7 +718,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Loss Given Default (LGD) Target",
-        "measureValue": "0.4",
+        "measureValue": 0.4,
         "unitOfMeasure": "ratio"
       },
       "ms_metric_rwa_baseline": {
@@ -668,7 +726,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Risk-Weighted Assets (RWA) Baseline",
-        "measureValue": "4800000000.0",
+        "measureValue": 4800000000.0,
         "unitOfMeasure": "AUD"
       },
       "ms_metric_rwa_current": {
@@ -676,7 +734,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Risk-Weighted Assets (RWA) Current",
-        "measureValue": "5100000000.0",
+        "measureValue": 5100000000.0,
         "unitOfMeasure": "AUD",
         "measureAsOf": "2026-02-19T05:57:04Z"
       },
@@ -685,7 +743,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Risk-Weighted Assets (RWA) Target",
-        "measureValue": "4500000000.0",
+        "measureValue": 4500000000.0,
         "unitOfMeasure": "AUD"
       },
       "ms_metric_concentration_baseline": {
@@ -693,7 +751,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Counterparty Concentration Ratio Baseline",
-        "measureValue": "0.18",
+        "measureValue": 0.18,
         "unitOfMeasure": "ratio"
       },
       "ms_metric_concentration_current": {
@@ -701,7 +759,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Counterparty Concentration Ratio Current",
-        "measureValue": "0.21",
+        "measureValue": 0.21,
         "unitOfMeasure": "ratio",
         "measureAsOf": "2026-02-19T05:57:04Z"
       },
@@ -710,7 +768,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Counterparty Concentration Ratio Target",
-        "measureValue": "0.16",
+        "measureValue": 0.16,
         "unitOfMeasure": "ratio"
       },
       "ms_metric_delinquency_baseline": {
@@ -718,7 +776,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Loan Delinquency Rate Baseline",
-        "measureValue": "0.024",
+        "measureValue": 0.024,
         "unitOfMeasure": "ratio"
       },
       "ms_metric_delinquency_current": {
@@ -726,7 +784,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Loan Delinquency Rate Current",
-        "measureValue": "0.031",
+        "measureValue": 0.031,
         "unitOfMeasure": "ratio",
         "measureAsOf": "2026-02-19T05:57:04Z"
       },
@@ -735,7 +793,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Loan Delinquency Rate Target",
-        "measureValue": "0.02",
+        "measureValue": 0.02,
         "unitOfMeasure": "ratio"
       },
       "ms_metric_migration_baseline": {
@@ -743,7 +801,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Credit Migration Index Baseline",
-        "measureValue": "1.0",
+        "measureValue": 1.0,
         "unitOfMeasure": "index"
       },
       "ms_metric_migration_current": {
@@ -751,7 +809,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Credit Migration Index Current",
-        "measureValue": "1.18",
+        "measureValue": 1.18,
         "unitOfMeasure": "index",
         "measureAsOf": "2026-02-19T05:57:04Z"
       },
@@ -760,7 +818,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Credit Migration Index Target",
-        "measureValue": "0.95",
+        "measureValue": 0.95,
         "unitOfMeasure": "index"
       },
       "ms_metric_threshold_breach_baseline": {
@@ -768,7 +826,7 @@
         "elementType": "Measure",
         "measureDataType": "integer",
         "name": "Threshold Breach Frequency Baseline",
-        "measureValue": "12",
+        "measureValue": 12,
         "unitOfMeasure": "count/month"
       },
       "ms_metric_threshold_breach_current": {
@@ -776,7 +834,7 @@
         "elementType": "Measure",
         "measureDataType": "integer",
         "name": "Threshold Breach Frequency Current",
-        "measureValue": "18",
+        "measureValue": 18,
         "unitOfMeasure": "count/month",
         "measureAsOf": "2026-02-19T05:57:04Z"
       },
@@ -785,7 +843,7 @@
         "elementType": "Measure",
         "measureDataType": "integer",
         "name": "Threshold Breach Frequency Target",
-        "measureValue": "8",
+        "measureValue": 8,
         "unitOfMeasure": "count/month"
       },
       "ms_metric_reporting_timeliness_baseline": {
@@ -793,7 +851,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Risk Reporting Timeliness Baseline",
-        "measureValue": "0.86",
+        "measureValue": 0.86,
         "unitOfMeasure": "ratio"
       },
       "ms_metric_reporting_timeliness_current": {
@@ -801,7 +859,7 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Risk Reporting Timeliness Current",
-        "measureValue": "0.79",
+        "measureValue": 0.79,
         "unitOfMeasure": "ratio",
         "measureAsOf": "2026-02-19T05:57:04Z"
       },
@@ -810,8 +868,60 @@
         "elementType": "Measure",
         "measureDataType": "number",
         "name": "Risk Reporting Timeliness Target",
-        "measureValue": "0.95",
+        "measureValue": 0.95,
         "unitOfMeasure": "ratio"
+      },
+      "ms_approval_cycle_baseline": {
+        "id": "ms_approval_cycle_baseline",
+        "elementType": "Measure",
+        "name": "Baseline Approval Cycle Time",
+        "measureDataType": "decimal",
+        "measureValue": 14,
+        "unitOfMeasure": "business days",
+        "measureAsOf": "2025-01-15T00:00:00Z"
+      },
+      "ms_approval_cycle_current": {
+        "id": "ms_approval_cycle_current",
+        "elementType": "Measure",
+        "name": "Current Approval Cycle Time",
+        "measureDataType": "decimal",
+        "measureValue": 11,
+        "unitOfMeasure": "business days",
+        "measureAsOf": "2025-11-30T00:00:00Z"
+      },
+      "ms_approval_cycle_target": {
+        "id": "ms_approval_cycle_target",
+        "elementType": "Measure",
+        "name": "Target Approval Cycle Time",
+        "measureDataType": "decimal",
+        "measureValue": 5,
+        "unitOfMeasure": "business days"
+      },
+      "ms_approval_esc_baseline": {
+        "id": "ms_approval_esc_baseline",
+        "elementType": "Measure",
+        "name": "Baseline Escalation Rate",
+        "measureDataType": "decimal",
+        "measureValue": 22,
+        "unitOfMeasure": "%",
+        "measureAsOf": "2025-01-15T00:00:00Z"
+      },
+      "ms_approval_esc_current": {
+        "id": "ms_approval_esc_current",
+        "elementType": "Measure",
+        "name": "Current Escalation Rate",
+        "measureDataType": "decimal",
+        "measureValue": 25,
+        "unitOfMeasure": "%",
+        "measureAsOf": "2025-11-30T00:00:00Z"
+      },
+      "ms_approval_esc_target": {
+        "id": "ms_approval_esc_target",
+        "elementType": "Measure",
+        "name": "Target Escalation Rate",
+        "measureDataType": "decimal",
+        "measureValue": 15,
+        "unitOfMeasure": "%"
       }
     },
     "conditions": {
