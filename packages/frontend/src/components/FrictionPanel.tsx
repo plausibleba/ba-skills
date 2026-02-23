@@ -1,9 +1,11 @@
+import { useState } from "react";
 import type {
   FrictionObservation,
   HeatmapData,
   ScaffoldData,
 } from "../types.ts";
 import { classifyCategory, categoryLabel } from "./FrictionOverlay.tsx";
+import { ThroughputPanel } from "./ThroughputPanel.tsx";
 
 function IntensityBar({ score }: { score: number }) {
   const pct = (score / 10) * 100;
@@ -137,6 +139,7 @@ export function FrictionPanel({
 }) {
   const activity = scaffold.elements.activities[activityId];
   const activityName = activity?.name ?? activityId;
+  const [justificationExpanded, setJustificationExpanded] = useState(false);
 
   const bindingObsId = heatmap.bindingConstraint.bindingAnchorObservationId;
 
@@ -193,20 +196,39 @@ export function FrictionPanel({
       {/* Binding constraint callout */}
       {heatmap.bindingConstraint.bindingAnchor.anchorType === "Activity" &&
         heatmap.bindingConstraint.bindingAnchor.anchorId === activityId && (
-          <div className="border-b border-red-200 bg-red-50 px-4 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-red-600">
-              Binding Constraint
-            </p>
-            <p className="mt-1 text-xs leading-relaxed text-red-800">
-              {heatmap.bindingConstraint.justification}
-            </p>
-            {heatmap.bindingConstraint.confidence != null && (
-              <p className="mt-1 text-[10px] text-red-600">
-                Confidence:{" "}
-                {(heatmap.bindingConstraint.confidence * 100).toFixed(0)}%
+          <>
+            <div className="border-b border-red-200 bg-red-50 px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-red-600">
+                Binding Constraint
               </p>
-            )}
-          </div>
+              <p className={`mt-1 text-xs leading-relaxed text-red-800 ${
+                !justificationExpanded ? "line-clamp-3" : ""
+              }`}>
+                {heatmap.bindingConstraint.justification}
+              </p>
+              {heatmap.bindingConstraint.justification.length > 150 && (
+                <button
+                  onClick={() => setJustificationExpanded(!justificationExpanded)}
+                  className="mt-1 text-[10px] font-medium text-red-500 hover:text-red-700"
+                >
+                  {justificationExpanded ? "Show less" : "Show more"}
+                </button>
+              )}
+              {heatmap.bindingConstraint.confidence != null && (
+                <p className="mt-1 text-[10px] text-red-600">
+                  Confidence:{" "}
+                  {(heatmap.bindingConstraint.confidence * 100).toFixed(0)}%
+                </p>
+              )}
+            </div>
+
+            {/* Throughput Impact — downstream of constraint, progressive disclosure */}
+            <ThroughputPanel
+              activityId={activityId}
+              heatmap={heatmap}
+              scaffold={scaffold}
+            />
+          </>
         )}
 
       {/* Observations list */}

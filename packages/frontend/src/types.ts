@@ -121,12 +121,31 @@ export interface ScaffoldActivity {
   controlIds?: string[];
   constraintIds?: string[];
   nextActivityId?: string | null;
+  /** Identifies which metric drives throughput projection for this activity */
+  throughputMetricId?: string;
 }
 
 export interface ScaffoldElement {
   id: string;
   elementType: string;
   name?: string;
+}
+
+/** Extended metric element with measure data for throughput calculations */
+export interface ScaffoldMetric extends ScaffoldElement {
+  unit?: string;
+  direction?: "Decrease" | "Increase" | "Attain" | "Maintain";
+  currentMeasure?: number;
+  targetMeasure?: number;
+  baselineMeasure?: number;
+}
+
+/** Engagement parameters for throughput impact calculation (UI-only state) */
+export interface EngagementParams {
+  entityVolume: number;
+  assessmentFrequency: number;
+  fteCapacityDays: number;
+  fteCost?: number | null;
 }
 
 export interface ScaffoldData {
@@ -142,7 +161,7 @@ export interface ScaffoldData {
     capabilities: Record<string, ScaffoldElement>;
     controls: Record<string, ScaffoldElement>;
     constraints: Record<string, ScaffoldElement>;
-    metrics: Record<string, ScaffoldElement>;
+    metrics: Record<string, ScaffoldMetric>;
     [key: string]: Record<string, unknown>;
   };
 }

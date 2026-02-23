@@ -5,9 +5,12 @@ import type {
   CanvasViewModel,
   ValidationReport,
 } from "../types.ts";
+import { resolveScaffoldMeasures } from "./scaffold-resolver.ts";
+import { validateThroughputRules } from "./throughput-validator.ts";
 
 interface CanvasState {
   scaffoldData: ScaffoldData | null;
+  rawScaffoldData: ScaffoldData | null;
   heatmapData: HeatmapData | null;
   canvasViewModel: CanvasViewModel | null;
   validationReport: ValidationReport | null;
@@ -23,6 +26,7 @@ interface CanvasState {
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
   scaffoldData: null,
+  rawScaffoldData: null,
   heatmapData: null,
   canvasViewModel: null,
   validationReport: null,
@@ -30,10 +34,11 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   error: null,
 
   loadScaffold: async (json: ScaffoldData) => {
-    set({ scaffoldData: json, error: null, loading: true });
+    // Set raw scaffold for validation — resolve AFTER validation passes
+    set({ scaffoldData: json, rawScaffoldData: json, error: null, loading: true });
 
     try {
-      // Validate first
+      // Validate raw scaffold against canonical schema first
       await get().validate();
       const report = get().validationReport;
 
@@ -41,6 +46,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         set({ loading: false });
         return;
       }
+
+      // Resolve measure IDs into inline values for frontend consumption
+      const resolved = resolveScaffoldMeasures(json);
+      set({ scaffoldData: resolved });
 
       // Generate canvas
       await get().generateCanvas();
@@ -90,7 +99,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       const res = await fetch("/v1/canvas/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scaffold: scaffoldData, valueStreamId }),
+        body: JSON.stringify({ scaffold: get().rawScaffoldData ?? scaffoldData, valueStreamId }),
       });
 
       if (!res.ok) {
@@ -124,7 +133,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          scaffold: scaffoldData,
+          scaffold: get().rawScaffoldData ?? scaffoldData,
           ...(heatmapData ? { heatmap: heatmapData } : {}),
         }),
       });
@@ -136,6 +145,27 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       }
 
       const report = (await res.json()) as ValidationReport;
+
+      // Run client-side throughput semantic validation
+      const { scaffoldData: currentScaffold } = get();
+      if (currentScaffold) {
+        const throughputFindings = validateThroughputRules(
+          currentScaffold.elements as Record<string, Record<string, unknown>>,
+        );
+        if (throughputFindings.length > 0) {
+          report.findings = [...report.findings, ...throughputFindings];
+          const newErrors = throughputFindings.filter((f) => f.severity === "Error").length;
+          const newWarnings = throughputFindings.filter((f) => f.severity === "Warning").length;
+          report.summary.errorCount += newErrors;
+          report.summary.warningCount += newWarnings;
+          if (newErrors > 0 && report.status === "Valid") {
+            report.status = "Invalid";
+          } else if (newWarnings > 0 && report.status === "Valid") {
+            report.status = "ValidWithWarnings";
+          }
+        }
+      }
+
       set({ validationReport: report });
 
       if (report.status === "Invalid") {
@@ -154,6 +184,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   reset: () => {
     set({
       scaffoldData: null,
+      rawScaffoldData: null,
       heatmapData: null,
       canvasViewModel: null,
       validationReport: null,

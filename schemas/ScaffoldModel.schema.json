@@ -4,7 +4,13 @@
   "title": "ScaffoldModel",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "scaffoldId", "name", "createdAt", "elements"],
+  "required": [
+    "schemaVersion",
+    "scaffoldId",
+    "name",
+    "createdAt",
+    "elements"
+  ],
   "properties": {
     "schemaVersion": {
       "type": "string",
@@ -16,28 +22,40 @@
       "minLength": 1,
       "description": "Stable identifier for this scaffold (UUID recommended)."
     },
-    "name": { "type": "string", "minLength": 1 },
-    "description": { "type": "string" },
-
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
     "modelIntegrityHash": {
       "type": "string",
       "pattern": "^[a-f0-9]{64}$",
       "description": "SHA-256 hash of canonicalized ScaffoldModel (excluding this field) used to ensure heatmaps and exports refer to an unchanged baseline. Computed after all edits finalize and before validation."
     },
-
-    "createdAt": { "type": "string", "format": "date-time" },
-    "createdBy": { "type": "string" },
-
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "createdBy": {
+      "type": "string"
+    },
     "sourceContext": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "orgName": { "type": "string" },
-        "engagementName": { "type": "string" },
-        "notes": { "type": "string" }
+        "orgName": {
+          "type": "string"
+        },
+        "engagementName": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
       }
     },
-
     "elements": {
       "type": "object",
       "additionalProperties": false,
@@ -59,160 +77,231 @@
         "conditions"
       ],
       "properties": {
-        "valueStreams": { "$ref": "#/$defs/ValueStreamMap" },
-        "activities": { "$ref": "#/$defs/ActivityMap" },
-        "outcomes": { "$ref": "#/$defs/OutcomeMap" },
-        "roles": { "$ref": "#/$defs/RoleMap" },
-        "capabilities": { "$ref": "#/$defs/CapabilityMap" },
-        "controls": { "$ref": "#/$defs/ControlMap" },
-        "constraints": { "$ref": "#/$defs/ConstraintMap" },
-        "directives": { "$ref": "#/$defs/DirectiveMap" },
-
-        "deonticLogic": { "$ref": "#/$defs/DeonticLogicMap" },
-        "flowLogic": { "$ref": "#/$defs/FlowLogicMap" },
-
-        "concepts": { "$ref": "#/$defs/ConceptMap" },
-        "properties": { "$ref": "#/$defs/PropertyMap" },
-
-        "metrics": { "$ref": "#/$defs/MetricMap" },
-        "measures": { "$ref": "#/$defs/MeasureMap" },
-
-        "conditions": { "$ref": "#/$defs/ConditionMap" }
+        "valueStreams": {
+          "$ref": "#/$defs/ValueStreamMap"
+        },
+        "activities": {
+          "$ref": "#/$defs/ActivityMap"
+        },
+        "outcomes": {
+          "$ref": "#/$defs/OutcomeMap"
+        },
+        "roles": {
+          "$ref": "#/$defs/RoleMap"
+        },
+        "capabilities": {
+          "$ref": "#/$defs/CapabilityMap"
+        },
+        "controls": {
+          "$ref": "#/$defs/ControlMap"
+        },
+        "constraints": {
+          "$ref": "#/$defs/ConstraintMap"
+        },
+        "directives": {
+          "$ref": "#/$defs/DirectiveMap"
+        },
+        "deonticLogic": {
+          "$ref": "#/$defs/DeonticLogicMap"
+        },
+        "flowLogic": {
+          "$ref": "#/$defs/FlowLogicMap"
+        },
+        "concepts": {
+          "$ref": "#/$defs/ConceptMap"
+        },
+        "properties": {
+          "$ref": "#/$defs/PropertyMap"
+        },
+        "metrics": {
+          "$ref": "#/$defs/MetricMap"
+        },
+        "measures": {
+          "$ref": "#/$defs/MeasureMap"
+        },
+        "conditions": {
+          "$ref": "#/$defs/ConditionMap"
+        }
       }
     },
-
     "validationHints": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "enforceNoOps": { 
-          "type": "boolean", 
+        "enforceNoOps": {
+          "type": "boolean",
           "default": true,
           "description": "If true, reject Activities where preOutcomeId == postOutcomeId."
         },
-        "requireValueStreamActivities": { 
-          "type": "boolean", 
+        "requireValueStreamActivities": {
+          "type": "boolean",
           "default": true,
           "description": "If true, every ValueStream must have at least one Activity."
         },
-        "requireActivityPrePostOutcomes": { 
-          "type": "boolean", 
+        "requireActivityPrePostOutcomes": {
+          "type": "boolean",
           "default": true,
           "description": "If true, every Activity must declare both preOutcomeId and postOutcomeId."
         }
       }
     }
   },
-
   "$defs": {
-    "Id": { "type": "string", "minLength": 1 },
-
+    "Id": {
+      "type": "string",
+      "minLength": 1
+    },
     "Uri": {
       "type": "string",
       "minLength": 1,
       "description": "Optional IRI/URI for round-tripping to RDF if desired."
     },
-
     "TagSet": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "uniqueItems": true
     },
-
     "RefList": {
       "type": "array",
-      "items": { "$ref": "#/$defs/Id" },
+      "items": {
+        "$ref": "#/$defs/Id"
+      },
       "uniqueItems": true
     },
-
     "ValueStreamMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/ValueStream" }
+      "additionalProperties": {
+        "$ref": "#/$defs/ValueStream"
+      }
     },
     "ActivityMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/Activity" }
+      "additionalProperties": {
+        "$ref": "#/$defs/Activity"
+      }
     },
     "OutcomeMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/Outcome" }
+      "additionalProperties": {
+        "$ref": "#/$defs/Outcome"
+      }
     },
     "RoleMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/Role" }
+      "additionalProperties": {
+        "$ref": "#/$defs/Role"
+      }
     },
     "CapabilityMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/Capability" }
+      "additionalProperties": {
+        "$ref": "#/$defs/Capability"
+      }
     },
     "ControlMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/Control" }
+      "additionalProperties": {
+        "$ref": "#/$defs/Control"
+      }
     },
     "ConstraintMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/Constraint" }
+      "additionalProperties": {
+        "$ref": "#/$defs/Constraint"
+      }
     },
     "DirectiveMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/Directive" }
+      "additionalProperties": {
+        "$ref": "#/$defs/Directive"
+      }
     },
     "DeonticLogicMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/DeonticLogic" }
+      "additionalProperties": {
+        "$ref": "#/$defs/DeonticLogic"
+      }
     },
     "FlowLogicMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/FlowLogic" }
+      "additionalProperties": {
+        "$ref": "#/$defs/FlowLogic"
+      }
     },
     "ConceptMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/Concept" }
+      "additionalProperties": {
+        "$ref": "#/$defs/Concept"
+      }
     },
     "PropertyMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/Property" }
+      "additionalProperties": {
+        "$ref": "#/$defs/Property"
+      }
     },
     "MetricMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/Metric" }
+      "additionalProperties": {
+        "$ref": "#/$defs/Metric"
+      }
     },
     "MeasureMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/Measure" }
+      "additionalProperties": {
+        "$ref": "#/$defs/Measure"
+      }
     },
     "ConditionMap": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/Condition" }
+      "additionalProperties": {
+        "$ref": "#/$defs/Condition"
+      }
     },
-
     "ValueStream": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "elementType", "name", "activityIds"],
+      "required": [
+        "id",
+        "elementType",
+        "name",
+        "activityIds"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
-        "elementType": { "const": "ValueStream" },
-        "name": { "type": "string", "minLength": 1 },
-        "description": { "type": "string" },
-
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
+        "elementType": {
+          "const": "ValueStream"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
         "activityIds": {
           "$ref": "#/$defs/RefList",
           "description": "Activities that comprise this value stream (order may be implied by nextActivity)."
         },
-
         "capabilityIds": {
           "$ref": "#/$defs/RefList",
           "description": "Capabilities enabling this value stream (coarse-grained)."
         },
-
-        "metricIds": { "$ref": "#/$defs/RefList" },
-
-        "tags": { "$ref": "#/$defs/TagSet" }
+        "metricIds": {
+          "$ref": "#/$defs/RefList"
+        },
+        "tags": {
+          "$ref": "#/$defs/TagSet"
+        }
       }
     },
-
     "Activity": {
       "type": "object",
       "additionalProperties": false,
@@ -225,337 +314,664 @@
         "postOutcomeId"
       ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
-        "elementType": { "const": "Activity" },
-        "name": { "type": "string", "minLength": 1 },
-        "description": { "type": "string" },
-
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
+        "elementType": {
+          "const": "Activity"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
         "performedByRoleIds": {
           "$ref": "#/$defs/RefList",
           "description": "Primary performer(s) of the activity (FSM semantics)."
         },
-
         "involvesRoleIds": {
           "$ref": "#/$defs/RefList",
           "description": "Additional roles involved but not necessarily performers (optional)."
         },
-
-        "preOutcomeId": { "$ref": "#/$defs/Id" },
-        "postOutcomeId": { "$ref": "#/$defs/Id" },
-
-        "entryConditionIds": { "$ref": "#/$defs/RefList" },
-        "exitConditionIds": { "$ref": "#/$defs/RefList" },
-
-        "flowLogicIds": { "$ref": "#/$defs/RefList" },
-
-        "requiresCapabilityIds": { "$ref": "#/$defs/RefList" },
-
-        "controlIds": { "$ref": "#/$defs/RefList" },
-        "constraintIds": { "$ref": "#/$defs/RefList" },
-
-        "metricIds": { "$ref": "#/$defs/RefList" },
-
+        "preOutcomeId": {
+          "$ref": "#/$defs/Id"
+        },
+        "postOutcomeId": {
+          "$ref": "#/$defs/Id"
+        },
+        "entryConditionIds": {
+          "$ref": "#/$defs/RefList"
+        },
+        "exitConditionIds": {
+          "$ref": "#/$defs/RefList"
+        },
+        "flowLogicIds": {
+          "$ref": "#/$defs/RefList"
+        },
+        "requiresCapabilityIds": {
+          "$ref": "#/$defs/RefList"
+        },
+        "controlIds": {
+          "$ref": "#/$defs/RefList"
+        },
+        "constraintIds": {
+          "$ref": "#/$defs/RefList"
+        },
+        "metricIds": {
+          "$ref": "#/$defs/RefList"
+        },
+        "throughputMetricId": {
+          "$ref": "#/$defs/Id",
+          "description": "Designated throughput-driving metric for this activity (used for first-order Throughput Impact projections). Must be included in metricIds if present."
+        },
+        "secondaryMetricIds": {
+          "$ref": "#/$defs/RefList",
+          "description": "Optional supporting metrics for trends or conditional projections (e.g., escalation rate). Each must be included in metricIds if present."
+        },
         "nextActivityId": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Optional sequencing pointer for linear traversal; null = terminal activity, absent = not yet linked."
         },
-
-        "tags": { "$ref": "#/$defs/TagSet" }
+        "tags": {
+          "$ref": "#/$defs/TagSet"
+        }
       }
     },
-
     "Outcome": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "elementType", "name"],
+      "required": [
+        "id",
+        "elementType",
+        "name"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
-        "elementType": { "const": "Outcome" },
-        "name": { "type": "string", "minLength": 1 },
-        "description": { "type": "string" },
-        "tags": { "$ref": "#/$defs/TagSet" }
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
+        "elementType": {
+          "const": "Outcome"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "$ref": "#/$defs/TagSet"
+        }
       }
     },
-
     "Role": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "elementType", "name"],
+      "required": [
+        "id",
+        "elementType",
+        "name"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
-        "elementType": { "const": "Role" },
-        "name": { "type": "string", "minLength": 1 },
-        "description": { "type": "string" },
-        "deonticLogicIds": { "$ref": "#/$defs/RefList" },
-        "tags": { "$ref": "#/$defs/TagSet" }
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
+        "elementType": {
+          "const": "Role"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "deonticLogicIds": {
+          "$ref": "#/$defs/RefList"
+        },
+        "tags": {
+          "$ref": "#/$defs/TagSet"
+        }
       }
     },
-
     "Capability": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "elementType", "name"],
+      "required": [
+        "id",
+        "elementType",
+        "name"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
-        "elementType": { "const": "Capability" },
-        "name": { "type": "string", "minLength": 1 },
-        "description": { "type": "string" },
-        "tags": { "$ref": "#/$defs/TagSet" }
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
+        "elementType": {
+          "const": "Capability"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "$ref": "#/$defs/TagSet"
+        }
       }
     },
-
     "Control": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "elementType", "name"],
+      "required": [
+        "id",
+        "elementType",
+        "name"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
-        "elementType": { "const": "Control" },
-        "name": { "type": "string", "minLength": 1 },
-        "description": { "type": "string" },
-        "directiveIds": { "$ref": "#/$defs/RefList" },
-        "tags": { "$ref": "#/$defs/TagSet" }
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
+        "elementType": {
+          "const": "Control"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "directiveIds": {
+          "$ref": "#/$defs/RefList"
+        },
+        "tags": {
+          "$ref": "#/$defs/TagSet"
+        }
       }
     },
-
     "Constraint": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "elementType", "name"],
+      "required": [
+        "id",
+        "elementType",
+        "name"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
-        "elementType": { "const": "Constraint" },
-        "name": { "type": "string", "minLength": 1 },
-        "description": { "type": "string" },
-        "tags": { "$ref": "#/$defs/TagSet" }
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
+        "elementType": {
+          "const": "Constraint"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "$ref": "#/$defs/TagSet"
+        }
       }
     },
-
     "Directive": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "elementType", "name"],
+      "required": [
+        "id",
+        "elementType",
+        "name"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
-        "elementType": { "const": "Directive" },
-        "name": { "type": "string", "minLength": 1 },
-        "description": { "type": "string" },
-        "tags": { "$ref": "#/$defs/TagSet" }
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
+        "elementType": {
+          "const": "Directive"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "$ref": "#/$defs/TagSet"
+        }
       }
     },
-
     "DeonticLogic": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "elementType", "name"],
+      "required": [
+        "id",
+        "elementType",
+        "name"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
-        "elementType": { "const": "DeonticLogic" },
-        "name": { "type": "string", "minLength": 1 },
-        "expression": { "type": "string", "description": "Optional normative rules text (v1: declarative)." },
-        "tags": { "$ref": "#/$defs/TagSet" }
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
+        "elementType": {
+          "const": "DeonticLogic"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expression": {
+          "type": "string",
+          "description": "Optional normative rules text (v1: declarative)."
+        },
+        "tags": {
+          "$ref": "#/$defs/TagSet"
+        }
       }
     },
-
     "FlowLogic": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "elementType", "name"],
+      "required": [
+        "id",
+        "elementType",
+        "name"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
-        "elementType": { "const": "FlowLogic" },
-        "name": { "type": "string", "minLength": 1 },
-        "expression": { "type": "string", "description": "Optional sequencing/escalation rules text (v1: declarative)." },
-        "tags": { "$ref": "#/$defs/TagSet" }
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
+        "elementType": {
+          "const": "FlowLogic"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expression": {
+          "type": "string",
+          "description": "Optional sequencing/escalation rules text (v1: declarative)."
+        },
+        "tags": {
+          "$ref": "#/$defs/TagSet"
+        }
       }
     },
-
     "Concept": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "elementType", "name"],
+      "required": [
+        "id",
+        "elementType",
+        "name"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
-        "elementType": { "const": "Concept" },
-        "name": { "type": "string", "minLength": 1 },
-        "description": { "type": "string" },
-        "propertyIds": { "$ref": "#/$defs/RefList" },
-        "tags": { "$ref": "#/$defs/TagSet" }
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
+        "elementType": {
+          "const": "Concept"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "propertyIds": {
+          "$ref": "#/$defs/RefList"
+        },
+        "tags": {
+          "$ref": "#/$defs/TagSet"
+        }
       }
     },
-
     "Property": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "elementType", "name"],
+      "required": [
+        "id",
+        "elementType",
+        "name"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
-        "elementType": { "const": "Property" },
-        "name": { "type": "string", "minLength": 1 },
-        "description": { "type": "string" },
-        "dataType": { "type": "string", "description": "e.g., Integer/String/Boolean/ValueSet" },
-        "tags": { "$ref": "#/$defs/TagSet" }
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
+        "elementType": {
+          "const": "Property"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "dataType": {
+          "type": "string",
+          "description": "e.g., Integer/String/Boolean/ValueSet"
+        },
+        "tags": {
+          "$ref": "#/$defs/TagSet"
+        }
       }
     },
-
     "Metric": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "elementType", "name", "measures"],
+      "required": [
+        "id",
+        "elementType",
+        "name",
+        "measures"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
         "elementType": {
           "type": "string",
-          "enum": ["Metric", "CompositeMetric"]
+          "enum": [
+            "Metric",
+            "CompositeMetric"
+          ]
         },
-        "name": { "type": "string", "minLength": 1 },
-        "description": { "type": "string" },
-
-        "metricPeriod": { "type": "string" },
-        "metricDirection": { "type": "string", "enum": ["Increase", "Decrease", "Attain"] },
-        "metricType": { "type": "string", "enum": ["Lagging", "Leading", "Qualitative"] },
-
-        "baselineDate": { "type": "string", "format": "date" },
-        "targetDate": { "type": "string", "format": "date" },
-
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "metricPeriod": {
+          "type": "string"
+        },
+        "metricDirection": {
+          "type": "string",
+          "enum": [
+            "Increase",
+            "Decrease",
+            "Attain"
+          ]
+        },
+        "metricType": {
+          "type": "string",
+          "enum": [
+            "Lagging",
+            "Leading",
+            "Qualitative"
+          ]
+        },
+        "baselineDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "targetDate": {
+          "type": "string",
+          "format": "date"
+        },
         "measures": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["targets"],
+          "required": [
+            "targets"
+          ],
           "properties": {
             "targets": {
               "type": "array",
               "minItems": 0,
-              "items": { "$ref": "#/$defs/MetricTarget" },
+              "items": {
+                "$ref": "#/$defs/MetricTarget"
+              },
               "description": "Model elements this metric measures. Empty array allowed for stream-level metrics."
             },
-            "baselineMeasureId": { "type": "string" },
-            "targetMeasureId": { "type": "string" },
-            "currentMeasureId": { "type": "string" }
+            "baselineMeasureId": {
+              "type": "string"
+            },
+            "targetMeasureId": {
+              "type": "string"
+            },
+            "currentMeasureId": {
+              "type": "string"
+            }
           }
         },
-
         "composedOfMetricIds": {
           "type": "array",
-          "items": { "$ref": "#/$defs/Id" },
+          "items": {
+            "$ref": "#/$defs/Id"
+          },
           "uniqueItems": true,
           "description": "Only for CompositeMetric."
         },
-
-        "tags": { "$ref": "#/$defs/TagSet" }
+        "tags": {
+          "$ref": "#/$defs/TagSet"
+        }
       },
       "allOf": [
         {
-          "if": { "properties": { "elementType": { "const": "CompositeMetric" } } },
-          "then": {
-            "required": ["composedOfMetricIds"],
+          "if": {
             "properties": {
-              "composedOfMetricIds": { "minItems": 2 }
+              "elementType": {
+                "const": "CompositeMetric"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "composedOfMetricIds"
+            ],
+            "properties": {
+              "composedOfMetricIds": {
+                "minItems": 2
+              }
             }
           }
         }
       ]
     },
-
     "MetricTarget": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["targetType", "targetId"],
+      "required": [
+        "targetType",
+        "targetId"
+      ],
       "properties": {
         "targetType": {
           "type": "string",
-          "enum": ["Activity", "Outcome", "Role", "ValueStream", "Capability", "Control", "Constraint", "Property", "Concept"]
+          "enum": [
+            "Activity",
+            "Outcome",
+            "Role",
+            "ValueStream",
+            "Capability",
+            "Control",
+            "Constraint",
+            "Property",
+            "Concept"
+          ]
         },
-        "targetId": { "$ref": "#/$defs/Id" }
+        "targetId": {
+          "$ref": "#/$defs/Id"
+        }
       }
     },
-
     "Measure": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "elementType", "measureDataType"],
+      "required": [
+        "id",
+        "elementType",
+        "measureDataType"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
-        "elementType": { "const": "Measure" },
-        
-        "name": { 
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
+        "elementType": {
+          "const": "Measure"
+        },
+        "name": {
           "type": "string",
           "description": "Optional label like 'Baseline Approval Time' or 'Q1 Target' for UI display."
         },
-
-        "measureFormula": { "type": "string" },
-        "unitOfMeasure": { "type": "string" },
-        "measureOperation": { "type": "string" },
-
+        "measureFormula": {
+          "type": "string"
+        },
+        "unitOfMeasure": {
+          "type": "string"
+        },
+        "measureOperation": {
+          "type": "string"
+        },
         "measureValue": {
-          "oneOf": [
-            { "type": "number" },
-            { "type": "integer" },
-            { "type": "string" },
-            { "type": "boolean" }
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
           ]
         },
-
-        "measureDataType": { "type": "string", "minLength": 1 },
-        "measureAsOf": { 
-          "type": "string", 
+        "measureDataType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "measureAsOf": {
+          "type": "string",
           "format": "date-time",
           "description": "Timestamp when this measurement was taken (critical for currentMeasure recency)."
         },
-
-        "measureOfPropertyId": { "type": "string", "description": "Optional: points to a Property element ID." }
+        "measureOfPropertyId": {
+          "type": "string",
+          "description": "Optional: points to a Property element ID."
+        }
       }
     },
-
     "Condition": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "elementType", "conditionExpression"],
+      "required": [
+        "id",
+        "elementType",
+        "conditionExpression"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Id" },
-        "iri": { "$ref": "#/$defs/Uri" },
-        "elementType": { "const": "Condition" },
-
-        "conditionExpression": { "type": "string", "minLength": 1 },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "iri": {
+          "$ref": "#/$defs/Uri"
+        },
+        "elementType": {
+          "const": "Condition"
+        },
+        "conditionExpression": {
+          "type": "string",
+          "minLength": 1
+        },
         "references": {
           "type": "array",
-          "items": { "$ref": "#/$defs/AnchorRef" },
+          "items": {
+            "$ref": "#/$defs/AnchorRef"
+          },
           "uniqueItems": true,
           "description": "Optional: element references used for explainability; does not require a formal expression language."
         }
       }
     },
-
     "AnchorRef": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["anchorType", "anchorId"],
+      "required": [
+        "anchorType",
+        "anchorId"
+      ],
       "properties": {
         "anchorType": {
           "type": "string",
           "enum": [
-            "Goal", "Strategy", "Directive", "Objective", "Initiative", "Control",
-            "Capability", "ValueStream", "Constraint",
-            "Role", "Interaction", "DeonticLogic",
-            "Outcome", "Activity", "FlowLogic",
-            "Concept", "Instance", "Property",
-            "Metric", "Measure", "Condition"
+            "Goal",
+            "Strategy",
+            "Directive",
+            "Objective",
+            "Initiative",
+            "Control",
+            "Capability",
+            "ValueStream",
+            "Constraint",
+            "Role",
+            "Interaction",
+            "DeonticLogic",
+            "Outcome",
+            "Activity",
+            "FlowLogic",
+            "Concept",
+            "Instance",
+            "Property",
+            "Metric",
+            "Measure",
+            "Condition"
           ]
         },
-        "anchorId": { "$ref": "#/$defs/Id" }
+        "anchorId": {
+          "$ref": "#/$defs/Id"
+        }
       }
     }
   }
