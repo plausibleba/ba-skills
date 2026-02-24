@@ -67,6 +67,15 @@ Multi-agent coordination protocol for VCC development.
 3. `CURRENT-STATE.md` updated if priorities or status changed
 4. `DECISIONS.md` updated if non-trivial design choices were made
 5. Terry commits everything to repo
+6. **Claude reminds Terry to commit and push to Git:**
+   ```
+   cd ~/projects/vcc
+   git add .
+   git status        # sanity check
+   git commit -m "session N: <summary>"
+   git push
+   ```
+   This step is mandatory. Do not end a session without confirming Git is up to date.
 
 ---
 
