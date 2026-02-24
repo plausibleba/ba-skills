@@ -1,0 +1,162 @@
+{
+  "schemaVersion": "1.0.0",
+  "heatmapId": "heatmap_banking_supervision_raar",
+  "scaffoldId": "scaffold_banking_supervision_raar",
+  "valueStreamId": "vs_risk_assessment_and_response",
+  "createdAt": "2026-02-21T12:00:00Z",
+  "observations": [
+    {
+      "observationId": "fr_001_approval_chain_bottleneck",
+      "category": "DecisionAuthorityFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_review_and_approve"
+      },
+      "contributingAnchors": [
+        { "anchorType": "Control", "anchorId": "ctrl_delegation_authority_compliance" },
+        { "anchorType": "Control", "anchorId": "ctrl_stance_boundary_governance" },
+        { "anchorType": "Metric", "anchorId": "metric_approval_cycle_time" }
+      ],
+      "intensity": { "scale": "0-10", "score": 8.0 },
+      "rationale": "The Review & Approve activity carries the highest control density in the chain (3 controls including 2 governance controls) and requires routing through a multi-level delegation authority framework. Stance boundary crossings for systemically important entities require executive-level approval, creating a serial dependency on a small number of senior decision-makers. The approval cycle time metric (baseline 15 days, current 12 days, target 7 days) confirms this is a measured and acknowledged bottleneck.",
+      "evidence": [
+        { "evidenceType": "Note", "ref": "ctrl_delegation_authority_compliance", "snippet": "Approval by ineligible authority renders decision invalid and requires re-routing" },
+        { "evidenceType": "Document", "ref": "APRA SRP Overview — Review and Approval section", "snippet": "Delegation authorities governed by legislative constraints with structured escalation" }
+      ],
+      "observedAt": "2026-02-21T12:00:00Z"
+    },
+    {
+      "observationId": "fr_002_analyst_concentration_risk",
+      "category": "IncentiveCapacityFriction",
+      "primaryAnchor": {
+        "anchorType": "Role",
+        "anchorId": "role_supervisory_analyst"
+      },
+      "contributingAnchors": [
+        { "anchorType": "Activity", "anchorId": "act_intake_and_triage_finding" },
+        { "anchorType": "Activity", "anchorId": "act_update_risk_model" },
+        { "anchorType": "Activity", "anchorId": "act_determine_risk_ratings" },
+        { "anchorType": "Activity", "anchorId": "act_formulate_action_plan" },
+        { "anchorType": "Activity", "anchorId": "act_monitor_and_reassess" }
+      ],
+      "intensity": { "scale": "0-10", "score": 7.0 },
+      "rationale": "The Supervisory Analyst role performs 5 of 8 activities in the chain (63%), creating a single-point dependency on individual analyst capacity and availability. The risk model update, rating calculation, action plan formulation, and monitoring activities all depend on the same role. Analyst absence, turnover, or capacity constraints directly impact the entire assessment cycle throughput.",
+      "observedAt": "2026-02-21T12:00:00Z"
+    },
+    {
+      "observationId": "fr_003_peer_calibration_dependency",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_calibrate_response_stance"
+      },
+      "contributingAnchors": [
+        { "anchorType": "Control", "anchorId": "ctrl_peer_calibration" },
+        { "anchorType": "Condition", "anchorId": "cond_peer_calibration_completed" },
+        { "anchorType": "Metric", "anchorId": "metric_rating_peer_deviation" }
+      ],
+      "intensity": { "scale": "0-10", "score": 6.0 },
+      "rationale": "The peer calibration control requires proposed ratings to be compared against peer entities before response stance can be determined. This creates a dependency on peer group data availability and timeliness — an entity's assessment cannot progress to response calibration until the peer comparison is complete, constraining throughput when multiple entities in the same peer group are assessed concurrently.",
+      "observedAt": "2026-02-21T12:00:00Z"
+    },
+    {
+      "observationId": "fr_004_stance_boundary_escalation",
+      "category": "GovernanceRiskFriction",
+      "primaryAnchor": {
+        "anchorType": "Control",
+        "anchorId": "ctrl_stance_boundary_governance"
+      },
+      "contributingAnchors": [
+        { "anchorType": "Activity", "anchorId": "act_calibrate_response_stance" },
+        { "anchorType": "Activity", "anchorId": "act_review_and_approve" },
+        { "anchorType": "Metric", "anchorId": "metric_escalation_rate" },
+        { "anchorType": "Metric", "anchorId": "metric_stance_change_frequency" }
+      ],
+      "intensity": { "scale": "0-10", "score": 7.0 },
+      "rationale": "Stance boundary crossings trigger mandatory escalation to higher delegation authority, and systemically important entities require executive-level sign-off. This control appears in two separate activities (response calibration and review/approval), doubling the governance surface for boundary-crossing entities. The escalation rate metric (baseline 18%, current 20%, target 12%) shows this is worsening — more entities are requiring escalation, further loading the executive approval pathway.",
+      "evidence": [
+        { "evidenceType": "Note", "ref": "metric_escalation_rate", "snippet": "Baseline 18%, current 20% vs target 12% — trending wrong direction" },
+        { "evidenceType": "Document", "ref": "APRA SOARS Guide", "snippet": "Stance changes require progressively higher authority levels" }
+      ],
+      "observedAt": "2026-02-21T12:00:00Z"
+    },
+    {
+      "observationId": "fr_005_risk_model_completeness_gap",
+      "category": "DataSignalFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_update_risk_model"
+      },
+      "contributingAnchors": [
+        { "anchorType": "Metric", "anchorId": "metric_risk_model_update_completeness" },
+        { "anchorType": "Control", "anchorId": "ctrl_risk_category_completeness" }
+      ],
+      "intensity": { "scale": "0-10", "score": 5.0 },
+      "rationale": "The risk model update completeness metric shows a gap between current practice (88%) and target (100%). The risk category completeness control requires all applicable categories to be reviewed, but the current measure indicates 12% of categories are not being explicitly assessed per cycle — likely due to analyst time pressure when processing multiple findings across a large entity portfolio.",
+      "evidence": [
+        { "evidenceType": "Note", "ref": "metric_risk_model_update_completeness", "snippet": "Current 88% vs target 100%" }
+      ],
+      "observedAt": "2026-02-21T12:00:00Z"
+    },
+    {
+      "observationId": "fr_006_sap_obligation_follow_through",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_monitor_and_reassess"
+      },
+      "contributingAnchors": [
+        { "anchorType": "Metric", "anchorId": "metric_sap_obligation_completion_rate" },
+        { "anchorType": "Control", "anchorId": "ctrl_reassessment_trigger_timeliness" }
+      ],
+      "intensity": { "scale": "0-10", "score": 6.0 },
+      "rationale": "The SAP obligation completion rate (baseline 65%, current 72%, target 90%) indicates a persistent gap in entity compliance with supervisory obligations. A 28% non-completion rate means more than one in four obligations are not being met within specified timelines, creating rework when unresolved obligations carry forward into the next assessment cycle.",
+      "evidence": [
+        { "evidenceType": "Note", "ref": "metric_sap_obligation_completion_rate", "snippet": "Baseline 65%, current 72% vs target 90%" }
+      ],
+      "observedAt": "2026-02-21T12:00:00Z"
+    },
+    {
+      "observationId": "fr_007_rating_control_density",
+      "category": "GovernanceRiskFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_determine_risk_ratings"
+      },
+      "contributingAnchors": [
+        { "anchorType": "Control", "anchorId": "ctrl_rating_change_materiality_threshold" },
+        { "anchorType": "Control", "anchorId": "ctrl_peer_calibration" },
+        { "anchorType": "Control", "anchorId": "ctrl_audit_trail_integrity" }
+      ],
+      "intensity": { "scale": "0-10", "score": 5.0 },
+      "rationale": "The Determine Risk Ratings activity carries 3 controls plus an entry condition requiring completeness confirmation. While each control is individually justified, the cumulative effect creates a governance-heavy gate at the rating determination stage, potentially discouraging timely rating adjustments.",
+      "observedAt": "2026-02-21T12:00:00Z"
+    },
+    {
+      "observationId": "fr_008_communication_activation_delay",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_communicate_and_activate"
+      },
+      "contributingAnchors": [
+        { "anchorType": "Control", "anchorId": "ctrl_communication_completeness" },
+        { "anchorType": "Condition", "anchorId": "cond_all_communications_dispatched" }
+      ],
+      "intensity": { "scale": "0-10", "score": 4.0 },
+      "rationale": "The communication completeness control requires confirmation that all internal notifications, downstream triggers, and entity communications have been dispatched before the cycle transitions to monitoring. When multiple downstream value streams need activation, the serial confirmation requirement may delay the transition.",
+      "observedAt": "2026-02-21T12:00:00Z"
+    }
+  ],
+  "bindingConstraint": {
+    "findingId": "bc_001",
+    "bindingAnchor": {
+      "anchorType": "Activity",
+      "anchorId": "act_review_and_approve"
+    },
+    "bindingAnchorObservationId": "fr_001_approval_chain_bottleneck",
+    "justification": "The Review & Approve activity is the throughput-limiting step in the RA&R value stream. It concentrates the highest governance density (3 controls, 2 governance-specific), creates a serial dependency on a small pool of delegated authorities, and has the widest gap between current and target cycle time (12 vs 7 days). Stance boundary crossings compound this by requiring escalation to executive level — and the escalation rate is trending upward (20% vs 12% target). Downstream activities cannot proceed until approval is obtained, making this the structural bottleneck that determines overall cycle throughput.",
+    "confidence": 0.87,
+    "observedAt": "2026-02-21T12:00:00Z"
+  }
+}

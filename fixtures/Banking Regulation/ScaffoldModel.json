@@ -1,0 +1,1091 @@
+{
+  "createdAt": "2026-02-21T02:00:42.289621+00:00",
+  "description": "Value stream scaffold for the Risk Assessment and Response process within Prudential Supervision of Financial Institutions. Grounded in structural patterns from APRA, NY Fed, OSFI, and MAS.",
+  "elements": {
+    "activities": {
+      "act_calibrate_response_stance": {
+        "constraintIds": [],
+        "controlIds": [
+          "ctrl_stance_boundary_governance"
+        ],
+        "description": "Apply the graduated supervisory response framework to map the entity's risk ratings to the appropriate supervisory stance (e.g., normal monitoring, heightened oversight, mandated corrective action, restructure preparation). Determine baseline activity levels prescribed for the stance. Identify any stance changes from the previous cycle. Flag entities crossing stance boundaries for enhanced governance review.",
+        "elementType": "Activity",
+        "entryConditionIds": [
+          "cond_peer_calibration_completed",
+          "cond_material_change_enhanced_review"
+        ],
+        "exitConditionIds": [],
+        "id": "act_calibrate_response_stance",
+        "involvesRoleIds": [
+          "role_supervisory_analyst"
+        ],
+        "metricIds": [
+          "metric_stance_change_frequency"
+        ],
+        "name": "Calibrate Supervisory Response Stance",
+        "nextActivityId": "act_formulate_action_plan",
+        "performedByRoleIds": [
+          "role_senior_supervisor"
+        ],
+        "postOutcomeId": "outcome_response_stance_determined",
+        "preOutcomeId": "outcome_ratings_proposed",
+        "requiresCapabilityIds": [
+          "cap_response_framework_application"
+        ],
+        "tags": [
+          "stage_4"
+        ]
+      },
+      "act_communicate_and_activate": {
+        "constraintIds": [],
+        "controlIds": [
+          "ctrl_communication_completeness"
+        ],
+        "description": "Communicate approved supervisory positions to all stakeholders. Notify internal supervisory teams of any changes to entity stance or activity requirements. Trigger activity scheduling in downstream value streams (examinations, engagements, enforcement). Prepare and send formal communications to the regulated entity where required (supervisory letter, stance change notification). Update supervisory systems and records. Publish to management reporting.",
+        "elementType": "Activity",
+        "entryConditionIds": [],
+        "exitConditionIds": [
+          "cond_all_communications_dispatched"
+        ],
+        "id": "act_communicate_and_activate",
+        "involvesRoleIds": [
+          "role_supervisory_analyst"
+        ],
+        "metricIds": [],
+        "name": "Communicate Position & Activate Plan",
+        "nextActivityId": "act_monitor_and_reassess",
+        "performedByRoleIds": [
+          "role_senior_supervisor"
+        ],
+        "postOutcomeId": "outcome_position_communicated",
+        "preOutcomeId": "outcome_ratings_and_plan_approved",
+        "requiresCapabilityIds": [
+          "cap_supervisory_communication"
+        ],
+        "tags": [
+          "stage_7"
+        ]
+      },
+      "act_determine_risk_ratings": {
+        "constraintIds": [],
+        "controlIds": [
+          "ctrl_rating_change_materiality_threshold",
+          "ctrl_peer_calibration",
+          "ctrl_audit_trail_integrity"
+        ],
+        "description": "Calculate composite risk ratings from the updated risk model. Derive probability of failure from weighted net risk scores. Determine impact of failure based on entity systemic importance, size, and interconnectedness. Compute overall risk of failure composite. Compare proposed ratings to previous cycle ratings to identify material changes. Document rating rationale with evidence references.",
+        "elementType": "Activity",
+        "entryConditionIds": [
+          "cond_all_applicable_categories_reviewed"
+        ],
+        "exitConditionIds": [],
+        "id": "act_determine_risk_ratings",
+        "involvesRoleIds": [
+          "role_senior_supervisor"
+        ],
+        "metricIds": [
+          "metric_rating_peer_deviation"
+        ],
+        "name": "Determine Risk Ratings",
+        "nextActivityId": "act_calibrate_response_stance",
+        "performedByRoleIds": [
+          "role_supervisory_analyst"
+        ],
+        "postOutcomeId": "outcome_ratings_proposed",
+        "preOutcomeId": "outcome_risk_model_updated",
+        "requiresCapabilityIds": [
+          "cap_risk_rating_calculation"
+        ],
+        "tags": [
+          "stage_3"
+        ]
+      },
+      "act_formulate_action_plan": {
+        "constraintIds": [],
+        "controlIds": [
+          "ctrl_obligation_level_consistency"
+        ],
+        "description": "Draft the Supervisory Action Plan. Document key risks and issues with current status. Specify baseline supervisory activities appropriate to the entity's stance. Add reactive activities triggered by specific findings. Define entity-specific actions with graduated obligation levels (advisory, expected, required, directed). Set timelines, milestones, and responsible supervisory teams. Link planned activities to downstream value streams.",
+        "elementType": "Activity",
+        "entryConditionIds": [
+          "cond_stance_boundary_authority"
+        ],
+        "exitConditionIds": [],
+        "id": "act_formulate_action_plan",
+        "involvesRoleIds": [
+          "role_senior_supervisor"
+        ],
+        "metricIds": [],
+        "name": "Formulate Supervisory Action Plan",
+        "nextActivityId": "act_review_and_approve",
+        "performedByRoleIds": [
+          "role_supervisory_analyst"
+        ],
+        "postOutcomeId": "outcome_action_plan_drafted",
+        "preOutcomeId": "outcome_response_stance_determined",
+        "requiresCapabilityIds": [
+          "cap_supervisory_action_planning"
+        ],
+        "tags": [
+          "stage_5"
+        ]
+      },
+      "act_intake_and_triage_finding": {
+        "constraintIds": [],
+        "controlIds": [
+          "ctrl_finding_source_attribution"
+        ],
+        "description": "Receive incoming supervisory finding from source value stream. Log the finding with source attribution. Categorise by risk domain (governance, credit, market, operational, liquidity, etc). Assess urgency and priority. Link to existing entity risks/issues where applicable. Assign to responsible supervisory analyst.",
+        "elementType": "Activity",
+        "entryConditionIds": [],
+        "exitConditionIds": [],
+        "id": "act_intake_and_triage_finding",
+        "involvesRoleIds": [],
+        "metricIds": [
+          "metric_triage_cycle_time"
+        ],
+        "name": "Intake & Triage Finding",
+        "nextActivityId": "act_update_risk_model",
+        "performedByRoleIds": [
+          "role_supervisory_analyst"
+        ],
+        "postOutcomeId": "outcome_finding_triaged",
+        "preOutcomeId": "outcome_finding_received",
+        "requiresCapabilityIds": [
+          "cap_finding_intake_classification"
+        ],
+        "tags": [
+          "stage_1"
+        ]
+      },
+      "act_monitor_and_reassess": {
+        "constraintIds": [],
+        "controlIds": [
+          "ctrl_reassessment_trigger_timeliness"
+        ],
+        "description": "Monitor the entity against the active Supervisory Action Plan. Track progress against SAP milestones and entity obligations. Receive interim findings from ongoing supervisory activities in other value streams. Monitor exception reports and early warning indicators. Assess whether new information is material enough to trigger early reassessment. At the scheduled periodic review date, initiate the next assessment cycle.",
+        "elementType": "Activity",
+        "entryConditionIds": [
+          "cond_all_communications_dispatched"
+        ],
+        "exitConditionIds": [
+          "cond_material_finding_triage_sla"
+        ],
+        "id": "act_monitor_and_reassess",
+        "involvesRoleIds": [
+          "role_senior_supervisor"
+        ],
+        "metricIds": [
+          "metric_sap_obligation_completion_rate"
+        ],
+        "name": "Monitor & Trigger Reassessment",
+        "nextActivityId": null,
+        "performedByRoleIds": [
+          "role_supervisory_analyst"
+        ],
+        "postOutcomeId": "outcome_cycle_complete",
+        "preOutcomeId": "outcome_position_communicated",
+        "requiresCapabilityIds": [
+          "cap_entity_monitoring_surveillance"
+        ],
+        "tags": [
+          "stage_8"
+        ]
+      },
+      "act_review_and_approve": {
+        "constraintIds": [],
+        "controlIds": [
+          "ctrl_delegation_authority_compliance",
+          "ctrl_stance_boundary_governance",
+          "ctrl_audit_trail_integrity"
+        ],
+        "description": "Submit the bundled review package (risk model update, proposed ratings, response stance, SAP) through the formal review and approval cycle. Route to eligible reviewers and approvers determined by delegation authority rules (based on entity risk rating, rating history, entity characteristics, and nature of changes). Conduct peer review or quality check. Escalate to higher authority where required (significant rating changes, systemically important entities, stance boundary crossings). Apply absence/timeout escalation procedures.",
+        "elementType": "Activity",
+        "entryConditionIds": [
+          "cond_obligation_stance_consistency"
+        ],
+        "exitConditionIds": [
+          "cond_eligible_approver_confirmed"
+        ],
+        "id": "act_review_and_approve",
+        "involvesRoleIds": [
+          "role_senior_supervisor",
+          "role_legal_compliance",
+          "role_executive_leadership"
+        ],
+        "metricIds": [
+          "metric_approval_cycle_time",
+          "metric_escalation_rate"
+        ],
+        "name": "Review & Approve Ratings and Plan",
+        "nextActivityId": "act_communicate_and_activate",
+        "performedByRoleIds": [
+          "role_chief_supervisor"
+        ],
+        "postOutcomeId": "outcome_ratings_and_plan_approved",
+        "preOutcomeId": "outcome_action_plan_drafted",
+        "requiresCapabilityIds": [
+          "cap_delegation_authority_management"
+        ],
+        "tags": [
+          "stage_6"
+        ]
+      },
+      "act_update_risk_model": {
+        "constraintIds": [],
+        "controlIds": [
+          "ctrl_risk_category_completeness",
+          "ctrl_audit_trail_integrity"
+        ],
+        "description": "Reassess the entity risk model in light of the new finding. Review and score inherent risk across affected risk categories. Evaluate management and control quality for each category. Adjust significance weightings where warranted. Calculate net risk positions. Assess capital support adequacy. Record all changes with audit trail and supporting evidence.",
+        "elementType": "Activity",
+        "entryConditionIds": [
+          "cond_finding_has_source_attribution"
+        ],
+        "exitConditionIds": [],
+        "id": "act_update_risk_model",
+        "involvesRoleIds": [
+          "role_specialist_risk_team"
+        ],
+        "metricIds": [
+          "metric_risk_model_update_completeness"
+        ],
+        "name": "Update Entity Risk Model",
+        "nextActivityId": "act_determine_risk_ratings",
+        "performedByRoleIds": [
+          "role_supervisory_analyst"
+        ],
+        "postOutcomeId": "outcome_risk_model_updated",
+        "preOutcomeId": "outcome_finding_triaged",
+        "requiresCapabilityIds": [
+          "cap_risk_model_management"
+        ],
+        "tags": [
+          "stage_2"
+        ]
+      }
+    },
+    "capabilities": {
+      "cap_delegation_authority_management": {
+        "description": "Ability to determine eligible reviewers and approvers based on delegation rules governed by entity risk rating, rating history, entity characteristics, and nature of the items under review. Includes escalation path determination.",
+        "elementType": "Capability",
+        "id": "cap_delegation_authority_management",
+        "name": "Delegation Authority Management",
+        "tags": [
+          "governance"
+        ]
+      },
+      "cap_entity_monitoring_surveillance": {
+        "description": "Ability to track entity compliance with supervisory action plan obligations, monitor early warning indicators and exception triggers, and detect material changes requiring reassessment.",
+        "elementType": "Capability",
+        "id": "cap_entity_monitoring_surveillance",
+        "name": "Entity Monitoring & Surveillance",
+        "tags": [
+          "operational",
+          "analytical"
+        ]
+      },
+      "cap_finding_intake_classification": {
+        "description": "Ability to receive, log, categorise, and prioritise incoming supervisory findings from multiple source value streams (examination, off-site analysis, engagement, enforcement). Includes linking new findings to existing entity risks and issues.",
+        "elementType": "Capability",
+        "id": "cap_finding_intake_classification",
+        "name": "Finding Intake & Classification",
+        "tags": [
+          "operational"
+        ]
+      },
+      "cap_response_framework_application": {
+        "description": "Ability to map calculated risk ratings to the graduated supervisory response framework, determining the appropriate supervisory stance and prescribed activity levels for the entity.",
+        "elementType": "Capability",
+        "id": "cap_response_framework_application",
+        "name": "Response Framework Application",
+        "tags": [
+          "analytical",
+          "governance"
+        ]
+      },
+      "cap_risk_model_management": {
+        "description": "Ability to maintain and update multi-category entity risk models — scoring inherent risk, management and control quality, and significance weightings across risk domains. Includes model versioning and audit trail.",
+        "elementType": "Capability",
+        "id": "cap_risk_model_management",
+        "name": "Risk Model Management",
+        "tags": [
+          "analytical"
+        ]
+      },
+      "cap_risk_rating_calculation": {
+        "description": "Ability to derive composite risk ratings from the entity risk model — calculating probability of failure, impact of failure, and overall risk of failure scores using defined methodologies and weightings.",
+        "elementType": "Capability",
+        "id": "cap_risk_rating_calculation",
+        "name": "Risk Rating Calculation",
+        "tags": [
+          "analytical"
+        ]
+      },
+      "cap_supervisory_action_planning": {
+        "description": "Ability to formulate structured supervisory action plans specifying key risks, baseline and reactive activities, entity obligations with graduated obligation levels, timelines, and responsible teams.",
+        "elementType": "Capability",
+        "id": "cap_supervisory_action_planning",
+        "name": "Supervisory Action Planning",
+        "tags": [
+          "operational"
+        ]
+      },
+      "cap_supervisory_communication": {
+        "description": "Ability to produce formal supervisory communications — internal notifications to supervisory teams, formal letters to regulated entities, and reporting to governance bodies — appropriate to the supervisory stance and delegation framework.",
+        "elementType": "Capability",
+        "id": "cap_supervisory_communication",
+        "name": "Supervisory Communication",
+        "tags": [
+          "operational"
+        ]
+      }
+    },
+    "concepts": {},
+    "conditions": {
+      "cond_all_applicable_categories_reviewed": {
+        "conditionExpression": "All applicable risk categories for the entity type must be explicitly reviewed and scored (or confirmed unchanged with documented rationale) before ratings can be calculated.",
+        "elementType": "Condition",
+        "id": "cond_all_applicable_categories_reviewed",
+        "references": [
+          {
+            "anchorId": "ctrl_risk_category_completeness",
+            "anchorType": "Control"
+          }
+        ]
+      },
+      "cond_all_communications_dispatched": {
+        "conditionExpression": "Before the assessment cycle transitions to monitoring, all required communications must be confirmed dispatched: internal supervisory team notifications, downstream value stream triggers, and entity communications where the stance or obligations require it.",
+        "elementType": "Condition",
+        "id": "cond_all_communications_dispatched",
+        "references": [
+          {
+            "anchorId": "ctrl_communication_completeness",
+            "anchorType": "Control"
+          }
+        ]
+      },
+      "cond_eligible_approver_confirmed": {
+        "conditionExpression": "The designated approver must be confirmed as eligible under the delegation authority framework (based on entity risk rating, rating history, entity location, and nature of items) before the approval decision is valid.",
+        "elementType": "Condition",
+        "id": "cond_eligible_approver_confirmed",
+        "references": [
+          {
+            "anchorId": "ctrl_delegation_authority_compliance",
+            "anchorType": "Control"
+          },
+          {
+            "anchorId": "cap_delegation_authority_management",
+            "anchorType": "Capability"
+          }
+        ]
+      },
+      "cond_finding_has_source_attribution": {
+        "conditionExpression": "Finding must have a documented source value stream, originating activity reference, and responsible analyst before it can proceed to risk model update.",
+        "elementType": "Condition",
+        "id": "cond_finding_has_source_attribution",
+        "references": [
+          {
+            "anchorId": "ctrl_finding_source_attribution",
+            "anchorType": "Control"
+          }
+        ]
+      },
+      "cond_material_change_enhanced_review": {
+        "conditionExpression": "If the proposed rating change exceeds the materiality threshold (more than one notch movement on probability or impact scale), enhanced review by the senior supervisor must be completed before submission to the formal approval chain.",
+        "elementType": "Condition",
+        "id": "cond_material_change_enhanced_review",
+        "references": [
+          {
+            "anchorId": "ctrl_rating_change_materiality_threshold",
+            "anchorType": "Control"
+          },
+          {
+            "anchorId": "role_senior_supervisor",
+            "anchorType": "Role"
+          }
+        ]
+      },
+      "cond_material_finding_triage_sla": {
+        "conditionExpression": "Material new findings received during monitoring must be triaged within the defined service level (5 business days standard, 24 hours critical). SLA breach triggers automatic escalation to senior supervisor for re-entry to the assessment cycle.",
+        "elementType": "Condition",
+        "id": "cond_material_finding_triage_sla",
+        "references": [
+          {
+            "anchorId": "ctrl_reassessment_trigger_timeliness",
+            "anchorType": "Control"
+          },
+          {
+            "anchorId": "role_senior_supervisor",
+            "anchorType": "Role"
+          }
+        ]
+      },
+      "cond_obligation_stance_consistency": {
+        "conditionExpression": "SAP obligation levels must be consistent with the supervisory response stance. Directed obligations require the entity to be at mandated corrective action stance or above. Advisory obligations at restructure stance require explicit justification.",
+        "elementType": "Condition",
+        "id": "cond_obligation_stance_consistency",
+        "references": [
+          {
+            "anchorId": "ctrl_obligation_level_consistency",
+            "anchorType": "Control"
+          }
+        ]
+      },
+      "cond_peer_calibration_completed": {
+        "conditionExpression": "Proposed ratings must be calibrated against the entity's peer group before response stance can be determined. Significant deviations from peer norms must have documented justification.",
+        "elementType": "Condition",
+        "id": "cond_peer_calibration_completed",
+        "references": [
+          {
+            "anchorId": "ctrl_peer_calibration",
+            "anchorType": "Control"
+          }
+        ]
+      },
+      "cond_stance_boundary_authority": {
+        "conditionExpression": "If the entity is crossing a supervisory response stance boundary, the review package must be routed to a higher delegation authority than standard rating updates. Systemically important entities crossing stance boundaries require executive-level approval.",
+        "elementType": "Condition",
+        "id": "cond_stance_boundary_authority",
+        "references": [
+          {
+            "anchorId": "ctrl_stance_boundary_governance",
+            "anchorType": "Control"
+          },
+          {
+            "anchorId": "role_executive_leadership",
+            "anchorType": "Role"
+          }
+        ]
+      }
+    },
+    "constraints": {},
+    "controls": {
+      "ctrl_audit_trail_integrity": {
+        "description": "All risk model changes, rating proposals, stance determinations, and approval decisions must be recorded with timestamp, responsible officer, and supporting rationale. The audit trail must be immutable and available for internal audit and external review.",
+        "elementType": "Control",
+        "id": "ctrl_audit_trail_integrity",
+        "name": "Audit Trail Integrity",
+        "tags": [
+          "traceability",
+          "compliance"
+        ]
+      },
+      "ctrl_communication_completeness": {
+        "description": "Before a supervisory cycle is considered complete, all required communications must be confirmed: internal supervisory team notifications sent, downstream value stream triggers activated, and entity communications dispatched where the stance or obligations require it.",
+        "elementType": "Control",
+        "id": "ctrl_communication_completeness",
+        "name": "Communication Completeness Check",
+        "tags": [
+          "operational",
+          "completeness"
+        ]
+      },
+      "ctrl_delegation_authority_compliance": {
+        "description": "Review and approval must follow the delegation authority framework. Eligible approvers are determined by entity risk rating, rating history, entity location, and nature of items under review. Approval by an ineligible authority renders the decision invalid and requires re-routing.",
+        "elementType": "Control",
+        "id": "ctrl_delegation_authority_compliance",
+        "name": "Delegation Authority Compliance",
+        "tags": [
+          "governance",
+          "compliance"
+        ]
+      },
+      "ctrl_finding_source_attribution": {
+        "description": "Every finding entering the RA&R process must be traceable to a source value stream, originating activity, and responsible analyst. Findings without source attribution are rejected at intake.",
+        "elementType": "Control",
+        "id": "ctrl_finding_source_attribution",
+        "name": "Finding Source Attribution",
+        "tags": [
+          "traceability"
+        ]
+      },
+      "ctrl_obligation_level_consistency": {
+        "description": "Entity obligations specified in the Supervisory Action Plan must be consistent with the supervisory response stance. Directed obligations (highest enforcement level) may only be applied to entities at mandated corrective action stance or above. Advisory obligations at restructure stance must be justified.",
+        "elementType": "Control",
+        "id": "ctrl_obligation_level_consistency",
+        "name": "Obligation Level Consistency",
+        "tags": [
+          "governance",
+          "consistency"
+        ]
+      },
+      "ctrl_peer_calibration": {
+        "description": "Proposed risk ratings must be calibrated against peer entities of comparable size, complexity, and risk profile to ensure cross-entity consistency. Significant deviations from peer group norms require documented justification.",
+        "elementType": "Control",
+        "id": "ctrl_peer_calibration",
+        "name": "Peer Calibration Review",
+        "tags": [
+          "quality",
+          "consistency"
+        ]
+      },
+      "ctrl_rating_change_materiality_threshold": {
+        "description": "Any proposed rating change exceeding the defined materiality threshold (e.g., movement of more than one notch on probability or impact scales) must trigger enhanced review by the senior supervisor before submission to the approval chain.",
+        "elementType": "Control",
+        "id": "ctrl_rating_change_materiality_threshold",
+        "name": "Rating Change Materiality Threshold",
+        "tags": [
+          "governance",
+          "escalation"
+        ]
+      },
+      "ctrl_reassessment_trigger_timeliness": {
+        "description": "Material new findings received during the monitoring phase must be triaged within the defined service level (e.g., 5 business days for standard, 24 hours for critical). Breach of the triage SLA triggers automatic escalation to the senior supervisor.",
+        "elementType": "Control",
+        "id": "ctrl_reassessment_trigger_timeliness",
+        "name": "Reassessment Trigger Timeliness",
+        "tags": [
+          "operational",
+          "timeliness"
+        ]
+      },
+      "ctrl_risk_category_completeness": {
+        "description": "Risk model updates must address all applicable risk categories for the entity type. Analyst must explicitly confirm categories reviewed and document rationale for any category scored as 'no change' when a finding relates to that domain.",
+        "elementType": "Control",
+        "id": "ctrl_risk_category_completeness",
+        "name": "Risk Category Completeness Check",
+        "tags": [
+          "quality"
+        ]
+      },
+      "ctrl_stance_boundary_governance": {
+        "description": "Any entity crossing a supervisory response stance boundary (e.g., from normal monitoring to heightened oversight, or from mandated action to restructure) requires approval from a higher delegation authority than routine rating updates. Stance boundary crossings for systemically important entities require executive-level approval.",
+        "elementType": "Control",
+        "id": "ctrl_stance_boundary_governance",
+        "name": "Stance Boundary Governance",
+        "tags": [
+          "governance",
+          "escalation"
+        ]
+      }
+    },
+    "deonticLogic": {},
+    "directives": {},
+    "flowLogic": {},
+    "measures": {
+      "ms_approval_cycle_time_baseline": {
+        "elementType": "Measure",
+        "id": "ms_approval_cycle_time_baseline",
+        "measureAsOf": "2025-01-01T00:00:00Z",
+        "measureDataType": "Duration",
+        "measureValue": "15",
+        "name": "Approval Cycle Time — Baseline",
+        "unitOfMeasure": "business days"
+      },
+      "ms_approval_cycle_time_current": {
+        "elementType": "Measure",
+        "id": "ms_approval_cycle_time_current",
+        "measureAsOf": "2025-12-01T00:00:00Z",
+        "measureDataType": "Duration",
+        "measureValue": "12",
+        "name": "Approval Cycle Time — Current",
+        "unitOfMeasure": "business days"
+      },
+      "ms_approval_cycle_time_target": {
+        "elementType": "Measure",
+        "id": "ms_approval_cycle_time_target",
+        "measureDataType": "Duration",
+        "measureValue": "7",
+        "name": "Approval Cycle Time — Target",
+        "unitOfMeasure": "business days"
+      },
+      "ms_escalation_rate_baseline": {
+        "elementType": "Measure",
+        "id": "ms_escalation_rate_baseline",
+        "measureAsOf": "2025-01-01T00:00:00Z",
+        "measureDataType": "Percentage",
+        "measureValue": "18",
+        "name": "Escalation Rate — Baseline",
+        "unitOfMeasure": "%"
+      },
+      "ms_escalation_rate_current": {
+        "elementType": "Measure",
+        "id": "ms_escalation_rate_current",
+        "measureAsOf": "2025-12-01T00:00:00Z",
+        "measureDataType": "Percentage",
+        "measureValue": "20",
+        "name": "Escalation Rate — Current",
+        "unitOfMeasure": "%"
+      },
+      "ms_escalation_rate_target": {
+        "elementType": "Measure",
+        "id": "ms_escalation_rate_target",
+        "measureDataType": "Percentage",
+        "measureValue": "12",
+        "name": "Escalation Rate — Target",
+        "unitOfMeasure": "%"
+      },
+      "ms_model_completeness_baseline": {
+        "elementType": "Measure",
+        "id": "ms_model_completeness_baseline",
+        "measureAsOf": "2025-01-01T00:00:00Z",
+        "measureDataType": "Percentage",
+        "measureValue": "75",
+        "name": "Risk Model Completeness — Baseline",
+        "unitOfMeasure": "%"
+      },
+      "ms_model_completeness_current": {
+        "elementType": "Measure",
+        "id": "ms_model_completeness_current",
+        "measureAsOf": "2025-12-01T00:00:00Z",
+        "measureDataType": "Percentage",
+        "measureValue": "88",
+        "name": "Risk Model Completeness — Current",
+        "unitOfMeasure": "%"
+      },
+      "ms_model_completeness_target": {
+        "elementType": "Measure",
+        "id": "ms_model_completeness_target",
+        "measureDataType": "Percentage",
+        "measureValue": "100",
+        "name": "Risk Model Completeness — Target",
+        "unitOfMeasure": "%"
+      },
+      "ms_obligation_completion_baseline": {
+        "elementType": "Measure",
+        "id": "ms_obligation_completion_baseline",
+        "measureAsOf": "2025-01-01T00:00:00Z",
+        "measureDataType": "Percentage",
+        "measureValue": "65",
+        "name": "SAP Obligation Completion — Baseline",
+        "unitOfMeasure": "%"
+      },
+      "ms_obligation_completion_current": {
+        "elementType": "Measure",
+        "id": "ms_obligation_completion_current",
+        "measureAsOf": "2025-12-01T00:00:00Z",
+        "measureDataType": "Percentage",
+        "measureValue": "72",
+        "name": "SAP Obligation Completion — Current",
+        "unitOfMeasure": "%"
+      },
+      "ms_obligation_completion_target": {
+        "elementType": "Measure",
+        "id": "ms_obligation_completion_target",
+        "measureDataType": "Percentage",
+        "measureValue": "90",
+        "name": "SAP Obligation Completion — Target",
+        "unitOfMeasure": "%"
+      },
+      "ms_peer_deviation_baseline": {
+        "elementType": "Measure",
+        "id": "ms_peer_deviation_baseline",
+        "measureAsOf": "2025-01-01T00:00:00Z",
+        "measureDataType": "Percentage",
+        "measureValue": "22",
+        "name": "Peer Deviation Rate — Baseline",
+        "unitOfMeasure": "%"
+      },
+      "ms_peer_deviation_current": {
+        "elementType": "Measure",
+        "id": "ms_peer_deviation_current",
+        "measureAsOf": "2025-12-01T00:00:00Z",
+        "measureDataType": "Percentage",
+        "measureValue": "18",
+        "name": "Peer Deviation Rate — Current",
+        "unitOfMeasure": "%"
+      },
+      "ms_peer_deviation_target": {
+        "elementType": "Measure",
+        "id": "ms_peer_deviation_target",
+        "measureDataType": "Percentage",
+        "measureValue": "10",
+        "name": "Peer Deviation Rate — Target",
+        "unitOfMeasure": "%"
+      },
+      "ms_stance_change_baseline": {
+        "elementType": "Measure",
+        "id": "ms_stance_change_baseline",
+        "measureAsOf": "2025-01-01T00:00:00Z",
+        "measureDataType": "Count",
+        "measureValue": "12",
+        "name": "Stance Change Frequency — Baseline",
+        "unitOfMeasure": "entities per quarter"
+      },
+      "ms_stance_change_current": {
+        "elementType": "Measure",
+        "id": "ms_stance_change_current",
+        "measureAsOf": "2025-12-01T00:00:00Z",
+        "measureDataType": "Count",
+        "measureValue": "15",
+        "name": "Stance Change Frequency — Current",
+        "unitOfMeasure": "entities per quarter"
+      },
+      "ms_stance_change_target": {
+        "elementType": "Measure",
+        "id": "ms_stance_change_target",
+        "measureDataType": "Count",
+        "measureValue": "8",
+        "name": "Stance Change Frequency — Target",
+        "unitOfMeasure": "entities per quarter"
+      },
+      "ms_triage_cycle_time_baseline": {
+        "elementType": "Measure",
+        "id": "ms_triage_cycle_time_baseline",
+        "measureAsOf": "2025-01-01T00:00:00Z",
+        "measureDataType": "Duration",
+        "measureValue": "5",
+        "name": "Triage Cycle Time — Baseline",
+        "unitOfMeasure": "business days"
+      },
+      "ms_triage_cycle_time_current": {
+        "elementType": "Measure",
+        "id": "ms_triage_cycle_time_current",
+        "measureAsOf": "2025-12-01T00:00:00Z",
+        "measureDataType": "Duration",
+        "measureValue": "4",
+        "name": "Triage Cycle Time — Current",
+        "unitOfMeasure": "business days"
+      },
+      "ms_triage_cycle_time_target": {
+        "elementType": "Measure",
+        "id": "ms_triage_cycle_time_target",
+        "measureDataType": "Duration",
+        "measureValue": "2",
+        "name": "Triage Cycle Time — Target",
+        "unitOfMeasure": "business days"
+      }
+    },
+    "metrics": {
+      "metric_approval_cycle_time": {
+        "description": "Elapsed time from submission of the review package to formal approval. Measures the efficiency of the governance process and identifies bottlenecks in the delegation authority chain.",
+        "elementType": "Metric",
+        "id": "metric_approval_cycle_time",
+        "measures": {
+          "baselineMeasureId": "ms_approval_cycle_time_baseline",
+          "currentMeasureId": "ms_approval_cycle_time_current",
+          "targetMeasureId": "ms_approval_cycle_time_target",
+          "targets": [
+            {
+              "targetId": "act_review_and_approve",
+              "targetType": "Activity"
+            }
+          ]
+        },
+        "metricDirection": "Decrease",
+        "metricPeriod": "Per assessment cycle",
+        "metricType": "Lagging",
+        "name": "Review & Approval Cycle Time",
+        "tags": [
+          "timeliness",
+          "governance"
+        ]
+      },
+      "metric_escalation_rate": {
+        "description": "Percentage of assessment cycles requiring escalation beyond the standard delegation authority (to chief supervisor or executive leadership). High rates may indicate either systemic risk elevation or delegation framework miscalibration.",
+        "elementType": "Metric",
+        "id": "metric_escalation_rate",
+        "measures": {
+          "baselineMeasureId": "ms_escalation_rate_baseline",
+          "currentMeasureId": "ms_escalation_rate_current",
+          "targetMeasureId": "ms_escalation_rate_target",
+          "targets": [
+            {
+              "targetId": "act_review_and_approve",
+              "targetType": "Activity"
+            }
+          ]
+        },
+        "metricDirection": "Attain",
+        "metricPeriod": "Quarterly",
+        "metricType": "Leading",
+        "name": "Escalation Rate",
+        "tags": [
+          "governance"
+        ]
+      },
+      "metric_rating_peer_deviation": {
+        "description": "Percentage of proposed ratings that deviate significantly from peer group norms, requiring documented justification under the peer calibration control. Measures cross-entity consistency of risk judgement.",
+        "elementType": "Metric",
+        "id": "metric_rating_peer_deviation",
+        "measures": {
+          "baselineMeasureId": "ms_peer_deviation_baseline",
+          "currentMeasureId": "ms_peer_deviation_current",
+          "targetMeasureId": "ms_peer_deviation_target",
+          "targets": [
+            {
+              "targetId": "act_determine_risk_ratings",
+              "targetType": "Activity"
+            }
+          ]
+        },
+        "metricDirection": "Decrease",
+        "metricPeriod": "Quarterly",
+        "metricType": "Lagging",
+        "name": "Rating Peer Deviation Rate",
+        "tags": [
+          "consistency"
+        ]
+      },
+      "metric_risk_model_update_completeness": {
+        "description": "Percentage of applicable risk categories explicitly reviewed and scored during each risk model update cycle. Measures analytical thoroughness.",
+        "elementType": "Metric",
+        "id": "metric_risk_model_update_completeness",
+        "measures": {
+          "baselineMeasureId": "ms_model_completeness_baseline",
+          "currentMeasureId": "ms_model_completeness_current",
+          "targetMeasureId": "ms_model_completeness_target",
+          "targets": [
+            {
+              "targetId": "act_update_risk_model",
+              "targetType": "Activity"
+            }
+          ]
+        },
+        "metricDirection": "Attain",
+        "metricPeriod": "Per assessment cycle",
+        "metricType": "Lagging",
+        "name": "Risk Model Update Completeness",
+        "tags": [
+          "quality"
+        ]
+      },
+      "metric_sap_obligation_completion_rate": {
+        "description": "Percentage of entity obligations from the Supervisory Action Plan completed within their specified timelines. Measures entity compliance and the effectiveness of supervisory follow-through.",
+        "elementType": "Metric",
+        "id": "metric_sap_obligation_completion_rate",
+        "measures": {
+          "baselineMeasureId": "ms_obligation_completion_baseline",
+          "currentMeasureId": "ms_obligation_completion_current",
+          "targetMeasureId": "ms_obligation_completion_target",
+          "targets": [
+            {
+              "targetId": "act_monitor_and_reassess",
+              "targetType": "Activity"
+            }
+          ]
+        },
+        "metricDirection": "Increase",
+        "metricPeriod": "Per assessment cycle",
+        "metricType": "Lagging",
+        "name": "SAP Obligation Completion Rate",
+        "tags": [
+          "effectiveness"
+        ]
+      },
+      "metric_stance_change_frequency": {
+        "description": "Number of entities crossing supervisory response stance boundaries per period. Measures system-level volatility in supervisory positioning — high frequency may indicate environmental stress or calibration instability.",
+        "elementType": "Metric",
+        "id": "metric_stance_change_frequency",
+        "measures": {
+          "baselineMeasureId": "ms_stance_change_baseline",
+          "currentMeasureId": "ms_stance_change_current",
+          "targetMeasureId": "ms_stance_change_target",
+          "targets": [
+            {
+              "targetId": "act_calibrate_response_stance",
+              "targetType": "Activity"
+            }
+          ]
+        },
+        "metricDirection": "Attain",
+        "metricPeriod": "Quarterly",
+        "metricType": "Leading",
+        "name": "Stance Change Frequency",
+        "tags": [
+          "systemic"
+        ]
+      },
+      "metric_triage_cycle_time": {
+        "description": "Elapsed time from finding receipt to triage completion and analyst assignment. Measures the responsiveness of the intake process.",
+        "elementType": "Metric",
+        "id": "metric_triage_cycle_time",
+        "measures": {
+          "baselineMeasureId": "ms_triage_cycle_time_baseline",
+          "currentMeasureId": "ms_triage_cycle_time_current",
+          "targetMeasureId": "ms_triage_cycle_time_target",
+          "targets": [
+            {
+              "targetId": "act_intake_and_triage_finding",
+              "targetType": "Activity"
+            }
+          ]
+        },
+        "metricDirection": "Decrease",
+        "metricPeriod": "Per finding",
+        "metricType": "Lagging",
+        "name": "Finding Triage Cycle Time",
+        "tags": [
+          "timeliness"
+        ]
+      }
+    },
+    "outcomes": {
+      "outcome_action_plan_drafted": {
+        "description": "A Supervisory Action Plan has been formulated specifying key risks/issues, baseline and reactive activities, entity obligations with obligation levels and timelines, and responsible supervisory teams.",
+        "elementType": "Outcome",
+        "id": "outcome_action_plan_drafted",
+        "name": "Action Plan Drafted",
+        "tags": []
+      },
+      "outcome_cycle_complete": {
+        "description": "Monitoring confirms entity is being supervised in accordance with the active SAP. The assessment cycle is complete until a reassessment trigger is received (scheduled review date, material new finding, or macroeconomic event).",
+        "elementType": "Outcome",
+        "id": "outcome_cycle_complete",
+        "name": "Assessment Cycle Complete",
+        "tags": [
+          "terminal"
+        ]
+      },
+      "outcome_finding_received": {
+        "description": "A new supervisory finding, signal, or trigger has been received from a source value stream or external event but has not yet been categorised or prioritised.",
+        "elementType": "Outcome",
+        "id": "outcome_finding_received",
+        "name": "Finding Received",
+        "tags": [
+          "initial"
+        ]
+      },
+      "outcome_finding_triaged": {
+        "description": "The finding has been categorised by risk domain, prioritised by urgency, linked to existing entity risks/issues where applicable, and assigned to the responsible supervisory analyst.",
+        "elementType": "Outcome",
+        "id": "outcome_finding_triaged",
+        "name": "Finding Triaged",
+        "tags": []
+      },
+      "outcome_position_communicated": {
+        "description": "Approved supervisory positions have been communicated to all stakeholders — supervisory teams notified, downstream value streams triggered, entity notified where required — and the SAP is the active supervisory programme.",
+        "elementType": "Outcome",
+        "id": "outcome_position_communicated",
+        "name": "Position Communicated & Activated",
+        "tags": []
+      },
+      "outcome_ratings_and_plan_approved": {
+        "description": "Risk ratings and the Supervisory Action Plan have been formally reviewed and approved through the delegation authority framework by the appropriate level of authority.",
+        "elementType": "Outcome",
+        "id": "outcome_ratings_and_plan_approved",
+        "name": "Ratings & Plan Approved",
+        "tags": []
+      },
+      "outcome_ratings_proposed": {
+        "description": "Composite risk ratings (probability of failure, impact of failure, overall risk of failure) have been calculated from the updated risk model with supporting rationale documented.",
+        "elementType": "Outcome",
+        "id": "outcome_ratings_proposed",
+        "name": "Ratings Proposed",
+        "tags": []
+      },
+      "outcome_response_stance_determined": {
+        "description": "The entity's supervisory response stance has been determined by applying the graduated response framework to the proposed risk ratings, with prescribed activity levels identified.",
+        "elementType": "Outcome",
+        "id": "outcome_response_stance_determined",
+        "name": "Response Stance Determined",
+        "tags": []
+      },
+      "outcome_risk_model_updated": {
+        "description": "The entity risk model has been updated with current inherent risk scores, management and control quality assessments, and significance weightings across all affected risk categories.",
+        "elementType": "Outcome",
+        "id": "outcome_risk_model_updated",
+        "name": "Risk Model Updated",
+        "tags": []
+      }
+    },
+    "properties": {},
+    "roles": {
+      "role_chief_supervisor": {
+        "description": "Division head with formal approval authority for risk ratings and supervisory response stance changes. Approves supervisory action plans for entities at or above defined risk thresholds. Escalation point for contested ratings or significant stance changes.",
+        "elementType": "Role",
+        "id": "role_chief_supervisor",
+        "name": "Chief Supervisor",
+        "tags": [
+          "approval",
+          "governance"
+        ]
+      },
+      "role_executive_leadership": {
+        "description": "Senior executive or committee with authority over systemically important entities and significant enforcement escalations. Approves stance changes to the highest intervention levels. Responsible for cross-entity and cross-jurisdictional coordination decisions.",
+        "elementType": "Role",
+        "id": "role_executive_leadership",
+        "name": "Executive Leadership",
+        "tags": [
+          "escalation",
+          "governance"
+        ]
+      },
+      "role_legal_compliance": {
+        "description": "Advises on delegation authority rules, enforcement triggers, and regulatory interpretation. Ensures supervisory actions and communications comply with legislative frameworks. Prepares statutory instruments when formal enforcement is triggered.",
+        "elementType": "Role",
+        "id": "role_legal_compliance",
+        "name": "Legal & Compliance",
+        "tags": [
+          "advisory",
+          "governance"
+        ]
+      },
+      "role_senior_supervisor": {
+        "description": "Team lead responsible for review and quality assurance of risk model updates, ratings, and supervisory action plans. Provides peer calibration of risk judgements and ensures consistency across entities within the portfolio. First-level review authority in the delegation framework.",
+        "elementType": "Role",
+        "id": "role_senior_supervisor",
+        "name": "Senior Supervisor",
+        "tags": [
+          "review",
+          "calibration"
+        ]
+      },
+      "role_specialist_risk_team": {
+        "description": "Domain experts in specific risk categories (credit risk, market risk, operational risk, liquidity risk, insurance risk). Provide technical assessment input to the risk model update process. May be called upon for horizontal thematic reviews across multiple entities.",
+        "elementType": "Role",
+        "id": "role_specialist_risk_team",
+        "name": "Specialist Risk Team",
+        "tags": [
+          "specialist",
+          "analysis"
+        ]
+      },
+      "role_supervisory_analyst": {
+        "description": "Primary operator of the entity risk model. Responsible for gathering findings, updating risk assessments, drafting risk ratings and supervisory action plans. The analyst maintains day-to-day knowledge of the entity's risk profile and is the first point of contact for incoming supervisory intelligence.",
+        "elementType": "Role",
+        "id": "role_supervisory_analyst",
+        "name": "Supervisory Analyst",
+        "tags": [
+          "execution",
+          "analysis"
+        ]
+      }
+    },
+    "valueStreams": {
+      "vs_risk_assessment_and_response": {
+        "activityIds": [
+          "act_intake_and_triage_finding",
+          "act_update_risk_model",
+          "act_determine_risk_ratings",
+          "act_calibrate_response_stance",
+          "act_formulate_action_plan",
+          "act_review_and_approve",
+          "act_communicate_and_activate",
+          "act_monitor_and_reassess"
+        ],
+        "capabilityIds": [
+          "cap_finding_intake_classification",
+          "cap_risk_model_management",
+          "cap_risk_rating_calculation",
+          "cap_response_framework_application",
+          "cap_supervisory_action_planning",
+          "cap_delegation_authority_management",
+          "cap_supervisory_communication",
+          "cap_entity_monitoring_surveillance"
+        ],
+        "description": "The central hub of all supervisory activities. Maintains and updates the risk model for each regulated entity, consolidates findings from all supervisory activities, determines risk ratings, and selects the appropriate supervisory response stance.",
+        "elementType": "ValueStream",
+        "id": "vs_risk_assessment_and_response",
+        "metricIds": [
+          "metric_triage_cycle_time",
+          "metric_risk_model_update_completeness",
+          "metric_rating_peer_deviation",
+          "metric_stance_change_frequency",
+          "metric_approval_cycle_time",
+          "metric_escalation_rate",
+          "metric_sap_obligation_completion_rate"
+        ],
+        "name": "Risk Assessment & Response",
+        "tags": [
+          "core",
+          "prudential_supervision"
+        ]
+      }
+    }
+  },
+  "name": "Prudential Supervision — Risk Assessment & Response",
+  "scaffoldId": "scaffold_banking_supervision_raar",
+  "schemaVersion": "1.0.0"
+}

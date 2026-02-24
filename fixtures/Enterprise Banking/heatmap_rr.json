@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "3.1",
+  "heatmapId": "heatmap_enterprise_rr",
+  "scaffoldId": "scaffold_enterprise_banking_v1",
+  "scaffoldIntegrityHash": "sha256:enterprise_banking_v1_placeholder",
+  "valueStreamId": "vs_regulatory_reporting",
+  "createdAt": "2026-02-24T10:00:00Z",
+  "observations": [
+    {
+      "observationId": "obs_rr_01",
+      "category": "Data Quality",
+      "primaryAnchor": { "anchorType": "Activity", "anchorId": "act_rr_aggregate_exposures" },
+      "contributingAnchors": [
+        { "anchorType": "Control", "anchorId": "ctrl_data_quality_gate" }
+      ],
+      "intensity": { "scale": "0-10", "score": 5.5 },
+      "confidence": 0.72,
+      "rationale": "Exposure aggregation depends on upstream portfolio data quality. Reconciliation gaps between portfolio management and regulatory reporting taxonomies require manual mapping, adding 2-3 days per reporting cycle."
+    },
+    {
+      "observationId": "obs_rr_02",
+      "category": "Process Latency",
+      "primaryAnchor": { "anchorType": "Activity", "anchorId": "act_rr_prepare_submissions" },
+      "contributingAnchors": [
+        { "anchorType": "Metric", "anchorId": "metric_rr_submission_timeliness" }
+      ],
+      "intensity": { "scale": "0-10", "score": 4.8 },
+      "confidence": 0.68,
+      "rationale": "Submission preparation involves manual formatting across COREP and FINREP templates. Template changes by supervisory authority create periodic rework. Timeliness metric shows submissions at T-2 days average against T-5 day target."
+    },
+    {
+      "observationId": "obs_rr_03",
+      "category": "Governance Risk",
+      "primaryAnchor": { "anchorType": "Activity", "anchorId": "act_rr_submit_and_attest" },
+      "contributingAnchors": [
+        { "anchorType": "Control", "anchorId": "ctrl_senior_attestation" }
+      ],
+      "intensity": { "scale": "0-10", "score": 4.2 },
+      "confidence": 0.65,
+      "rationale": "Senior management attestation requires CRO sign-off on all regulatory submissions. Scheduling constraints occasionally delay final attestation by 1-2 days, though this has not caused a missed deadline."
+    }
+  ],
+  "bindingConstraint": {
+    "findingId": "bc_rr_01",
+    "bindingAnchor": { "anchorType": "Activity", "anchorId": "act_rr_aggregate_exposures" },
+    "bindingAnchorObservationId": "obs_rr_01",
+    "justification": "Data aggregation is the primary friction point in the Regulatory Reporting stream, though at moderate severity. The upstream data quality dependency creates the longest variable delay in the reporting cycle.",
+    "confidence": 0.72
+  }
+}

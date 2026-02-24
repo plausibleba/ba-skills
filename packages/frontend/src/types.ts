@@ -120,9 +120,45 @@ export interface ScaffoldActivity {
   metricIds?: string[];
   controlIds?: string[];
   constraintIds?: string[];
+  exitConditionIds?: string[];
   nextActivityId?: string | null;
   /** Identifies which metric drives throughput projection for this activity */
   throughputMetricId?: string;
+}
+
+export interface ScaffoldValueStream {
+  id: string;
+  elementType: string;
+  name?: string;
+  description?: string;
+  activityIds: string[];
+  capabilityIds?: string[];
+  metricIds?: string[];
+  /** Secondary outcomes that can trigger this value stream (e.g. governance recalibration) */
+  secondaryTriggerOutcomeIds?: string[];
+}
+
+// --- Network View types ---
+
+export interface NetworkNode {
+  vsId: string;
+  name: string;
+  description?: string;
+  stageCount: number;
+  frictionCount: number;
+  hasBindingConstraint: boolean;
+  bindingStageName?: string;
+  confidence?: number;
+  layer: number;      // DAG layer (0 = leftmost)
+  row: number;        // vertical position within layer
+}
+
+export interface NetworkEdge {
+  sourceVsId: string;
+  targetVsId: string;
+  outcomeId: string;
+  outcomeName: string;
+  isFeedback: boolean; // back-edge in DAG
 }
 
 export interface ScaffoldElement {
@@ -154,7 +190,7 @@ export interface ScaffoldData {
   name: string;
   description?: string;
   elements: {
-    valueStreams: Record<string, ScaffoldElement & { activityIds: string[] }>;
+    valueStreams: Record<string, ScaffoldValueStream>;
     activities: Record<string, ScaffoldActivity>;
     outcomes: Record<string, ScaffoldElement>;
     roles: Record<string, ScaffoldElement>;

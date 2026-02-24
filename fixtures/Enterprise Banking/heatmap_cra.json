@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "3.1",
+  "heatmapId": "heatmap_enterprise_cra",
+  "scaffoldId": "scaffold_enterprise_banking_v1",
+  "scaffoldIntegrityHash": "sha256:enterprise_banking_v1_placeholder",
+  "valueStreamId": "vs_credit_risk_assessment",
+  "createdAt": "2026-02-24T10:00:00Z",
+  "observations": [
+    {
+      "observationId": "obs_cra_01",
+      "category": "Decision Authority",
+      "primaryAnchor": { "anchorType": "Activity", "anchorId": "act_cra_approve_risk_rating" },
+      "contributingAnchors": [
+        { "anchorType": "Control", "anchorId": "ctrl_delegation_of_authority" },
+        { "anchorType": "Control", "anchorId": "ctrl_rating_override_governance" }
+      ],
+      "intensity": { "scale": "0-10", "score": 8.5 },
+      "confidence": 0.88,
+      "rationale": "The Approve Risk Rating activity concentrates governance density across two controls (Delegation of Authority and Rating Override Governance). Escalation routing through multi-level delegation creates serial dependency on a limited pool of senior decision-makers, extending the rating cycle time beyond target."
+    },
+    {
+      "observationId": "obs_cra_02",
+      "category": "Governance Risk",
+      "primaryAnchor": { "anchorType": "Control", "anchorId": "ctrl_rating_override_governance" },
+      "contributingAnchors": [
+        { "anchorType": "Activity", "anchorId": "act_cra_approve_risk_rating" },
+        { "anchorType": "Metric", "anchorId": "metric_cra_override_rate" }
+      ],
+      "intensity": { "scale": "0-10", "score": 7.2 },
+      "confidence": 0.82,
+      "rationale": "Rating override governance requires committee-level sign-off for any deviation from model output. The override rate metric (baseline 8%, current 14%) indicates increasing manual intervention, each instance adding 2-3 days to the approval cycle."
+    },
+    {
+      "observationId": "obs_cra_03",
+      "category": "Process Latency",
+      "primaryAnchor": { "anchorType": "Activity", "anchorId": "act_cra_compile_risk_data" },
+      "contributingAnchors": [
+        { "anchorType": "Control", "anchorId": "ctrl_data_quality_gate" }
+      ],
+      "intensity": { "scale": "0-10", "score": 5.8 },
+      "confidence": 0.75,
+      "rationale": "Data compilation relies on manual aggregation from three upstream systems. The data quality gate rejects approximately 15% of initial submissions, creating rework cycles that add 1-2 days per assessment."
+    },
+    {
+      "observationId": "obs_cra_04",
+      "category": "Model Risk",
+      "primaryAnchor": { "anchorType": "Activity", "anchorId": "act_cra_estimate_risk_parameters" },
+      "contributingAnchors": [
+        { "anchorType": "Control", "anchorId": "ctrl_model_governance_check" },
+        { "anchorType": "Metric", "anchorId": "metric_cra_model_accuracy" }
+      ],
+      "intensity": { "scale": "0-10", "score": 6.0 },
+      "confidence": 0.70,
+      "rationale": "Model governance check requires quarterly recalibration sign-off. Between recalibration cycles, model drift introduces estimation uncertainty. Current accuracy (88%) is below the 92% target, triggering additional manual review steps."
+    },
+    {
+      "observationId": "obs_cra_05",
+      "category": "Capacity Constraint",
+      "primaryAnchor": { "anchorType": "Activity", "anchorId": "act_cra_approve_risk_rating" },
+      "contributingAnchors": [
+        { "anchorType": "Metric", "anchorId": "metric_cra_rating_cycle_time" }
+      ],
+      "intensity": { "scale": "0-10", "score": 7.8 },
+      "confidence": 0.85,
+      "rationale": "Risk Committee capacity is the primary throughput limiter. Committee meets bi-weekly with fixed agenda capacity, creating a batching bottleneck. Rating cycle time (baseline 10 days, current 16 days, target 8 days) confirms structural capacity constraint."
+    }
+  ],
+  "bindingConstraint": {
+    "findingId": "bc_cra_01",
+    "bindingAnchor": { "anchorType": "Activity", "anchorId": "act_cra_approve_risk_rating" },
+    "bindingAnchorObservationId": "obs_cra_01",
+    "justification": "The Approve Risk Rating activity is the throughput-limiting step in the Credit Risk Assessment value stream. It concentrates the highest governance density (2 controls), creates a serial dependency on Risk Committee capacity, and the rating cycle time metric confirms it as the measured bottleneck.",
+    "confidence": 0.88
+  }
+}

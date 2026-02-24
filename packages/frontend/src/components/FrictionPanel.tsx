@@ -68,8 +68,8 @@ function ObservationCard({
 
   return (
     <div
-      className={`rounded-md border border-gray-200 border-l-4 ${borderColor} bg-white p-3 ${
-        isBindingObs ? "ring-2 ring-red-300 ring-offset-1" : ""
+      className={`rounded-md border border-gray-100 border-l-4 ${borderColor} bg-white p-3 ${
+        isBindingObs ? "ring-1 ring-red-200 ring-offset-1" : ""
       }`}
     >
       <div className="flex items-start justify-between gap-2">
@@ -77,14 +77,14 @@ function ObservationCard({
           <span
             className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
               group === "execution"
-                ? "bg-amber-100 text-amber-700"
-                : "bg-red-100 text-red-700"
+                ? "bg-amber-50 text-amber-700"
+                : "bg-red-50 text-red-700"
             }`}
           >
             {categoryLabel(obs.category)}
           </span>
           {isBindingObs && (
-            <span className="rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+            <span className="rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
               Binding
             </span>
           )}
@@ -158,7 +158,7 @@ export function FrictionPanel({
   ).length;
 
   return (
-    <div className="flex h-full flex-col border-l border-gray-200 bg-white">
+    <div className="flex h-full flex-col border-l border-gray-100 bg-gray-50/30">
       {/* Panel header */}
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
         <div>
@@ -167,12 +167,12 @@ export function FrictionPanel({
           </h3>
           <p className="mt-0.5 flex gap-2 text-[10px] text-gray-500">
             {execCount > 0 && (
-              <span className="rounded bg-amber-100 px-1 text-amber-700">
+              <span className="rounded bg-amber-50 px-1 text-amber-700">
                 {execCount} execution
               </span>
             )}
             {govCount > 0 && (
-              <span className="rounded bg-red-100 px-1 text-red-700">
+              <span className="rounded bg-red-50 px-1 text-red-700">
                 {govCount} governing
               </span>
             )}
@@ -197,7 +197,7 @@ export function FrictionPanel({
       {heatmap.bindingConstraint.bindingAnchor.anchorType === "Activity" &&
         heatmap.bindingConstraint.bindingAnchor.anchorId === activityId && (
           <>
-            <div className="border-b border-red-200 bg-red-50 px-4 py-3">
+            <div className="border-b border-red-100 bg-red-50/60 px-4 py-3">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-red-600">
                 Binding Constraint
               </p>
