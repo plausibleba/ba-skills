@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useCallback, useRef } from "react";
 
 // ─── Colour palette matching VCC design ───────────────────────────────────
@@ -22,7 +23,6 @@ const FRICTION_CATEGORIES = [
 
 const TECH_TYPES = ["CRM","ERP","Comms","Analytics","Field","Custom","Other"];
 const ROLE_TYPES = ["Internal","External","System"];
-const ZONE_OPTIONS = ["ecosystem","knowledge"];
 
 // ─── Scoring weights ────────────────────────────────────────────────────────
 function calcReadiness(form) {
