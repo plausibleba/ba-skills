@@ -15,7 +15,7 @@ import {
   buildNetworkNodes,
 } from "./network-derivation.ts";
 
-type ViewMode = "network" | "stage";
+type ViewMode = "network" | "stage" | "intake";
 
 interface CanvasState {
   // View navigation
@@ -44,6 +44,7 @@ interface CanvasState {
   validate: () => Promise<void>;
   selectVs: (vsId: string) => void;
   backToNetwork: () => void;
+  goToIntake: () => void;
   reset: () => void;
 }
 
@@ -294,6 +295,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       canvasViewModel: null,
       heatmapData: null,
     });
+  },
+
+  goToIntake: () => {
+    set({ viewMode: "intake" });
   },
 
   reset: () => {

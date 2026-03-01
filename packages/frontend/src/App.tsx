@@ -3,6 +3,7 @@ import { FileLoader } from "./components/FileLoader.tsx";
 import { CanvasView } from "./components/CanvasView.tsx";
 import { ContentSelectors } from "./components/ContentSelectors.tsx";
 import { NetworkView } from "./components/NetworkView.tsx";
+import  DiscoveryIntake  from "./components/DiscoveryIntake.tsx";
 
 export default function App() {
   const {
@@ -12,11 +13,13 @@ export default function App() {
     selectedVsId,
     error,
     backToNetwork,
+    goToIntake,
   } = useCanvasStore();
 
   const isLoaded = !!scaffoldData;
   const isNetwork = viewMode === "network";
   const isStage = viewMode === "stage" && !!canvasViewModel;
+  const isIntake = viewMode === "intake";
 
   // Get selected VS name for breadcrumb
   const selectedVsName = selectedVsId && scaffoldData
@@ -73,24 +76,45 @@ export default function App() {
               <span className="font-medium text-white/90">{selectedVsName}</span>
             </nav>
           )}
+
+          {/* Intake breadcrumb */}
+          {isIntake && (
+            <nav className="flex items-center gap-1.5 text-[11px]">
+              <span className="font-medium text-white/90">New Discovery</span>
+            </nav>
+          )}
         </div>
 
-        <span className="text-xs text-vcc-300">v0.2.0</span>
+        <div className="flex items-center gap-3">
+          {/* New Discovery button — always visible */}
+          <button
+            onClick={goToIntake}
+            className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
+              isIntake
+                ? "border-white/30 bg-white/20 text-white"
+                : "border-white/20 text-white/60 hover:border-white/30 hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            + New Discovery
+          </button>
+          <span className="text-xs text-vcc-300">v0.2.0</span>
+        </div>
       </header>
 
       {/* Content selectors (stage view only) */}
       {isStage && <ContentSelectors />}
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto p-6">
-        {error && !isLoaded && (
-          <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+      <main className="flex-1 overflow-auto">
+        {/* Errors — only show outside intake view */}
+        {!isIntake && error && !isLoaded && (
+          <div className="m-6 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {error}
           </div>
         )}
 
-        {error && isLoaded && (
-          <div className="mb-4 flex items-center justify-between rounded-md border border-amber-200 bg-amber-50 px-4 py-2.5">
+        {!isIntake && error && isLoaded && (
+          <div className="mx-6 mt-4 flex items-center justify-between rounded-md border border-amber-200 bg-amber-50 px-4 py-2.5">
             <p className="text-xs text-amber-700">{error}</p>
             <button
               onClick={() => useCanvasStore.setState({ error: null })}
@@ -101,14 +125,17 @@ export default function App() {
           </div>
         )}
 
-        {!isLoaded && (
-          <div className="flex h-full items-center justify-center">
+        {/* Views */}
+        {isIntake && <DiscoveryIntake />}
+
+        {!isIntake && !isLoaded && (
+          <div className="flex h-full items-center justify-center p-6">
             <FileLoader />
           </div>
         )}
 
-        {isLoaded && isNetwork && <NetworkView />}
-        {isStage && <CanvasView />}
+        {!isIntake && isLoaded && isNetwork && <NetworkView />}
+        {!isIntake && isStage && <CanvasView />}
       </main>
     </div>
   );

@@ -6,6 +6,15 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      "/api/anthropic": {
+        target: "https://api.anthropic.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/anthropic/, ""),
+        headers: {
+          "x-api-key": process.env.ANTHROPIC_API_KEY ?? "",
+          "anthropic-version": "2023-06-01",
+        },
+      },
       "/v1": {
         target: "http://localhost:3000",
         changeOrigin: true,
