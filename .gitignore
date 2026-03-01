@@ -7,3 +7,4 @@ coverage/
 .DS_Store
 __pycache__/
 *.pyc
+packages/frontend/.vite/
