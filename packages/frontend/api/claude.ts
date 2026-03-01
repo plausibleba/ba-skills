@@ -23,6 +23,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     const data = await response.json();
+    if (data.stop_reason && data.stop_reason !== 'end_turn') {
+      console.error('Anthropic stop_reason:', data.stop_reason, 'usage:', data.usage);
+    }
     return res.status(response.status).json(data);
   } catch (err) {
     console.error("Anthropic proxy error:", err);
