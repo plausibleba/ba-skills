@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "tsc -b && vite build",
+  "buildCommand": "vite build",
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite",
