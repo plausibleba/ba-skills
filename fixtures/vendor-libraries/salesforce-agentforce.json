@@ -1,0 +1,230 @@
+{
+  "vendorId": "salesforce",
+  "vendorName": "Salesforce",
+  "categories": [
+    {
+      "categoryId": "sales-ai",
+      "categoryName": "Sales AI",
+      "features": [
+        {
+          "featureId": "af-skill-engagement",
+          "name": "Agentforce Skill: Engagement",
+          "description": "Maximize pipeline by engaging and qualifying leads 24/7"
+        },
+        {
+          "featureId": "af-skill-sales-coach",
+          "name": "Agentforce Skill: Sales Coach",
+          "description": "Scale coaching with personalized, objective feedback"
+        },
+        {
+          "featureId": "af-skill-pipeline-mgmt",
+          "name": "Agentforce Skill: Pipeline Management",
+          "description": "Automatic, objective deal updates based on data from calls, emails, and notes"
+        },
+        {
+          "featureId": "af-skill-account-mgmt",
+          "name": "Agentforce Skill: Account Management",
+          "description": "Instant account snapshots, always current account intelligence, and rich insights right in the flow of work"
+        },
+        {
+          "featureId": "af-sales-actions-employee",
+          "name": "18 Pre-built Sales Actions for Employee Agent",
+          "description": "Sell faster with an AI assistant in CRM"
+        },
+        {
+          "featureId": "af-prompt-builder-sales",
+          "name": "Prompt Builder",
+          "description": "Customize and extend AI with low code tools"
+        },
+        {
+          "featureId": "af-embedded-summarization",
+          "name": "Embedded Summarization",
+          "description": "Summarize any hero sales object like Accounts, Opportunities, Leads, and Contacts"
+        },
+        {
+          "featureId": "af-ai-sales-planning",
+          "name": "AI-Powered Sales Planning",
+          "description": "Efficiently work with large data sets using natural language, orchestrate workflows and allow teams to quickly model the impact of proposed changes"
+        },
+        {
+          "featureId": "af-eci-gen-ai",
+          "name": "ECI Gen AI Features (Call Summaries, Call Explorer, Sales Signals)",
+          "description": "Identify customer sentiment and next steps, synthesize important call information, and focus on the right deals"
+        },
+        {
+          "featureId": "af-eci-standard",
+          "name": "Einstein Conversation Insights (Standard)",
+          "description": "Gain actionable insights from your sales calls with conversation intelligence"
+        },
+        {
+          "featureId": "af-einstein-lead-scoring",
+          "name": "Einstein Lead Scoring",
+          "description": "Prioritize the leads most likely to convert"
+        },
+        {
+          "featureId": "af-einstein-opp-scoring",
+          "name": "Einstein Opportunity Scoring",
+          "description": "Prioritize the opportunities most likely to convert"
+        },
+        {
+          "featureId": "af-einstein-activity-capture",
+          "name": "Einstein Activity Capture",
+          "description": "Automatically capture data and add to your CRM"
+        },
+        {
+          "featureId": "af-contact-suggestion",
+          "name": "Contact Suggestion & Auto-Creation",
+          "description": "Auto-create contacts and enrich your CRM data"
+        },
+        {
+          "featureId": "af-einstein-forecasting",
+          "name": "Einstein Forecasting",
+          "description": "Easily predict sales forecasts inside of Salesforce"
+        },
+        {
+          "featureId": "af-sales-analytics",
+          "name": "Sales Analytics App",
+          "description": "Get insights into the most common sales KPIs"
+        },
+        {
+          "featureId": "af-einstein-relationship-insights",
+          "name": "Einstein Relationship Insights",
+          "description": "Speed prospecting with AI that researches for you"
+        },
+        {
+          "featureId": "af-einstein-next-best-action-sales",
+          "name": "Einstein Next Best Action (Sales)",
+          "description": "Deliver optimal recommendations at the point of maximum impact"
+        }
+      ]
+    },
+    {
+      "categoryId": "service-ai",
+      "categoryName": "Service AI",
+      "features": [
+        {
+          "featureId": "af-real-time-translations",
+          "name": "Real Time Translations for Enhanced Messaging",
+          "description": "Scale service without sacrificing quality by offering instant support in the customer's preferred language"
+        },
+        {
+          "featureId": "af-article-recommendations",
+          "name": "Article Recommendations",
+          "description": "Surface the best articles in real-time to solve any customer's questions"
+        },
+        {
+          "featureId": "af-reply-recommendations",
+          "name": "Reply Recommendations",
+          "description": "Eliminate time spent typing responses to the most common customer questions"
+        },
+        {
+          "featureId": "af-service-analytics",
+          "name": "Service Analytics",
+          "description": "Get insights into contact center operations, understand customers, and deliver enhanced customer experiences"
+        },
+        {
+          "featureId": "af-bots",
+          "name": "Bots",
+          "description": "Automate common questions and business processes to solve requests faster"
+        },
+        {
+          "featureId": "af-case-wrap-up",
+          "name": "Case Wrap-Up",
+          "description": "Decrease time selecting field values needed to close a case with chat conversations and improved field accuracy"
+        },
+        {
+          "featureId": "af-next-best-action-service",
+          "name": "Next Best Action (Service)",
+          "description": "Deliver optimal recommendations at the point of maximum impact"
+        },
+        {
+          "featureId": "af-recommendation-builder",
+          "name": "Recommendation Builder",
+          "description": "Eliminate the guesswork by deploying AI-powered recommendations for everyone"
+        },
+        {
+          "featureId": "af-case-classification",
+          "name": "Case Classification",
+          "description": "Decrease time spent on manual data entry for incoming cases and improve case field accuracy and completion"
+        },
+        {
+          "featureId": "af-case-routing",
+          "name": "Case Routing",
+          "description": "Automate case triage to ensure the right service rep has access to the right cases to solve customer requests faster"
+        },
+        {
+          "featureId": "af-generative-ai-service",
+          "name": "Generative AI (Service Rep Assistant, Service Replies, Summaries, Search Answers, Knowledge Creation)",
+          "description": "Boost productivity by auto-generating multi step action plans, service replies, summarizing conversations, drafting knowledge articles, and surfacing relevant answers"
+        },
+        {
+          "featureId": "af-service-agent",
+          "name": "Agentforce Service Agent",
+          "description": "Deflect cases and reduce costs with 24/7 autonomous support, across any channel"
+        },
+        {
+          "featureId": "af-employee-agent",
+          "name": "Agentforce Employee Agent",
+          "description": "Boost productivity and resolve complex issues faster with internal AI agents embedded in reps' workspaces"
+        },
+        {
+          "featureId": "af-prompt-builder-service",
+          "name": "Prompt Builder (Service)",
+          "description": "Customize and extend AI with low code tools"
+        },
+        {
+          "featureId": "af-customer-signals",
+          "name": "Customer Signals Intelligence",
+          "description": "Understand customer sentiment in real time across channels and take immediate action to help personalize support and boost loyalty"
+        }
+      ]
+    },
+    {
+      "categoryId": "marketing-ai",
+      "categoryName": "Marketing AI",
+      "features": [
+        {
+          "featureId": "af-send-time-optimization",
+          "name": "Einstein Send Time Optimization",
+          "description": "Keep every subscriber engaged by sending emails at the optimal time of engagement"
+        },
+        {
+          "featureId": "af-metrics-guard",
+          "name": "Einstein Metrics Guard",
+          "description": "Ensure your email performance data stays accurate by detecting and adjusting for anomalies, bot traffic, and tracking errors before they skew results"
+        },
+        {
+          "featureId": "af-engagement-scoring",
+          "name": "Einstein Engagement Scoring",
+          "description": "Score every customer's likelihood to engage with your emails and journeys"
+        },
+        {
+          "featureId": "af-engagement-frequency",
+          "name": "Einstein Engagement Frequency",
+          "description": "Prevent email unsubscribes by knowing exactly how many emails to send to customers"
+        }
+      ]
+    },
+    {
+      "categoryId": "field-service-ai",
+      "categoryName": "Field Service AI",
+      "features": [
+        {
+          "featureId": "af-scheduling-optimization",
+          "name": "Scheduling Optimization",
+          "description": "Automatically schedule the right technician at the right time to maximize efficiency and customer satisfaction"
+        },
+        {
+          "featureId": "af-work-order-intelligence",
+          "name": "Work Order Intelligence",
+          "description": "Surface relevant knowledge and asset history to field technicians before and during jobs"
+        },
+        {
+          "featureId": "af-mobile-worker-ai",
+          "name": "Mobile Worker AI",
+          "description": "Equip field technicians with AI-powered guidance and recommendations in the field"
+        }
+      ]
+    }
+  ]
+}

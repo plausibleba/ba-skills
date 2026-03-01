@@ -76,6 +76,49 @@ export interface Intensity {
   severity?: "Low" | "Medium" | "High" | "Critical";
 }
 
+// --- F-002: Solutions layer ---
+
+export type SolutionType = "People" | "Process" | "Information" | "Technology";
+
+export interface VendorFeatureRef {
+  vendorId: string;       // e.g. "salesforce"
+  vendorName: string;     // e.g. "Salesforce"
+  featureId: string;      // e.g. "af-skill-account-mgmt"
+  featureName: string;    // e.g. "Agentforce Skill: Account Management"
+  categoryName: string;   // e.g. "Sales AI"
+  rationale: string;      // consultant-authored, 1-2 sentences
+}
+
+export interface Solution {
+  solutionId: string;
+  type: SolutionType;
+  description: string;
+  vendorFeatureRef?: VendorFeatureRef;  // Technology solutions only
+  freeTextFeature?: string;             // fallback when feature not in library
+}
+
+// --- Vendor Feature Library ---
+
+export interface VendorFeature {
+  featureId: string;
+  name: string;
+  description: string;
+}
+
+export interface VendorCategory {
+  categoryId: string;
+  categoryName: string;
+  features: VendorFeature[];
+}
+
+export interface VendorFeatureLibrary {
+  vendorId: string;
+  vendorName: string;
+  categories: VendorCategory[];
+}
+
+// ---
+
 export interface FrictionObservation {
   observationId: string;
   category: string;
@@ -85,6 +128,7 @@ export interface FrictionObservation {
   confidence?: number;
   rationale: string;
   observedAt?: string;
+  solutions?: Solution[];   // F-002: optional solutions array
 }
 
 export interface BindingConstraint {
