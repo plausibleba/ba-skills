@@ -1,0 +1,219 @@
+{
+  "heatmapId": "puretec-channel-sales-heatmap-v1",
+  "scaffoldId": "puretec-presales-discovery-v1",
+  "valueStreamId": "vs-channel-sales",
+  "observations": [
+    {
+      "observationId": "cs_001",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act-territory-planning"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric-admin-days-lost"
+        },
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric-crm-adoption"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 7.0
+      },
+      "rationale": "Salesforce Maps is used for route planning but provides no customer intelligence. Reps manually call Customer Care before each visit to obtain account context \u2014 an entirely manual workaround. Estimated 3 days per rep per week lost to this administrative overhead.",
+      "evidence": [
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "They waste 3 days of selling time lost to admin and meetings"
+        },
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "They need manual information from customer care"
+        }
+      ],
+      "observedAt": "2026-02-28T10:00:00Z"
+    },
+    {
+      "observationId": "cs_002",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act-pre-visit-intelligence"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric-visit-brief-coverage"
+        },
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric-admin-days-lost"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 9.5
+      },
+      "rationale": "No consolidated pre-visit brief exists. Order history, delivery issues, and open opportunities are siloed across Salesforce and NetSuite with no unified view. Reps visit accounts without knowing last order, outstanding delivery issues, or current opportunity status. This is the primary driver of the 3-days-lost-to-admin figure.",
+      "evidence": [
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "They should be able to know all of the historical last orders, delivery issues, opportunity prior to the visit"
+        },
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "The key thing for them is having a brief of the account before they get there"
+        }
+      ],
+      "observedAt": "2026-02-28T10:00:00Z"
+    },
+    {
+      "observationId": "cs_003",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act-pre-visit-intelligence"
+      },
+      "contributingAnchors": [],
+      "intensity": {
+        "scale": "0-10",
+        "score": 8.5
+      },
+      "rationale": "No mobile-accessible account brief exists. Field reps work alongside plumbers whose primary channel is WhatsApp and SMS. Current Salesforce mobile experience is not fit for purpose. Management has explicitly stated the system must feel like a 15-year-old could use it.",
+      "evidence": [
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "Easy and conversational \u2014 their mantra is feel like a 15 year old could use the system"
+        },
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "Primary channel is WhatsApp and SMS because they're plumbers on the road"
+        }
+      ],
+      "observedAt": "2026-02-28T10:00:00Z"
+    },
+    {
+      "observationId": "cs_004",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act-partner-engagement"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric-distributor-activation"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 7.5
+      },
+      "rationale": "Distributors default to passive order-taking behaviour. No tooling or process exists to identify passive distributors, trigger activation conversations, or measure proactive selling activity. The channel was designed for proactive selling but operates as a reactive order queue.",
+      "evidence": [
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "Distributors are better at taking orders than they are at proactive selling"
+        },
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "They don't have the tools to help them be proactive"
+        }
+      ],
+      "observedAt": "2026-02-28T10:00:00Z"
+    },
+    {
+      "observationId": "cs_005",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act-opportunity-management"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Control",
+          "anchorId": "ctrl-crm-logging-mandate"
+        },
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric-crm-adoption"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 7.0
+      },
+      "rationale": "Sales team not logging activity in Salesforce. Management is not enforcing CRM logging as a KPI because the system is not yet reliable enough \u2014 enforcing adoption of a broken system would cause rep disengagement. This creates a catch-22: no data means no intelligence, but mandating data entry into a poor system destroys trust.",
+      "evidence": [
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "The sales team is commission based but they aren't logging Salesforce activity metrics as a KPI"
+        },
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "The exec team is concerned that if they're trying to enforce use of the CRM people would get disgruntled"
+        }
+      ],
+      "observedAt": "2026-02-28T10:00:00Z"
+    },
+    {
+      "observationId": "cs_006",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act-order-conversion"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric-order-channel-mix"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 5.5
+      },
+      "rationale": "Orders are captured across WhatsApp, SMS, and Salesforce with no unified capture flow. There is no structured handoff from a WhatsApp conversation to a Salesforce opportunity or order record, creating manual transcription steps and data loss risk.",
+      "evidence": [
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "Primary channel is WhatsApp and SMS because they're plumbers on the road"
+        },
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "The processors aren't there \u2014 they end up having to use disparate tools"
+        }
+      ],
+      "observedAt": "2026-02-28T10:00:00Z"
+    }
+  ],
+  "bindingConstraint": {
+    "findingId": "bc_cs_001",
+    "bindingAnchor": {
+      "anchorType": "Activity",
+      "anchorId": "act-pre-visit-intelligence"
+    },
+    "bindingAnchorObservationId": "cs_002",
+    "justification": "Absence of consolidated pre-visit account intelligence is the binding constraint on field sales effectiveness. Until reps can access order history, delivery issues, and opportunity context before visits, all downstream stages \u2014 partner engagement, opportunity qualification, and order conversion \u2014 operate below capacity. The 3-days-lost-to-admin figure is a direct consequence of this gap. Resolving this single constraint unlocks the majority of sales productivity improvement available in this value stream.",
+    "confidence": 0.91,
+    "observedAt": "2026-02-28T10:00:00Z"
+  },
+  "schemaVersion": "1.0.0",
+  "createdAt": "2026-02-28T10:00:00Z"
+}

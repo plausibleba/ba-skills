@@ -1,0 +1,223 @@
+{
+  "heatmapId": "puretec-customer-maintenance-heatmap-v1",
+  "scaffoldId": "puretec-presales-discovery-v1",
+  "valueStreamId": "vs-customer-maintenance",
+  "observations": [
+    {
+      "observationId": "cm_001",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act-replacement-scheduling"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric-netsuite-sync-lag"
+        },
+        {
+          "anchorType": "Control",
+          "anchorId": "ctrl-netsuite-integration-sla"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 9.5
+      },
+      "rationale": "Cartridge installation dates live in NetSuite. The Salesforce-NetSuite integration has been failing for 9+ months \u2014 originally scoped as a 3-month project. Without reliable sync, installation dates are unavailable in Salesforce, making systematic replacement scheduling impossible. This is not a process gap \u2014 it is a broken foundation.",
+      "evidence": [
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "Originally meant to be a 3 month project to integrate NetSuite but that's taken over 9 months"
+        },
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "They still haven't been able to integrate NetSuite with Meldoc"
+        }
+      ],
+      "observedAt": "2026-02-28T10:00:00Z"
+    },
+    {
+      "observationId": "cm_002",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act-replacement-scheduling"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric-cartridge-replacement-rate"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 8.0
+      },
+      "rationale": "Without automated due date visibility, replacement scheduling relies on manual processes and individual memory. The 12-month replacement cycle is the primary maintenance revenue mechanism \u2014 any leakage accumulates silently and compounds over time as the installed base grows.",
+      "evidence": [
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "A cartridge needs to be replaced every 12 months \u2014 they hope to replace these cartridges on a yearly basis"
+        },
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "Staff use multiple systems because they're forced to \u2014 there are a lot of manual processes"
+        }
+      ],
+      "observedAt": "2026-02-28T10:00:00Z"
+    },
+    {
+      "observationId": "cm_003",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act-outbound-contact"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric-outreach-contact-rate"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 6.0
+      },
+      "rationale": "Primary customer contact channel is WhatsApp and SMS, but outbound contact is not managed through Salesforce. No structured outreach workflow exists \u2014 contact is ad hoc and untracked. Without a systematic contact capability, the replacement rate cannot be reliably improved.",
+      "evidence": [
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "Primary channel is WhatsApp and SMS because they're plumbers on the road"
+        },
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "The processors aren't there \u2014 they end up having to use disparate tools to get the job done"
+        }
+      ],
+      "observedAt": "2026-02-28T10:00:00Z"
+    },
+    {
+      "observationId": "cm_004",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act-replacement-order"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric-netsuite-sync-lag"
+        },
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric-replacement-cycle-time"
+        },
+        {
+          "anchorType": "Control",
+          "anchorId": "ctrl-netsuite-integration-sla"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 9.0
+      },
+      "rationale": "Meldoc was implemented to solve the Salesforce-NetSuite integration but has not successfully connected the two systems after 9 months. 90+ customisations in Salesforce have made standard integration harder. The current implementation partner has been flagged as incompetent. Manual reconciliation is required for every order.",
+      "evidence": [
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "They invested in Meldoc to try and solve for that but for historical reasons and incompetencies of the current implementation team they still haven't integrated"
+        },
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "They've developed 90 or more customisations to the Salesforce system \u2014 things that should be straightforward are now harder"
+        }
+      ],
+      "observedAt": "2026-02-28T10:00:00Z"
+    },
+    {
+      "observationId": "cm_005",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act-replacement-order"
+      },
+      "contributingAnchors": [],
+      "intensity": {
+        "scale": "0-10",
+        "score": 7.5
+      },
+      "rationale": "Staff are forced to use multiple disparate systems because the integration is broken. Order processing requires manual steps across Salesforce and NetSuite. With 4000+ SKUs across filtration systems, parts and cartridges, product data integrity is entirely dependent on a sync that is not functioning.",
+      "evidence": [
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "Staff use multiple systems because they're kind of forced to despite having a bunch of sales tools"
+        },
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "4 over 4000 different product SKUs including filtration systems, parts and cartridges"
+        }
+      ],
+      "observedAt": "2026-02-28T10:00:00Z"
+    },
+    {
+      "observationId": "cm_006",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act-installation-confirmation"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric-cartridge-replacement-rate"
+        },
+        {
+          "anchorType": "Metric",
+          "anchorId": "metric-replacement-cycle-time"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 6.5
+      },
+      "rationale": "No structured installation confirmation or warranty registration workflow exists. Without a confirmed installation date, the next replacement due date cannot be set, silently breaking the 12-month replacement cycle. Maintenance revenue leakage accumulates with each unconfirmed installation.",
+      "evidence": [
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "They have maintenance revenue \u2014 a cartridge needs to be replaced every 12 months"
+        },
+        {
+          "evidenceType": "Note",
+          "ref": "Discovery call \u2014 Daniel Roach",
+          "snippet": "They hope or expect to replace these cartridges on a yearly basis"
+        }
+      ],
+      "observedAt": "2026-02-28T10:00:00Z"
+    }
+  ],
+  "bindingConstraint": {
+    "findingId": "bc_cm_001",
+    "bindingAnchor": {
+      "anchorType": "Activity",
+      "anchorId": "act-replacement-scheduling"
+    },
+    "bindingAnchorObservationId": "cm_001",
+    "justification": "The Salesforce-NetSuite integration failure is the binding constraint on the entire Customer Maintenance value stream. Without reliable cartridge installation date data flowing from NetSuite into Salesforce, replacement scheduling cannot be automated, outbound contact lacks accurate timing, and the 12-month replacement cycle operates on guesswork. All downstream activities are blocked by this single integration failure. Until the integration foundation is resolved, no process improvement in this stream can be sustained.",
+    "confidence": 0.95,
+    "observedAt": "2026-02-28T10:00:00Z"
+  },
+  "schemaVersion": "1.0.0",
+  "createdAt": "2026-02-28T10:00:00Z"
+}

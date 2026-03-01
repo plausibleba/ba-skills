@@ -37,7 +37,7 @@ export function StageCard({
       onClick={() => {
         if (hasHeatmap && frictionObs.length > 0) onFrictionClick(activityId);
       }}
-      className={`flex flex-col overflow-hidden rounded-lg border transition-shadow ${
+      className={`flex flex-1 flex-col overflow-hidden rounded-lg border transition-shadow ${
         hasHeatmap && frictionObs.length > 0
           ? "cursor-pointer hover:shadow-md"
           : ""
