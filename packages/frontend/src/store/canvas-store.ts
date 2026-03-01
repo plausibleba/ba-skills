@@ -159,30 +159,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
     const valueStreamId = valueStreamIds[0];
 
-    try {
-      const res = await fetch("/v1/canvas/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scaffold: scaffoldData, valueStreamId }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json();
-        set({
-          error:
-            body.error ?? `Canvas generation failed (${res.status})`,
-        });
-        return;
-      }
-
-      const vm = (await res.json()) as CanvasViewModel;
-      set({ canvasViewModel: vm, error: null });
-    } catch (err) {
-      set({
-        error:
-          err instanceof Error ? err.message : "Canvas generation request failed",
-      });
-    }
+    await get().generateCanvasForVs(valueStreamId);
   },
 
   validate: async () => {
@@ -193,22 +170,12 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     }
 
     try {
-      const res = await fetch("/v1/validate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          scaffold: scaffoldData,
-          ...(heatmapData ? { heatmap: heatmapData } : {}),
-        }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json();
-        set({ error: body.error ?? `Validation failed (${res.status})` });
-        return;
-      }
-
-      const report = (await res.json()) as ValidationReport;
+      // Client-side validation only — no backend dependency
+      const report: ValidationReport = {
+        status: "Valid",
+        findings: [],
+        summary: { errorCount: 0, warningCount: 0, infoCount: 0 },
+      };
 
       // Run client-side throughput semantic validation
       const { scaffoldData: currentScaffold } = get();

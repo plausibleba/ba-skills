@@ -18,7 +18,8 @@
         "elementType": "ValueStream",
         "tags": [],
         "capabilityIds": [],
-        "metricIds": []
+        "metricIds": [],
+        "layoutZone": "ecosystem"
       },
       "vs-customer-maintenance": {
         "id": "vs-customer-maintenance",
@@ -33,7 +34,8 @@
         "elementType": "ValueStream",
         "tags": [],
         "capabilityIds": [],
-        "metricIds": []
+        "metricIds": [],
+        "layoutZone": "knowledge"
       },
       "vs-order-fulfilment": {
         "id": "vs-order-fulfilment",
@@ -46,7 +48,8 @@
         "elementType": "ValueStream",
         "tags": [],
         "capabilityIds": [],
-        "metricIds": []
+        "metricIds": [],
+        "layoutZone": "ecosystem"
       },
       "vs-installation-support": {
         "id": "vs-installation-support",
@@ -59,7 +62,8 @@
         "elementType": "ValueStream",
         "tags": [],
         "capabilityIds": [],
-        "metricIds": []
+        "metricIds": [],
+        "layoutZone": "knowledge"
       }
     },
     "activities": {
@@ -1419,5 +1423,25 @@
   },
   "scaffoldIntegrityHash": "aa62192b76cf8007b2d673e9ef5cde01868fe3aa04d3fb248d33e8ea7c003738",
   "schemaVersion": "1.0.0",
-  "createdAt": "2026-02-28T10:00:00Z"
+  "createdAt": "2026-02-28T10:00:00Z",
+  "crossStreamOutcomes": [
+    {
+      "fromVsId": "vs-channel-sales",
+      "toVsId": "vs-order-fulfilment",
+      "outcomeId": "out-order-converted",
+      "direction": "forward"
+    },
+    {
+      "fromVsId": "vs-order-fulfilment",
+      "toVsId": "vs-customer-maintenance",
+      "outcomeId": "out-order-dispatched",
+      "direction": "forward"
+    },
+    {
+      "fromVsId": "vs-customer-maintenance",
+      "toVsId": "vs-installation-support",
+      "outcomeId": "out-installation-confirmed",
+      "direction": "forward"
+    }
+  ]
 }
