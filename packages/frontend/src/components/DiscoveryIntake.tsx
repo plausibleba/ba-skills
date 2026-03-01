@@ -339,7 +339,7 @@ ${transcript}`;
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-5-20251001",
-          max_tokens: 1000,
+          max_tokens: 4000,
           messages: [{ role: "user", content: prompt }]
         })
       });
