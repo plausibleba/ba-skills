@@ -277,57 +277,19 @@ export default function DiscoveryIntake() {
 
     const prompt = `You are a business analyst extracting discovery signal from a sales or consulting call transcript or meeting notes.
 
-Extract information into this exact JSON structure. For each field, include a "confidence" property: "high", "medium", or "low".
-Mark isFrictionSource: true for any technology system mentioned as a problem or bottleneck.
-Return ONLY valid JSON with no markdown fences.
+Return ONLY valid JSON with no markdown fences. Be concise - short strings only.
 
 {
-  "org": {
-    "name": "",
-    "industry": "",
-    "companySize": "",
-    "description": "",
-    "stakeholder": "",
-    "confidence": "high|medium|low"
-  },
-  "valueStreams": [
-    {
-      "id": 1,
-      "name": "",
-      "description": "",
-      "zone": "ecosystem|knowledge",
-      "stages": [{"name": "", "confidence": "high|medium|low"}],
-      "stakeholder": "",
-      "confidence": "high|medium|low"
-    }
-  ],
-  "roles": [
-    {"id": 1, "name": "", "type": "Internal|External|System", "notes": "", "confidence": "high|medium|low"}
-  ],
-  "tech": [
-    {"id": 1, "name": "", "type": "CRM|ERP|Comms|Analytics|Field|Custom|Other", "friction": true|false, "notes": "", "confidence": "high|medium|low"}
-  ],
-  "painPoints": [
-    {
-      "id": 1,
-      "description": "",
-      "category": "DataSignalFriction|ProcessHandoffFriction|GovernanceRiskFriction|IncentiveCapacityFriction|DecisionAuthorityFriction",
-      "intensity": 7,
-      "affectedStage": "",
-      "binding": true|false,
-      "confidence": "high|medium|low"
-    }
-  ],
-  "metrics": [
-    {"id": 1, "name": "", "current": "", "target": "", "stage": "", "confidence": "high|medium|low"}
-  ],
-  "gaps": [
-    {"severity": "required|recommended", "prompt": "Specific question for consultant to fill"}
-  ]
+  "org": {"name": "", "industry": "", "companySize": "", "description": "", "stakeholder": ""},
+  "valueStreams": [{"id": 1, "name": "", "description": "", "zone": "ecosystem|knowledge", "stages": [{"name": ""}], "stakeholder": ""}],
+  "roles": [{"id": 1, "name": "", "type": "Internal|External|System", "notes": ""}],
+  "tech": [{"id": 1, "name": "", "type": "CRM|ERP|Comms|Analytics|Field|Custom|Other", "friction": true, "notes": ""}],
+  "painPoints": [{"id": 1, "description": "", "category": "DataSignalFriction|ProcessHandoffFriction|GovernanceRiskFriction|IncentiveCapacityFriction|DecisionAuthorityFriction", "intensity": 7, "affectedStage": "", "binding": false}],
+  "metrics": [{"id": 1, "name": "", "current": "", "target": "", "stage": ""}],
+  "gaps": []
 }
 
-Zone rules: ecosystem = externally-facing (sales, service, marketing); knowledge = internally-facing (risk, operations, reporting).
-Intensity: rate 1-10 based on urgency/impact implied in transcript. Binding = the single biggest bottleneck.
+Zone: ecosystem=externally-facing, knowledge=internally-facing. Intensity: 1-10. Only one binding=true.
 Generate 2-4 gap prompts for missing important fields.
 
 Transcript:
