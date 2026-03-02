@@ -14,6 +14,7 @@ export default function App() {
     error,
     backToNetwork,
     goToIntake,
+    loadScaffold,
   } = useCanvasStore();
 
   const isLoaded = !!scaffoldData;
@@ -126,7 +127,14 @@ export default function App() {
         )}
 
         {/* Views */}
-        {isIntake && <DiscoveryIntake />}
+        {isIntake && (
+          <DiscoveryIntake
+            onComplete={(scaffold) => {
+              loadScaffold(scaffold);
+              backToNetwork();
+            }}
+          />
+        )}
 
         {!isIntake && !isLoaded && (
           <div className="flex h-full items-center justify-center p-6">

@@ -226,7 +226,7 @@ function ExtractionSummary({ meta, form }) {
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
-export default function DiscoveryIntake({ onComplete }: { onComplete?: (scaffold: any) => void }) {
+export default function DiscoveryIntake() {
   const [mode, setMode] = useState("freeform"); // "freeform" | "structured"
   const [transcript, setTranscript] = useState("");
   const [form, setForm] = useState(EMPTY_FORM);
@@ -235,7 +235,6 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (scaffold
   const [activeSection, setActiveSection] = useState(null);
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState(false);
-  const [generatedScaffold, setGeneratedScaffold] = useState<any>(null);
   const dropRef = useRef();
 
   const readiness = calcReadiness(form);
@@ -372,127 +371,10 @@ ${transcript}`;
     }
   }
 
-  // ─── Generate IR → Scaffold ───────────────────────────────────────────────
+  // ─── Generate IR ─────────────────────────────────────────────────────────
   async function generateIR() {
     setGenerating(true);
-    await new Promise(r => setTimeout(r, 800)); // brief UX pause
-
-    // ── Build canonical scaffold from form ────────────────────────────────
-    const id = (prefix: string, name: string) =>
-      `${prefix}-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
-
-    const elements: any = {
-      valueStreams: {},
-      activities: {},
-      capabilities: {},
-      roles: {},
-      outcomes: {},
-      metrics: {},
-      controls: {},
-      informationObjects: {},
-      technologyApps: {},
-    };
-
-    // Roles
-    form.roles.filter((r: any) => r.name).forEach((r: any) => {
-      const rid = id("role", r.name);
-      elements.roles[rid] = { name: r.name };
-    });
-
-    // Tech
-    form.tech.filter((t: any) => t.name).forEach((t: any) => {
-      const tid = id("tech", t.name);
-      elements.technologyApps[tid] = { name: t.name, type: t.type ?? "Other" };
-    });
-
-    // Metrics
-    form.metrics.filter((m: any) => m.name).forEach((m: any) => {
-      const mid = id("metric", m.name);
-      elements.metrics[mid] = { name: m.name };
-    });
-
-    // Pain points → outcomes + controls
-    form.painPoints.filter((p: any) => p.description).forEach((p: any) => {
-      const cid = id("ctrl", p.description);
-      elements.controls[cid] = { name: p.description.slice(0, 60) };
-    });
-
-    // Value streams + activities (stages)
-    const crossStreamOutcomes: any[] = [];
-    form.valueStreams.filter((vs: any) => vs.name).forEach((vs: any) => {
-      const vsId = id("vs", vs.name);
-      const activityIds: string[] = [];
-
-      const stages = vs.stages?.length ? vs.stages : [{ name: "Initial Stage" }, { name: "Final Stage" }];
-
-      stages.forEach((stage: any, idx: number) => {
-        const actId = id("act", `${vs.name}-${stage.name}`);
-        const preId = id("out", idx === 0 ? `${vs.name}-entry` : `${vs.name}-${stages[idx-1].name}-complete`);
-        const postId = id("out", `${vs.name}-${stage.name}-complete`);
-
-        elements.outcomes[preId] = elements.outcomes[preId] ?? { name: idx === 0 ? `${vs.name} initiated` : `${stages[idx-1].name} complete`, status: "active" };
-        elements.outcomes[postId] = { name: `${stage.name} complete`, status: "active" };
-
-        // Link pain points to this stage's controls
-        const stageKey = `${vs.name} → ${stage.name}`;
-        const linkedControls = form.painPoints
-          .filter((p: any) => p.affectedStage === stageKey && p.description)
-          .map((p: any) => id("ctrl", p.description));
-
-        const linkedMetrics = form.metrics
-          .filter((m: any) => m.stage === stageKey && m.name)
-          .map((m: any) => id("metric", m.name));
-
-        const capId = id("cap", `${vs.name}-${stage.name}`);
-        elements.capabilities[capId] = { name: stage.name, description: `${stage.name} capability within ${vs.name}` };
-
-        const roleIds = Object.keys(elements.roles);
-        const techIds = Object.keys(elements.technologyApps);
-
-        elements.activities[actId] = {
-          name: stage.name,
-          description: stage.description ?? `${stage.name} stage in ${vs.name}`,
-          preOutcomeId: preId,
-          postOutcomeId: postId,
-          requiresCapabilityIds: [capId],
-          performedByRoleIds: roleIds.slice(0, 2),
-          metricIds: linkedMetrics,
-          controlIds: linkedControls,
-          capabilityPPIT: {
-            [capId]: {
-              roleIds: roleIds.slice(0, 2),
-              activities: [`Execute ${stage.name.toLowerCase()} process`, `Validate ${stage.name.toLowerCase()} output`],
-              informationObjectIds: [],
-              technologyAppIds: techIds.slice(0, 2),
-            }
-          }
-        };
-
-        activityIds.push(actId);
-      });
-
-      elements.valueStreams[vsId] = {
-        name: vs.name,
-        description: vs.description || `${vs.name} value stream`,
-        activityIds,
-        layoutZone: vs.zone ?? "ecosystem",
-        accountableStakeholder: vs.stakeholder || form.org.stakeholder || "",
-      };
-    });
-
-    const scaffoldId = id("scaffold", form.org.name || "discovery");
-    const scaffold = {
-      schemaVersion: "1.0",
-      scaffoldId,
-      name: form.org.name || "Discovery Scaffold",
-      description: `Generated from discovery intake — ${form.org.industry ?? ""} ${form.org.companySize ?? ""}`.trim(),
-      createdAt: new Date().toISOString(),
-      elements,
-      crossStreamOutcomes,
-      scaffoldIntegrityHash: btoa(scaffoldId + Date.now()).slice(0, 32),
-    };
-
-    setGeneratedScaffold(scaffold);
+    await new Promise(r => setTimeout(r, 1500)); // simulate pipeline
     setGenerating(false);
     setGenerated(true);
   }
@@ -550,9 +432,7 @@ ${transcript}`;
               className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 transition-colors">
               New discovery
             </button>
-            <button
-              onClick={() => onComplete?.(generatedScaffold)}
-              className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors">
+            <button className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors">
               Open in Canvas →
             </button>
           </div>
