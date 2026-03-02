@@ -284,7 +284,7 @@ Return ONLY valid JSON with no markdown fences. Be concise - short strings only.
   "valueStreams": [{"id": 1, "name": "", "description": "", "zone": "ecosystem|knowledge", "stages": [{"name": ""}], "stakeholder": ""}],
   "roles": [{"id": 1, "name": "", "type": "Internal|External|System", "notes": ""}],
   "tech": [{"id": 1, "name": "", "type": "CRM|ERP|Comms|Analytics|Field|Custom|Other", "friction": true, "notes": ""}],
-  "painPoints": [{"id": 1, "description": "", "category": "DataSignalFriction|ProcessHandoffFriction|GovernanceRiskFriction|IncentiveCapacityFriction|DecisionAuthorityFriction", "intensity": 7, "affectedStage": "", "binding": false}],
+  "painPoints": [{"id": 1, "description": "", "category": "DataSignalFriction|ProcessHandoffFriction|GovernanceRiskFriction|IncentiveCapacityFriction|DecisionAuthorityFriction", "intensity": 7, "affectedStage": "ValueStreamName → StageName", "binding": false}],
   "metrics": [{"id": 1, "name": "", "current": "", "target": "", "stage": ""}],
   "gaps": []
 }
@@ -310,15 +310,36 @@ ${transcript}`;
       const clean = text.replace(/```json|```/g, "").trim();
       const extracted = JSON.parse(clean);
 
+      // Build all stage options in "VS name → stage name" format for matching
+      const extractedVS = extracted.valueStreams?.length
+        ? extracted.valueStreams.map((vs, i) => ({ ...vs, id: vs.id ?? Date.now() + i }))
+        : [];
+
+      const allExtractedStages = extractedVS.flatMap(vs =>
+        (vs.stages ?? []).map(s => `${vs.name} → ${s.name}`)
+      );
+
+      // Normalize affectedStage: match extracted plain stage name to "VS → stage" format
+      const normalizeStage = (raw) => {
+        if (!raw) return "";
+        // Already in correct format
+        if (allExtractedStages.includes(raw)) return raw;
+        // Try to find a match by stage name suffix
+        const match = allExtractedStages.find(s => s.endsWith(`→ ${raw}`) || s.includes(raw));
+        return match ?? raw;
+      };
+
       setForm(f => ({
         ...f,
         org: { ...f.org, ...extracted.org },
-        valueStreams: extracted.valueStreams?.length
-          ? extracted.valueStreams.map((vs, i) => ({ ...vs, id: vs.id ?? Date.now() + i }))
-          : f.valueStreams,
+        valueStreams: extractedVS.length ? extractedVS : f.valueStreams,
         roles: (extracted.roles ?? []).map((r, i) => ({ ...r, id: r.id ?? Date.now() + i })),
         tech: (extracted.tech ?? []).map((t, i) => ({ ...t, id: t.id ?? Date.now() + i })),
-        painPoints: (extracted.painPoints ?? []).map((p, i) => ({ ...p, id: p.id ?? Date.now() + i })),
+        painPoints: (extracted.painPoints ?? []).map((p, i) => ({
+          ...p,
+          id: p.id ?? Date.now() + i,
+          affectedStage: normalizeStage(p.affectedStage),
+        })),
         metrics: (extracted.metrics ?? []).map((m, i) => ({ ...m, id: m.id ?? Date.now() + i })),
         gaps: extracted.gaps ?? [],
         source: "freeform_extraction",
