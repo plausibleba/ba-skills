@@ -1,229 +1,64 @@
 {
   "vendorId": "salesforce",
   "vendorName": "Salesforce",
+  "version": "2.0",
   "categories": [
     {
       "categoryId": "sales-ai",
       "categoryName": "Sales AI",
       "features": [
-        {
-          "featureId": "af-skill-engagement",
-          "name": "Agentforce Skill: Engagement",
-          "description": "Maximize pipeline by engaging and qualifying leads 24/7"
-        },
-        {
-          "featureId": "af-skill-sales-coach",
-          "name": "Agentforce Skill: Sales Coach",
-          "description": "Scale coaching with personalized, objective feedback"
-        },
-        {
-          "featureId": "af-skill-pipeline-mgmt",
-          "name": "Agentforce Skill: Pipeline Management",
-          "description": "Automatic, objective deal updates based on data from calls, emails, and notes"
-        },
-        {
-          "featureId": "af-skill-account-mgmt",
-          "name": "Agentforce Skill: Account Management",
-          "description": "Instant account snapshots, always current account intelligence, and rich insights right in the flow of work"
-        },
-        {
-          "featureId": "af-sales-actions-employee",
-          "name": "18 Pre-built Sales Actions for Employee Agent",
-          "description": "Sell faster with an AI assistant in CRM"
-        },
-        {
-          "featureId": "af-prompt-builder-sales",
-          "name": "Prompt Builder",
-          "description": "Customize and extend AI with low code tools"
-        },
-        {
-          "featureId": "af-embedded-summarization",
-          "name": "Embedded Summarization",
-          "description": "Summarize any hero sales object like Accounts, Opportunities, Leads, and Contacts"
-        },
-        {
-          "featureId": "af-ai-sales-planning",
-          "name": "AI-Powered Sales Planning",
-          "description": "Efficiently work with large data sets using natural language, orchestrate workflows and allow teams to quickly model the impact of proposed changes"
-        },
-        {
-          "featureId": "af-eci-gen-ai",
-          "name": "ECI Gen AI Features (Call Summaries, Call Explorer, Sales Signals)",
-          "description": "Identify customer sentiment and next steps, synthesize important call information, and focus on the right deals"
-        },
-        {
-          "featureId": "af-eci-standard",
-          "name": "Einstein Conversation Insights (Standard)",
-          "description": "Gain actionable insights from your sales calls with conversation intelligence"
-        },
-        {
-          "featureId": "af-einstein-lead-scoring",
-          "name": "Einstein Lead Scoring",
-          "description": "Prioritize the leads most likely to convert"
-        },
-        {
-          "featureId": "af-einstein-opp-scoring",
-          "name": "Einstein Opportunity Scoring",
-          "description": "Prioritize the opportunities most likely to convert"
-        },
-        {
-          "featureId": "af-einstein-activity-capture",
-          "name": "Einstein Activity Capture",
-          "description": "Automatically capture data and add to your CRM"
-        },
-        {
-          "featureId": "af-contact-suggestion",
-          "name": "Contact Suggestion & Auto-Creation",
-          "description": "Auto-create contacts and enrich your CRM data"
-        },
-        {
-          "featureId": "af-einstein-forecasting",
-          "name": "Einstein Forecasting",
-          "description": "Easily predict sales forecasts inside of Salesforce"
-        },
-        {
-          "featureId": "af-sales-analytics",
-          "name": "Sales Analytics App",
-          "description": "Get insights into the most common sales KPIs"
-        },
-        {
-          "featureId": "af-einstein-relationship-insights",
-          "name": "Einstein Relationship Insights",
-          "description": "Speed prospecting with AI that researches for you"
-        },
-        {
-          "featureId": "af-einstein-next-best-action-sales",
-          "name": "Einstein Next Best Action (Sales)",
-          "description": "Deliver optimal recommendations at the point of maximum impact"
-        }
+        { "featureId": "af-sdr-agent", "name": "Agentforce SDR Agent", "description": "Autonomously qualifies inbound leads, sends personalised outreach, schedules meetings with interested prospects.", "customerStoryIds": ["asymbl-lead-engagement", "equipter-lead-response", "saastr-lead-revival", "tasc-lead-sourcing", "anthropic-gtm-collaboration", "centralsquare-lead-qualification", "siemens-lead-qualification"] },
+        { "featureId": "af-sales-coach", "name": "Agentforce Sales Coach", "description": "Delivers real-time, personalised coaching during sales calls based on deal context and customer data.", "customerStoryIds": ["simplyhealth-sales-service", "goodyear-dealer-engagement", "engine-travel-service"] },
+        { "featureId": "af-account-research", "name": "Account Research & Summary", "description": "Distils structured and unstructured CRM data into concise, actionable account briefs and one-pagers.", "customerStoryIds": ["rbc-wealth-meeting-prep", "dakota-account-reports", "mclaren-f1-partnerships", "anthropic-gtm-collaboration"] },
+        { "featureId": "af-deal-desk-agent", "name": "Deal Desk Agent", "description": "Autonomously reviews and approves deals within defined guardrails, escalates exceptions for human review.", "customerStoryIds": ["kaseya-deal-review"] },
+        { "featureId": "af-pipeline-management", "name": "Pipeline Management Agent", "description": "Monitors pipeline health, prioritises opportunities, surfaces next best actions for sales reps.", "customerStoryIds": ["anthropic-gtm-collaboration", "lumen-renewal-outreach", "pacers-fan-engagement"] },
+        { "featureId": "af-proposal-agent", "name": "Proposal Generation Agent", "description": "Analyses client data and campaign goals to auto-generate tailored proposals and executive briefs.", "customerStoryIds": ["nexstar-ad-sales", "safari365-itinerary-agent"] },
+        { "featureId": "af-renewal-agent", "name": "Renewal Outreach Agent", "description": "Identifies customers approaching contract renewal, sends personalised outreach sequences, monitors engagement.", "customerStoryIds": ["lumen-renewal-outreach", "simplyhealth-sales-service"] },
+        { "featureId": "af-lead-sourcing", "name": "Lead Sourcing Agent", "description": "Plugs into databases like ZoomInfo and LinkedIn to automatically shortlist, enrich, and qualify leads.", "customerStoryIds": ["tasc-lead-sourcing"] },
+        { "featureId": "af-meeting-prep", "name": "Meeting Prep Agent", "description": "Automatically compiles client history, account context, and talking points before scheduled meetings.", "customerStoryIds": ["rbc-wealth-meeting-prep", "goodyear-dealer-engagement"] },
+        { "featureId": "af-product-recommendation", "name": "Product Recommendation Agent", "description": "Surfaces personalised product or service recommendations based on customer profile and behaviour.", "customerStoryIds": ["pandora-service-and-shopping", "fujitsu-salesforce-support", "globoplay-subscriber-retention", "safari365-itinerary-agent", "advanced-turf-ecommerce"] },
+        { "featureId": "af-lead-revival", "name": "Lead Revival & Re-engagement", "description": "Systematically re-engages dormant leads with personalised context-aware outreach.", "customerStoryIds": ["saastr-lead-revival", "equipter-lead-response"] },
+        { "featureId": "af-seller-onboarding", "name": "Seller Onboarding Agent", "description": "Answers onboarding inquiries, provides competitive info, pricing, and executive briefs to new AEs in Slack.", "customerStoryIds": ["anthropic-gtm-collaboration"] }
       ]
     },
     {
       "categoryId": "service-ai",
       "categoryName": "Service AI",
       "features": [
-        {
-          "featureId": "af-real-time-translations",
-          "name": "Real Time Translations for Enhanced Messaging",
-          "description": "Scale service without sacrificing quality by offering instant support in the customer's preferred language"
-        },
-        {
-          "featureId": "af-article-recommendations",
-          "name": "Article Recommendations",
-          "description": "Surface the best articles in real-time to solve any customer's questions"
-        },
-        {
-          "featureId": "af-reply-recommendations",
-          "name": "Reply Recommendations",
-          "description": "Eliminate time spent typing responses to the most common customer questions"
-        },
-        {
-          "featureId": "af-service-analytics",
-          "name": "Service Analytics",
-          "description": "Get insights into contact center operations, understand customers, and deliver enhanced customer experiences"
-        },
-        {
-          "featureId": "af-bots",
-          "name": "Bots",
-          "description": "Automate common questions and business processes to solve requests faster"
-        },
-        {
-          "featureId": "af-case-wrap-up",
-          "name": "Case Wrap-Up",
-          "description": "Decrease time selecting field values needed to close a case with chat conversations and improved field accuracy"
-        },
-        {
-          "featureId": "af-next-best-action-service",
-          "name": "Next Best Action (Service)",
-          "description": "Deliver optimal recommendations at the point of maximum impact"
-        },
-        {
-          "featureId": "af-recommendation-builder",
-          "name": "Recommendation Builder",
-          "description": "Eliminate the guesswork by deploying AI-powered recommendations for everyone"
-        },
-        {
-          "featureId": "af-case-classification",
-          "name": "Case Classification",
-          "description": "Decrease time spent on manual data entry for incoming cases and improve case field accuracy and completion"
-        },
-        {
-          "featureId": "af-case-routing",
-          "name": "Case Routing",
-          "description": "Automate case triage to ensure the right service rep has access to the right cases to solve customer requests faster"
-        },
-        {
-          "featureId": "af-generative-ai-service",
-          "name": "Generative AI (Service Rep Assistant, Service Replies, Summaries, Search Answers, Knowledge Creation)",
-          "description": "Boost productivity by auto-generating multi step action plans, service replies, summarizing conversations, drafting knowledge articles, and surfacing relevant answers"
-        },
-        {
-          "featureId": "af-service-agent",
-          "name": "Agentforce Service Agent",
-          "description": "Deflect cases and reduce costs with 24/7 autonomous support, across any channel"
-        },
-        {
-          "featureId": "af-employee-agent",
-          "name": "Agentforce Employee Agent",
-          "description": "Boost productivity and resolve complex issues faster with internal AI agents embedded in reps' workspaces"
-        },
-        {
-          "featureId": "af-prompt-builder-service",
-          "name": "Prompt Builder (Service)",
-          "description": "Customize and extend AI with low code tools"
-        },
-        {
-          "featureId": "af-customer-signals",
-          "name": "Customer Signals Intelligence",
-          "description": "Understand customer sentiment in real time across channels and take immediate action to help personalize support and boost loyalty"
-        }
+        { "featureId": "af-service-agent", "name": "Agentforce Service Agent", "description": "Autonomous 24/7 customer service agent that handles FAQs, resolves common inquiries, and escalates complex issues to humans.", "customerStoryIds": ["1800accountant-tax-season", "absa-ai-led-bank", "bionic-sme-support", "directv-billing-support", "engie-billing-energy", "montway-auto-transport", "opentable-restaurant-support", "telepass-mobility-service", "urban-rest-service-time", "young-drivers-inquiry-handling", "ufl-fan-support", "remarkable-customer-service", "globoplay-subscriber-retention", "heathrow-airport-wayfinding", "panasonic-d2c-support"] },
+        { "featureId": "af-knowledge-grounding", "name": "Knowledge Article Grounding", "description": "Agent answers are grounded in existing knowledge bases, documentation, and Salesforce articles via Data 360.", "customerStoryIds": ["ufl-fan-support", "finnair-service-efficiency", "heathrow-airport-wayfinding", "hx-expeditions-faq", "young-drivers-inquiry-handling", "endress-hauser-self-service", "remarkable-customer-service", "northern-trains-accessibility", "opentable-restaurant-support"] },
+        { "featureId": "af-rep-assist", "name": "Rep Assist (Service)", "description": "Provides service reps with real-time AI assistance: case summaries, suggested replies, and relevant knowledge during customer interactions.", "customerStoryIds": ["directv-billing-support", "f1-fan-service", "caixabank-ai-banking", "panasonic-d2c-support"] },
+        { "featureId": "af-case-routing", "name": "Intelligent Case Routing", "description": "Automatically classifies and routes cases to the right team or queue, reducing misassignment.", "customerStoryIds": ["trustpilot-case-routing", "opentable-restaurant-support"] },
+        { "featureId": "af-escalation", "name": "Seamless Human Escalation", "description": "Transfers conversations to human agents with full context when Agentforce cannot resolve the inquiry.", "customerStoryIds": ["nexo-crypto-support", "opentable-restaurant-support", "bionic-sme-support", "endress-hauser-self-service"] },
+        { "featureId": "af-voice-agent", "name": "Agentforce Voice", "description": "AI-powered voice agent for inbound call centres, handles routine calls in natural conversational language.", "customerStoryIds": ["sammons-financial-voice", "uchicago-medicine-patient-engagement"] },
+        { "featureId": "af-whatsapp", "name": "WhatsApp Channel Integration", "description": "Deploys Agentforce via WhatsApp for customer support, scheduling, and transactional interactions.", "customerStoryIds": ["andina-art-transport", "grupo-falabella-whatsapp", "globoplay-subscriber-retention", "heathrow-airport-wayfinding", "northern-trains-accessibility", "vev-romerike-billing"] },
+        { "featureId": "af-appointment-scheduling", "name": "Appointment Scheduling Agent", "description": "Autonomously books, modifies, and cancels appointments based on customer request and availability.", "customerStoryIds": ["andina-art-transport", "mimit-health-cancellation-prediction", "rush-patient-access", "lennar-home-sales", "world-economic-forum-davos"] },
+        { "featureId": "af-data-summarisation", "name": "Data Summarisation Agent", "description": "Compiles structured and unstructured data into concise summaries — patient charts, grant reports, account briefs.", "customerStoryIds": ["adobe-population-health-charts", "america-on-tech-grant-reports", "rbc-wealth-meeting-prep", "dakota-account-reports"] },
+        { "featureId": "af-employee-agent", "name": "Employee Self-Service Agent", "description": "Handles internal HR, IT, and operational queries for employees via Slack or portal.", "customerStoryIds": ["penfed-member-service", "elements-cloud-employee-productivity", "engine-travel-service", "remarkable-customer-service"] },
+        { "featureId": "af-concierge", "name": "Member / Guest Concierge", "description": "Provides always-on personalised concierge experiences for members, guests, or event attendees.", "customerStoryIds": ["equinox-wellness-concierge", "david-yurman-luxury-service", "ymca-san-diego-program-matching", "pacific-clinics-mental-health", "pandora-service-and-shopping", "world-economic-forum-davos", "heathrow-airport-wayfinding"] },
+        { "featureId": "af-multi-agent", "name": "Multi-Agent Orchestration", "description": "Deploys multiple specialised agents working in sequence or parallel to handle end-to-end workflows.", "customerStoryIds": ["siemens-lead-qualification", "engine-travel-service", "zota-payment-services"] },
+        { "featureId": "af-enrollment-agent", "name": "Customer Onboarding & Enrollment", "description": "Guides customers or members through registration, onboarding, and enrollment workflows autonomously.", "customerStoryIds": ["indeed-employer-onboarding", "national-ability-center-enrollment", "one-nz-customer-migration", "capita-recruitment", "college-possible-coaching"] },
+        { "featureId": "af-matching-agent", "name": "Matching & Recommendation Agent", "description": "Uses AI to match people, resources, or opportunities based on semantic similarity and defined criteria.", "customerStoryIds": ["big-brothers-big-sisters-matching", "good360-disaster-recovery", "orraa-investor-matching", "ymca-san-diego-program-matching"] },
+        { "featureId": "af-predictive-cancellation", "name": "Predictive Cancellation Prevention", "description": "Identifies high-risk appointment cancellations and triggers proactive outreach to intervene before no-shows.", "customerStoryIds": ["mimit-health-cancellation-prediction"] }
       ]
     },
     {
       "categoryId": "marketing-ai",
       "categoryName": "Marketing AI",
       "features": [
-        {
-          "featureId": "af-send-time-optimization",
-          "name": "Einstein Send Time Optimization",
-          "description": "Keep every subscriber engaged by sending emails at the optimal time of engagement"
-        },
-        {
-          "featureId": "af-metrics-guard",
-          "name": "Einstein Metrics Guard",
-          "description": "Ensure your email performance data stays accurate by detecting and adjusting for anomalies, bot traffic, and tracking errors before they skew results"
-        },
-        {
-          "featureId": "af-engagement-scoring",
-          "name": "Einstein Engagement Scoring",
-          "description": "Score every customer's likelihood to engage with your emails and journeys"
-        },
-        {
-          "featureId": "af-engagement-frequency",
-          "name": "Einstein Engagement Frequency",
-          "description": "Prevent email unsubscribes by knowing exactly how many emails to send to customers"
-        }
+        { "featureId": "af-audience-segmentation", "name": "Real-Time Audience Segmentation", "description": "Builds dynamic audience segments from unified data in real time for personalised campaign targeting.", "customerStoryIds": ["pacers-fan-engagement", "uchicago-medicine-patient-engagement", "fedex-data-activation"] },
+        { "featureId": "af-personalised-outreach", "name": "Personalised Marketing Outreach", "description": "Drafts and sends personalised emails, messages, and offers tailored to individual customer profiles.", "customerStoryIds": ["pacers-fan-engagement", "lumen-renewal-outreach", "saastr-lead-revival", "asymbl-lead-engagement"] },
+        { "featureId": "af-data-activation", "name": "Data 360 Activation", "description": "Unifies siloed data sources into real-time Customer-360 profiles to trigger automated campaigns and sales alerts.", "customerStoryIds": ["fedex-data-activation", "volkswagen-unified-crm", "caixabank-ai-banking", "uchicago-medicine-patient-engagement"] },
+        { "featureId": "af-retention-agent", "name": "Subscriber Retention Agent", "description": "Identifies at-risk subscribers and proactively engages them with tailored content or offers to reduce churn.", "customerStoryIds": ["globoplay-subscriber-retention", "movistar-plus-retention"] }
       ]
     },
     {
       "categoryId": "field-service-ai",
       "categoryName": "Field Service AI",
       "features": [
-        {
-          "featureId": "af-scheduling-optimization",
-          "name": "Scheduling Optimization",
-          "description": "Automatically schedule the right technician at the right time to maximize efficiency and customer satisfaction"
-        },
-        {
-          "featureId": "af-work-order-intelligence",
-          "name": "Work Order Intelligence",
-          "description": "Surface relevant knowledge and asset history to field technicians before and during jobs"
-        },
-        {
-          "featureId": "af-mobile-worker-ai",
-          "name": "Mobile Worker AI",
-          "description": "Equip field technicians with AI-powered guidance and recommendations in the field"
-        }
+        { "featureId": "af-field-dispatch", "name": "Field Partner Dispatch & Notification", "description": "Automatically confirms orders and notifies appropriate field partners or technicians via Slack or messaging.", "customerStoryIds": ["vev-romerike-billing", "pepsico-shelf-stocking"] },
+        { "featureId": "af-predictive-maintenance", "name": "Predictive Scheduling & Cancellation Prevention", "description": "Identifies high-risk appointment cancellations or scheduling gaps and triggers proactive outreach.", "customerStoryIds": ["mimit-health-cancellation-prediction"] },
+        { "featureId": "af-field-rep-assist", "name": "Field Rep Intelligence", "description": "Provides field reps with real-time customer context, inventory data, and next best actions during site visits.", "customerStoryIds": ["goodyear-dealer-engagement", "pepsico-shelf-stocking"] }
       ]
     }
   ]

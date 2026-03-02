@@ -8,3 +8,5 @@ coverage/
 __pycache__/
 *.pyc
 packages/frontend/.vite/
+.vercel
+.env*.local
