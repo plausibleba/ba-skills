@@ -581,11 +581,11 @@ ${transcript}`;
             )}
           </div>
           <div className="flex gap-3 justify-center">
-            <button onClick={() => { setGenerated(false); setForm(EMPTY_FORM); setTranscript(""); setExtractDone(false); }}
+            <button onClick={async () => { setGenerated(false); setForm(EMPTY_FORM); setTranscript(""); setExtractDone(false); }}
               className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 transition-colors">
               New discovery
             </button>
-            <button onClick={() => {
+            <button onClick={async () => {
               if (!generatedBundle) return;
               const orgSlug = (form.org.name || "discovery").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
               const filename = `${orgSlug}-vcc-bundle.json`;
