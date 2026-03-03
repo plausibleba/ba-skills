@@ -296,78 +296,22 @@ Friction observations are currently read-only. During a live presales or discove
 ## Pending Work
 
 ### Immediate
-1. ~~Demo Puretec scaffold to Daniel Roach~~ ✓ — completed Session 5, positive reaction
-2. Daniel to study Puretec content and provide feedback
-3. Implement F-001: Editable Friction Panel
-4. Resolve 30 residual metric schema warnings in Puretec scaffold
-5. IIBA discovery questionnaire (Sections 1.1, 1.2, 1.4, 2.1, 2.3, 3.1, 3.4)
+1. ~~Demo Puretec scaffold to Daniel Roach~~ ✓ — Session 5
+2. ~~F-001: Editable Friction Panel~~ ✓ — Session 6
+3. ~~VCC Bundle format + FileLoader bundle support~~ ✓ — Session 7
+4. ~~Open in Canvas button wired~~ ✓ — Session 6
+5. Two-pass extraction rewrite — fix VS/stage confusion (D-033, D-034)
+6. Daniel feature: friction → solutions → Salesforce features → case studies
+7. 2-3 fictitious dummy discovery datasets for non-Salesforce demos
 
 ### Pipeline
-6. Formalise three-agent presales pipeline as WORKFLOW.md addition
-7. Build Friction Signal Agent (Track B) — single LLM agent, not multi-agent
-8. Populate TransformationPane with painpoints/ideas/requirements schema
-9. Markdown export of scaffold + heatmap for human review (Daniel use case)
+8. Build Friction Signal Agent (Track B) — single LLM agent, not multi-agent
+9. Populate TransformationPane with painpoints/ideas/requirements schema
 
 ### Future
 10. F-001 phase 2: delete observations, reassign binding constraint, persist edits
 11. Anchor roles/info/tech to specific activities (not whole capability)
 12. Enterprise banking scaffold with full enrichment on 1-2 exemplar streams
-13. Automation layer: agent-derived IR → human reconciliation → canonical scaffold
-
----
-
-## Session 6 — Monday 2 Mar 2026
-
-### Theme: Discovery Intake — Open in Canvas Fix
-
-**Bug diagnosed:**
-- "Open in Canvas →" button on the Scaffold Generated success screen had no `onClick` handler
-- Confirmed via browser bundle inspection — button rendered with className only, no handler wired
-- `generateIR()` was a stub: 1500ms timeout then `setGenerated(true)` — no scaffold object produced
-
-**Fix implemented:**
-- `DiscoveryIntake_prod.tsx`: added `onComplete?: (scaffold: any) => void` prop
-- `DiscoveryIntake_prod.tsx`: replaced stub `generateIR()` with real scaffold builder — constructs canonical scaffold JSON from form data (value streams → activities → outcomes → capabilities, roles, tech, metrics, controls all wired)
-- `DiscoveryIntake_prod.tsx`: wired "Open in Canvas →" button to call `onComplete(generatedScaffold)`
-- `App.tsx`: added `loadScaffold` to Zustand store destructure
-- `App.tsx`: passed `onComplete` prop to `<DiscoveryIntake>` — calls `loadScaffold(scaffold)` then `backToNetwork()`
-
-**Flow after fix:**
-Discovery form → Generate scaffold → success screen → "Open in Canvas" → scaffold loads into store → Network View renders with new scaffold active
-
-**Production URL confirmed:**
-- Stable production URL: `https://frontend-five-eta-l0j2mk66gi.vercel.app`
-- Deployment hash URLs (e.g. `frontend-1uopbjshx-...`) change per deploy — do not share these
-
-**Pending:**
-- Verify fix works end-to-end after Vercel redeploy
-- `DiscoveryIntake_prod.tsx` should be the canonical file — confirm it replaces `DiscoveryIntake.tsx` in the import or rename accordingly
-
----
-
-## Pending Work
-
-### Immediate
-1. ~~Demo Puretec scaffold to Daniel Roach~~ ✓ — completed Session 5, positive reaction
-2. ~~Fix "Open in Canvas" dead button~~ ✓ — completed Session 6
-3. Verify Open in Canvas end-to-end after redeploy
-4. Daniel to study Puretec content and provide feedback
-5. Implement F-001: Editable Friction Panel
-6. Resolve 30 residual metric schema warnings in Puretec scaffold
-7. IIBA discovery questionnaire (Sections 1.1, 1.2, 1.4, 2.1, 2.3, 3.1, 3.4)
-
-### Pipeline
-8. Formalise three-agent presales pipeline as WORKFLOW.md addition
-9. Build Friction Signal Agent (Track B) — single LLM agent, not multi-agent
-10. Populate TransformationPane with painpoints/ideas/requirements schema
-11. Markdown export of scaffold + heatmap for human review (Daniel use case)
-
-### Future
-12. F-001 phase 2: delete observations, reassign binding constraint, persist edits
-13. Anchor roles/info/tech to specific activities (not whole capability)
-14. Enterprise banking scaffold with full enrichment on 1-2 exemplar streams
-15. Automation layer: agent-derived IR → human reconciliation → canonical scaffold
-
 ---
 
 ## Session 6 — Sunday 1 Mar 2026

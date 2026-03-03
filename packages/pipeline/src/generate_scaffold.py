@@ -256,7 +256,7 @@ def main():
     # Step 1: Parse → IR
     print("Step 1: Parsing spreadsheets → IR...")
     caps = parse_capability_map(str(fixtures / "IIBA_Capability_Map.xlsx"), "src_cap")
-    ir = parse_value_streams(str(fixtures / "IIBA_Value_Streams_.xlsx"), "src_vs", caps)
+    ir = parse_value_streams(str(fixtures / "IIBA_Value_Streams.xlsx"), "src_vs", caps)
 
     summary = ir.summary()
     for k, v in summary.items():

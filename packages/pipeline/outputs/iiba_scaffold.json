@@ -3,7 +3,7 @@
   "scaffoldId": "scaffold_iiba_v1",
   "name": "IIBA Operating Model",
   "description": "Business architecture of the International Institute of Business Analysis. 6 value streams covering member engagement, certification, knowledge curation, community engagement, partner relations, and thought leadership.",
-  "scaffoldIntegrityHash": "sha256:d8ad02f6136b9d76d1b1cc79533e0ee9ae5e5dc817e21c36ae103abe9f2dc7c6",
+  "scaffoldIntegrityHash": "sha256:63c173c4dd4299a4c27f361beb36cfbec369fe5ae198ac0f2a5bf723d778f5a4",
   "elements": {
     "valueStreams": {
       "vs_member_engagement_retention_3730be": {
@@ -97,7 +97,7 @@
           "role_chapters_dbb779",
           "role_prospects_777120"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_member_marketing_4c12ac",
           "cap_community_communications_801b62",
           "cap_social_media_marketing_3e31f1"
@@ -107,8 +107,6 @@
           "metric_engagement_rate_702719"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_member_engagement_retention_register_activate_memb_a69a30"
       },
       "act_member_engagement_retention_register_activate_memb_a69a30": {
@@ -123,7 +121,7 @@
           "role_membership_services_62395e",
           "role_finance_c48298"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_member_onboarding_1e78c1",
           "cap_member_account_management_5a2203",
           "cap_billing_collections_a32a40"
@@ -133,8 +131,6 @@
           "metric_activation_time_8a2d6f"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_member_engagement_retention_onboard_orient_member_b60adc"
       },
       "act_member_engagement_retention_onboard_orient_member_b60adc": {
@@ -150,7 +146,7 @@
           "role_volunteers_085ecb",
           "role_new_member_3c30a2"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_member_onboarding_1e78c1",
           "cap_member_benefits_delivery_9a5e9f",
           "cap_networking_mentorship_programmes_99583c",
@@ -161,8 +157,6 @@
           "metric_resource_usage_6123be"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_member_engagement_retention_deliver_ongoing_value_6d9f84"
       },
       "act_member_engagement_retention_deliver_ongoing_value_6d9f84": {
@@ -178,7 +172,7 @@
           "role_volunteers_085ecb",
           "role_knowledge_team_7a91ee"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_member_benefits_delivery_9a5e9f",
           "cap_event_planning_management_711384",
           "cap_networking_mentorship_programmes_99583c",
@@ -190,8 +184,6 @@
           "metric_satisfaction_score_7734d0"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_member_engagement_retention_renew_or_exit_a4f959"
       },
       "act_member_engagement_retention_renew_or_exit_a4f959": {
@@ -206,7 +198,7 @@
           "role_membership_services_62395e",
           "role_finance_c48298"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_membership_renewal_retention_e1e7e1",
           "cap_member_account_management_5a2203",
           "cap_integrated_marketing_communication_84dcac",
@@ -216,9 +208,7 @@
           "metric_renewal_rate_7b5c20",
           "metric_churn_rate_1cb650"
         ],
-        "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": []
+        "controlIds": []
       },
       "act_certification_credential_lifecycle_promote_certifi_99d8bf": {
         "id": "act_certification_credential_lifecycle_promote_certifi_99d8bf",
@@ -232,7 +222,7 @@
           "role_training_partners_0112f7",
           "role_prospects_777120"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_eligibility_prerequisite_management_cdb971",
           "cap_integrated_marketing_communications_10f35d"
         ],
@@ -241,8 +231,6 @@
           "metric_conversion_to_applications_5045d0"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_certification_credential_lifecycle_process_applica_a8a4a6"
       },
       "act_certification_credential_lifecycle_process_applica_a8a4a6": {
@@ -257,7 +245,7 @@
           "role_certification_services_b6d565",
           "role_finance_c48298"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_candidate_scheduling_logistics_ab7b1f",
           "cap_billing_collections_a32a40"
         ],
@@ -266,8 +254,6 @@
           "metric_acceptance_rate_03e236"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_certification_credential_lifecycle_prepare_candida_b7c363"
       },
       "act_certification_credential_lifecycle_prepare_candida_b7c363": {
@@ -282,7 +268,7 @@
           "role_training_partners_0112f7",
           "role_chapter_mentors_6b9ba7"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_education_training_content_management_e872b5",
           "cap_endorsed_education_provider_relations_9c3ec8"
         ],
@@ -291,8 +277,6 @@
           "metric_training_satisfaction_c19a18"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_certification_credential_lifecycle_deliver_examina_60651b"
       },
       "act_certification_credential_lifecycle_deliver_examina_60651b": {
@@ -307,7 +291,7 @@
           "role_exam_proctoring_provider_ece82f",
           "role_certification_board_90339c"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_assessment_scoring_39ab01"
         ],
         "metricIds": [
@@ -315,8 +299,6 @@
           "metric_exam_completion_rate_2a1768"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_certification_credential_lifecycle_issue_credentia_7bc71d"
       },
       "act_certification_credential_lifecycle_issue_credentia_7bc71d": {
@@ -331,14 +313,12 @@
           "role_digital_badging_provider_0d72e9",
           "role_candidate_25befe"
         ],
-        "requiresCapabilityIds": [],
+        "capabilityIds": [],
         "metricIds": [
           "metric_time_to_issue_aaa28f",
           "metric_certifications_issued_e53682"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_certification_credential_lifecycle_maintain_recert_b6b94e"
       },
       "act_certification_credential_lifecycle_maintain_recert_b6b94e": {
@@ -353,16 +333,14 @@
           "role_certification_cervices_5b2b2a",
           "role_chapters_dbb779"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_continuing_professional_development_cb0999"
         ],
         "metricIds": [
           "metric_recertification_rate_dfa51a",
           "metric_cdu_submissions_5ebb6f"
         ],
-        "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": []
+        "controlIds": []
       },
       "act_knowledge_standards_curation_research_identify_gap_85fa2d": {
         "id": "act_knowledge_standards_curation_research_identify_gap_85fa2d",
@@ -377,7 +355,7 @@
           "role_research_team_ed8c6c",
           "role_partners_fd6df3"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_market_trends_research_3c0066",
           "cap_salary_benchmark_surveys_f2880d",
           "cap_standard_authoring_editing_05ca55",
@@ -388,8 +366,6 @@
           "metric_contributions_4504e1"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_knowledge_standards_curation_review_edit_content_601e64"
       },
       "act_knowledge_standards_curation_review_edit_content_601e64": {
@@ -404,7 +380,7 @@
           "role_reviewers_6890b9",
           "role_standards_board_5c53b7"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_standard_versioning_lifecycle_management_b9022e",
           "cap_standard_authoring_editing_05ca55"
         ],
@@ -413,8 +389,6 @@
           "metric_reviewer_engagement_849c79"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_knowledge_standards_curation_produce_distribute_90ca48"
       },
       "act_knowledge_standards_curation_produce_distribute_90ca48": {
@@ -429,7 +403,7 @@
           "role_knowledgehub_admins_96bc79",
           "role_marketing_7cb15e"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_digital_distribution_access_6929bc",
           "cap_sales_licensing_management_dfaa99",
           "cap_knowledgehub_platform_management_f9fbd8"
@@ -439,8 +413,6 @@
           "metric_downloads_c20c35"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_knowledge_standards_curation_promote_gather_feedba_d61ec5"
       },
       "act_knowledge_standards_curation_promote_gather_feedba_d61ec5": {
@@ -456,7 +428,7 @@
           "role_volunteers_085ecb",
           "role_curators_001c8b"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_knowledge_asset_feedback_improvement_8ae484",
           "cap_content_tagging_search_f3fc9c",
           "cap_audience_engagement_feedback_4bf7c9"
@@ -465,9 +437,7 @@
           "metric_user_satisfaction_0ccd16",
           "metric_number_of_updates_2a5a02"
         ],
-        "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": []
+        "controlIds": []
       },
       "act_community_volunteer_engagement_recruit_assign_volu_1d63ce": {
         "id": "act_community_volunteer_engagement_recruit_assign_volu_1d63ce",
@@ -481,7 +451,7 @@
           "role_volunteer_services_765229",
           "role_chapter_leaders_9f3ffa"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_volunteer_onboarding_4dfad1",
           "cap_volunteer_assignment_support_a2b90f",
           "cap_volunteer_administration_ead635"
@@ -491,8 +461,6 @@
           "metric_onboarding_time_ad7666"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_community_volunteer_engagement_plan_events_program_829e7c"
       },
       "act_community_volunteer_engagement_plan_events_program_829e7c": {
@@ -508,7 +476,7 @@
           "role_volunteers_085ecb",
           "role_attendees_0bff4c"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_roundtable_community_facilitation_569870"
         ],
         "metricIds": [
@@ -516,8 +484,6 @@
           "metric_satisfaction_70d0c3"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_community_volunteer_engagement_facilitate_networki_43259a"
       },
       "act_community_volunteer_engagement_facilitate_networki_43259a": {
@@ -533,7 +499,7 @@
           "role_mentees_c113c7",
           "role_community_managers_aedd67"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_chapter_collaboration_735fac",
           "cap_community_communications_801b62"
         ],
@@ -542,8 +508,6 @@
           "metric_participation_ec36ee"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_community_volunteer_engagement_recognise_contribut_0da693"
       },
       "act_community_volunteer_engagement_recognise_contribut_0da693": {
@@ -558,7 +522,7 @@
           "role_chapter_leaders_9f3ffa",
           "role_volunteers_085ecb"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_performance_recognition_management_0fdb47"
         ],
         "metricIds": [
@@ -566,8 +530,6 @@
           "metric_volunteer_satisfaction_a71070"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_community_volunteer_engagement_collect_feedback_im_5860f7"
       },
       "act_community_volunteer_engagement_collect_feedback_im_5860f7": {
@@ -582,16 +544,14 @@
           "role_volunteers_085ecb",
           "role_members_ef5353"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_support_service_management_70803d"
         ],
         "metricIds": [
           "metric_response_rate_721180",
           "metric_improvements_implemented_d1c836"
         ],
-        "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": []
+        "controlIds": []
       },
       "act_partner_institutional_engagement_prospect_qualify__c628ca": {
         "id": "act_partner_institutional_engagement_prospect_qualify__c628ca",
@@ -604,7 +564,7 @@
           "role_business_development_manager_603f58",
           "role_partner_prospect_bd5b70"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_partner_qualification_907204",
           "cap_integrated_marketing_communications_10f35d"
         ],
@@ -613,8 +573,6 @@
           "metric_qualification_time_45ee09"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_partner_institutional_engagement_negotiate_onboard_4539aa"
       },
       "act_partner_institutional_engagement_negotiate_onboard_4539aa": {
@@ -629,7 +587,7 @@
           "role_legal_finance_23b17a",
           "role_partner_contact_f2e59f"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_partner_onboarding_setup_d3e6b5",
           "cap_partner_program_design_b48a88"
         ],
@@ -638,8 +596,6 @@
           "metric_contract_value_cc5918"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_partner_institutional_engagement_deliver_partner_v_d1e875"
       },
       "act_partner_institutional_engagement_deliver_partner_v_d1e875": {
@@ -654,7 +610,7 @@
           "role_training_providers_0c5337",
           "role_partner_staff_bda4d4"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_partner_portal_data_management_9aef75",
           "cap_account_management_relationship_2de47f",
           "cap_support_service_management_70803d"
@@ -664,8 +620,6 @@
           "metric_certification_completions_e6f42a"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_partner_institutional_engagement_engage_gather_fee_6a8910"
       },
       "act_partner_institutional_engagement_engage_gather_fee_6a8910": {
@@ -680,7 +634,7 @@
           "role_product_team_0be5cd",
           "role_partner_staff_bda4d4"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_partner_communication_feedback_7f8793",
           "cap_partner_success_measurement_38e9f0",
           "cap_research_collaboration_partnerships_3ec2f2"
@@ -690,8 +644,6 @@
           "metric_number_of_enhancements_16b83f"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_partner_institutional_engagement_renew_or_expand_2d122b"
       },
       "act_partner_institutional_engagement_renew_or_expand_2d122b": {
@@ -706,7 +658,7 @@
           "role_legal_finance_23b17a",
           "role_partner_contact_f2e59f"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_upselling_expansion_planning_c028a9",
           "cap_partner_success_measurement_38e9f0",
           "cap_billing_collections_a32a40"
@@ -715,9 +667,7 @@
           "metric_renewal_rate_7b5c20",
           "metric_contract_expansion_value_332778"
         ],
-        "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": []
+        "controlIds": []
       },
       "act_thought_leadership_advocacy_monitor_trends_identif_d3e855": {
         "id": "act_thought_leadership_advocacy_monitor_trends_identif_d3e855",
@@ -732,7 +682,7 @@
           "role_partners_fd6df3",
           "role_board_of_directors_f6c311"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_market_trends_research_3c0066",
           "cap_salary_benchmark_surveys_f2880d"
         ],
@@ -741,8 +691,6 @@
           "metric_stakeholder_diversity_7de4be"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_thought_leadership_advocacy_author_develop_content_302627"
       },
       "act_thought_leadership_advocacy_author_develop_content_302627": {
@@ -758,7 +706,7 @@
           "role_collaborators_234a40",
           "role_webinar_hosts_2f2c54"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_content_review_quality_assurance_079ca9",
           "cap_editorial_calendar_management_af529e",
           "cap_research_collaboration_partnerships_3ec2f2"
@@ -768,8 +716,6 @@
           "metric_production_time_bbd253"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_thought_leadership_advocacy_publish_distribute_b0795f"
       },
       "act_thought_leadership_advocacy_publish_distribute_b0795f": {
@@ -784,7 +730,7 @@
           "role_social_media_managers_8b572f",
           "role_chapters_dbb779"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_social_media_marketing_3e31f1",
           "cap_audience_engagement_feedback_4bf7c9",
           "cap_analytics_impact_measurement_65a3e0"
@@ -795,8 +741,6 @@
           "metric_conversions_633279"
         ],
         "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": [],
         "nextActivityId": "act_thought_leadership_advocacy_advocate_present_2b7915"
       },
       "act_thought_leadership_advocacy_advocate_present_2b7915": {
@@ -811,7 +755,7 @@
           "role_advocacy_team_233c97",
           "role_policy_makers_d3627b"
         ],
-        "requiresCapabilityIds": [
+        "capabilityIds": [
           "cap_policy_standards_advocacy_591f41",
           "cap_speaking_engagement_management_8709fd",
           "cap_research_case_study_dissemination_8d40ad"
@@ -820,9 +764,7 @@
           "metric_advocacy_engagements_1f0237",
           "metric_impact_measures_5a0ca2"
         ],
-        "controlIds": [],
-        "constraintIds": [],
-        "exitConditionIds": []
+        "controlIds": []
       }
     },
     "outcomes": {
