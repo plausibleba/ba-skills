@@ -237,6 +237,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (scaffold
   const [generated, setGenerated] = useState(false);
   const [generatedScaffold, setGeneratedScaffold] = useState<any>(null);
   const [generatedBundle, setGeneratedBundle] = useState<any>(null);
+  const [bundleSaved, setBundleSaved] = useState(false);
   const dropRef = useRef();
 
   const readiness = calcReadiness(form);
@@ -589,16 +590,41 @@ ${transcript}`;
               const orgSlug = (form.org.name || "discovery").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
               const filename = `${orgSlug}-vcc-bundle.json`;
               const blob = new Blob([JSON.stringify(generatedBundle, null, 2)], { type: "application/json" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = filename;
-              a.click();
-              URL.revokeObjectURL(url);
-            }} className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 transition-colors">
+              try {
+                if ('showSaveFilePicker' in window) {
+                  const fileHandle = await (window as any).showSaveFilePicker({
+                    suggestedName: filename,
+                    types: [{ description: 'VCC Bundle', accept: { 'application/json': ['.json'] } }],
+                  });
+                  const writable = await fileHandle.createWritable();
+                  await writable.write(blob);
+                  await writable.close();
+                } else {
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = filename;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }
+              } catch (e: any) {
+                if (e.name !== 'AbortError') {
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = filename;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }
+              }
+              setBundleSaved(true);
+            }} className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors">
               ↓ Save Bundle
             </button>
-            <button onClick={() => onComplete?.(generatedScaffold)} className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors">
+            <button
+              onClick={() => bundleSaved && onComplete?.(generatedScaffold)}
+              disabled={!bundleSaved}
+              className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${bundleSaved ? "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer" : "border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed"}`}>
               Open in Canvas →
             </button>
           </div>
