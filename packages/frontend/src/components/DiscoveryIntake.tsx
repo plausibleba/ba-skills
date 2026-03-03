@@ -486,7 +486,8 @@ ${transcript}`;
       const observations = pps.map((p: any, idx: number) => {
         const stageName = p.affectedStage.split(' → ')[1] ?? p.affectedStage;
         const vsName = p.affectedStage.split(' → ')[0] ?? '';
-        const anchorId = id('act', `${vsName}-${stageName}`);
+        const vsIdName = vsId.replace(/^vs-/, '');
+        const anchorId = id('act', `${vsIdName}-${stageName}`);
         return {
           observationId: `obs_${vsId}_${String(idx + 1).padStart(3, '0')}`,
           category: p.category || 'ProcessHandoffFriction',
