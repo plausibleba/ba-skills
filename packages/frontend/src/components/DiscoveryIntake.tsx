@@ -236,6 +236,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (scaffold
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState(false);
   const [generatedScaffold, setGeneratedScaffold] = useState<any>(null);
+  const [generatedBundle, setGeneratedBundle] = useState<any>(null);
   const dropRef = useRef();
 
   const readiness = calcReadiness(form);
@@ -462,7 +463,70 @@ ${transcript}`;
       scaffoldIntegrityHash: btoa(scaffoldId + Date.now()).slice(0, 32),
     };
 
+    // ─── Generate Heatmap from pain points ────────────────────────────────
+    const now = new Date().toISOString();
+    const bindingPP = form.painPoints.find((p: any) => p.binding && p.description);
+    
+    // Group pain points by value stream
+    const ppByVs: Record<string, any[]> = {};
+    form.painPoints.filter((p: any) => p.description && p.affectedStage).forEach((p: any) => {
+      const vsName = p.affectedStage.split(' → ')[0] ?? 'Unknown';
+      const vsId = id('vs', vsName);
+      if (!ppByVs[vsId]) ppByVs[vsId] = [];
+      ppByVs[vsId].push(p);
+    });
+
+    // Build one heatmap per value stream that has pain points
+    const heatmaps = Object.entries(ppByVs).map(([vsId, pps]: [string, any[]]) => {
+      const observations = pps.map((p: any, idx: number) => {
+        const stageName = p.affectedStage.split(' → ')[1] ?? p.affectedStage;
+        const vsName = p.affectedStage.split(' → ')[0] ?? '';
+        const anchorId = id('act', `${vsName}-${stageName}`);
+        return {
+          observationId: `obs_${vsId}_${String(idx + 1).padStart(3, '0')}`,
+          category: p.category || 'ProcessHandoffFriction',
+          primaryAnchor: { anchorType: 'Activity', anchorId },
+          contributingAnchors: [],
+          intensity: { scale: '0-10', score: p.intensity ?? 7 },
+          rationale: p.description,
+          evidence: [{ evidenceType: 'Note', ref: 'Discovery Intake', snippet: p.description.slice(0, 100) }],
+          observedAt: now,
+        };
+      });
+
+      const bindingObs = bindingPP
+        ? observations.find((o: any) => o.rationale === bindingPP.description)
+        : observations.reduce((a: any, b: any) => a.intensity.score >= b.intensity.score ? a : b, observations[0]);
+
+      const bindingConstraint = bindingObs ? {
+        findingId: `bc_${vsId}_001`,
+        bindingAnchor: bindingObs.primaryAnchor,
+        bindingAnchorObservationId: bindingObs.observationId,
+        justification: `${bindingObs.rationale} This is the primary constraint on value stream performance.`,
+        confidence: 0.75,
+        observedAt: now,
+      } : null;
+
+      return {
+        heatmapId: `heatmap-${vsId}-${Date.now()}`,
+        scaffoldId,
+        valueStreamId: vsId,
+        observations,
+        ...(bindingConstraint && { bindingConstraint }),
+        schemaVersion: '1.0.0',
+        createdAt: now,
+      };
+    });
+
+    const bundle = {
+      bundleVersion: '1.0',
+      createdAt: now,
+      scaffold,
+      heatmaps,
+    };
+
     setGeneratedScaffold(scaffold);
+    setGeneratedBundle(bundle);
     setGenerating(false);
     setGenerated(true);
   }
@@ -519,6 +583,20 @@ ${transcript}`;
             <button onClick={() => { setGenerated(false); setForm(EMPTY_FORM); setTranscript(""); setExtractDone(false); }}
               className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 transition-colors">
               New discovery
+            </button>
+            <button onClick={() => {
+              if (!generatedBundle) return;
+              const orgSlug = (form.org.name || "discovery").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+              const filename = `${orgSlug}-vcc-bundle.json`;
+              const blob = new Blob([JSON.stringify(generatedBundle, null, 2)], { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = filename;
+              a.click();
+              URL.revokeObjectURL(url);
+            }} className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 transition-colors">
+              ↓ Save Bundle
             </button>
             <button onClick={() => onComplete?.(generatedScaffold)} className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors">
               Open in Canvas →
