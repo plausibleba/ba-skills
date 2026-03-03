@@ -2,7 +2,7 @@
 
 **Read this first. Every session. One page.**
 
-Last updated: 2026-02-24
+Last updated: 2026-03-02
 
 ---
 
@@ -23,6 +23,7 @@ A **board-level governance instrument** for organisational value stream analysis
 ## What Is Stable
 
 - **Frontend**: React/Vite/Tailwind SPA, no backend. Network View + Stage View with full PPIT.
+- **Discovery Intake**: DiscoveryIntake_prod.tsx — freeform + structured modes, LLM extraction, scaffold generation, Open in Canvas wired.
 - **Pipeline**: XLSX → IR → scaffold generator with PPIT enrichment.
 - **IIBA Scaffold**: 6 VS, 28 stages, 70 capabilities, 233 atomic activities, 200 info objects, 61 tech apps.
 - **Data model**: Scaffold JSON schema with `capabilityPPIT` structure.
@@ -39,13 +40,13 @@ A **board-level governance instrument** for organisational value stream analysis
 
 | Priority | Item | Owner |
 |----------|------|-------|
-| 1 | Fill IIBA discovery questionnaire (Sections 1.1–3.4) | Terry + Claude |
-| 2 | Generate IIBA heatmap from questionnaire | Claude |
-| 3 | Test heatmap overlay on IIBA scaffold in Stage View | Terry |
-| 4 | Formalise multi-agent workflow contracts | Claude + Reviewer |
-| 5 | Build Friction Signal Agent (Track B, single agent) | Claude |
-| 6 | Populate TransformationPane schema (painpoints → epics) | Claude + Reviewer |
-| 7 | Introduce UI/UX model for layout refinement | Terry |
+| 1 | Verify Open in Canvas end-to-end after redeploy | Terry |
+| 2 | Daniel feedback on Puretec content | Daniel |
+| 3 | Implement F-001: Editable Friction Panel | Claude |
+| 4 | Resolve 30 residual metric schema warnings in Puretec scaffold | Claude |
+| 5 | IIBA discovery questionnaire (Sections 1.1–3.4) | Terry + Claude |
+| 6 | Build Friction Signal Agent (Track B, single agent) | Claude |
+| 7 | Populate TransformationPane schema (painpoints → epics) | Claude + Reviewer |
 
 ## Participants
 
