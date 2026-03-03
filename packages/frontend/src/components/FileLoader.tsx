@@ -14,15 +14,22 @@ export function FileLoader() {
         const text = await file.text();
         const json = JSON.parse(text) as Record<string, unknown>;
 
-        // Detect if this is a scaffold or heatmap by checking for scaffoldId vs heatmapId
-        if ("scaffoldId" in json && "elements" in json) {
+        // Detect file type: bundle, scaffold, or heatmap
+        if ("bundleVersion" in json && "scaffold" in json && "heatmaps" in json) {
+          // VCC Bundle — load scaffold then all heatmaps
+          const bundle = json as any;
+          await loadScaffold(bundle.scaffold as ScaffoldData);
+          for (const heatmap of bundle.heatmaps ?? []) {
+            void loadHeatmap(heatmap as HeatmapData);
+          }
+        } else if ("scaffoldId" in json && "elements" in json) {
           await loadScaffold(json as unknown as ScaffoldData);
         } else if ("heatmapId" in json) {
           void loadHeatmap(json as unknown as HeatmapData);
         } else {
           useCanvasStore.setState({
             error:
-              "Unrecognized JSON file. Expected a scaffold (scaffoldId) or heatmap (heatmapId).",
+              "Unrecognized JSON file. Expected a scaffold, heatmap, or VCC bundle.",
           });
         }
       } catch {
