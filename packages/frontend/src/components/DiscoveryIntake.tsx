@@ -468,13 +468,17 @@ ${transcript}`;
     const now = new Date().toISOString();
     const bindingPP = form.painPoints.find((p: any) => p.binding && p.description);
     
-    // Group pain points by value stream
+    // Group pain points by value stream — match against actual scaffold VS IDs
     const ppByVs: Record<string, any[]> = {};
+    const scaffoldVsIds = Object.keys(elements.valueStreams);
     form.painPoints.filter((p: any) => p.description && p.affectedStage).forEach((p: any) => {
       const vsName = p.affectedStage.split(' → ')[0] ?? 'Unknown';
-      const vsId = id('vs', vsName);
-      if (!ppByVs[vsId]) ppByVs[vsId] = [];
-      ppByVs[vsId].push(p);
+      const derivedVsId = id('vs', vsName);
+      // Try exact match first, then fall back to first VS
+      const matchedVsId = scaffoldVsIds.find(vid => vid === derivedVsId) ?? scaffoldVsIds[0];
+      if (!matchedVsId) return;
+      if (!ppByVs[matchedVsId]) ppByVs[matchedVsId] = [];
+      ppByVs[matchedVsId].push(p);
     });
 
     // Build one heatmap per value stream that has pain points
