@@ -135,3 +135,45 @@ Maintained across sessions. Each decision records context, options considered, a
 **Context:** Stage and capability descriptions need to be accessible but not visually dominant
 **Decision:** Small ⓘ icon with hover tooltip. Stage: centred below icon. Capability: card-width, direction-aware (down for first, up for others).
 **Rationale:** Progressive disclosure. Descriptions are validation aids, not primary reading material. They should be available on demand, not competing for attention.
+
+## D-028: `frontend` Vercel Project is Canonical
+**Date:** 2026-03-01
+**Context:** Two Vercel projects existed — `vcc-two-puce` (GitHub-connected) and `frontend` (CLI-linked). CLI was deploying to `frontend` but fixes were being committed to GitHub expecting `vcc-two-puce` to auto-deploy.
+**Decision:** `frontend` project is canonical. Deploy via `cd packages/frontend && vercel --prod`.
+**Rationale:** GitHub auto-deploy on `vcc-two-puce` was not triggering reliably. CLI deploy is explicit and predictable.
+
+## D-029: vercel.json Must Explicitly Pass /api/* Routes
+**Date:** 2026-03-01
+**Context:** `/api/claude` serverless function returning 404 despite existing at correct path.
+**Decision:** `vercel.json` rewrites must include `{ "source": "/api/(.*)", "destination": "/api/$1" }` before the SPA catch-all `{ "source": "/(.*)", "destination": "/index.html" }`.
+**Rationale:** Without the explicit API rule, the catch-all intercepts all routes including `/api/*` and serves `index.html` instead of the serverless function.
+
+## D-030: VCC Bundle as Canonical Presales Artefact
+**Date:** 2026-03-03
+**Context:** Scaffold and heatmap were separate files, requiring two load operations and creating ID mismatch risk.
+**Decision:** Introduce VCC Bundle format: `{ bundleVersion, createdAt, scaffold, heatmaps[] }`. Single file contains everything. FileLoader detects and loads bundle in one drop.
+**Rationale:** Simplifies presales workflow. Each rep maintains a local folder of bundle files — one per account. No backend, no sync, no mismatch possible.
+
+## D-031: Save Bundle Gates Open in Canvas
+**Date:** 2026-03-03
+**Context:** Users were clicking Open in Canvas without saving, then losing the bundle on navigation.
+**Decision:** Save Bundle is primary action (dark button). Open in Canvas is disabled until bundle has been saved (greyed, `cursor-not-allowed`). `bundleSaved` boolean state tracks this.
+**Rationale:** Prevents data loss. Establishes correct mental model: save first, then explore.
+
+## D-032: Local Folder as Rep-Level Persistence Model
+**Date:** 2026-03-03
+**Context:** Discussion of where bundles should be stored — localStorage, backend, or local files.
+**Decision:** Each Salesforce rep maintains their own local folder of bundle JSON files. Native File System Access API (`showSaveFilePicker`) provides Finder save dialog with folder selection.
+**Rationale:** No backend required. Works across devices via shared drive or email. Fits existing file-based mental model. Sufficient for demo phase.
+
+## D-033: Two-Pass Extraction Required
+**Date:** 2026-03-03
+**Context:** Single-pass extraction causing VS/stage name confusion — AI placing stage names in VS position of `affectedStage` field, breaking heatmap anchor ID matching.
+**Decision:** Rewrite extraction as two-pass: Pass 1 defines true Value Streams (board-level, outcome-driven, 2-4 max). Pass 2 extracts stages and pain points anchored to confirmed VS names from Pass 1.
+**Rationale:** VS definition is a distinct cognitive task from stage/friction extraction. Conflating them in one prompt produces unreliable VS names. Prompt Pack v3.2 Step 01 provides the correct VS definition prompt.
+
+## D-034: Prompt Pack v3.2 as Extraction Quality Reference
+**Date:** 2026-03-03
+**Context:** Review of design documents revealed a sophisticated 15-step phased generation system (Phases A–E) that the current single-pass extraction approximates poorly.
+**Decision:** Prompt Pack v3.2 is the authoritative reference for extraction quality. The two-pass extraction rewrite should use Step 01 (ValueStream Definition) for Pass 1 and Steps 02-04 + 11-12 for Pass 2.
+**Rationale:** The prompt pack was designed specifically for this problem. It has explicit VS definition rules, evidence classification requirements, and a structured binding constraint scoring rubric that our current extraction entirely lacks.

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VCC — Throughput Impact Panel Preview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    background: #080C10;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 40px 20px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  
+  .preview-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .preview-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #556677;
+  }
+</style>
+</head>
+<body>
+<div class="preview-wrapper">
+  <div class="preview-label">VCC Throughput Impact Panel — Preview</div>
+  <div id="root"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useMemo } = React;
+
+const COLORS = {
+  bg: "#0B0F14",
+  surface: "#131920",
+  surfaceRaised: "#1A2230",
+  border: "#2A3544",
+  borderSubtle: "#1E2938",
+  text: "#E8ECF0",
+  textMuted: "#8899AA",
+  textDim: "#556677",
+  accent: "#F0A050",
+  accentDim: "#805830",
+  capacityRelease: "#50B090",
+  capacityReleaseDim: "#204838",
+  riskCompression: "#E07050",
+  riskCompressionDim: "#4A2820",
+  secondary: "#7888A0",
+  confidenceFill: "#F0A050",
+  confidenceEmpty: "#2A3544",
+  trendImproving: "#50B090",
+  trendWorsening: "#E07050",
+  assumptionBg: "#10161E",
+  assumptionBorder: "#1E2938",
+  interventionBg: "rgba(20,25,34,0.25)",
+  interventionBorder: "rgba(240,160,80,0.19)",
+};
+
+const FONT = {
+  mono: "'JetBrains Mono', 'SF Mono', monospace",
+  sans: "'DM Sans', 'Helvetica Neue', sans-serif",
+  display: "'Instrument Serif', Georgia, serif",
+};
+
+const SCAFFOLD_DATA = {
+  bindingConstraintActivityName: "Review & Approve Ratings and Plan",
+  primaryMetric: {
+    name: "Review & Approval Cycle Time",
+    unit: "business days",
+    direction: "Decrease",
+    baseline: 15,
+    current: 12,
+    target: 7,
+  },
+  secondaryMetric: {
+    name: "Escalation Rate",
+    unit: "%",
+    direction: "Attain",
+    baseline: 18,
+    current: 20,
+    target: 12,
+  },
+  frictionCategories: ["DecisionAuthorityFriction", "GovernanceRiskFriction"],
+};
+
+const HEATMAP_DATA = {
+  confidence: 0.75,
+  operationalValidationStatus: "NotYetVerified",
+};
+
+const INTERVENTION_MAP = {
+  DecisionAuthorityFriction: "Delegation authority redistribution",
+  GovernanceRiskFriction: "Escalation threshold recalibration",
+  ProcessHandoffFriction: "Handoff protocol redesign",
+  DataSignalFriction: "Information flow improvement",
+  TechnologyIntegrationFriction: "System integration optimisation",
+  IncentiveCapacityFriction: "Role distribution adjustment",
+};
+
+function ConfidenceDots({ value, max = 4 }) {
+  const filled = Math.round(value * max);
+  return (
+    <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+      {Array.from({ length: max }, (_, i) => (
+        <div
+          key={i}
+          style={{
+            width: 8, height: 8, borderRadius: "50%",
+            background: i < filled ? COLORS.confidenceFill : COLORS.confidenceEmpty,
+            transition: "background 0.3s ease",
+          }}
+        />
+      ))}
+      <span style={{ marginLeft: 6, fontFamily: FONT.mono, fontSize: 12, color: COLORS.textMuted }}>
+        {value.toFixed(2)}
+      </span>
+    </div>
+  );
+}
+
+function DeltaCard({ label, value, unit, variant }) {
+  const colors = {
+    current: { bg: COLORS.surfaceRaised, border: COLORS.border, text: COLORS.text },
+    target: { bg: COLORS.surfaceRaised, border: COLORS.border, text: COLORS.textMuted },
+    delta: { bg: "rgba(128,88,48,0.25)", border: "rgba(240,160,80,0.38)", text: COLORS.accent },
+  };
+  const c = colors[variant] || colors.current;
+  return (
+    <div style={{
+      flex: 1, padding: "16px 14px", background: c.bg,
+      border: `1px solid ${c.border}`, borderRadius: 6, textAlign: "center",
+    }}>
+      <div style={{ fontFamily: FONT.mono, fontSize: 10, textTransform: "uppercase", letterSpacing: 1.5, color: COLORS.textDim, marginBottom: 8 }}>
+        {label}
+      </div>
+      <div style={{ fontFamily: FONT.display, fontSize: 28, color: c.text, lineHeight: 1.1 }}>
+        {variant === "delta" ? "−" : ""}{value}
+      </div>
+      <div style={{ fontFamily: FONT.mono, fontSize: 11, color: COLORS.textDim, marginTop: 4 }}>{unit}</div>
+    </div>
+  );
+}
+
+function ParamInput({ label, value, onChange, step }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <span style={{ fontFamily: FONT.mono, fontSize: 11, color: COLORS.textDim, minWidth: 80 }}>{label}</span>
+      <input
+        type="number"
+        value={value}
+        step={step || 1}
+        onChange={(e) => onChange(Number(e.target.value) || 0)}
+        style={{
+          width: 64, padding: "5px 8px", background: COLORS.bg,
+          border: `1px solid ${COLORS.border}`, borderRadius: 4,
+          color: COLORS.text, fontFamily: FONT.mono, fontSize: 13,
+          textAlign: "right", outline: "none",
+        }}
+        onFocus={(e) => e.target.style.borderColor = COLORS.accent}
+        onBlur={(e) => e.target.style.borderColor = COLORS.border}
+      />
+    </div>
+  );
+}
+
+function ConsequenceMode({ title, color, dimColor, items }) {
+  return (
+    <div style={{
+      flex: 1, padding: 16,
+      background: `rgba(${dimColor === COLORS.capacityReleaseDim ? '32,72,56' : '74,40,32'}, 0.15)`,
+      border: `1px solid rgba(${dimColor === COLORS.capacityReleaseDim ? '80,176,144' : '224,112,80'}, 0.2)`,
+      borderRadius: 6,
+    }}>
+      <div style={{ fontFamily: FONT.mono, fontSize: 10, textTransform: "uppercase", letterSpacing: 1.5, color, marginBottom: 12 }}>
+        {title}
+      </div>
+      {items.map((item, i) => (
+        <div key={i} style={{ marginBottom: i < items.length - 1 ? 12 : 0 }}>
+          <div style={{ fontFamily: FONT.display, fontSize: 22, color: COLORS.text, lineHeight: 1.2 }}>
+            {item.value}
+          </div>
+          <div style={{ fontFamily: FONT.sans, fontSize: 12, color: COLORS.textMuted, marginTop: 2 }}>
+            {item.label}
+          </div>
+          {item.secondary && (
+            <div style={{ fontFamily: FONT.mono, fontSize: 10, color: COLORS.secondary, marginTop: 4, fontStyle: "italic" }}>
+              * secondary projection
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TrendLine({ label, baseline, current, target, unit, worsening }) {
+  const allVals = [baseline, current, target];
+  const min = Math.min(...allVals) * 0.7;
+  const max = Math.max(...allVals) * 1.3;
+  const range = max - min || 1;
+  const pct = (v) => Math.max(2, Math.min(98, ((v - min) / range) * 100));
+  const color = worsening ? COLORS.trendWorsening : COLORS.trendImproving;
+
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+        <span style={{ fontFamily: FONT.mono, fontSize: 10, color: COLORS.textDim }}>{label}</span>
+        <span style={{ fontFamily: FONT.mono, fontSize: 10, color }}>
+          {worsening ? "▲ worsening" : "▼ improving"}
+        </span>
+      </div>
+      <div style={{ position: "relative", height: 22, background: COLORS.surfaceRaised, borderRadius: 4, overflow: "hidden" }}>
+        {/* Track line */}
+        <div style={{
+          position: "absolute", top: 10, left: `${pct(Math.min(baseline, target))}%`,
+          width: `${Math.abs(pct(baseline) - pct(target))}%`, height: 2,
+          background: COLORS.borderSubtle,
+        }} />
+        {/* Target marker */}
+        <div style={{
+          position: "absolute", left: `${pct(target)}%`, top: 3, bottom: 3,
+          width: 2, background: COLORS.accent + "50", transform: "translateX(-1px)",
+        }} />
+        {/* Baseline dot */}
+        <div style={{
+          position: "absolute", left: `${pct(baseline)}%`, top: 7,
+          width: 8, height: 8, borderRadius: "50%",
+          background: COLORS.textDim, transform: "translateX(-4px)",
+        }} />
+        {/* Current dot */}
+        <div style={{
+          position: "absolute", left: `${pct(current)}%`, top: 5,
+          width: 12, height: 12, borderRadius: "50%",
+          background: color, transform: "translateX(-6px)",
+          border: `2px solid ${COLORS.surface}`,
+          boxShadow: `0 0 8px ${color}50`,
+        }} />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 3 }}>
+        <span style={{ fontFamily: FONT.mono, fontSize: 9, color: COLORS.textDim }}>
+          baseline {baseline}{unit}
+        </span>
+        <span style={{ fontFamily: FONT.mono, fontSize: 9, color }}>
+          current {current}{unit}
+        </span>
+        <span style={{ fontFamily: FONT.mono, fontSize: 9, color: COLORS.accent }}>
+          target {target}{unit}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function ThroughputImpactPanel() {
+  const [entityVolume, setEntityVolume] = useState(160);
+  const [assessmentFrequency, setAssessmentFrequency] = useState(1.0);
+  const [fteCapacityDays, setFteCapacityDays] = useState(60);
+
+  const data = SCAFFOLD_DATA;
+  const hm = HEATMAP_DATA;
+
+  const calc = useMemo(() => {
+    const pm = data.primaryMetric;
+    const sm = data.secondaryMetric;
+    const constraintDelta = pm.current - pm.target;
+    const annualCycles = entityVolume * assessmentFrequency;
+    const quarterlyCycles = annualCycles / 4;
+    const daysReleasedPerQuarter = constraintDelta * quarterlyCycles;
+    const fteEquivalent = fteCapacityDays > 0 ? daysReleasedPerQuarter / fteCapacityDays : 0;
+    const currentEscalations = quarterlyCycles * (sm.current / 100);
+    const targetEscalations = quarterlyCycles * (sm.target / 100);
+    const escalationReduction = currentEscalations - targetEscalations;
+    return {
+      constraintDelta,
+      quarterlyCycles: Math.round(quarterlyCycles),
+      daysReleasedPerQuarter: Math.round(daysReleasedPerQuarter),
+      fteEquivalent: fteEquivalent.toFixed(1),
+      escalationReduction: escalationReduction.toFixed(1),
+      exposureReduction: constraintDelta,
+    };
+  }, [entityVolume, assessmentFrequency, fteCapacityDays, data]);
+
+  const interventionVectors = data.frictionCategories.map((cat) => INTERVENTION_MAP[cat]).filter(Boolean);
+
+  return (
+    <div style={{
+      width: 540, background: COLORS.surface, border: `1px solid ${COLORS.border}`,
+      borderRadius: 10, padding: 28, fontFamily: FONT.sans, color: COLORS.text,
+      boxShadow: "0 4px 40px rgba(0,0,0,0.4)",
+    }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
+        <div>
+          <div style={{ fontFamily: FONT.mono, fontSize: 9, textTransform: "uppercase", letterSpacing: 2.5, color: COLORS.accent, marginBottom: 8 }}>
+            Structural Projection (First-Order)
+          </div>
+          <div style={{ fontFamily: FONT.display, fontSize: 20, color: COLORS.text, lineHeight: 1.3 }}>
+            {data.bindingConstraintActivityName}
+          </div>
+        </div>
+        <ConfidenceDots value={hm.confidence} />
+      </div>
+
+      {/* Delta Bar */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 22, alignItems: "center" }}>
+        <DeltaCard label="Current" value={data.primaryMetric.current} unit={`${data.primaryMetric.unit}/cycle`} variant="current" />
+        <span style={{ fontFamily: FONT.display, fontSize: 20, color: COLORS.textDim }}>→</span>
+        <DeltaCard label="Target" value={data.primaryMetric.target} unit={`${data.primaryMetric.unit}/cycle`} variant="target" />
+        <span style={{ fontFamily: FONT.display, fontSize: 20, color: COLORS.textDim }}>=</span>
+        <DeltaCard label="Delta" value={calc.constraintDelta} unit={`${data.primaryMetric.unit}/cycle`} variant="delta" />
+      </div>
+
+      {/* Engagement Context */}
+      <div style={{ padding: "14px 16px", background: COLORS.bg, border: `1px solid ${COLORS.borderSubtle}`, borderRadius: 6, marginBottom: 22 }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: 9, textTransform: "uppercase", letterSpacing: 1.5, color: COLORS.textDim, marginBottom: 10 }}>
+          Engagement Context
+        </div>
+        <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+          <ParamInput label="Entities" value={entityVolume} onChange={setEntityVolume} />
+          <ParamInput label="Cycles/yr" value={assessmentFrequency} onChange={setAssessmentFrequency} step={0.25} />
+          <ParamInput label="FTE d/qtr" value={fteCapacityDays} onChange={setFteCapacityDays} />
+        </div>
+      </div>
+
+      {/* Dual Consequence Modes */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 22 }}>
+        <ConsequenceMode
+          title="Capacity Release"
+          color={COLORS.capacityRelease}
+          dimColor={COLORS.capacityReleaseDim}
+          items={[
+            { value: `${calc.daysReleasedPerQuarter} days/qtr`, label: "supervisory days released" },
+            { value: `≈ ${calc.fteEquivalent} FTEs`, label: "equivalent capacity" },
+          ]}
+        />
+        <ConsequenceMode
+          title="Risk Compression"
+          color={COLORS.riskCompression}
+          dimColor={COLORS.riskCompressionDim}
+          items={[
+            { value: `−${calc.exposureReduction} days`, label: "exposure window per entity per cycle" },
+            { value: `−${calc.escalationReduction}/qtr`, label: "executive escalation backlogs", secondary: true },
+          ]}
+        />
+      </div>
+
+      {/* Intervention Vector */}
+      <div style={{
+        padding: "14px 16px", background: COLORS.interventionBg,
+        border: `1px solid ${COLORS.interventionBorder}`, borderRadius: 6, marginBottom: 22,
+      }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: 9, textTransform: "uppercase", letterSpacing: 1.5, color: COLORS.accent, marginBottom: 8 }}>
+          Intervention Vector
+        </div>
+        <div style={{ fontFamily: FONT.sans, fontSize: 14, color: COLORS.text, marginBottom: 8, fontWeight: 500 }}>
+          Governance design optimisation
+        </div>
+        {[...interventionVectors, "Approval parallelisation or tiered authority"].map((v, i) => (
+          <div key={i} style={{ fontFamily: FONT.mono, fontSize: 11, color: COLORS.textMuted, lineHeight: 1.8 }}>
+            • {v}
+          </div>
+        ))}
+      </div>
+
+      {/* Consequence Statement */}
+      <div style={{
+        padding: 18, background: COLORS.surfaceRaised,
+        border: `1px solid ${COLORS.border}`, borderRadius: 6, marginBottom: 22,
+      }}>
+        <div style={{ fontFamily: FONT.mono, fontSize: 9, textTransform: "uppercase", letterSpacing: 1.5, color: COLORS.textDim, marginBottom: 12 }}>
+          Consequence
+        </div>
+        <div style={{ fontFamily: FONT.sans, fontSize: 13, color: COLORS.text, lineHeight: 1.7, marginBottom: 14 }}>
+          If the approval cycle time is reduced from {data.primaryMetric.current} to {data.primaryMetric.target} {data.primaryMetric.unit}, and current assessment volumes remain constant, the value stream has the potential to release approximately{" "}
+          <strong style={{ color: COLORS.capacityRelease }}>{calc.daysReleasedPerQuarter} supervisory days per quarter</strong>{" "}
+          (≈{calc.fteEquivalent} FTEs). Each entity's exposure window would reduce by{" "}
+          <strong style={{ color: COLORS.riskCompression }}>{calc.exposureReduction} {data.primaryMetric.unit} per cycle</strong>.
+        </div>
+        <div style={{ fontFamily: FONT.sans, fontSize: 12, color: COLORS.secondary, lineHeight: 1.6, fontStyle: "italic", marginBottom: 16, paddingLeft: 8, borderLeft: `2px solid ${COLORS.secondary}30` }}>
+          * Secondary: Achieving target escalation rate would reduce executive backlogs by ≈{calc.escalationReduction}/qtr. Requires escalation rate to reach target independently — see assumptions.
+        </div>
+
+        {/* Assumptions */}
+        <div style={{
+          padding: "12px 14px", background: COLORS.assumptionBg,
+          border: `1px solid ${COLORS.assumptionBorder}`, borderRadius: 5, marginBottom: 14,
+        }}>
+          <div style={{ fontFamily: FONT.mono, fontSize: 9, textTransform: "uppercase", letterSpacing: 1.5, color: COLORS.textDim, marginBottom: 8 }}>
+            Assumptions
+          </div>
+          {[
+            { text: "Review & Approve is sole throughput limiter", primary: true },
+            { text: "Occurs once per cycle per entity", primary: true },
+            { text: `Assessment volumes remain constant (${entityVolume} entities, ${assessmentFrequency} cycles/yr)`, primary: true },
+            { text: "Downstream stages do not re-accumulate equivalent delay", primary: true },
+            { text: "Escalation rate reaches target independently (secondary projection only)", primary: false },
+          ].map((a, i) => (
+            <div key={i} style={{ fontFamily: FONT.mono, fontSize: 10, color: a.primary ? COLORS.textDim : COLORS.secondary, lineHeight: 1.8 }}>
+              {a.primary ? "•" : "*"} {a.text}
+            </div>
+          ))}
+        </div>
+
+        {/* Confidence footer */}
+        <div style={{ display: "flex", justifyContent: "space-between", fontFamily: FONT.mono, fontSize: 10, color: COLORS.textDim }}>
+          <span>Structural inference confidence: {hm.confidence.toFixed(2)}</span>
+          <span style={{ color: COLORS.secondary }}>
+            Operational validation: Not yet verified
+          </span>
+        </div>
+      </div>
+
+      {/* Trend Lines */}
+      <TrendLine
+        label={data.primaryMetric.name}
+        baseline={data.primaryMetric.baseline}
+        current={data.primaryMetric.current}
+        target={data.primaryMetric.target}
+        unit="d"
+        worsening={false}
+      />
+      <TrendLine
+        label={data.secondaryMetric.name}
+        baseline={data.secondaryMetric.baseline}
+        current={data.secondaryMetric.current}
+        target={data.secondaryMetric.target}
+        unit="%"
+        worsening={true}
+      />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<ThroughputImpactPanel />);
+</script>
+</body>
+</html>

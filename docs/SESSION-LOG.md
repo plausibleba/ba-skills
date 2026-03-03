@@ -367,3 +367,86 @@ Discovery form → Generate scaffold → success screen → "Open in Canvas" →
 13. Anchor roles/info/tech to specific activities (not whole capability)
 14. Enterprise banking scaffold with full enrichment on 1-2 exemplar streams
 15. Automation layer: agent-derived IR → human reconciliation → canonical scaffold
+
+---
+
+## Session 6 — Sunday 1 Mar 2026
+
+### Theme: Open in Canvas Fix + Deployment Pipeline
+
+**Root cause diagnosis:**
+- `DiscoveryIntake_prod.tsx` fix from Session 5 was never committed to the correct path
+- CLI (`vercel --prod`) was deploying to `frontend` project, not `vcc-two-puce`
+- Two separate Vercel projects discovered — CLI project is canonical going forward
+
+**Fixes applied:**
+- Consolidated `DiscoveryIntake_prod.tsx` → `DiscoveryIntake.tsx` at correct path
+- `vercel.json` updated: `/api/*` rewrite added before SPA catch-all (was swallowing API routes)
+- `max_tokens` bumped from 1000 → 4000 (JSON truncation causing extraction failures)
+- `Open in Canvas` button wired: `onComplete?.(generatedScaffold)` with real scaffold builder
+- Scaffold builder implemented in `generateIR()`: constructs canonical JSON from form data
+
+**Deployment resolved:**
+- Production: `https://frontend-five-eta-l0j2mk66gi.vercel.app`
+- Deploy: `cd packages/frontend && vercel --prod`
+- F-001 Editable Friction Panel confirmed implemented
+
+### Key Decisions
+- D-028: `frontend` Vercel project (CLI-linked) is canonical — not `vcc-two-puce` (GitHub-connected)
+- D-029: `vercel.json` must explicitly pass `/api/*` before SPA catch-all rewrite
+
+---
+
+## Session 7 — Tuesday 3 Mar 2026
+
+### Theme: VCC Bundle — End-to-End Presales Flow
+
+**Goal:** Enable a Salesforce rep to run a discovery session, generate a scaffold + heatmap, save a bundle locally, and reload it later — without any backend or file management complexity.
+
+**VCC Bundle format introduced:**
+- Single JSON containing `{ bundleVersion, createdAt, scaffold, heatmaps[] }`
+- Generated at end of Discovery Intake alongside scaffold
+- Heatmaps derived from pain points in the form, grouped by value stream
+- `FileLoader.tsx` updated to detect and load bundle format (scaffold + all heatmaps in one drop)
+
+**Discovery Intake improvements:**
+- `generateIR()` now also calls heatmap generator after scaffold is built
+- Pain points mapped to heatmap observations with correct `act-{vsName}-{stageName}` anchor IDs
+- `bundleSaved` state gates "Open in Canvas" — must save bundle first
+- **Save Bundle** is now primary action (dark button); **Open in Canvas** is secondary (greyed until saved)
+- Native `showSaveFilePicker` API used — gives user a Finder save dialog to choose their own folder
+- Fallback to auto-download if browser doesn't support File System Access API
+
+**Heatmap → anchor ID bug fixed:**
+- Root cause: heatmap generator was deriving VS ID from pain point text, not from actual scaffold VS IDs
+- Fix: match pain points against `Object.keys(elements.valueStreams)` before building observations
+- Anchor IDs now use `act-{vsIdName}-{stageName}` matching scaffold's generation pattern
+
+**Vercel deployment workflow confirmed:**
+- Each `vercel --prod` creates a new deployment URL
+- Production alias `frontend-five-eta-l0j2mk66gi` always points to latest deployment
+- Hard refresh or incognito required to clear browser cache after new deployment
+
+**Design documents reviewed:**
+- `VCC_Scaffold_Generation_Prompt_Pack_v3_2` — 15-step phased generation (Phases A–E)
+- `ProductDesignSpec_EVSIP_v0_4` — 12-agent pipeline architecture
+- `Presales_Engagement_Narrative` — board-facing engagement framing
+- Key insight: current single-pass extraction is approximating a 9-agent pipeline in one LLM call
+
+**Known quality gaps identified:**
+- Single-pass extraction causes VS/stage name confusion in `affectedStage` field
+- Only 1 capability generated per stage (stub scaffolds, not enriched)
+- Binding constraint not reliably rendering (anchor ID mismatch on some observations)
+
+**Pending from this session:**
+- Two-pass extraction rewrite (fix VS/stage confusion)
+- Daniel feature: friction → solutions → Salesforce features → case studies
+- 2-3 fictitious dummy discovery datasets for non-Salesforce demos
+- Full design folder upload to Claude Project
+
+### Key Decisions
+- D-030: VCC Bundle is the canonical presales artefact — scaffold + heatmaps in one file
+- D-031: Save Bundle gates Open in Canvas — prevents data loss if user navigates away
+- D-032: Each Salesforce rep maintains their own local folder of bundle JSON files
+- D-033: Two-pass extraction required — Pass 1 defines true VS (board-level, outcome-driven), Pass 2 extracts stages/pain points anchored to confirmed VS names
+- D-034: Prompt Pack v3.2 is the authoritative reference for extraction quality — single-pass approximation is insufficient for production quality
