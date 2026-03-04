@@ -22,10 +22,8 @@ const FRICTION_CATEGORIES = [
 
 const TECH_TYPES = ["CRM","ERP","Comms","Analytics","Field","Custom","Other"];
 const ROLE_TYPES = ["Internal","External","System"];
-const ZONE_OPTIONS = ["ecosystem","knowledge"];
-
 // ─── Scoring weights ────────────────────────────────────────────────────────
-function calcReadiness(form) {
+function calcReadiness(form: FormState) {
   let score = 0;
   // Org: 10%
   if (form.org.name && form.org.industry) score += 10;
@@ -44,15 +42,35 @@ function calcReadiness(form) {
   return Math.min(100, Math.round(score));
 }
 
-function readinessLabel(score) {
+function readinessLabel(score: number) {
   if (score < 41) return { label: "Insufficient", colour: "text-red-600", bg: "bg-red-500" };
   if (score < 61) return { label: "Draft", colour: "text-amber-600", bg: "bg-amber-500" };
   if (score < 81) return { label: "Viable", colour: "text-blue-600", bg: "bg-blue-500" };
   return { label: "Rich", colour: "text-emerald-600", bg: "bg-emerald-500" };
 }
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+interface Stage { name: string; confidence?: string }
+interface VS { id: number; name: string; description: string; zone: string; stages: Stage[]; stakeholder: string; trigger?: string; terminalOutcome?: string; confidence?: string }
+interface Role { id: number; name: string; type: string; vsRefs?: string[]; notes: string; confidence?: string }
+interface Tech { id: number; name: string; type: string; friction: boolean; notes: string; confidence?: string }
+interface PainPoint { id: number; description: string; category: string; intensity: number; affectedStage: string; binding: boolean; confidence?: string }
+interface Metric { id: number; name: string; current: string; target: string; stage: string; confidence?: string }
+interface Gap { severity: string; prompt: string }
+interface FormState {
+  org: { name: string; industry: string; companySize: string; description: string; stakeholder: string; confidence?: string };
+  valueStreams: VS[];
+  roles: Role[];
+  tech: Tech[];
+  painPoints: PainPoint[];
+  metrics: Metric[];
+  gaps: Gap[];
+  source: string;
+  extractionMeta: { extractedAt: string; passes?: number } | null;
+}
+
 // ─── Initial state ──────────────────────────────────────────────────────────
-const EMPTY_FORM = {
+const EMPTY_FORM: FormState = {
   org: { name: "", industry: "", companySize: "", description: "", stakeholder: "" },
   valueStreams: [{ id: 1, name: "", description: "", zone: "ecosystem", stages: [], stakeholder: "" }],
   roles: [],
@@ -66,7 +84,7 @@ const EMPTY_FORM = {
 
 // ─── Small atoms ────────────────────────────────────────────────────────────
 
-function ConfidenceDot({ level }) {
+function ConfidenceDot({ level }: { level: string }) {
   const c = level === "high" ? "bg-emerald-400" : level === "medium" ? "bg-amber-400" : "bg-red-400";
   const tip = level === "high" ? "High confidence" : level === "medium" ? "Medium — verify" : "Low — needs review";
   return (
@@ -74,7 +92,7 @@ function ConfidenceDot({ level }) {
   );
 }
 
-function SectionHeader({ number, title, count, completion }) {
+function SectionHeader({ number, title, count }: { number: string | number; title: string; count?: string | number }) {
   return (
     <div className="flex items-center gap-3 mb-4">
       <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-800 text-white text-xs font-bold flex-shrink-0">
@@ -88,7 +106,7 @@ function SectionHeader({ number, title, count, completion }) {
   );
 }
 
-function Field({ label, required, gap, confidence, children }) {
+function Field({ label, required, gap, confidence, children }: { label: string; required?: boolean; gap?: string; confidence?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-1.5">
@@ -106,9 +124,9 @@ const inputCls = "w-full rounded-md border border-slate-200 bg-white px-3 py-2 t
 const textareaCls = `${inputCls} resize-none`;
 
 // ─── Stage tag input ─────────────────────────────────────────────────────────
-function StageTagInput({ stages, onChange }) {
+function StageTagInput({ stages, onChange }: { stages: Stage[]; onChange: (stages: Stage[]) => void }) {
   const [draft, setDraft] = useState("");
-  function addStage(name) {
+  function addStage(name: string) {
     const n = name.trim();
     if (!n) return;
     if (!stages.find(s => s.name.toLowerCase() === n.toLowerCase())) {
@@ -144,7 +162,7 @@ function StageTagInput({ stages, onChange }) {
 }
 
 // ─── Gap Prompter ─────────────────────────────────────────────────────────
-function GapPrompter({ gaps, onDismiss }) {
+function GapPrompter({ gaps, onDismiss }: { gaps: Gap[]; onDismiss: (i: number) => void }) {
   if (!gaps || gaps.length === 0) return null;
   const req = gaps.filter(g => g.severity === "required");
   const rec = gaps.filter(g => g.severity === "recommended");
@@ -167,7 +185,7 @@ function GapPrompter({ gaps, onDismiss }) {
 }
 
 // ─── Readiness Bar ────────────────────────────────────────────────────────
-function ReadinessBar({ score }) {
+function ReadinessBar({ score }: { score: number }) {
   const { label, colour, bg } = readinessLabel(score);
   return (
     <div className="space-y-1.5">
@@ -192,7 +210,7 @@ function ReadinessBar({ score }) {
 }
 
 // ─── Extraction Summary ──────────────────────────────────────────────────
-function ExtractionSummary({ meta, form }) {
+function ExtractionSummary({ meta, form }: { meta: FormState["extractionMeta"]; form: FormState }) {
   if (!meta) return null;
   const fields = [
     { label: "Organisation", ok: !!form.org.name },
@@ -226,26 +244,24 @@ function ExtractionSummary({ meta, form }) {
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
-export default function DiscoveryIntake({ onComplete }: { onComplete?: (scaffold: any) => void }) {
+export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: any) => void }) {
   const [mode, setMode] = useState("freeform"); // "freeform" | "structured"
   const [transcript, setTranscript] = useState("");
   const [form, setForm] = useState(EMPTY_FORM);
   const [extracting, setExtracting] = useState(false);
+  const [extractPass, setExtractPass] = useState(0); // 1 = defining VS, 2 = extracting detail
   const [extractDone, setExtractDone] = useState(false);
-  const [activeSection, setActiveSection] = useState(null);
   const [generating, setGenerating] = useState(false);
+  const [generateStep, setGenerateStep] = useState(""); // "scaffold" | "friction" | ""
   const [generated, setGenerated] = useState(false);
-  const [generatedScaffold, setGeneratedScaffold] = useState<any>(null);
   const [generatedBundle, setGeneratedBundle] = useState<any>(null);
   const [bundleSaved, setBundleSaved] = useState(false);
-  const dropRef = useRef();
+  const dropRef = useRef<HTMLDivElement>(null);
 
   const readiness = calcReadiness(form);
-  const { label: rLabel, colour: rColour } = readinessLabel(readiness);
-
   // ─── Form updaters ───────────────────────────────────────────────────────
-  const setOrg = patch => setForm(f => ({ ...f, org: { ...f.org, ...patch } }));
-  const setVS = (id, patch) => setForm(f => ({
+  const setOrg = (patch: Partial<FormState["org"]>) => setForm(f => ({ ...f, org: { ...f.org, ...patch } }));
+  const setVS = (id: number, patch: Partial<VS>) => setForm(f => ({
     ...f,
     valueStreams: f.valueStreams.map(vs => vs.id === id ? { ...vs, ...patch } : vs)
   }));
@@ -253,37 +269,56 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (scaffold
     ...f,
     valueStreams: [...f.valueStreams, { id: Date.now(), name: "", description: "", zone: "ecosystem", stages: [], stakeholder: "" }]
   }));
-  const removeVS = id => setForm(f => ({ ...f, valueStreams: f.valueStreams.filter(vs => vs.id !== id) }));
+  const removeVS = (id: number) => setForm(f => ({ ...f, valueStreams: f.valueStreams.filter(vs => vs.id !== id) }));
 
   const addRole = () => setForm(f => ({ ...f, roles: [...f.roles, { id: Date.now(), name: "", type: "Internal", vsRefs: [], notes: "" }] }));
-  const setRole = (id, patch) => setForm(f => ({ ...f, roles: f.roles.map(r => r.id === id ? { ...r, ...patch } : r) }));
-  const removeRole = id => setForm(f => ({ ...f, roles: f.roles.filter(r => r.id !== id) }));
+  const setRole = (id: number, patch: Partial<Role>) => setForm(f => ({ ...f, roles: f.roles.map(r => r.id === id ? { ...r, ...patch } : r) }));
+  const removeRole = (id: number) => setForm(f => ({ ...f, roles: f.roles.filter(r => r.id !== id) }));
 
   const addTech = () => setForm(f => ({ ...f, tech: [...f.tech, { id: Date.now(), name: "", type: "CRM", friction: false, notes: "" }] }));
-  const setTech = (id, patch) => setForm(f => ({ ...f, tech: f.tech.map(t => t.id === id ? { ...t, ...patch } : t) }));
-  const removeTech = id => setForm(f => ({ ...f, tech: f.tech.filter(t => t.id !== id) }));
+  const setTech = (id: number, patch: Partial<Tech>) => setForm(f => ({ ...f, tech: f.tech.map(t => t.id === id ? { ...t, ...patch } : t) }));
+  const removeTech = (id: number) => setForm(f => ({ ...f, tech: f.tech.filter(t => t.id !== id) }));
 
   const addPP = () => setForm(f => ({ ...f, painPoints: [...f.painPoints, { id: Date.now(), description: "", category: "", intensity: 7, affectedStage: "", binding: false }] }));
-  const setPP = (id, patch) => setForm(f => ({ ...f, painPoints: f.painPoints.map(p => p.id === id ? { ...p, ...patch } : p) }));
-  const removePP = id => setForm(f => ({ ...f, painPoints: f.painPoints.filter(p => p.id !== id) }));
+  const setPP = (id: number, patch: Partial<PainPoint>) => setForm(f => ({ ...f, painPoints: f.painPoints.map(p => p.id === id ? { ...p, ...patch } : p) }));
+  const removePP = (id: number) => setForm(f => ({ ...f, painPoints: f.painPoints.filter(p => p.id !== id) }));
 
   const addMetric = () => setForm(f => ({ ...f, metrics: [...f.metrics, { id: Date.now(), name: "", current: "", target: "", stage: "" }] }));
-  const setMetric = (id, patch) => setForm(f => ({ ...f, metrics: f.metrics.map(m => m.id === id ? { ...m, ...patch } : m) }));
-  const removeMetric = id => setForm(f => ({ ...f, metrics: f.metrics.filter(m => m.id !== id) }));
+  const setMetric = (id: number, patch: Partial<Metric>) => setForm(f => ({ ...f, metrics: f.metrics.map(m => m.id === id ? { ...m, ...patch } : m) }));
+  const removeMetric = (id: number) => setForm(f => ({ ...f, metrics: f.metrics.filter(m => m.id !== id) }));
 
-  const dismissGap = idx => setForm(f => ({ ...f, gaps: f.gaps.filter((_, i) => i !== idx) }));
+  const dismissGap = (idx: number) => setForm(f => ({ ...f, gaps: f.gaps.filter((_, i) => i !== idx) }));
 
-  // ─── LLM Extraction ─────────────────────────────────────────────────────
+  // ─── LLM Extraction (two-pass) ──────────────────────────────────────────
+  //
+  // Pass 1: Define Value Streams at board level (outcome-driven, 2-4 max).
+  //         Anchors all downstream naming. Prevents VS/stage conflation.
+  // Pass 2: Extract stages, roles, tech, pain points, metrics — all anchored
+  //         to the confirmed VS names from Pass 1. affectedVsId is constrained
+  //         to the confirmed list, so heatmap anchor IDs are always correct.
+  //
   async function runExtraction() {
     if (!transcript.trim()) return;
     setExtracting(true);
+    setExtractPass(1);
 
-    const prompt = `You are a business analyst extracting discovery signal from a sales or consulting call transcript or meeting notes.
+    const apiUrl = import.meta.env.DEV ? "/api/anthropic/v1/messages" : "/api/claude";
 
-Extract information into this exact JSON structure. For each field, include a "confidence" property: "high", "medium", or "low".
-Mark isFrictionSource: true for any technology system mentioned as a problem or bottleneck.
-Return ONLY valid JSON with no markdown fences.
+    // ── Pass 1: VS Definition ────────────────────────────────────────────────
+    // Uses Step 01 logic from Prompt Pack v3.2.
+    // Board-level, outcome-driven. 2-4 VS max. No stages extracted here.
+    const pass1Prompt = `You are a business architect defining Value Streams for a governance diagnostic.
+A Value Stream represents the end-to-end flow that delivers measurable stakeholder value — triggered by a defined need, ending at a verifiable outcome. You are working at board level: not process detail, but structural flow of value.
 
+From the transcript below, identify 2-4 Value Streams. Rules:
+- Each VS is outcome-driven, not function-driven ("Channel Sales Execution" not "Sales Team Activities")
+- Each VS has a clear trigger event and a clear terminal outcome
+- VS names are concise, 2-5 words, title case
+- ecosystem zone = externally-facing (sales, service, customer, partner)
+- knowledge zone = internally-facing (operations, risk, reporting, finance)
+- Do NOT extract stages here — only the top-level VS definitions
+
+Return ONLY valid JSON, no markdown fences:
 {
   "org": {
     "name": "",
@@ -296,12 +331,68 @@ Return ONLY valid JSON with no markdown fences.
   "valueStreams": [
     {
       "id": 1,
-      "name": "",
-      "description": "",
-      "zone": "ecosystem|knowledge",
-      "stages": [{"name": "", "confidence": "high|medium|low"}],
+      "name": "Channel Sales Execution",
+      "description": "End-to-end flow from territory planning through deal close",
+      "zone": "ecosystem",
+      "trigger": "Territory assigned or pipeline opportunity identified",
+      "terminalOutcome": "Deal closed and revenue recognised",
       "stakeholder": "",
       "confidence": "high|medium|low"
+    }
+  ]
+}
+
+Transcript:
+${transcript}`;
+
+    let pass1Result: any = null;
+
+    try {
+      const res1 = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 2000,
+          messages: [{ role: "user", content: pass1Prompt }]
+        })
+      });
+      const data1 = await res1.json();
+      const text1 = data1.content?.find((b: any) => b.type === "text")?.text ?? "{}";
+      pass1Result = JSON.parse(text1.replace(/```json|```/g, "").trim());
+    } catch (e) {
+      console.error("Pass 1 extraction failed", e);
+      setExtracting(false);
+      return;
+    }
+
+    const confirmedVS = pass1Result.valueStreams ?? [];
+    setExtractPass(2);
+    // Build the confirmed VS name list to inject into Pass 2
+    const vsNameList = confirmedVS.map((vs: any, i: number) =>
+      `${i + 1}. "${vs.name}" (zone: ${vs.zone}) — trigger: ${vs.trigger ?? "unknown"}, outcome: ${vs.terminalOutcome ?? "unknown"}`
+    ).join("\n");
+
+    // ── Pass 2: Stage + Friction Extraction ──────────────────────────────────
+    // VS names are injected verbatim from Pass 1 — the model cannot invent new ones.
+    // affectedVsName MUST be one of the confirmed names.
+    // This is what fixes the anchor ID mismatch in the heatmap generator.
+    const pass2Prompt = `You are extracting detailed discovery signal from a sales or consulting call transcript.
+
+The following Value Streams have already been defined and are CONFIRMED. Do not rename, add, or remove them:
+${vsNameList}
+
+For each field below, use the confirmed VS names exactly as written above for any vsName references.
+Return ONLY valid JSON, no markdown fences:
+
+{
+  "valueStreams": [
+    {
+      "id": 1,
+      "name": "MUST MATCH confirmed name exactly",
+      "stages": [
+        {"name": "Stage Name", "confidence": "high|medium|low"}
+      ]
     }
   ],
   "roles": [
@@ -316,67 +407,100 @@ Return ONLY valid JSON with no markdown fences.
       "description": "",
       "category": "DataSignalFriction|ProcessHandoffFriction|GovernanceRiskFriction|IncentiveCapacityFriction|DecisionAuthorityFriction",
       "intensity": 7,
-      "affectedStage": "",
+      "affectedVsName": "MUST be one of the confirmed VS names above",
+      "affectedStage": "Stage name only — NOT the VS name",
       "binding": true|false,
       "confidence": "high|medium|low"
     }
   ],
   "metrics": [
-    {"id": 1, "name": "", "current": "", "target": "", "stage": "", "confidence": "high|medium|low"}
+    {"id": 1, "name": "", "current": "", "target": "", "affectedVsName": "confirmed VS name", "stage": "stage name only", "confidence": "high|medium|low"}
   ],
   "gaps": [
-    {"severity": "required|recommended", "prompt": "Specific question for consultant to fill"}
+    {"severity": "required|recommended", "prompt": "Specific question to fill this gap"}
   ]
 }
 
-Zone rules: ecosystem = externally-facing (sales, service, marketing); knowledge = internally-facing (risk, operations, reporting).
-Intensity: rate 1-10 based on urgency/impact implied in transcript. Binding = the single biggest bottleneck.
-Generate 2-4 gap prompts for missing important fields.
+Rules:
+- stages: 4-8 per VS. Each stage = a governance phase, not a task. MECE — no gaps, no overlaps.
+- affectedStage in painPoints: stage name ONLY (e.g. "Pre-Visit Planning") — never include the VS name here
+- affectedVsName: must exactly match one of the confirmed VS names — no paraphrasing
+- binding: true for the single biggest bottleneck across ALL pain points (at most one)
+- intensity: 1-10 based on urgency/impact in transcript
+- Generate 2-4 gap prompts for fields that need consultant clarification
 
 Transcript:
 ${transcript}`;
 
     try {
-      const res = await fetch(import.meta.env.DEV ? "/api/anthropic/v1/messages" : "/api/claude", {
+      const res2 = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 4000,
-          messages: [{ role: "user", content: prompt }]
+          messages: [{ role: "user", content: pass2Prompt }]
         })
       });
-      const data = await res.json();
-      const text = data.content?.find(b => b.type === "text")?.text ?? "{}";
-      const clean = text.replace(/```json|```/g, "").trim();
-      const extracted = JSON.parse(clean);
+      const data2 = await res2.json();
+      const text2 = data2.content?.find((b: any) => b.type === "text")?.text ?? "{}";
+      const pass2Result = JSON.parse(text2.replace(/```json|```/g, "").trim());
+
+      // Merge Pass 1 VS definitions with Pass 2 stage extractions
+      // Pass 1 is authoritative for name/description/zone/stakeholder
+      // Pass 2 adds stages
+      const mergedVS = confirmedVS.map((vs1: any, i: number) => {
+        const vs2 = pass2Result.valueStreams?.find((v: any) => v.name === vs1.name)
+          ?? pass2Result.valueStreams?.[i];
+        return {
+          ...vs1,
+          id: vs1.id ?? Date.now() + i,
+          stages: vs2?.stages ?? [],
+        };
+      });
+
+      // Normalise affectedStage on pain points: build "VS name → stage name" format
+      // that the rest of the form and scaffold generator expects
+      const normalisedPainPoints = (pass2Result.painPoints ?? []).map((p: any, i: number) => {
+        const vsName = p.affectedVsName ?? confirmedVS[0]?.name ?? "";
+        const stageName = p.affectedStage ?? "";
+        const affectedStage = vsName && stageName ? `${vsName} → ${stageName}` : stageName;
+        return { ...p, id: p.id ?? Date.now() + i, affectedStage };
+      });
+
+      const normalisedMetrics = (pass2Result.metrics ?? []).map((m: any, i: number) => {
+        const vsName = m.affectedVsName ?? confirmedVS[0]?.name ?? "";
+        const stageName = m.stage ?? "";
+        const stage = vsName && stageName ? `${vsName} → ${stageName}` : stageName;
+        return { ...m, id: m.id ?? Date.now() + i, stage };
+      });
 
       setForm(f => ({
         ...f,
-        org: { ...f.org, ...extracted.org },
-        valueStreams: extracted.valueStreams?.length
-          ? extracted.valueStreams.map((vs, i) => ({ ...vs, id: vs.id ?? Date.now() + i }))
-          : f.valueStreams,
-        roles: (extracted.roles ?? []).map((r, i) => ({ ...r, id: r.id ?? Date.now() + i })),
-        tech: (extracted.tech ?? []).map((t, i) => ({ ...t, id: t.id ?? Date.now() + i })),
-        painPoints: (extracted.painPoints ?? []).map((p, i) => ({ ...p, id: p.id ?? Date.now() + i })),
-        metrics: (extracted.metrics ?? []).map((m, i) => ({ ...m, id: m.id ?? Date.now() + i })),
-        gaps: extracted.gaps ?? [],
+        org: { ...f.org, ...pass1Result.org },
+        valueStreams: mergedVS,
+        roles: (pass2Result.roles ?? []).map((r: any, i: number) => ({ ...r, id: r.id ?? Date.now() + i })),
+        tech: (pass2Result.tech ?? []).map((t: any, i: number) => ({ ...t, id: t.id ?? Date.now() + i })),
+        painPoints: normalisedPainPoints,
+        metrics: normalisedMetrics,
+        gaps: pass2Result.gaps ?? [],
         source: "freeform_extraction",
-        extractionMeta: { extractedAt: new Date().toISOString() },
+        extractionMeta: { extractedAt: new Date().toISOString(), passes: 2 },
       }));
       setExtractDone(true);
       setMode("structured");
     } catch (e) {
-      console.error("Extraction failed", e);
+      console.error("Pass 2 extraction failed", e);
     } finally {
       setExtracting(false);
+      setExtractPass(0);
     }
   }
 
   // ─── Generate IR → Scaffold ───────────────────────────────────────────────
   async function generateIR() {
     setGenerating(true);
+    setGenerateStep("scaffold");
     await new Promise(r => setTimeout(r, 800));
 
     const id = (prefix: string, name: string) =>
@@ -464,65 +588,175 @@ ${transcript}`;
       scaffoldIntegrityHash: btoa(scaffoldId + Date.now()).slice(0, 32),
     };
 
-    // ─── Generate Heatmap from pain points ────────────────────────────────
+    // ─── Pass 3: LLM Friction Assessment ─────────────────────────────────
+    //
+    // Now that the scaffold is structurally complete, hand it to the model
+    // for proper friction analysis. The model receives:
+    //   - The validated scaffold JSON (real activity/role/capability IDs)
+    //   - The original pain points from the form (discovery signal)
+    //   - The original transcript (if available, for evidence grounding)
+    //
+    // The model returns properly anchored observations (IDs resolve in scaffold)
+    // and a scored binding constraint per the Step 11-12 rubric.
+    // This replaces the old deterministic string-manipulation approach.
+    //
     const now = new Date().toISOString();
-    const bindingPP = form.painPoints.find((p: any) => p.binding && p.description);
-    
-    // Group pain points by value stream — match against actual scaffold VS IDs
-    const ppByVs: Record<string, any[]> = {};
     const scaffoldVsIds = Object.keys(elements.valueStreams);
-    form.painPoints.filter((p: any) => p.description && p.affectedStage).forEach((p: any) => {
-      const vsName = p.affectedStage.split(' → ')[0] ?? 'Unknown';
-      const derivedVsId = id('vs', vsName);
-      // Try exact match first, then fall back to first VS
-      const matchedVsId = scaffoldVsIds.find(vid => vid === derivedVsId) ?? scaffoldVsIds[0];
-      if (!matchedVsId) return;
-      if (!ppByVs[matchedVsId]) ppByVs[matchedVsId] = [];
-      ppByVs[matchedVsId].push(p);
+
+    // Summarise pain points for the prompt (the model uses these as discovery signal,
+    // but derives its own properly-anchored observations from the scaffold structure)
+    const ppSummary = form.painPoints
+      .filter((p: any) => p.description)
+      .map((p: any, i: number) => `${i + 1}. [${p.category || 'unclassified'}] ${p.description} (intensity ${p.intensity ?? 7}/10, stage: ${p.affectedStage || 'unknown'})${p.binding ? ' ← rep flagged as binding' : ''}`)
+      .join('\n');
+
+    // Build a compact scaffold summary — full JSON for anchor resolution,
+    // but strip the large capabilityPPIT to keep token count manageable
+    const scaffoldForPrompt = JSON.parse(JSON.stringify(scaffold));
+    Object.values(scaffoldForPrompt.elements.activities ?? {}).forEach((act: any) => {
+      delete act.capabilityPPIT;
     });
 
-    // Build one heatmap per value stream that has pain points
-    const heatmaps = Object.entries(ppByVs).map(([vsId, pps]: [string, any[]]) => {
-      const observations = pps.map((p: any, idx: number) => {
-        const stageName = p.affectedStage.split(' → ')[1] ?? p.affectedStage;
-        const vsName = p.affectedStage.split(' → ')[0] ?? '';
-        const vsIdName = vsId.replace(/^vs-/, '');
-        const anchorId = id('act', `${vsIdName}-${stageName}`);
-        return {
-          observationId: `obs_${vsId}_${String(idx + 1).padStart(3, '0')}`,
-          category: p.category || 'ProcessHandoffFriction',
-          primaryAnchor: { anchorType: 'Activity', anchorId },
-          contributingAnchors: [],
-          intensity: { scale: '0-10', score: p.intensity ?? 7 },
-          rationale: p.description,
-          evidence: [{ evidenceType: 'Note', ref: 'Discovery Intake', snippet: p.description.slice(0, 100) }],
-          observedAt: now,
-        };
+    const pass3Prompt = `You are generating friction observations and a binding constraint assessment for a VCC governance diagnostic.
+
+The scaffold below represents a validated structural model of the organisation's value streams. Your observations must anchor to real element IDs from this scaffold — every anchorId you reference MUST exist in the scaffold JSON.
+
+## Friction Taxonomy
+- ProcessHandoffFriction — work stalls between stages, handoff rework
+- TechnologyIntegrationFriction — systems don't interoperate, automation gaps  
+- DataSignalFriction — information fragmented, decision latency
+- DecisionAuthorityFriction — decision rights ambiguous, approval concentration
+- GovernanceRiskFriction — control layering, compliance gates multiply
+- IncentiveCapacityFriction — performance measures distort behaviour, capacity limits
+
+## Evidence Basis Rules
+- EVIDENCED: directly stated in source material — requires evidence array with sourceType, ref, excerpt
+- INFERRED: derived from scaffold structure — requires structuralPattern with patternType, scaffoldIndicators, quantitativeSignals
+- ASSUMED: domain heuristic only — intensity MUST NOT exceed 5, must acknowledge assumption explicitly
+
+## Binding Constraint Scoring (per candidate)
+Score each on: observationFrequency (0-3), authorityCentralisation (0-3), downstreamDependency (0-3), controlLayering (0-3), capacityConstraint (0-3). Total 0-15.
+Eligibility: downstreamDependency must score ≥ 2. If no candidate qualifies, return null.
+confidence = totalScore / 15.
+
+## Output Format
+Return ONLY valid JSON, no markdown fences:
+{
+  "heatmaps": [
+    {
+      "valueStreamId": "vs-id-from-scaffold",
+      "observations": [
+        {
+          "observationId": "fr_001_snake_case_description",
+          "category": "DataSignalFriction",
+          "evidenceBasis": "EVIDENCED|INFERRED|ASSUMED",
+          "primaryAnchor": { "anchorType": "Activity", "anchorId": "act-id-from-scaffold" },
+          "contributingAnchors": [],
+          "intensity": { "scale": "0-10", "score": 8.0 },
+          "rationale": "Specific rationale citing scaffold elements or source evidence",
+          "evidence": [],
+          "observedAt": "${now}"
+        }
+      ],
+      "bindingConstraint": {
+        "findingId": "bc_001",
+        "bindingAnchor": { "anchorType": "Activity", "anchorId": "act-id-from-scaffold" },
+        "bindingAnchorObservationId": "fr_001_snake_case_description",
+        "justification": "Why this is the binding constraint — specific structural reasoning",
+        "constraintScoring": {
+          "candidates": [
+            {
+              "anchorId": "act-id",
+              "eligible": true,
+              "scores": { "observationFrequency": 2, "authorityCentralisation": 2, "downstreamDependency": 2, "controlLayering": 1, "capacityConstraint": 1 },
+              "totalScore": 8
+            }
+          ],
+          "selectedAnchorId": "act-id",
+          "selectionRationale": "Highest score among eligible candidates"
+        },
+        "confidence": 0.53,
+        "observedAt": "${now}"
+      }
+    }
+  ]
+}
+
+## Discovery Signal (pain points identified by the sales rep — use as evidence grounding)
+${ppSummary || 'No pain points recorded — derive from scaffold structure only.'}
+
+## Scaffold JSON
+${JSON.stringify(scaffoldForPrompt, null, 2)}`;
+
+    let heatmaps: any[] = [];
+
+    try {
+      setGenerateStep("friction");
+      const apiUrl = import.meta.env.DEV ? "/api/anthropic/v1/messages" : "/api/claude";
+      const res3 = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 6000,
+          messages: [{ role: "user", content: pass3Prompt }]
+        })
       });
+      const data3 = await res3.json();
+      const text3 = data3.content?.find((b: any) => b.type === "text")?.text ?? "{}";
+      const pass3Result = JSON.parse(text3.replace(/```json|```/g, "").trim());
 
-      const bindingObs = bindingPP
-        ? observations.find((o: any) => o.rationale === bindingPP.description)
-        : observations.reduce((a: any, b: any) => a.intensity.score >= b.intensity.score ? a : b, observations[0]);
-
-      const bindingConstraint = bindingObs ? {
-        findingId: `bc_${vsId}_001`,
-        bindingAnchor: bindingObs.primaryAnchor,
-        bindingAnchorObservationId: bindingObs.observationId,
-        justification: `${bindingObs.rationale} This is the primary constraint on value stream performance.`,
-        confidence: 0.75,
-        observedAt: now,
-      } : null;
-
-      return {
-        heatmapId: `heatmap-${vsId}-${Date.now()}`,
+      // Map Pass 3 output into final heatmap format, adding scaffoldId and schema fields
+      heatmaps = (pass3Result.heatmaps ?? []).map((h: any) => ({
+        heatmapId: `heatmap-${h.valueStreamId}-${Date.now()}`,
         scaffoldId,
-        valueStreamId: vsId,
-        observations,
-        ...(bindingConstraint && { bindingConstraint }),
+        valueStreamId: h.valueStreamId,
+        observations: h.observations ?? [],
+        ...(h.bindingConstraint && { bindingConstraint: h.bindingConstraint }),
         schemaVersion: '1.0.0',
         createdAt: now,
-      };
-    });
+      }));
+    } catch (e) {
+      console.error("Pass 3 friction assessment failed — falling back to form data", e);
+
+      // Fallback: if Pass 3 fails, build minimal heatmaps from form pain points
+      // so the user isn't left with an empty bundle
+      const ppByVs: Record<string, any[]> = {};
+      form.painPoints.filter((p: any) => p.description && p.affectedStage).forEach((p: any) => {
+        const vsName = p.affectedStage.split(' → ')[0] ?? '';
+        const vsId = id('vs', vsName);
+        const matchedVsId = scaffoldVsIds.find(vid => vid === vsId) ?? scaffoldVsIds[0];
+        if (!matchedVsId) return;
+        if (!ppByVs[matchedVsId]) ppByVs[matchedVsId] = [];
+        ppByVs[matchedVsId].push(p);
+      });
+
+      heatmaps = Object.entries(ppByVs).map(([vsId, pps]: [string, any[]]) => {
+        const observations = pps.map((p: any, idx: number) => {
+          const stageName = p.affectedStage.split(' → ')[1] ?? p.affectedStage;
+          const anchorId = id('act', `${vsId.replace(/^vs-/, '')}-${stageName}`);
+          return {
+            observationId: `obs_${vsId}_${String(idx + 1).padStart(3, '0')}`,
+            category: p.category || 'ProcessHandoffFriction',
+            evidenceBasis: 'ASSUMED',
+            primaryAnchor: { anchorType: 'Activity', anchorId },
+            contributingAnchors: [],
+            intensity: { scale: '0-10', score: Math.min(p.intensity ?? 5, 5) },
+            rationale: `[Fallback — Pass 3 unavailable] ${p.description}`,
+            evidence: [],
+            observedAt: now,
+          };
+        });
+        return {
+          heatmapId: `heatmap-${vsId}-${Date.now()}`,
+          scaffoldId,
+          valueStreamId: vsId,
+          observations,
+          schemaVersion: '1.0.0',
+          createdAt: now,
+        };
+      });
+    }
 
     const bundle = {
       bundleVersion: '1.0',
@@ -531,19 +765,19 @@ ${transcript}`;
       heatmaps,
     };
 
-    setGeneratedScaffold(scaffold);
     setGeneratedBundle(bundle);
     setGenerating(false);
+    setGenerateStep("");
     setGenerated(true);
   }
 
   // ─── Drag-drop ───────────────────────────────────────────────────────────
-  const onDrop = useCallback(e => {
+  const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => setTranscript(ev.target.result);
+    reader.onload = ev => setTranscript((ev.target as FileReader).result as string);
     reader.readAsText(file);
   }, []);
 
@@ -627,7 +861,7 @@ ${transcript}`;
               ↓ Save Bundle
             </button>
             <button
-              onClick={() => bundleSaved && onComplete?.(generatedScaffold)}
+              onClick={() => bundleSaved && onComplete?.(generatedBundle)}
               disabled={!bundleSaved}
               className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${bundleSaved ? "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer" : "border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed"}`}>
               Open in Canvas →
@@ -656,7 +890,7 @@ ${transcript}`;
               disabled={readiness < 41 || generating}
               className="rounded-lg bg-slate-800 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
-              {generating ? "Generating…" : "Generate →"}
+              {generating ? (generateStep === "friction" ? "Assessing friction…" : "Building scaffold…") : "Generate →"}
             </button>
           </div>
         </div>
@@ -709,7 +943,7 @@ Example: 'We met with the head of tech at Puretec. They have 4000+ SKUs and 12-m
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                       </svg>
-                      Extracting…
+                      {extractPass === 1 ? "Pass 1 — defining value streams…" : "Pass 2 — extracting detail…"}
                     </span>
                   ) : "Extract → Fill form"}
                 </button>
@@ -792,7 +1026,7 @@ Example: 'We met with the head of tech at Puretec. They have 4000+ SKUs and 12-m
                     </div>
                     <Field label="Stages (ordered — press Enter after each)">
                       <StageTagInput stages={vs.stages}
-                        onChange={stages => setVS(vs.id, { stages })} />
+                        onChange={(stages: Stage[]) => setVS(vs.id, { stages })} />
                     </Field>
                   </div>
                 ))}
@@ -964,7 +1198,7 @@ Example: 'We met with the head of tech at Puretec. They have 4000+ SKUs and 12-m
                   disabled={readiness < 41 || generating}
                   className="rounded-lg bg-slate-800 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all whitespace-nowrap"
                 >
-                  {generating ? "Generating scaffold…" : `Generate scaffold →`}
+                  {generating ? (generateStep === "friction" ? "Assessing friction…" : "Building scaffold…") : `Generate scaffold →`}
                 </button>
               </div>
             </div>

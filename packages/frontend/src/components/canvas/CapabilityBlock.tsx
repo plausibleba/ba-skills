@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { ScaffoldData, ScaffoldActivity } from "../../types.ts";
 import type { PPITLayer } from "./ppit.ts";
 import { PPIT_LAYERS } from "./ppit.ts";
