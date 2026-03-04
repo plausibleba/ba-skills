@@ -1,7 +1,8 @@
 import { useCanvasStore } from "./store/canvas-store.ts";
 import { FileLoader } from "./components/FileLoader.tsx";
 import { CanvasView } from "./components/CanvasView.tsx";
-import { ContentSelectors } from "./components/ContentSelectors.tsx";
+import { StageWizard } from "./components/StageWizard.tsx";
+import { UserGuidePanel } from "./components/UserGuidePanel.tsx";
 import { NetworkView } from "./components/NetworkView.tsx";
 import  DiscoveryIntake  from "./components/DiscoveryIntake.tsx";
 
@@ -15,7 +16,6 @@ export default function App() {
     backToNetwork,
     goToIntake,
     loadScaffold,
-    loadHeatmap,
   } = useCanvasStore();
 
   const isLoaded = !!scaffoldData;
@@ -104,7 +104,7 @@ export default function App() {
       </header>
 
       {/* Content selectors (stage view only) */}
-      {isStage && <ContentSelectors />}
+      {isStage && <StageWizard />}
 
       {/* Main content */}
       <main className="flex-1 overflow-auto">
@@ -130,25 +130,67 @@ export default function App() {
         {/* Views */}
         {isIntake && (
           <DiscoveryIntake
-            onComplete={(bundle) => {
-              loadScaffold(bundle.scaffold ?? bundle);
-              if (bundle.heatmaps?.length) {
-                bundle.heatmaps.forEach((hm: any) => loadHeatmap(hm));
-              }
+            onComplete={(scaffold) => {
+              loadScaffold(scaffold);
               backToNetwork();
             }}
           />
         )}
 
         {!isIntake && !isLoaded && (
-          <div className="flex h-full items-center justify-center p-6">
-            <FileLoader />
+          <div className="flex h-full flex-col items-center justify-center gap-8 p-6">
+            <div className="max-w-md text-center">
+              <div className="mb-4 flex justify-center">
+                <div className="rounded-full bg-vcc-50 p-4">
+                  <svg className="h-8 w-8 text-vcc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="mb-2 text-base font-semibold text-vcc-900">Start with a discovery</h3>
+              <p className="mb-6 text-sm text-gray-500 leading-relaxed">
+                Paste a client transcript or notes and the AI will build a structured operating model — value streams, friction points, and Salesforce solutions — in minutes.
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={goToIntake}
+                  className="flex items-center gap-2 rounded-lg bg-vcc-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-vcc-700"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  New Discovery
+                </button>
+                <span className="text-xs text-gray-400">or</span>
+                <div className="flex flex-col items-center gap-1">
+                  <FileLoader />
+                  <span className="text-[10px] text-gray-400">Load a saved VCC Bundle (.json)</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-6 rounded-xl border border-gray-100 bg-gray-50/60 px-8 py-4">
+              {[
+                { n: "1", label: "Run Discovery" },
+                { n: "2", label: "Inspect Network" },
+                { n: "3", label: "Assess Friction" },
+                { n: "4", label: "Enrich Solutions" },
+              ].map((step, i, arr) => (
+                <div key={step.n} className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-vcc-100 text-[11px] font-bold text-vcc-600">{step.n}</div>
+                    <span className="text-xs font-medium text-gray-600">{step.label}</span>
+                  </div>
+                  {i < arr.length - 1 && <span className="text-gray-300">→</span>}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
         {!isIntake && isLoaded && isNetwork && <NetworkView />}
         {!isIntake && isStage && <CanvasView />}
       </main>
+      <UserGuidePanel />
     </div>
   );
 }

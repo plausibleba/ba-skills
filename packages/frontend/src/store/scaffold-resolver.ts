@@ -86,6 +86,8 @@ export function resolveScaffoldMeasures(raw: ScaffoldData): ScaffoldData {
   // Deep-clone metrics to avoid mutating the original
   const resolvedMetrics: Record<string, ScaffoldMetric> = {};
 
+  if (!raw.elements.metrics || Object.keys(raw.elements.metrics).length === 0) return raw;
+
   for (const [metricId, rawMetric] of Object.entries(raw.elements.metrics)) {
     const canonical = rawMetric as unknown as CanonicalMetric;
 
@@ -140,7 +142,7 @@ export function resolveScaffoldMeasures(raw: ScaffoldData): ScaffoldData {
   }
 
   // Return a new ScaffoldData with resolved metrics
-  console.log("RESOLVER:", Object.keys(resolvedMetrics), resolvedMetrics["metric_approval_cycle_time"]?.currentMeasure, resolvedMetrics["metric_approval_cycle_time"]?.targetMeasure); return {
+  return {
     ...raw,
     elements: {
       ...raw.elements,

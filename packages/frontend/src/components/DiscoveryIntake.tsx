@@ -255,7 +255,6 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
   const [generateStep, setGenerateStep] = useState(""); // "scaffold" | "friction" | ""
   const [generated, setGenerated] = useState(false);
   const [generatedBundle, setGeneratedBundle] = useState<any>(null);
-  const [bundleSaved, setBundleSaved] = useState(false);
   const dropRef = useRef<HTMLDivElement>(null);
 
   const readiness = calcReadiness(form);
@@ -354,6 +353,7 @@ ${transcript}`;
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 2000,
+          temperature: 0,
           messages: [{ role: "user", content: pass1Prompt }]
         })
       });
@@ -439,6 +439,7 @@ ${transcript}`;
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 4000,
+          temperature: 0,
           messages: [{ role: "user", content: pass2Prompt }]
         })
       });
@@ -699,6 +700,7 @@ ${JSON.stringify(scaffoldForPrompt, null, 2)}`;
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 6000,
+          temperature: 0,
           messages: [{ role: "user", content: pass3Prompt }]
         })
       });
@@ -856,14 +858,13 @@ ${JSON.stringify(scaffoldForPrompt, null, 2)}`;
                   URL.revokeObjectURL(url);
                 }
               }
-              setBundleSaved(true);
             }} className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors">
               ↓ Save Bundle
             </button>
             <button
-              onClick={() => bundleSaved && onComplete?.(generatedBundle)}
-              disabled={!bundleSaved}
-              className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${bundleSaved ? "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer" : "border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed"}`}>
+              onClick={() => onComplete?.(generatedBundle)}
+              disabled={!generatedBundle}
+              className="rounded-lg border border-vcc-300 bg-vcc-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-vcc-700 disabled:opacity-50 disabled:cursor-not-allowed">
               Open in Canvas →
             </button>
           </div>
