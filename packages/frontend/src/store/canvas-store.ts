@@ -19,6 +19,7 @@ import {
 type ViewMode = "network" | "stage" | "intake";
 
 interface CanvasState {
+  enrichVersion: number;
   // View navigation
   viewMode: ViewMode;
   selectedVsId: string | null;
@@ -52,6 +53,7 @@ interface CanvasState {
 export const useCanvasStore = create<CanvasState>((set, get) => ({
   viewMode: "network",
   selectedVsId: null,
+  enrichVersion: 0,
   scaffoldData: null,
   heatmapData: null,
   heatmapsByVs: new Map(),
@@ -115,6 +117,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     // Set as active heatmap if we're viewing this VS
     const isActiveVs = get().selectedVsId === json.valueStreamId;
     set({
+      enrichVersion: get().enrichVersion + 1,
       heatmapsByVs,
       heatmapData: isActiveVs ? json : get().heatmapData,
       error: null,
@@ -293,6 +296,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     set({
       viewMode: "network",
       selectedVsId: null,
+  enrichVersion: 0,
       canvasViewModel: null,
       heatmapData: null,
     });
@@ -306,6 +310,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     set({
       viewMode: "network",
       selectedVsId: null,
+  enrichVersion: 0,
       scaffoldData: null,
       heatmapData: null,
       heatmapsByVs: new Map(),

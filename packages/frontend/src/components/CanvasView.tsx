@@ -14,7 +14,7 @@ import { useCanvasControls } from "./canvas/useCanvasControls.ts";
 /* ── Canvas View — orchestrator ────────────────────────────────────── */
 
 export function CanvasView() {
-  const { canvasViewModel, scaffoldData, heatmapData, validationReport } =
+  const { canvasViewModel, scaffoldData, heatmapData, validationReport, enrichVersion } =
     useCanvasStore();
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
     null,
@@ -64,7 +64,8 @@ export function CanvasView() {
 
   const bindingActivityName = heatmapData
     ? (() => {
-        const a = heatmapData.bindingConstraint.bindingAnchor;
+        const a = heatmapData.bindingConstraint?.bindingAnchor;
+        if (!a) return null;
         return a.anchorType === "Activity"
           ? (scaffoldData.elements.activities[a.anchorId]?.name ?? a.anchorId)
           : null;
@@ -152,8 +153,8 @@ export function CanvasView() {
             heatmapData={heatmapData}
             bindingActivityName={bindingActivityName}
             onBindingClick={() => {
-              const a = heatmapData.bindingConstraint.bindingAnchor;
-              if (a.anchorType === "Activity") setSelectedActivityId(a.anchorId);
+              const a = heatmapData.bindingConstraint?.bindingAnchor;
+              if (a?.anchorType === "Activity") setSelectedActivityId(a.anchorId);
             }}
           />
         )}
@@ -205,6 +206,7 @@ export function CanvasView() {
       {selectedActivityId && heatmapData && selectedObs.length > 0 && (
         <div className="w-[480px] flex-shrink-0">
           <FrictionPanel
+            key={`${selectedActivityId}-${enrichVersion}`}
             activityId={selectedActivityId}
             observations={selectedObs}
             heatmap={heatmapData}
@@ -261,12 +263,12 @@ function DiagnosisSummary({
               </button>
             </span>
           </div>
-          {heatmapData.bindingConstraint.confidence != null && (
+          {heatmapData.bindingConstraint?.confidence != null && (
             <>
               <div className="h-4 w-px bg-gray-200" />
               <span className="font-mono text-[10px] text-gray-400">
                 Confidence:{" "}
-                {(heatmapData.bindingConstraint.confidence * 100).toFixed(0)}%
+                {((heatmapData.bindingConstraint?.confidence ?? 0) * 100).toFixed(0)}%
               </span>
             </>
           )}

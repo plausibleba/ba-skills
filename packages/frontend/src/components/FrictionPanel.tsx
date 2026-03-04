@@ -758,7 +758,7 @@ export function FrictionPanel({
   const [savedObservations, setSavedObservations] = useState<FrictionObservation[]>(initialObservations);
   const [showNewForm, setShowNewForm] = useState(false);
 
-  const bindingObsId = heatmap.bindingConstraint.bindingAnchorObservationId;
+  const bindingObsId = heatmap.bindingConstraint?.bindingAnchorObservationId ?? null;
   const sorted = [...observations].sort((a, b) => {
     if (a.observationId === bindingObsId) return -1;
     if (b.observationId === bindingObsId) return 1;
@@ -794,8 +794,8 @@ export function FrictionPanel({
   }
 
   const isBindingActivity =
-    heatmap.bindingConstraint.bindingAnchor.anchorType === "Activity" &&
-    heatmap.bindingConstraint.bindingAnchor.anchorId === activityId;
+    heatmap.bindingConstraint?.bindingAnchor?.anchorType === "Activity" &&
+    heatmap.bindingConstraint?.bindingAnchor?.anchorId === activityId;
 
   return (
     <div className="flex h-full flex-col border-l border-gray-100 bg-gray-50/30">
@@ -886,9 +886,9 @@ export function FrictionPanel({
             <p className={`mt-1 text-xs leading-relaxed text-red-800 ${
               !justificationExpanded ? "line-clamp-3" : ""
             }`}>
-              {heatmap.bindingConstraint.justification}
+              {heatmap.bindingConstraint?.justification ?? ""}
             </p>
-            {heatmap.bindingConstraint.justification.length > 150 && (
+            {(heatmap.bindingConstraint?.justification?.length ?? 0) > 150 && (
               <button
                 onClick={() => setJustificationExpanded((e) => !e)}
                 className="mt-1 text-[10px] font-medium text-red-500 hover:text-red-700"
@@ -896,9 +896,9 @@ export function FrictionPanel({
                 {justificationExpanded ? "Show less" : "Show more"}
               </button>
             )}
-            {heatmap.bindingConstraint.confidence != null && (
+            {heatmap.bindingConstraint?.confidence != null && (
               <p className="mt-1 text-[10px] text-red-600">
-                Confidence: {(heatmap.bindingConstraint.confidence * 100).toFixed(0)}%
+                Confidence: {((heatmap.bindingConstraint?.confidence ?? 0) * 100).toFixed(0)}%
               </p>
             )}
           </div>
@@ -912,7 +912,7 @@ export function FrictionPanel({
           <ObservationCard
             key={obs.observationId}
             obs={obs}
-            isBindingObs={obs.observationId === bindingObsId}
+            isBindingObs={bindingObsId !== null && obs.observationId === bindingObsId}
             scaffold={scaffold}
             editMode={editMode}
             onUpdate={(patch) => handleUpdate(obs.observationId, patch)}

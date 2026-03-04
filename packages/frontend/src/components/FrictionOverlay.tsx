@@ -106,8 +106,9 @@ export function resolveBindingActivityIds(
   heatmap: HeatmapData,
   scaffold: ScaffoldData,
 ): Set<string> {
-  const anchor = heatmap.bindingConstraint.bindingAnchor;
+  const anchor = heatmap.bindingConstraint?.bindingAnchor;
   const result = new Set<string>();
+  if (!anchor) return result;
 
   if (anchor.anchorType === "Activity") {
     if (anchor.anchorId in scaffold.elements.activities) {

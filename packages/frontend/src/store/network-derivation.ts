@@ -333,7 +333,7 @@ export function buildNetworkNodes(
       stageCount: vsTyped.activityIds.length,
       frictionCount: heatmap?.observations.length ?? 0,
       hasBindingConstraint: !!heatmap?.bindingConstraint,
-      bindingStageName: heatmap
+      bindingStageName: heatmap?.bindingConstraint?.bindingAnchor
         ? (() => {
             const anchor = heatmap.bindingConstraint.bindingAnchor;
             if (anchor.anchorType === "Activity") {
@@ -343,7 +343,7 @@ export function buildNetworkNodes(
             return undefined;
           })()
         : undefined,
-      confidence: heatmap?.bindingConstraint.confidence ?? undefined,
+      confidence: heatmap?.bindingConstraint?.confidence ?? undefined,
       layer: pos.layer,
       row: pos.row,
     });
