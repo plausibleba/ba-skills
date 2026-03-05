@@ -150,6 +150,66 @@ export interface HeatmapData {
   bindingConstraint: BindingConstraint;
 }
 
+// --- Transformation layer ---
+
+export interface TransformationUserStory {
+  /** Unique ID, e.g. "US-fr_001-abc123" */
+  storyId: string;
+  /** The friction observation (SBR) this story addresses */
+  observationId: string;
+  /** The activity this story is scoped to */
+  activityId?: string;
+  /** The capability this SBR is anchored to — resolved at generation time.
+   *  Populated from observation.primaryAnchor when anchorType === "Capability",
+   *  or from the activity's requiresCapabilityIds[0] when anchorType === "Activity". */
+  capabilityId?: string;
+  /** Human-readable capability name — denormalised for export convenience */
+  capabilityName?: string;
+  // Story body
+  asA: string;
+  iWant: string;
+  soThat: string;
+  acceptanceCriteria: string[];
+  // Planning metadata
+  storyPoints?: number;
+  priority?: "critical" | "high" | "medium" | "low";
+  epicId?: string;
+  // Lifecycle: draft → ready → sprint → done
+  status: "draft" | "ready" | "sprint" | "done";
+  createdAt: string;
+  updatedAt?: string;
+}
+
+/** Convert a story to a Jira CSV import row */
+export function toJiraExport(story: TransformationUserStory) {
+  const priority = story.priority
+    ? story.priority.charAt(0).toUpperCase() + story.priority.slice(1)
+    : undefined;
+
+  const description = [
+    `As a ${story.asA}, I want to ${story.iWant}, so that ${story.soThat}`,
+    ``,
+    `Acceptance Criteria:`,
+    ...story.acceptanceCriteria.map((ac) => `- ${ac}`),
+    ``,
+    `SBR: ${story.observationId}`,
+    story.capabilityName ? `Capability: ${story.capabilityName}` : null,
+  ].filter(Boolean).join("\n");
+
+  return {
+    "Story ID":    story.storyId,
+    "Summary":     `As a ${story.asA}, I want to ${story.iWant}`,
+    "Description": description,
+    "SBR ID":      story.observationId,
+    "Capability":  story.capabilityName ?? story.capabilityId ?? "",
+    "Story Points": story.storyPoints,
+    "Priority":    priority,
+    "Epic Link":   story.epicId,
+    "Labels":      ["VCC", story.observationId].join(","),
+    "Issue Type":  "Story",
+  };
+}
+
 // --- Scaffold types ---
 
 // Minimal scaffold types for the data we need in the frontend

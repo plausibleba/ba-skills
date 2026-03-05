@@ -7,6 +7,7 @@ import type {
   ValidationReport,
   NetworkNode,
   NetworkEdge,
+  TransformationUserStory,
 } from "../types.ts";
 import { resolveScaffoldMeasures } from "./scaffold-resolver.ts";
 import { validateThroughputRules } from "./throughput-validator.ts";
@@ -19,7 +20,6 @@ import {
 type ViewMode = "network" | "stage" | "intake";
 
 interface CanvasState {
-  enrichVersion: number;
   // View navigation
   viewMode: ViewMode;
   selectedVsId: string | null;
@@ -38,6 +38,9 @@ interface CanvasState {
   networkForwardEdges: NetworkEdge[];
   networkFeedbackEdges: NetworkEdge[];
 
+  // Transformation layer
+  userStoriesByActivity: Record<string, TransformationUserStory[]>;
+
   // Actions
   loadScaffold: (json: ScaffoldData) => Promise<void>;
   loadHeatmap: (json: HeatmapData) => Promise<void>;
@@ -48,12 +51,14 @@ interface CanvasState {
   backToNetwork: () => void;
   goToIntake: () => void;
   reset: () => void;
+  saveUserStory: (activityId: string, story: TransformationUserStory) => void;
+  setActivityStories: (activityId: string, stories: TransformationUserStory[]) => void;
+  getAllUserStories: () => TransformationUserStory[];
 }
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
   viewMode: "network",
   selectedVsId: null,
-  enrichVersion: 0,
   scaffoldData: null,
   heatmapData: null,
   heatmapsByVs: new Map(),
@@ -64,6 +69,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   networkNodes: [],
   networkForwardEdges: [],
   networkFeedbackEdges: [],
+  userStoriesByActivity: {},
 
   loadScaffold: async (json: ScaffoldData) => {
     const resolved = resolveScaffoldMeasures(json);
@@ -117,7 +123,6 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     // Set as active heatmap if we're viewing this VS
     const isActiveVs = get().selectedVsId === json.valueStreamId;
     set({
-      enrichVersion: get().enrichVersion + 1,
       heatmapsByVs,
       heatmapData: isActiveVs ? json : get().heatmapData,
       error: null,
@@ -296,7 +301,6 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     set({
       viewMode: "network",
       selectedVsId: null,
-  enrichVersion: 0,
       canvasViewModel: null,
       heatmapData: null,
     });
@@ -310,7 +314,6 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     set({
       viewMode: "network",
       selectedVsId: null,
-  enrichVersion: 0,
       scaffoldData: null,
       heatmapData: null,
       heatmapsByVs: new Map(),
@@ -321,6 +324,31 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       networkNodes: [],
       networkForwardEdges: [],
       networkFeedbackEdges: [],
+      userStoriesByActivity: {},
     });
+  },
+
+  saveUserStory: (activityId, story) => {
+    const current = get().userStoriesByActivity;
+    const existing = current[activityId] ?? [];
+    const idx = existing.findIndex((s) => s.storyId === story.storyId);
+    const updated =
+      idx >= 0
+        ? existing.map((s) => (s.storyId === story.storyId ? story : s))
+        : [...existing, story];
+    set({ userStoriesByActivity: { ...current, [activityId]: updated } });
+  },
+
+  setActivityStories: (activityId, stories) => {
+    set({
+      userStoriesByActivity: {
+        ...get().userStoriesByActivity,
+        [activityId]: stories,
+      },
+    });
+  },
+
+  getAllUserStories: () => {
+    return Object.values(get().userStoriesByActivity).flat();
   },
 }));

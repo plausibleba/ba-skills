@@ -1,0 +1,121 @@
+{
+  "vendorId": "sap-s4hana",
+  "vendorName": "SAP S/4HANA",
+  "vendorDescription": "SAP S/4HANA is an intelligent ERP system built on the SAP HANA in-memory database. It provides real-time processing across finance, procurement, manufacturing, supply chain, and sales.",
+  "categories": [
+    {
+      "categoryId": "cat_sap_otc",
+      "categoryName": "Order to Cash",
+      "features": [
+        {
+          "featureId": "sap-sd-order-mgmt",
+          "name": "SD Order Management",
+          "description": "End-to-end sales order processing with automated pricing, ATP checking, and multi-channel order capture including EDI and customer portals.",
+          "customerStoryIds": ["cs_sap_volvo_01", "cs_sap_scania_01"]
+        },
+        {
+          "featureId": "sap-fscm-credit",
+          "name": "FSCM Credit Management",
+          "description": "Real-time credit exposure monitoring with automated order blocking, credit limit management, and risk-class-based segmentation across all business units.",
+          "customerStoryIds": ["cs_sap_volvo_01"]
+        },
+        {
+          "featureId": "sap-billing-invoicing",
+          "name": "Billing & e-Invoicing",
+          "description": "Automated billing document creation with global tax determination, multi-format invoice output, and e-invoicing compliance for 60+ countries.",
+          "customerStoryIds": ["cs_sap_scania_01", "cs_sap_caterpillar_01"]
+        },
+        {
+          "featureId": "sap-fscm-collections",
+          "name": "FSCM Collections & Dispute Management",
+          "description": "Intelligent collections worklist with automated dunning, dispute case management, and promise-to-pay tracking integrated with accounts receivable.",
+          "customerStoryIds": ["cs_sap_caterpillar_01"]
+        },
+        {
+          "featureId": "sap-cash-application",
+          "name": "Cash Application & Bank Integration",
+          "description": "Automated bank statement import with ML-assisted payment matching, lockbox processing, and real-time accounts receivable clearing.",
+          "customerStoryIds": ["cs_sap_volvo_01", "cs_sap_caterpillar_01"]
+        }
+      ]
+    },
+    {
+      "categoryId": "cat_sap_procurement",
+      "categoryName": "Procurement",
+      "features": [
+        {
+          "featureId": "sap-sourcing-contracts",
+          "name": "SAP Sourcing & Contract Management",
+          "description": "Strategic sourcing with RFx management, supplier evaluation, and contract lifecycle management integrated with purchase order processing.",
+          "customerStoryIds": ["cs_sap_scania_01"]
+        },
+        {
+          "featureId": "sap-p2p",
+          "name": "Purchase to Pay",
+          "description": "Automated requisition-to-payment processing with three-way matching, supplier invoice verification, and payment run management.",
+          "customerStoryIds": ["cs_sap_caterpillar_01"]
+        },
+        {
+          "featureId": "sap-supplier-collab",
+          "name": "Supplier Collaboration Portal",
+          "description": "Self-service supplier portal for order confirmation, delivery notification, invoice submission, and performance reporting.",
+          "customerStoryIds": ["cs_sap_scania_01"]
+        }
+      ]
+    },
+    {
+      "categoryId": "cat_sap_manufacturing",
+      "categoryName": "Manufacturing & Supply Chain",
+      "features": [
+        {
+          "featureId": "sap-pp-execution",
+          "name": "Production Planning & Execution (PP/DS)",
+          "description": "Constraint-based production planning with shop floor execution, capacity levelling, and real-time production order confirmation.",
+          "customerStoryIds": ["cs_sap_volvo_01"]
+        },
+        {
+          "featureId": "sap-ewm",
+          "name": "Extended Warehouse Management (EWM)",
+          "description": "Advanced warehouse management with wave picking, task interleaving, slotting optimisation, and real-time inventory visibility.",
+          "customerStoryIds": ["cs_sap_scania_01", "cs_sap_caterpillar_01"]
+        },
+        {
+          "featureId": "sap-ibp",
+          "name": "Integrated Business Planning (IBP)",
+          "description": "Cloud-based demand sensing, supply planning, and S&OP with real-time collaboration and scenario simulation.",
+          "customerStoryIds": ["cs_sap_volvo_01"]
+        },
+        {
+          "featureId": "sap-quality-mgmt",
+          "name": "Quality Management (QM)",
+          "description": "Inspection planning, results recording, defect management, and quality notifications integrated across inbound, in-process, and outbound flows.",
+          "customerStoryIds": ["cs_sap_caterpillar_01"]
+        }
+      ]
+    },
+    {
+      "categoryId": "cat_sap_finance",
+      "categoryName": "Finance & Controlling",
+      "features": [
+        {
+          "featureId": "sap-universal-journal",
+          "name": "Universal Journal (FICO)",
+          "description": "Single source of financial truth combining general ledger, cost accounting, asset accounting, and profitability analysis in one unified journal.",
+          "customerStoryIds": ["cs_sap_volvo_01", "cs_sap_scania_01", "cs_sap_caterpillar_01"]
+        },
+        {
+          "featureId": "sap-group-reporting",
+          "name": "Group Reporting & Consolidation",
+          "description": "Real-time financial consolidation with intercompany elimination, currency translation, and statutory reporting for multi-entity groups.",
+          "customerStoryIds": ["cs_sap_volvo_01"]
+        },
+        {
+          "featureId": "sap-treasury",
+          "name": "Treasury & Cash Management",
+          "description": "Centralised cash position management, bank account management, and payment factory with real-time liquidity forecasting.",
+          "customerStoryIds": ["cs_sap_caterpillar_01"]
+        }
+      ]
+    }
+  ]
+}

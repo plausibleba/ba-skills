@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
-import type { ScaffoldActivity, ScaffoldElement } from "../types.ts";
+import type { TransformationUserStory } from "../types.ts";
+import { toJiraExport } from "../types.ts";
 import {
   buildActivityFrictionMap,
   resolveBindingActivityIds,
@@ -14,7 +15,7 @@ import { useCanvasControls } from "./canvas/useCanvasControls.ts";
 /* ── Canvas View — orchestrator ────────────────────────────────────── */
 
 export function CanvasView() {
-  const { canvasViewModel, scaffoldData, heatmapData, validationReport, enrichVersion } =
+  const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories } =
     useCanvasStore();
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
     null,
@@ -64,8 +65,7 @@ export function CanvasView() {
 
   const bindingActivityName = heatmapData
     ? (() => {
-        const a = heatmapData.bindingConstraint?.bindingAnchor;
-        if (!a) return null;
+        const a = heatmapData.bindingConstraint.bindingAnchor;
         return a.anchorType === "Activity"
           ? (scaffoldData.elements.activities[a.anchorId]?.name ?? a.anchorId)
           : null;
@@ -135,16 +135,19 @@ export function CanvasView() {
             </div>
           </div>
 
-          <CanvasToolbar
-            structureOpen={structureOpen}
-            analyticsOpen={analyticsOpen}
-            ppitToggles={ppitToggles}
-            onToggleStructure={toggleStructure}
-            onToggleAnalytics={toggleAnalytics}
-            onTogglePPIT={togglePPIT}
-            heatmapData={heatmapData}
-            validationReport={validationReport}
-          />
+          <div className="flex items-center gap-2">
+            <CanvasToolbar
+              structureOpen={structureOpen}
+              analyticsOpen={analyticsOpen}
+              ppitToggles={ppitToggles}
+              onToggleStructure={toggleStructure}
+              onToggleAnalytics={toggleAnalytics}
+              onTogglePPIT={togglePPIT}
+              heatmapData={heatmapData}
+              validationReport={validationReport}
+            />
+            <ExportStoriesButton getAllUserStories={getAllUserStories} />
+          </div>
         </div>
 
         {/* ── Diagnosis summary ── */}
@@ -153,8 +156,8 @@ export function CanvasView() {
             heatmapData={heatmapData}
             bindingActivityName={bindingActivityName}
             onBindingClick={() => {
-              const a = heatmapData.bindingConstraint?.bindingAnchor;
-              if (a?.anchorType === "Activity") setSelectedActivityId(a.anchorId);
+              const a = heatmapData.bindingConstraint.bindingAnchor;
+              if (a.anchorType === "Activity") setSelectedActivityId(a.anchorId);
             }}
           />
         )}
@@ -206,7 +209,6 @@ export function CanvasView() {
       {selectedActivityId && heatmapData && selectedObs.length > 0 && (
         <div className="w-[480px] flex-shrink-0">
           <FrictionPanel
-            key={`${selectedActivityId}-${enrichVersion}`}
             activityId={selectedActivityId}
             observations={selectedObs}
             heatmap={heatmapData}
@@ -216,6 +218,53 @@ export function CanvasView() {
         </div>
       )}
     </div>
+  );
+}
+
+/* ── Export Stories Button ─────────────────────────────────────────── */
+
+function ExportStoriesButton({
+  getAllUserStories,
+}: {
+  getAllUserStories: () => TransformationUserStory[];
+}) {
+  const stories = getAllUserStories();
+  if (stories.length === 0) return null;
+
+  function handleExport() {
+    const rows = stories.map(toJiraExport);
+    const headers = ["Story ID", "Summary", "Description", "SBR ID", "Capability", "Story Points", "Priority", "Epic Link", "Labels", "Issue Type"];
+    const csv = [
+      headers.join(","),
+      ...rows.map((r) =>
+        headers.map((h) => {
+          const val = r[h as keyof typeof r] ?? "";
+          const str = String(val).replace(/"/g, '""');
+          return `"${str}"`;
+        }).join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `vcc-user-stories-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <button
+      onClick={handleExport}
+      title={`Export ${stories.length} user stor${stories.length !== 1 ? "ies" : "y"} to Jira CSV`}
+      className="flex items-center gap-1.5 rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-[11px] font-medium text-indigo-600 transition-colors hover:bg-indigo-100"
+    >
+      <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      Export {stories.length} Stor{stories.length !== 1 ? "ies" : "y"}
+    </button>
   );
 }
 
@@ -263,12 +312,12 @@ function DiagnosisSummary({
               </button>
             </span>
           </div>
-          {heatmapData.bindingConstraint?.confidence != null && (
+          {heatmapData.bindingConstraint.confidence != null && (
             <>
               <div className="h-4 w-px bg-gray-200" />
               <span className="font-mono text-[10px] text-gray-400">
                 Confidence:{" "}
-                {((heatmapData.bindingConstraint?.confidence ?? 0) * 100).toFixed(0)}%
+                {(heatmapData.bindingConstraint.confidence * 100).toFixed(0)}%
               </span>
             </>
           )}

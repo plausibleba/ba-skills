@@ -26,39 +26,57 @@ function useNodePositions(nodes: NetworkNode[]) {
     const positions = new Map<string, { x: number; y: number }>();
 
     if (twoLayerMode) {
-      const ZONE_GAP = 120;
+      const ZONE_GAP = 80;    // vertical gap between ecosystem and knowledge zones
+      const WRAP_GAP = 40;    // vertical gap between wrapped rows within a zone
+      const COLS = 4;         // max nodes per row within a zone
 
-      const row0 = nodes.filter((n) => n.row === 0);
-      const row1 = nodes.filter((n) => n.row === 1);
+      const zone0 = nodes.filter((n) => n.row === 0);
+      const zone1 = nodes.filter((n) => n.row === 1);
+      zone0.sort((a, b) => a.layer - b.layer);
+      zone1.sort((a, b) => a.layer - b.layer);
 
-      // Sort by layer (column position within zone)
-      row0.sort((a, b) => a.layer - b.layer);
-      row1.sort((a, b) => a.layer - b.layer);
+      // Split a zone's nodes into wrapped rows of COLS
+      function chunkZone(zoneNodes: NetworkNode[]) {
+        const rows: NetworkNode[][] = [];
+        for (let i = 0; i < zoneNodes.length; i += COLS) {
+          rows.push(zoneNodes.slice(i, i + COLS));
+        }
+        return rows;
+      }
 
-      const zone0Width = row0.length * NODE_WIDTH + (row0.length - 1) * LAYER_GAP;
-      const zone1Width = row1.length * NODE_WIDTH + (row1.length - 1) * LAYER_GAP;
-      const totalWidth = Math.max(zone0Width, zone1Width);
+      const zone0Rows = chunkZone(zone0);
+      const zone1Rows = chunkZone(zone1);
 
-      // Ecosystem layer (top)
-      row0.forEach((node, idx) => {
-        const xOffset = (totalWidth - zone0Width) / 2;
-        positions.set(node.vsId, {
-          x: PADDING_X + xOffset + idx * (NODE_WIDTH + LAYER_GAP),
-          y: PADDING_Y,
+      // Width = widest row across both zones
+      const rowWidth = (count: number) => count * NODE_WIDTH + (count - 1) * LAYER_GAP;
+      const maxCols = Math.min(COLS, Math.max(zone0.length, zone1.length));
+      const totalWidth = rowWidth(maxCols);
+
+      // Place a zone's rows starting at yStart, return next yStart
+      function placeZone(zoneRows: NetworkNode[][], yStart: number) {
+        zoneRows.forEach((row, rowIdx) => {
+          const rw = rowWidth(row.length);
+          const xOffset = (totalWidth - rw) / 2;
+          row.forEach((node, colIdx) => {
+            positions.set(node.vsId, {
+              x: PADDING_X + xOffset + colIdx * (NODE_WIDTH + LAYER_GAP),
+              y: yStart + rowIdx * (NODE_HEIGHT + WRAP_GAP),
+            });
+          });
         });
-      });
+        return yStart + zone0Rows.length * (NODE_HEIGHT + WRAP_GAP) - WRAP_GAP;
+      }
 
-      // Knowledge layer (bottom)
-      row1.forEach((node, idx) => {
-        const xOffset = (totalWidth - zone1Width) / 2;
-        positions.set(node.vsId, {
-          x: PADDING_X + xOffset + idx * (NODE_WIDTH + LAYER_GAP),
-          y: PADDING_Y + NODE_HEIGHT + ZONE_GAP,
-        });
-      });
+      const zone0Bottom = placeZone(zone0Rows, PADDING_Y);
+      placeZone(zone1Rows, zone0Bottom + ZONE_GAP);
 
+      const zone1RowCount = zone1Rows.length;
       const canvasWidth = PADDING_X * 2 + totalWidth;
-      const canvasHeight = PADDING_Y * 2 + NODE_HEIGHT * 2 + ZONE_GAP;
+      const canvasHeight = PADDING_Y * 2
+        + zone0Rows.length * (NODE_HEIGHT + WRAP_GAP) - WRAP_GAP
+        + ZONE_GAP
+        + zone1RowCount * (NODE_HEIGHT + WRAP_GAP) - WRAP_GAP;
+
       return { positions, canvasWidth, canvasHeight };
     }
 

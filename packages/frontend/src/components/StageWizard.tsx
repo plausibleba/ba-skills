@@ -1,12 +1,14 @@
 import { useCallback, useRef, useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforce.json";
+import SAP_LIB from "../fixtures/vendor-libraries/sap-s4hana.json";
 import type { VendorFeatureLibrary, Solution, FrictionObservation, HeatmapData } from "../types.ts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 const VENDOR_LIBRARIES: (VendorFeatureLibrary & { logoColour: string })[] = [
   { ...(SALESFORCE_LIB as VendorFeatureLibrary), logoColour: "bg-blue-500" },
+  { ...(SAP_LIB as VendorFeatureLibrary), logoColour: "bg-amber-600" },
 ];
 
 // ─── Pass 3: Run friction assessment ─────────────────────────────────────────
@@ -100,11 +102,11 @@ async function runPass4(
 ): Promise<FrictionObservation[]> {
   const catalogue = buildFeatureCatalogue(lib);
   const storyIdsByFeature: Record<string, string[]> = {};
-  (SALESFORCE_LIB as any).categories?.forEach((cat: any) => {
+  [...[(SALESFORCE_LIB as any), (SAP_LIB as any)]].forEach(vendorLib => vendorLib.categories?.forEach((cat: any) => {
     cat.features?.forEach((f: any) => {
       if (f.customerStoryIds?.length) storyIdsByFeature[f.featureId] = f.customerStoryIds;
     });
-  });
+  }));
 
   const obsForPrompt = observations.map(o => ({
     observationId: o.observationId,
@@ -216,7 +218,7 @@ export function StageWizard() {
     scaffoldData,
     canvasViewModel,
     heatmapsByVs,
-    enrichVersion,
+
     loading,
     loadHeatmap,
     selectVs,
@@ -235,7 +237,11 @@ export function StageWizard() {
 
   const currentVsId = canvasViewModel?.valueStreamId ?? null;
   const hasAssessment = currentVsId ? heatmapsByVs.has(currentVsId) : heatmapsByVs.size > 0;
-  const isEnriched = (enrichVersion ?? 0) > 0;
+  // isEnriched: true only when at least one observation actually has solutions
+  const heatmapData = currentVsId ? (heatmapsByVs.get(currentVsId) ?? null) : null;
+  const isEnriched = !!heatmapData?.observations?.some(
+    (o: FrictionObservation) => o.solutions && o.solutions.length > 0
+  );
 
   const step1Complete = !!scaffoldData;
   const step2Complete = hasAssessment;

@@ -249,12 +249,13 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
   const [transcript, setTranscript] = useState("");
   const [form, setForm] = useState(EMPTY_FORM);
   const [extracting, setExtracting] = useState(false);
-  const [extractPass, setExtractPass] = useState(0); // 1 = defining VS, 2 = extracting detail
+  const [extractPass, setExtractPass] = useState(0); // 1 = VS & stages, 2 = roles & capabilities
   const [extractDone, setExtractDone] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generateStep, setGenerateStep] = useState(""); // "scaffold" | "friction" | ""
   const [generated, setGenerated] = useState(false);
   const [generatedBundle, setGeneratedBundle] = useState<any>(null);
+  const [bundleSaved, setBundleSaved] = useState(false);
   const dropRef = useRef<HTMLDivElement>(null);
 
   const readiness = calcReadiness(form);
@@ -288,13 +289,16 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
 
   const dismissGap = (idx: number) => setForm(f => ({ ...f, gaps: f.gaps.filter((_, i) => i !== idx) }));
 
-  // ─── LLM Extraction (two-pass) ──────────────────────────────────────────
+  // ─── LLM Extraction — Phase A Discovery (Passes 1 & 2) ──────────────────
   //
-  // Pass 1: Define Value Streams at board level (outcome-driven, 2-4 max).
-  //         Anchors all downstream naming. Prevents VS/stage conflation.
-  // Pass 2: Extract stages, roles, tech, pain points, metrics — all anchored
-  //         to the confirmed VS names from Pass 1. affectedVsId is constrained
-  //         to the confirmed list, so heatmap anchor IDs are always correct.
+  // Pass 1 (Steps 01-02): VS Definition + Lifecycle Stages
+  //   Board-level. No VS cap — extract all that the source warrants.
+  //   Output: confirmed VS list with stages. Anchors all downstream naming.
+  //
+  // Pass 2 (Steps 03-04): Roles + Capabilities
+  //   Extracted from source, anchored to confirmed VS/stage names.
+  //   Capabilities are domain-specific from source — never keyword-derived.
+  //   Output: roles{}, capabilities{} keyed by confirmed VS name.
   //
   async function runExtraction() {
     if (!transcript.trim()) return;
@@ -303,19 +307,20 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
 
     const apiUrl = import.meta.env.DEV ? "/api/anthropic/v1/messages" : "/api/claude";
 
-    // ── Pass 1: VS Definition ────────────────────────────────────────────────
-    // Uses Step 01 logic from Prompt Pack v3.2.
-    // Board-level, outcome-driven. 2-4 VS max. No stages extracted here.
+    // ── Pass 1: VS Definition + Lifecycle Stages (Steps 01-02) ──────────────
     const pass1Prompt = `You are a business architect defining Value Streams for a governance diagnostic.
-A Value Stream represents the end-to-end flow that delivers measurable stakeholder value — triggered by a defined need, ending at a verifiable outcome. You are working at board level: not process detail, but structural flow of value.
+A ValueStream is the end-to-end flow that delivers measurable stakeholder value — triggered by a defined need, ending at a verifiable outcome. Work at board level: structural flow of value, not process detail.
 
-From the transcript below, identify 2-4 Value Streams. Rules:
-- Each VS is outcome-driven, not function-driven ("Channel Sales Execution" not "Sales Team Activities")
+## Your Task
+From the source material below, identify ALL Value Streams present. Do not cap the number — extract every distinct end-to-end flow the source describes.
+
+## Rules
+- Each VS is outcome-driven, not function-driven ("Member Certification Lifecycle" not "Certification Team Activities")
 - Each VS has a clear trigger event and a clear terminal outcome
-- VS names are concise, 2-5 words, title case
-- ecosystem zone = externally-facing (sales, service, customer, partner)
-- knowledge zone = internally-facing (operations, risk, reporting, finance)
-- Do NOT extract stages here — only the top-level VS definitions
+- VS names are concise, 2-6 words, title case
+- zone: "ecosystem" = externally-facing (customer, member, partner, market); "knowledge" = internally-facing (operations, reporting, governance)
+- Stages: 4-8 per VS. Each stage = a governance phase or progression milestone, not a task. MECE — no gaps, no overlaps.
+- If the source contains tab names, sheet names, section headings, or column groupings that map to distinct end-to-end flows — each one is likely a separate VS. Extract them all.
 
 Return ONLY valid JSON, no markdown fences:
 {
@@ -330,30 +335,32 @@ Return ONLY valid JSON, no markdown fences:
   "valueStreams": [
     {
       "id": 1,
-      "name": "Channel Sales Execution",
-      "description": "End-to-end flow from territory planning through deal close",
+      "name": "Member Certification Lifecycle",
+      "description": "End-to-end flow from application through credential maintenance",
       "zone": "ecosystem",
-      "trigger": "Territory assigned or pipeline opportunity identified",
-      "terminalOutcome": "Deal closed and revenue recognised",
-      "stakeholder": "",
-      "confidence": "high|medium|low"
+      "trigger": "Candidate submits certification application",
+      "terminalOutcome": "Credential issued and maintained in good standing",
+      "stakeholder": "Candidate, Employer",
+      "confidence": "high|medium|low",
+      "stages": [
+        { "name": "Application Processing", "confidence": "high" },
+        { "name": "Exam Preparation", "confidence": "high" }
+      ]
     }
   ]
 }
 
-Transcript:
+Source material:
 ${transcript}`;
 
     let pass1Result: any = null;
-
     try {
       const res1 = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
-          max_tokens: 2000,
-          temperature: 0,
+          max_tokens: 4000,
           messages: [{ role: "user", content: pass1Prompt }]
         })
       });
@@ -368,68 +375,70 @@ ${transcript}`;
 
     const confirmedVS = pass1Result.valueStreams ?? [];
     setExtractPass(2);
-    // Build the confirmed VS name list to inject into Pass 2
-    const vsNameList = confirmedVS.map((vs: any, i: number) =>
-      `${i + 1}. "${vs.name}" (zone: ${vs.zone}) — trigger: ${vs.trigger ?? "unknown"}, outcome: ${vs.terminalOutcome ?? "unknown"}`
-    ).join("\n");
 
-    // ── Pass 2: Stage + Friction Extraction ──────────────────────────────────
-    // VS names are injected verbatim from Pass 1 — the model cannot invent new ones.
-    // affectedVsName MUST be one of the confirmed names.
-    // This is what fixes the anchor ID mismatch in the heatmap generator.
-    const pass2Prompt = `You are extracting detailed discovery signal from a sales or consulting call transcript.
+    // Build VS+stage reference for Pass 2 — model must anchor to these exactly
+    const vsStageRef = confirmedVS.map((vs: any) =>
+      `VS: "${vs.name}"\n  Stages: ${(vs.stages ?? []).map((s: any) => `"${s.name}"`).join(", ")}`
+    ).join("\n\n");
 
-The following Value Streams have already been defined and are CONFIRMED. Do not rename, add, or remove them:
-${vsNameList}
+    // ── Pass 2: Roles + Capabilities (Steps 03-04) ───────────────────────────
+    // Capabilities are extracted from the source — not derived from stage names.
+    // If the source contains a capability map, register, or column — use those names verbatim.
+    const pass2Prompt = `You are extracting Roles and Capabilities for a business architecture diagnostic.
 
-For each field below, use the confirmed VS names exactly as written above for any vsName references.
+The following Value Streams and their stages are CONFIRMED. Do not rename, add, or remove them:
+${vsStageRef}
+
+## Roles (Step 03)
+Identify all roles that participate in these value streams. Roles are responsibility-bearing positions, not people or departments.
+- Include both execution roles (doing work) and governing roles (approving, overseeing)
+- 4-10 roles total across all value streams
+- Names are title-case position names
+
+## Capabilities (Step 04)
+Identify the Capabilities required. Capabilities are enduring organisational abilities — persistent, deployable, investment-relevant.
+- CRITICAL: If the source material contains a capability map, capability register, named capabilities, or column headers that describe organisational abilities — extract those names VERBATIM. Do not rename, generalise, or replace them with generic alternatives.
+- If no explicit capabilities exist in the source, derive them from the VS/stage content using Verb-Noun convention (e.g. "Manage Member Credentials", not "Credential Management Execution")
+- Assign capabilities to the VS they primarily support
+- 3-8 capabilities per VS
+
 Return ONLY valid JSON, no markdown fences:
-
 {
-  "valueStreams": [
+  "roles": [
+    { "id": "role_credit_analyst", "name": "Credit Analyst", "type": "Internal", "description": "Responsible for quantitative credit assessment" }
+  ],
+  "capabilitiesByVS": [
     {
-      "id": 1,
-      "name": "MUST MATCH confirmed name exactly",
-      "stages": [
-        {"name": "Stage Name", "confidence": "high|medium|low"}
+      "vsName": "MUST MATCH confirmed VS name exactly",
+      "capabilities": [
+        { "id": "cap_member_onboarding", "name": "Member Onboarding", "description": "Ability to onboard and orient new members" }
       ]
     }
   ],
-  "roles": [
-    {"id": 1, "name": "", "type": "Internal|External|System", "notes": "", "confidence": "high|medium|low"}
-  ],
   "tech": [
-    {"id": 1, "name": "", "type": "CRM|ERP|Comms|Analytics|Field|Custom|Other", "friction": true|false, "notes": "", "confidence": "high|medium|low"}
+    { "id": 1, "name": "", "type": "CRM|ERP|Comms|Analytics|Custom|Other", "friction": true, "notes": "" }
   ],
   "painPoints": [
     {
       "id": 1,
       "description": "",
-      "category": "DataSignalFriction|ProcessHandoffFriction|GovernanceRiskFriction|IncentiveCapacityFriction|DecisionAuthorityFriction",
+      "category": "DataSignalFriction|ProcessHandoffFriction|GovernanceRiskFriction|IncentiveCapacityFriction|TechnologyIntegrationFriction",
       "intensity": 7,
       "affectedVsName": "MUST be one of the confirmed VS names above",
-      "affectedStage": "Stage name only — NOT the VS name",
-      "binding": true|false,
+      "affectedStage": "Stage name only",
+      "binding": false,
       "confidence": "high|medium|low"
     }
   ],
   "metrics": [
-    {"id": 1, "name": "", "current": "", "target": "", "affectedVsName": "confirmed VS name", "stage": "stage name only", "confidence": "high|medium|low"}
+    { "id": 1, "name": "", "current": "", "target": "", "affectedVsName": "confirmed VS name", "stage": "stage name only" }
   ],
   "gaps": [
-    {"severity": "required|recommended", "prompt": "Specific question to fill this gap"}
+    { "severity": "required|recommended", "prompt": "Specific question to fill this gap" }
   ]
 }
 
-Rules:
-- stages: 4-8 per VS. Each stage = a governance phase, not a task. MECE — no gaps, no overlaps.
-- affectedStage in painPoints: stage name ONLY (e.g. "Pre-Visit Planning") — never include the VS name here
-- affectedVsName: must exactly match one of the confirmed VS names — no paraphrasing
-- binding: true for the single biggest bottleneck across ALL pain points (at most one)
-- intensity: 1-10 based on urgency/impact in transcript
-- Generate 2-4 gap prompts for fields that need consultant clarification
-
-Transcript:
+Source material:
 ${transcript}`;
 
     try {
@@ -438,8 +447,7 @@ ${transcript}`;
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
-          max_tokens: 4000,
-          temperature: 0,
+          max_tokens: 6000,
           messages: [{ role: "user", content: pass2Prompt }]
         })
       });
@@ -447,33 +455,37 @@ ${transcript}`;
       const text2 = data2.content?.find((b: any) => b.type === "text")?.text ?? "{}";
       const pass2Result = JSON.parse(text2.replace(/```json|```/g, "").trim());
 
-      // Merge Pass 1 VS definitions with Pass 2 stage extractions
-      // Pass 1 is authoritative for name/description/zone/stakeholder
-      // Pass 2 adds stages
+      // Merge: Pass 1 is authoritative for VS structure; Pass 2 adds capabilities per VS
       const mergedVS = confirmedVS.map((vs1: any, i: number) => {
-        const vs2 = pass2Result.valueStreams?.find((v: any) => v.name === vs1.name)
-          ?? pass2Result.valueStreams?.[i];
+        const capEntry = (pass2Result.capabilitiesByVS ?? []).find((c: any) => c.vsName === vs1.name)
+          ?? (pass2Result.capabilitiesByVS ?? [])[i];
         return {
           ...vs1,
           id: vs1.id ?? Date.now() + i,
-          stages: vs2?.stages ?? [],
+          stages: vs1.stages ?? [],
+          extractedCapabilities: capEntry?.capabilities ?? [],
         };
       });
 
-      // Normalise affectedStage on pain points: build "VS name → stage name" format
-      // that the rest of the form and scaffold generator expects
+      // Normalise pain points with VS → stage format
       const normalisedPainPoints = (pass2Result.painPoints ?? []).map((p: any, i: number) => {
         const vsName = p.affectedVsName ?? confirmedVS[0]?.name ?? "";
         const stageName = p.affectedStage ?? "";
-        const affectedStage = vsName && stageName ? `${vsName} → ${stageName}` : stageName;
-        return { ...p, id: p.id ?? Date.now() + i, affectedStage };
+        return {
+          ...p,
+          id: p.id ?? Date.now() + i,
+          affectedStage: vsName && stageName ? `${vsName} → ${stageName}` : stageName,
+        };
       });
 
       const normalisedMetrics = (pass2Result.metrics ?? []).map((m: any, i: number) => {
         const vsName = m.affectedVsName ?? confirmedVS[0]?.name ?? "";
         const stageName = m.stage ?? "";
-        const stage = vsName && stageName ? `${vsName} → ${stageName}` : stageName;
-        return { ...m, id: m.id ?? Date.now() + i, stage };
+        return {
+          ...m,
+          id: m.id ?? Date.now() + i,
+          stage: vsName && stageName ? `${vsName} → ${stageName}` : stageName,
+        };
       });
 
       setForm(f => ({
@@ -498,149 +510,183 @@ ${transcript}`;
     }
   }
 
-  // ─── Generate IR → Scaffold ───────────────────────────────────────────────
+  // ─── Generate IR → Scaffold + Heatmap (Passes 3 & 4) ─────────────────────
+  //
+  // Pass 3 (Steps 05-06-10): LLM formalisation → full ScaffoldModel.json
+  //   Receives confirmed VS, stages, roles, capabilities from extraction.
+  //   Produces deterministic scaffold: outcomes, activities (FSM chain), assembly.
+  //   Replaces the old keyword-deriveCapabilities JS function entirely.
+  //
+  // Pass 4 (Steps 11-13): Friction assessment → heatmaps[]
+  //   Unchanged from previous implementation — already well-designed.
+  //
   async function generateIR() {
     setGenerating(true);
     setGenerateStep("scaffold");
-    await new Promise(r => setTimeout(r, 800));
+
+    const apiUrl = import.meta.env.DEV ? "/api/anthropic/v1/messages" : "/api/claude";
 
     const id = (prefix: string, name: string) =>
-      `${prefix}-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+      `${prefix}_${name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")}`;
 
-    const elements: any = {
-      valueStreams: {}, activities: {}, capabilities: {}, roles: {},
-      outcomes: {}, metrics: {}, controls: {}, informationObjects: {}, technologyApps: {},
-    };
+    // ── Pass 3: Scaffold Formalisation (Steps 05-06-10) ──────────────────────
+    // Build the VS+stage+role+capability context for the formalisation prompt
+    const vsContext = form.valueStreams.filter((vs: any) => vs.name).map((vs: any) => ({
+      vsName: vs.name,
+      vsId: id("vs", vs.name),
+      description: vs.description ?? "",
+      zone: vs.zone ?? "ecosystem",
+      trigger: vs.trigger ?? "",
+      terminalOutcome: vs.terminalOutcome ?? "",
+      stakeholder: vs.stakeholder ?? form.org.stakeholder ?? "",
+      stages: (vs.stages ?? []).map((s: any) => s.name ?? s),
+      capabilities: (vs.extractedCapabilities ?? []).map((c: any) => ({
+        id: c.id ?? id("cap", c.name),
+        name: c.name,
+        description: c.description ?? `Ability to ${c.name.toLowerCase()}`,
+      })),
+    }));
 
-    form.roles.filter((r: any) => r.name).forEach((r: any) => {
-      elements.roles[id("role", r.name)] = { name: r.name };
-    });
-    form.tech.filter((t: any) => t.name).forEach((t: any) => {
-      elements.technologyApps[id("tech", t.name)] = { name: t.name, type: t.type ?? "Other" };
-    });
-    form.metrics.filter((m: any) => m.name).forEach((m: any) => {
-      elements.metrics[id("metric", m.name)] = { name: m.name };
-    });
-    form.painPoints.filter((p: any) => p.description).forEach((p: any) => {
-      elements.controls[id("ctrl", p.description)] = { name: p.description.slice(0, 60) };
-    });
+    const roleContext = form.roles.filter((r: any) => r.name).map((r: any) => ({
+      id: r.id ?? id("role", r.name),
+      name: r.name,
+      description: r.description ?? "",
+    }));
 
-    form.valueStreams.filter((vs: any) => vs.name).forEach((vs: any) => {
-      const vsId = id("vs", vs.name);
-      const activityIds: string[] = [];
-      const stages = vs.stages?.length ? vs.stages : [{ name: "Initial Stage" }, { name: "Final Stage" }];
+    const techContext = form.tech.filter((t: any) => t.name).map((t: any) => ({
+      id: id("tech", t.name),
+      name: t.name,
+      type: t.type ?? "Other",
+    }));
 
-      stages.forEach((stage: any, idx: number) => {
-        const actId = id("act", `${vs.name}-${stage.name}`);
-        const preId = id("out", idx === 0 ? `${vs.name}-entry` : `${vs.name}-${stages[idx-1].name}-complete`);
-        const postId = id("out", `${vs.name}-${stage.name}-complete`);
+    const pass3Prompt = `You are a business architect formalising a value stream model into a VCC ScaffoldModel.
 
-        elements.outcomes[preId] = elements.outcomes[preId] ?? { name: idx === 0 ? `${vs.name} initiated` : `${stages[idx-1].name} complete`, status: "active" };
-        elements.outcomes[postId] = { name: `${stage.name} complete`, status: "active" };
+## Determinism Requirement
+This is a structural formalisation step — a pure function. Given these inputs, produce the same output every time. IDs are derived mechanically from element names (snake_case with type prefix). No creative variation.
 
-        const stageKey = `${vs.name} → ${stage.name}`;
-        const linkedControls = form.painPoints.filter((p: any) => p.affectedStage === stageKey && p.description).map((p: any) => id("ctrl", p.description));
-        const linkedMetrics = form.metrics.filter((m: any) => m.stage === stageKey && m.name).map((m: any) => id("metric", m.name));
-        const capId = id("cap", `${vs.name}-${stage.name}`);
+## ID Convention
+- vs_<snake_case_name>     e.g. vs_member_certification_lifecycle
+- outcome_<snake_case>     e.g. outcome_application_received
+- act_<snake_case_name>    e.g. act_process_certification_application
+- cap_<snake_case_name>    e.g. cap_member_onboarding
+- role_<snake_case_name>   e.g. role_credit_analyst
+- metric_<snake_case_name>
 
-        elements.capabilities[capId] = { name: stage.name, description: `${stage.name} capability within ${vs.name}` };
-        const roleIds = Object.keys(elements.roles);
-        const techIds = Object.keys(elements.technologyApps);
+## FSM Chain Rules (CRITICAL — violations fail validation)
+Each Value Stream is a single linear activity chain:
+1. Each activity has preOutcomeId !== postOutcomeId (no no-ops)
+2. activity[i].postOutcomeId === activity[i+1].preOutcomeId (adjacent consistency)
+3. nextActivityId chain has no breaks, no cycles — last activity has nextActivityId: null
+4. All activities reachable from chain head
+5. One activity per stage. Chain length = number of stages.
+6. performedByRoleIds: at least one role per activity
 
-        elements.activities[actId] = {
-          name: stage.name,
-          description: `${stage.name} stage in ${vs.name}`,
-          preOutcomeId: preId,
-          postOutcomeId: postId,
-          requiresCapabilityIds: [capId],
-          performedByRoleIds: roleIds.slice(0, 2),
-          metricIds: linkedMetrics,
-          controlIds: linkedControls,
-          capabilityPPIT: {
-            [capId]: {
-              roleIds: roleIds.slice(0, 2),
-              activities: [`Execute ${stage.name.toLowerCase()} process`, `Validate ${stage.name.toLowerCase()} output`],
-              informationObjectIds: [],
-              technologyAppIds: techIds.slice(0, 2),
-            }
-          }
-        };
-        activityIds.push(actId);
-      });
+## Your Task
+Given the confirmed VS definitions, stages, roles, and capabilities below, produce a complete ScaffoldModel.json.
 
-      elements.valueStreams[vsId] = {
-        name: vs.name,
-        description: vs.description || `${vs.name} value stream`,
-        activityIds,
-        layoutZone: vs.zone ?? "ecosystem",
-        accountableStakeholder: vs.stakeholder || form.org.stakeholder || "",
-      };
-    });
+For each VS:
+- Create one Outcome per stage boundary (n stages → n+1 outcomes)  
+- Create one Activity per stage (pre/post outcomes, roles, capabilities from the lists provided)
+- Assign capabilities to activities based on stage semantics — use the provided capabilities, do not invent new ones
+- Distribute roles across activities sensibly based on stage content
 
-    const scaffoldId = id("scaffold", form.org.name || "discovery");
-    const scaffold = {
-      schemaVersion: "1.0",
-      scaffoldId,
-      name: form.org.name || "Discovery Scaffold",
-      description: `Generated from discovery intake — ${form.org.industry ?? ""} ${form.org.companySize ?? ""}`.trim(),
-      createdAt: new Date().toISOString(),
-      elements,
-      crossStreamOutcomes: [],
-      scaffoldIntegrityHash: btoa(scaffoldId + Date.now()).slice(0, 32),
-    };
+Confirmed inputs:
+${JSON.stringify({ valueStreams: vsContext, roles: roleContext, tech: techContext }, null, 2)}
 
-    // ─── Pass 3: LLM Friction Assessment ─────────────────────────────────
-    //
-    // Now that the scaffold is structurally complete, hand it to the model
-    // for proper friction analysis. The model receives:
-    //   - The validated scaffold JSON (real activity/role/capability IDs)
-    //   - The original pain points from the form (discovery signal)
-    //   - The original transcript (if available, for evidence grounding)
-    //
-    // The model returns properly anchored observations (IDs resolve in scaffold)
-    // and a scored binding constraint per the Step 11-12 rubric.
-    // This replaces the old deterministic string-manipulation approach.
-    //
+Also include these metrics (from discovery):
+${JSON.stringify(form.metrics.filter((m: any) => m.name).map((m: any) => ({ id: id("metric", m.name), name: m.name, current: m.current, target: m.target })), null, 2)}
+
+Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
+{
+  "schemaVersion": "1.0.0",
+  "scaffoldId": "scaffold_<org_name_snake>",
+  "name": "<Org Name> — Operating Model",
+  "description": "<brief>",
+  "createdAt": "<ISO timestamp>",
+  "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "elements": {
+    "valueStreams": {},
+    "activities": {},
+    "outcomes": {},
+    "roles": {},
+    "capabilities": {},
+    "controls": {},
+    "constraints": {},
+    "directives": {},
+    "deonticLogic": {},
+    "flowLogic": {},
+    "concepts": {},
+    "properties": {},
+    "metrics": {},
+    "measures": {},
+    "conditions": {}
+  }
+}
+
+CRITICAL: All 15 element maps must be present, even if empty. Include elementType on every element.`;
+
+    let scaffold: any = null;
     const now = new Date().toISOString();
-    const scaffoldVsIds = Object.keys(elements.valueStreams);
+    const orgSlug = form.org.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "discovery";
 
-    // Summarise pain points for the prompt (the model uses these as discovery signal,
-    // but derives its own properly-anchored observations from the scaffold structure)
+    try {
+      const res3 = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 8000,
+          messages: [{ role: "user", content: pass3Prompt }]
+        })
+      });
+      const data3 = await res3.json();
+      const text3 = data3.content?.find((b: any) => b.type === "text")?.text ?? "{}";
+      scaffold = JSON.parse(text3.replace(/```json|```/g, "").trim());
+    } catch (e) {
+      console.error("Pass 3 scaffold formalisation failed", e);
+      setGenerating(false);
+      setGenerateStep("");
+      return;
+    }
+
+    // ── Pass 4: Friction Assessment (Steps 11-13) ────────────────────────────
+    setGenerateStep("friction");
+    const scaffoldId = scaffold.scaffoldId ?? `scaffold-${orgSlug}`;
+    const scaffoldVsIds = Object.keys(scaffold.elements?.valueStreams ?? {});
+
     const ppSummary = form.painPoints
       .filter((p: any) => p.description)
-      .map((p: any, i: number) => `${i + 1}. [${p.category || 'unclassified'}] ${p.description} (intensity ${p.intensity ?? 7}/10, stage: ${p.affectedStage || 'unknown'})${p.binding ? ' ← rep flagged as binding' : ''}`)
-      .join('\n');
+      .map((p: any, i: number) =>
+        `${i + 1}. [${p.category || "unclassified"}] ${p.description} (intensity ${p.intensity ?? 7}/10, stage: ${p.affectedStage || "unknown"})${p.binding ? " ← flagged as binding" : ""}`
+      ).join("\n");
 
-    // Build a compact scaffold summary — full JSON for anchor resolution,
-    // but strip the large capabilityPPIT to keep token count manageable
     const scaffoldForPrompt = JSON.parse(JSON.stringify(scaffold));
-    Object.values(scaffoldForPrompt.elements.activities ?? {}).forEach((act: any) => {
+    Object.values(scaffoldForPrompt.elements?.activities ?? {}).forEach((act: any) => {
       delete act.capabilityPPIT;
     });
 
-    const pass3Prompt = `You are generating friction observations and a binding constraint assessment for a VCC governance diagnostic.
+    const pass4Prompt = `You are generating friction observations and a binding constraint assessment for a VCC governance diagnostic.
 
-The scaffold below represents a validated structural model of the organisation's value streams. Your observations must anchor to real element IDs from this scaffold — every anchorId you reference MUST exist in the scaffold JSON.
+The scaffold below represents a validated structural model. Every anchorId you reference MUST exist in the scaffold JSON.
 
 ## Friction Taxonomy
 - ProcessHandoffFriction — work stalls between stages, handoff rework
-- TechnologyIntegrationFriction — systems don't interoperate, automation gaps  
+- TechnologyIntegrationFriction — systems don't interoperate, automation gaps
 - DataSignalFriction — information fragmented, decision latency
 - DecisionAuthorityFriction — decision rights ambiguous, approval concentration
 - GovernanceRiskFriction — control layering, compliance gates multiply
 - IncentiveCapacityFriction — performance measures distort behaviour, capacity limits
 
 ## Evidence Basis Rules
-- EVIDENCED: directly stated in source material — requires evidence array with sourceType, ref, excerpt
-- INFERRED: derived from scaffold structure — requires structuralPattern with patternType, scaffoldIndicators, quantitativeSignals
-- ASSUMED: domain heuristic only — intensity MUST NOT exceed 5, must acknowledge assumption explicitly
+- EVIDENCED: directly stated in source material
+- INFERRED: derived from scaffold structure — requires structuralPattern
+- ASSUMED: domain heuristic only — intensity MUST NOT exceed 5
 
-## Binding Constraint Scoring (per candidate)
-Score each on: observationFrequency (0-3), authorityCentralisation (0-3), downstreamDependency (0-3), controlLayering (0-3), capacityConstraint (0-3). Total 0-15.
-Eligibility: downstreamDependency must score ≥ 2. If no candidate qualifies, return null.
+## Binding Constraint Scoring
+Score each candidate on: observationFrequency (0-3), authorityCentralisation (0-3), downstreamDependency (0-3), controlLayering (0-3), capacityConstraint (0-3). Total 0-15.
+Eligibility: downstreamDependency must score ≥ 2. If no candidate qualifies, return null bindingConstraint.
 confidence = totalScore / 15.
 
-## Output Format
 Return ONLY valid JSON, no markdown fences:
 {
   "heatmaps": [
@@ -663,7 +709,7 @@ Return ONLY valid JSON, no markdown fences:
         "findingId": "bc_001",
         "bindingAnchor": { "anchorType": "Activity", "anchorId": "act-id-from-scaffold" },
         "bindingAnchorObservationId": "fr_001_snake_case_description",
-        "justification": "Why this is the binding constraint — specific structural reasoning",
+        "justification": "Structural reasoning for binding constraint selection",
         "constraintScoring": {
           "candidates": [
             {
@@ -683,8 +729,8 @@ Return ONLY valid JSON, no markdown fences:
   ]
 }
 
-## Discovery Signal (pain points identified by the sales rep — use as evidence grounding)
-${ppSummary || 'No pain points recorded — derive from scaffold structure only.'}
+## Discovery Signal (pain points from extraction)
+${ppSummary || "No pain points recorded — derive observations from scaffold structure and domain heuristics (INFERRED or ASSUMED basis, intensity ≤ 5 for ASSUMED)."}
 
 ## Scaffold JSON
 ${JSON.stringify(scaffoldForPrompt, null, 2)}`;
@@ -692,76 +738,35 @@ ${JSON.stringify(scaffoldForPrompt, null, 2)}`;
     let heatmaps: any[] = [];
 
     try {
-      setGenerateStep("friction");
-      const apiUrl = import.meta.env.DEV ? "/api/anthropic/v1/messages" : "/api/claude";
-      const res3 = await fetch(apiUrl, {
+      const res4 = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
-          max_tokens: 6000,
-          temperature: 0,
-          messages: [{ role: "user", content: pass3Prompt }]
+          max_tokens: 8000,
+          messages: [{ role: "user", content: pass4Prompt }]
         })
       });
-      const data3 = await res3.json();
-      const text3 = data3.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-      const pass3Result = JSON.parse(text3.replace(/```json|```/g, "").trim());
+      const data4 = await res4.json();
+      const text4 = data4.content?.find((b: any) => b.type === "text")?.text ?? "{}";
+      const pass4Result = JSON.parse(text4.replace(/```json|```/g, "").trim());
 
-      // Map Pass 3 output into final heatmap format, adding scaffoldId and schema fields
-      heatmaps = (pass3Result.heatmaps ?? []).map((h: any) => ({
+      heatmaps = (pass4Result.heatmaps ?? []).map((h: any) => ({
         heatmapId: `heatmap-${h.valueStreamId}-${Date.now()}`,
         scaffoldId,
         valueStreamId: h.valueStreamId,
         observations: h.observations ?? [],
         ...(h.bindingConstraint && { bindingConstraint: h.bindingConstraint }),
-        schemaVersion: '1.0.0',
+        schemaVersion: "1.0.0",
         createdAt: now,
       }));
     } catch (e) {
-      console.error("Pass 3 friction assessment failed — falling back to form data", e);
-
-      // Fallback: if Pass 3 fails, build minimal heatmaps from form pain points
-      // so the user isn't left with an empty bundle
-      const ppByVs: Record<string, any[]> = {};
-      form.painPoints.filter((p: any) => p.description && p.affectedStage).forEach((p: any) => {
-        const vsName = p.affectedStage.split(' → ')[0] ?? '';
-        const vsId = id('vs', vsName);
-        const matchedVsId = scaffoldVsIds.find(vid => vid === vsId) ?? scaffoldVsIds[0];
-        if (!matchedVsId) return;
-        if (!ppByVs[matchedVsId]) ppByVs[matchedVsId] = [];
-        ppByVs[matchedVsId].push(p);
-      });
-
-      heatmaps = Object.entries(ppByVs).map(([vsId, pps]: [string, any[]]) => {
-        const observations = pps.map((p: any, idx: number) => {
-          const stageName = p.affectedStage.split(' → ')[1] ?? p.affectedStage;
-          const anchorId = id('act', `${vsId.replace(/^vs-/, '')}-${stageName}`);
-          return {
-            observationId: `obs_${vsId}_${String(idx + 1).padStart(3, '0')}`,
-            category: p.category || 'ProcessHandoffFriction',
-            evidenceBasis: 'ASSUMED',
-            primaryAnchor: { anchorType: 'Activity', anchorId },
-            contributingAnchors: [],
-            intensity: { scale: '0-10', score: Math.min(p.intensity ?? 5, 5) },
-            rationale: `[Fallback — Pass 3 unavailable] ${p.description}`,
-            evidence: [],
-            observedAt: now,
-          };
-        });
-        return {
-          heatmapId: `heatmap-${vsId}-${Date.now()}`,
-          scaffoldId,
-          valueStreamId: vsId,
-          observations,
-          schemaVersion: '1.0.0',
-          createdAt: now,
-        };
-      });
+      console.error("Pass 4 friction assessment failed — bundle saved without heatmaps", e);
+      // No fallback fabrication — an empty heatmap is better than a wrong one
     }
 
     const bundle = {
-      bundleVersion: '1.0',
+      bundleVersion: "1.0",
       createdAt: now,
       scaffold,
       heatmaps,
@@ -772,6 +777,7 @@ ${JSON.stringify(scaffoldForPrompt, null, 2)}`;
     setGenerateStep("");
     setGenerated(true);
   }
+
 
   // ─── Drag-drop ───────────────────────────────────────────────────────────
   const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -858,13 +864,14 @@ ${JSON.stringify(scaffoldForPrompt, null, 2)}`;
                   URL.revokeObjectURL(url);
                 }
               }
+              setBundleSaved(true);
             }} className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors">
               ↓ Save Bundle
             </button>
             <button
-              onClick={() => onComplete?.(generatedBundle)}
-              disabled={!generatedBundle}
-              className="rounded-lg border border-vcc-300 bg-vcc-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-vcc-700 disabled:opacity-50 disabled:cursor-not-allowed">
+              onClick={() => bundleSaved && onComplete?.(generatedBundle)}
+              disabled={!bundleSaved}
+              className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${bundleSaved ? "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer" : "border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed"}`}>
               Open in Canvas →
             </button>
           </div>
@@ -891,7 +898,7 @@ ${JSON.stringify(scaffoldForPrompt, null, 2)}`;
               disabled={readiness < 41 || generating}
               className="rounded-lg bg-slate-800 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
-              {generating ? (generateStep === "friction" ? "Assessing friction…" : "Building scaffold…") : "Generate →"}
+              {generating ? (generateStep === "friction" ? "Pass 4 — assessing friction…" : "Pass 3 — formalising scaffold…") : "Generate →"}
             </button>
           </div>
         </div>
@@ -944,7 +951,7 @@ Example: 'We met with the head of tech at Puretec. They have 4000+ SKUs and 12-m
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                       </svg>
-                      {extractPass === 1 ? "Pass 1 — defining value streams…" : "Pass 2 — extracting detail…"}
+                      {extractPass === 1 ? "Pass 1 — value streams & stages…" : "Pass 2 — roles & capabilities…"}
                     </span>
                   ) : "Extract → Fill form"}
                 </button>
@@ -1199,7 +1206,7 @@ Example: 'We met with the head of tech at Puretec. They have 4000+ SKUs and 12-m
                   disabled={readiness < 41 || generating}
                   className="rounded-lg bg-slate-800 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all whitespace-nowrap"
                 >
-                  {generating ? (generateStep === "friction" ? "Assessing friction…" : "Building scaffold…") : `Generate scaffold →`}
+                  {generating ? (generateStep === "friction" ? "Pass 4 — assessing friction…" : "Pass 3 — formalising scaffold…") : `Generate scaffold →`}
                 </button>
               </div>
             </div>

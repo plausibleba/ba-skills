@@ -2,6 +2,7 @@ import type { ScaffoldData, FrictionObservation } from "../../types.ts";
 import type { PPITLayer } from "./ppit.ts";
 import { CapabilityBlock } from "./CapabilityBlock.tsx";
 import { TransformationPane } from "./TransformationPane.tsx";
+import { useCanvasStore } from "../../store/canvas-store.ts";
 
 /* ── Stage Card ────────────────────────────────────────────────────── */
 
@@ -29,8 +30,10 @@ export function StageCard({
   const activity = scaffold.elements.activities[activityId];
   if (!activity) return null;
 
+  const { userStoriesByActivity, setActivityStories } = useCanvasStore();
+
   const caps = activity.requiresCapabilityIds ?? [];
-  const showSummary = !isSelected && analyticsOpen;
+  const showSummary = false;
 
   return (
     <div
@@ -88,6 +91,8 @@ export function StageCard({
         isVisible={analyticsOpen}
         summaryOnly={showSummary}
         onFrictionClick={() => onFrictionClick(activityId)}
+        userStories={userStoriesByActivity[activityId] ?? []}
+        onStoriesChange={(stories) => setActivityStories(activityId, stories)}
       />
     </div>
   );
