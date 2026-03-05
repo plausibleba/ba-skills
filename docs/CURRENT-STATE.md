@@ -2,13 +2,13 @@
 
 **Read this first. Every session. One page.**
 
-Last updated: 2026-03-03
+Last updated: 2026-03-04
 
 ---
 
 ## What We're Building
 
-A **board-level governance instrument** for organisational value stream analysis. The Value Cognition Canvas (VCC) lets stakeholders visualise how value flows through an organisation, validate structural completeness, and identify friction.
+A **presales intelligence instrument** for value stream analysis. The Value Cognition Canvas (VCC) turns a client discovery conversation into a structured operating model diagnostic — surfacing friction points, binding constraints, and technology solution recommendations in minutes.
 
 ## Zoom Levels
 
@@ -16,63 +16,78 @@ A **board-level governance instrument** for organisational value stream analysis
 |-------|------|--------|
 | Enterprise | Network View — DAG topology of all value streams | **Stable** |
 | Stream | Stage View — per-VS stages, capabilities, PPIT layers | **Stable** |
-| Capability | PPIT expansion — activities, roles, info, tech per capability | **Stable** |
-| Friction | Heatmap overlay — observations, binding constraints | **Stable** (enterprise banking demo) |
+| Friction | Heatmap overlay — observations, binding constraints | **Stable** |
+| Solutions | Vendor enrichment — technology features per friction point | **Stable** |
 | Transformation | Painpoints, ideas, requirements, epics | **Not yet built** |
 
 ## What Is Stable
 
-- **Frontend**: React/Vite/Tailwind SPA, no backend. Network View + Stage View with full PPIT.
-- **Pipeline**: XLSX → IR → scaffold generator with PPIT enrichment.
-- **IIBA Scaffold**: 6 VS, 28 stages, 70 capabilities, 233 atomic activities, 200 info objects, 61 tech apps.
-- **Data model**: Scaffold JSON schema with `capabilityPPIT` structure.
-- **Visual encoding**: Colour semantics, edge discipline, progressive disclosure, tooltip patterns.
-- **Design principles**: Documented and enforced (see `DESIGN-PRINCIPLES.md`).
-- **Discovery Intake**: Transcript → extract → scaffold + heatmap generation → VCC Bundle download.
-- **VCC Bundle format**: Single JSON containing scaffold + heatmaps. FileLoader accepts bundles.
-- **F-001 Editable Friction Panel**: Implemented (Session 6).
+- **Frontend**: React/Vite/Tailwind SPA, deployed on Vercel. Network View + Stage View + full four-pass pipeline.
+- **Discovery Intake**: Paste transcript → AI extracts value streams, stages, roles, tech, friction in four passes.
+- **Stage Wizard**: Three-step toolbar (Scaffold → Assess Friction → Enrich Solutions). Each step: Load previous or Run new.
+- **User Guide Panel**: Fixed bottom-left, contextually aware, six states, progress dots.
+- **Pass 1–2**: Board-level VS definition + stage/role/tech extraction anchored to confirmed VS names.
+- **Pass 3**: Friction assessment on demand — observations, intensity scores, binding constraint.
+- **Pass 4**: Vendor solution enrichment — Salesforce Agentforce catalogue (47 features), customer story matching.
+- **Puretec fixture**: 4 VS, 13 stages, 2 heatmaps — demo-ready.
+- **IIBA scaffold**: 6 VS, 28 stages, 70 capabilities, 233 atomic activities — pipeline reference.
 
 ## What Is Experimental
 
-- **Discovery Intake extraction quality** — single-pass extraction causes VS/stage confusion. Two-pass rewrite planned.
-- **Heatmap from Discovery Intake** — friction observations generate and bind, but quality depends on extraction accuracy.
-- **Binding constraint** — anchor ID matching partially working; binding constraint highlight not reliably rendering.
-- **Capability tooltip direction** — works but could be refined with scroll-aware positioning.
+- **Pass 3 quality**: Observation count and category distribution varies by transcript richness.
+- **Pass 4 matching**: Feature-to-friction category heuristics are prompt-guided, not rule-based.
+- **Customer story matching**: Story IDs attached by feature ID from fixture. No industry/size filtering yet.
 
-## Deployment
+## The Four-Pass Pipeline
 
-- **Production URL**: `https://frontend-five-eta-l0j2mk66gi.vercel.app`
-- **Deploy method**: `cd packages/frontend && vercel --prod` (CLI linked to `frontend` project)
-- **GitHub**: commits to `main` do NOT auto-deploy — manual CLI deploy required
-- **Root directory**: `packages/frontend`
-- **API proxy**: `vercel.json` rewrites `/api/*` before SPA catch-all
+| Pass | Where | Input | Output |
+|------|-------|-------|--------|
+| 1 | Discovery Intake | Transcript | Board-level VS names + descriptions |
+| 2 | Discovery Intake | Transcript + VS names | Stages, roles, tech, pain points per VS |
+| 3 | Stage Wizard Step 2 | Scaffold JSON | Friction observations + binding constraint |
+| 4 | Stage Wizard Step 3 | Friction + feature catalogue | Solutions per observation + story IDs |
 
 ## What's Next
 
-| Priority | Item | Notes |
-|----------|------|-------|
-| 1 | Two-pass extraction rewrite | Fix VS/stage confusion. Use prompt pack phased approach. |
-| 2 | Daniel feature: friction → solutions → SF features → case studies | Matching/enrichment layer on heatmap observations |
-| 3 | Dummy discovery datasets (2-3) | Fictitious prospects for demo use outside Salesforce context |
-| 4 | Design folder → Project files migration | Terry to upload full design folder to Claude Project |
-| 5 | Build Friction Signal Agent (Track B) | Single LLM agent, not multi-agent |
-| 6 | Populate TransformationPane schema | Painpoints → epics |
+| Priority | Item |
+|----------|------|
+| 1 | Customer story filtering by industry/size |
+| 2 | Dummy discovery datasets (2–3 fictitious non-Salesforce demos) |
+| 3 | PDS update — document features built since original scope |
+| 4 | Formalise four-agent pipeline in WORKFLOW.md |
+| 5 | Export enriched bundle as download |
+| 6 | TransformationPane content (painpoints → epics) |
 
 ## Participants
 
 | Role | Responsibility |
-|------|---------------|
-| **Terry** | Orchestrator. Decision integrator. Owns repo. |
+|------|----------------|
+| **Terry** | Orchestrator. Decision integrator. Owns repo. Sends to Daniel. |
+| **Daniel** | Field tester. Salesforce pre-sales. Prospect-facing validation. |
 | **Claude** | Implementation. Architecture. Pipeline. Documentation. |
-| **Daniel Roach** | Salesforce pre-sales. Demo recipient. Feature requester. |
 | **Reviewer** | Structural critique. Ontological discipline. Visual hierarchy. |
 
-## Key Files
+## Repo Structure
 
 ```
-packages/frontend/src/components/DiscoveryIntake.tsx   Discovery Intake + extraction + scaffold/heatmap generation
-packages/frontend/src/components/FileLoader.tsx        Accepts scaffold, heatmap, or VCC bundle
-packages/frontend/src/store/canvas-store.ts            All state
-packages/frontend/vercel.json                          API proxy config (critical)
-fixtures/Puretec/                                      Hand-crafted Puretec fixture scaffold + heatmaps
+/frontend
+  src/
+    components/
+      StageWizard.tsx        ← NEW: three-step wizard bar
+      UserGuidePanel.tsx     ← NEW: fixed bottom-left guide
+      DiscoveryIntake.tsx    ← four-pass intake form
+      FrictionPanel.tsx      ← editable friction overlay
+      CanvasView.tsx         ← stage view orchestrator
+      NetworkView.tsx        ← network view orchestrator
+    store/
+      canvas-store.ts        ← all state, enrichVersion counter
+      scaffold-resolver.ts   ← metric measure resolution
+      network-derivation.ts  ← DAG topology derivation
+  fixtures/
+    vendor-libraries/
+      salesforce-agentforce.json  ← 47 features, customer stories
+    puretec/                 ← demo scaffold + heatmaps
+    iiba/                    ← reference scaffold
+/docs
+  SESSION-LOG.md, DECISIONS.md, CURRENT-STATE.md, HANDOFF.md, etc.
 ```

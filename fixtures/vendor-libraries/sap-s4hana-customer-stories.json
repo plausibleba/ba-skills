@@ -1,0 +1,77 @@
+{
+  "catalogueId": "sap-s4hana-customer-stories-v1",
+  "vendorId": "sap-s4hana",
+  "title": "SAP S/4HANA Order to Cash — Customer Stories",
+  "lastUpdated": "2026-03-05",
+  "stories": [
+    {
+      "storyId": "cs_sap_volvo_01",
+      "company": "Volvo Group",
+      "industry": "Automotive & Industrial Manufacturing",
+      "companySize": "10000+",
+      "status": "SAP S/4HANA LIVE",
+      "region": "EMEA",
+      "useCase": "Order-to-Cash Transformation",
+      "challenge": "Volvo operated fragmented ERP landscapes across 15+ legal entities with inconsistent credit exposure visibility, manual payment reconciliation, and high DSO driven by disputes and unallocated cash.",
+      "solution": "Consolidated onto SAP S/4HANA with FSCM Credit Management for real-time global exposure, ML-assisted cash application for automated payment matching, and SD Order Management for ATP-integrated order processing across all channels.",
+      "keyMetric": "DSO reduced by 18 days; 85% of incoming payments auto-matched on first pass",
+      "productsUsed": [
+        "SAP S/4HANA SD Order Management",
+        "SAP FSCM Credit Management",
+        "SAP Cash Application & Bank Integration"
+      ],
+      "featureTags": [
+        "credit-management",
+        "cash-application",
+        "order-management",
+        "atp-checking"
+      ]
+    },
+    {
+      "storyId": "cs_sap_scania_01",
+      "company": "Scania",
+      "industry": "Automotive & Industrial Manufacturing",
+      "companySize": "10000+",
+      "status": "SAP S/4HANA LIVE",
+      "region": "EMEA",
+      "useCase": "e-Invoicing Compliance & Order Processing",
+      "challenge": "Scania faced growing e-invoicing mandates across 30+ countries and a high manual effort in billing document creation, with order management fragmented between dealer EDI channels and direct customer portals.",
+      "solution": "Deployed SAP S/4HANA Billing & e-Invoicing for country-specific compliance automation and SD Order Management to unify multi-channel order capture with automated pricing determination.",
+      "keyMetric": "100% e-invoicing compliance across mandated markets; billing cycle time cut by 60%",
+      "productsUsed": [
+        "SAP S/4HANA SD Order Management",
+        "SAP Billing & e-Invoicing"
+      ],
+      "featureTags": [
+        "e-invoicing",
+        "billing-automation",
+        "order-management",
+        "edi-integration"
+      ]
+    },
+    {
+      "storyId": "cs_sap_caterpillar_01",
+      "company": "Caterpillar Inc.",
+      "industry": "Heavy Equipment Manufacturing",
+      "companySize": "10000+",
+      "status": "SAP S/4HANA LIVE",
+      "region": "AMER",
+      "useCase": "Collections, Dispute Management & Cash Automation",
+      "challenge": "Caterpillar's dealer network generated high volumes of disputed invoices and unresolved deductions, with collections teams working across disconnected tools and no integrated promise-to-pay visibility. Cash application was heavily manual, driving delays in AR clearing.",
+      "solution": "Implemented SAP FSCM Collections & Dispute Management for intelligent worklist prioritisation and integrated promise-to-pay tracking, alongside SAP Cash Application for automated bank statement matching and real-time AR clearing. SAP Billing & e-Invoicing reduced upstream dispute root causes.",
+      "keyMetric": "Dispute resolution cycle reduced by 40%; cash application straight-through rate increased to 78%",
+      "productsUsed": [
+        "SAP FSCM Collections & Dispute Management",
+        "SAP Cash Application & Bank Integration",
+        "SAP Billing & e-Invoicing"
+      ],
+      "featureTags": [
+        "collections",
+        "dispute-management",
+        "cash-application",
+        "accounts-receivable",
+        "billing-automation"
+      ]
+    }
+  ]
+}

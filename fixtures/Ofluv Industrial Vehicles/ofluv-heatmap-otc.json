@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "1.0",
+  "heatmapId": "heatmap_ofluv_otc_sbr_v1",
+  "scaffoldId": "scaffold_ofluv_sap_rollout_v1",
+  "valueStreamId": "vs_order_to_cash",
+  "createdAt": "2026-03-04T20:00:00Z",
+  "observations": [
+    {
+      "observationId": "sbr_001_unified_order_capture",
+      "category": "TechnologyIntegrationFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_otc_receive_validate_order"
+      },
+      "intensity": { "scale": "0-10", "score": 9.0 },
+      "confidence": 0.92,
+      "evidenceBasis": "EVIDENCED",
+      "rationale": "Ofluv currently operates 14 regional order entry systems with no unified customer master. Orders are re-keyed between legacy systems and SAP across markets, creating a 2-3 day delay on average and a 13% error rate at order entry. S/4HANA SD with a single global customer master is the target state.",
+      "solutions": []
+    },
+    {
+      "observationId": "sbr_002_realtime_credit_exposure",
+      "category": "DataSignalFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_otc_check_credit_availability"
+      },
+      "intensity": { "scale": "0-10", "score": 8.5 },
+      "confidence": 0.88,
+      "evidenceBasis": "EVIDENCED",
+      "rationale": "Credit exposure is calculated overnight in batch, meaning intraday orders are approved against stale limits. Three credit losses in 2024 were attributed to this gap. Real-time FSCM credit management is the target, consolidating exposure across all Ofluv legal entities.",
+      "solutions": []
+    },
+    {
+      "observationId": "sbr_003_global_einvoicing_compliance",
+      "category": "GovernanceRiskFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_otc_generate_invoice"
+      },
+      "intensity": { "scale": "0-10", "score": 8.0 },
+      "confidence": 0.95,
+      "evidenceBasis": "EVIDENCED",
+      "rationale": "Ofluv operates in 14 mandatory e-invoicing jurisdictions (including Italy, France, Germany, India, Brazil) with separate local solutions for each. Compliance overhead is significant and growing. S/4HANA's native e-invoicing framework with country-specific localisation is a key programme requirement.",
+      "solutions": []
+    },
+    {
+      "observationId": "sbr_004_automated_cash_application",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_otc_reconcile_apply_cash"
+      },
+      "intensity": { "scale": "0-10", "score": 7.5 },
+      "confidence": 0.85,
+      "evidenceBasis": "EVIDENCED",
+      "rationale": "Cash application is 60% manual across Ofluv entities, with AR teams spending 3-4 days per month on unmatched payment resolution. Remittance data arrives in inconsistent formats across markets. ML-assisted cash application in S/4HANA is expected to achieve 85%+ auto-match rate.",
+      "solutions": []
+    },
+    {
+      "observationId": "sbr_005_integrated_dispute_resolution",
+      "category": "ProcessHandoffFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_otc_handle_disputes_returns"
+      },
+      "intensity": { "scale": "0-10", "score": 7.0 },
+      "confidence": 0.80,
+      "evidenceBasis": "INFERRED",
+      "rationale": "Dispute resolution involves 4-6 handoffs across sales, logistics, finance, and quality teams with no shared case management system. Average dispute resolution time is 18 days. FSCM Dispute Management with integrated workflow is the target, reducing handoffs and providing single-view tracking.",
+      "solutions": []
+    },
+    {
+      "observationId": "sbr_006_dso_reduction_programme",
+      "category": "IncentiveCapacityFriction",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_otc_manage_collections"
+      },
+      "intensity": { "scale": "0-10", "score": 6.5 },
+      "confidence": 0.75,
+      "evidenceBasis": "INFERRED",
+      "rationale": "Collections teams in each region operate independently with different dunning cadences, risk classifications, and escalation thresholds. There is no global DSO target or unified collections strategy. FSCM Collections with centralised worklist and risk-segmented dunning is the target to bring DSO from 48 to 35 days.",
+      "solutions": []
+    }
+  ],
+  "bindingConstraint": {
+    "findingId": "bc_otc_001",
+    "bindingAnchor": {
+      "anchorType": "Activity",
+      "anchorId": "act_otc_receive_validate_order"
+    },
+    "bindingAnchorObservationId": "sbr_001_unified_order_capture",
+    "justification": "Fragmented order entry is the root cause constraint for the entire OTC stream. Errors introduced at order receipt propagate through credit checking (wrong customer master), delivery scheduling (wrong ship-to), invoicing (wrong pricing and tax), and cash application (mismatched remittance). Unifying order capture on a single SAP SD instance with a global customer master is the prerequisite for all downstream SBR delivery.",
+    "confidence": 0.92
+  }
+}

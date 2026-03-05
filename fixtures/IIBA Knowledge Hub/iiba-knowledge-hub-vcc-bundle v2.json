@@ -1,0 +1,1403 @@
+{
+  "bundleVersion": "1.0",
+  "createdAt": "2026-03-04T23:06:37.358Z",
+  "scaffold": {
+    "schemaVersion": "1.0",
+    "scaffoldId": "scaffold-iiba-knowledge-hub",
+    "name": "IIBA Knowledge Hub",
+    "description": "Generated from discovery intake — Nonprofit 0–500",
+    "createdAt": "2026-03-04T23:06:37.358Z",
+    "elements": {
+      "valueStreams": {
+        "vs-lightweight-content-change": {
+          "name": "Lightweight Content Change",
+          "description": "End-to-end flow for clarification and extension changes to existing content objects",
+          "activityIds": [
+            "act-lightweight-content-change-trigger-identification",
+            "act-lightweight-content-change-authority-assignment",
+            "act-lightweight-content-change-content-authoring",
+            "act-lightweight-content-change-content-review",
+            "act-lightweight-content-change-web-publishing",
+            "act-lightweight-content-change-pdf-production"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "Business analysis practitioners"
+        },
+        "vs-constitutional-change": {
+          "name": "Constitutional Change",
+          "description": "End-to-end flow for structural ontology changes that cascade through all system layers",
+          "activityIds": [
+            "act-constitutional-change-trigger-identification",
+            "act-constitutional-change-authority-approval",
+            "act-constitutional-change-stardog-update",
+            "act-constitutional-change-system-propagation",
+            "act-constitutional-change-instance-impact-management",
+            "act-constitutional-change-delivery-layer-update"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "Standards governance bodies and content authors"
+        }
+      },
+      "activities": {
+        "act-lightweight-content-change-trigger-identification": {
+          "name": "Trigger Identification",
+          "description": "Trigger Identification stage in Lightweight Content Change",
+          "preOutcomeId": "out-lightweight-content-change-entry",
+          "postOutcomeId": "out-lightweight-content-change-trigger-identification-complete",
+          "requiresCapabilityIds": [
+            "cap-lightweight-content-change-trigger-identification-trigger-identification-execution",
+            "cap-lightweight-content-change-trigger-identification-trigger-identification-governance",
+            "cap-lightweight-content-change-trigger-identification-trigger-identification-integration"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-lightweight-content-change-trigger-identification-trigger-identification-execution": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Initiate trigger identification process",
+                "Execute core trigger identification activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-lightweight-content-change-trigger-identification-trigger-identification-governance": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for trigger identification decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-lightweight-content-change-trigger-identification-trigger-identification-integration": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-lightweight-content-change-authority-assignment": {
+          "name": "Authority Assignment",
+          "description": "Authority Assignment stage in Lightweight Content Change",
+          "preOutcomeId": "out-lightweight-content-change-trigger-identification-complete",
+          "postOutcomeId": "out-lightweight-content-change-authority-assignment-complete",
+          "requiresCapabilityIds": [
+            "cap-lightweight-content-change-authority-assignment-decision-authority",
+            "cap-lightweight-content-change-authority-assignment-escalation-management",
+            "cap-lightweight-content-change-authority-assignment-compliance-verification"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-change-cycle-time-tier-1",
+            "metric-change-cycle-time-tier-2"
+          ],
+          "controlIds": [
+            "ctrl-no-formal-pathway-exists-for-tier-1-2-changes-forcing-all-changes-through-heavyweight-governance-or-preventing-them-entirely",
+            "ctrl-content-lead-position-is-currently-open-creating-proxy-requirement-and-governance-delays"
+          ],
+          "capabilityPPIT": {
+            "cap-lightweight-content-change-authority-assignment-decision-authority": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Review recommendation and supporting evidence",
+                "Apply decision criteria within delegated authority",
+                "Record decision with rationale and timestamp"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-lightweight-content-change-authority-assignment-escalation-management": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Identify when escalation thresholds are breached",
+                "Prepare escalation pack with recommendation",
+                "Route to appropriate authority and track to resolution"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-lightweight-content-change-authority-assignment-compliance-verification": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Check decision against applicable policy rules",
+                "Verify required approvals have been obtained",
+                "Flag non-compliant decisions for remediation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-lightweight-content-change-content-authoring": {
+          "name": "Content Authoring",
+          "description": "Content Authoring stage in Lightweight Content Change",
+          "preOutcomeId": "out-lightweight-content-change-authority-assignment-complete",
+          "postOutcomeId": "out-lightweight-content-change-content-authoring-complete",
+          "requiresCapabilityIds": [
+            "cap-lightweight-content-change-content-authoring-content-authoring-execution",
+            "cap-lightweight-content-change-content-authoring-content-authoring-governance",
+            "cap-lightweight-content-change-content-authoring-content-authoring-integration"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-lightweight-content-change-content-authoring-content-authoring-execution": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Initiate content authoring process",
+                "Execute core content authoring activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-lightweight-content-change-content-authoring-content-authoring-governance": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for content authoring decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-lightweight-content-change-content-authoring-content-authoring-integration": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-lightweight-content-change-content-review": {
+          "name": "Content Review",
+          "description": "Content Review stage in Lightweight Content Change",
+          "preOutcomeId": "out-lightweight-content-change-content-authoring-complete",
+          "postOutcomeId": "out-lightweight-content-change-content-review-complete",
+          "requiresCapabilityIds": [
+            "cap-lightweight-content-change-content-review-assessment-execution",
+            "cap-lightweight-content-change-content-review-risk-identification",
+            "cap-lightweight-content-change-content-review-outcome-determination"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-lightweight-content-change-content-review-assessment-execution": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Gather evidence and data required for assessment",
+                "Apply assessment criteria against gathered evidence",
+                "Record findings with supporting rationale"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-lightweight-content-change-content-review-risk-identification": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Identify risks from assessment findings",
+                "Classify risks by likelihood and impact",
+                "Assign risk ownership and mitigation actions"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-lightweight-content-change-content-review-outcome-determination": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Synthesise findings into assessment conclusion",
+                "Document outcome with evidence trail",
+                "Communicate outcome to relevant stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-lightweight-content-change-web-publishing": {
+          "name": "Web Publishing",
+          "description": "Web Publishing stage in Lightweight Content Change",
+          "preOutcomeId": "out-lightweight-content-change-content-review-complete",
+          "postOutcomeId": "out-lightweight-content-change-web-publishing-complete",
+          "requiresCapabilityIds": [
+            "cap-lightweight-content-change-web-publishing-web-publishing-execution",
+            "cap-lightweight-content-change-web-publishing-web-publishing-governance",
+            "cap-lightweight-content-change-web-publishing-web-publishing-integration"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl-manual-web-publishing-with-no-automated-linking-causes-references-to-go-stale"
+          ],
+          "capabilityPPIT": {
+            "cap-lightweight-content-change-web-publishing-web-publishing-execution": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Initiate web publishing process",
+                "Execute core web publishing activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-lightweight-content-change-web-publishing-web-publishing-governance": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for web publishing decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-lightweight-content-change-web-publishing-web-publishing-integration": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-lightweight-content-change-pdf-production": {
+          "name": "PDF Production",
+          "description": "PDF Production stage in Lightweight Content Change",
+          "preOutcomeId": "out-lightweight-content-change-web-publishing-complete",
+          "postOutcomeId": "out-lightweight-content-change-pdf-production-complete",
+          "requiresCapabilityIds": [
+            "cap-lightweight-content-change-pdf-production-execution-management",
+            "cap-lightweight-content-change-pdf-production-quality-assurance",
+            "cap-lightweight-content-change-pdf-production-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-pdf-production-effort"
+          ],
+          "controlIds": [
+            "ctrl-manual-indesign-pdf-production-requires-full-document-reconstruction-for-any-change"
+          ],
+          "capabilityPPIT": {
+            "cap-lightweight-content-change-pdf-production-execution-management": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-lightweight-content-change-pdf-production-quality-assurance": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-lightweight-content-change-pdf-production-handoff-coordination": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-constitutional-change-trigger-identification": {
+          "name": "Trigger Identification",
+          "description": "Trigger Identification stage in Constitutional Change",
+          "preOutcomeId": "out-constitutional-change-entry",
+          "postOutcomeId": "out-constitutional-change-trigger-identification-complete",
+          "requiresCapabilityIds": [
+            "cap-constitutional-change-trigger-identification-trigger-identification-execution",
+            "cap-constitutional-change-trigger-identification-trigger-identification-governance",
+            "cap-constitutional-change-trigger-identification-trigger-identification-integration"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-constitutional-change-trigger-identification-trigger-identification-execution": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Initiate trigger identification process",
+                "Execute core trigger identification activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-constitutional-change-trigger-identification-trigger-identification-governance": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for trigger identification decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-constitutional-change-trigger-identification-trigger-identification-integration": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-constitutional-change-authority-approval": {
+          "name": "Authority Approval",
+          "description": "Authority Approval stage in Constitutional Change",
+          "preOutcomeId": "out-constitutional-change-trigger-identification-complete",
+          "postOutcomeId": "out-constitutional-change-authority-approval-complete",
+          "requiresCapabilityIds": [
+            "cap-constitutional-change-authority-approval-decision-authority",
+            "cap-constitutional-change-authority-approval-escalation-management",
+            "cap-constitutional-change-authority-approval-compliance-verification"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-change-cycle-time-tier-4"
+          ],
+          "controlIds": [
+            "ctrl-no-standing-governance-bodies-exist-for-tiers-3-and-4-requiring-committee-reconstitution-for-each-change"
+          ],
+          "capabilityPPIT": {
+            "cap-constitutional-change-authority-approval-decision-authority": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Review recommendation and supporting evidence",
+                "Apply decision criteria within delegated authority",
+                "Record decision with rationale and timestamp"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-constitutional-change-authority-approval-escalation-management": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Identify when escalation thresholds are breached",
+                "Prepare escalation pack with recommendation",
+                "Route to appropriate authority and track to resolution"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-constitutional-change-authority-approval-compliance-verification": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Check decision against applicable policy rules",
+                "Verify required approvals have been obtained",
+                "Flag non-compliant decisions for remediation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-constitutional-change-stardog-update": {
+          "name": "Stardog Update",
+          "description": "Stardog Update stage in Constitutional Change",
+          "preOutcomeId": "out-constitutional-change-authority-approval-complete",
+          "postOutcomeId": "out-constitutional-change-stardog-update-complete",
+          "requiresCapabilityIds": [
+            "cap-constitutional-change-stardog-update-stardog-update-execution",
+            "cap-constitutional-change-stardog-update-stardog-update-governance",
+            "cap-constitutional-change-stardog-update-stardog-update-integration"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-constitutional-change-stardog-update-stardog-update-execution": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Initiate stardog update process",
+                "Execute core stardog update activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-constitutional-change-stardog-update-stardog-update-governance": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for stardog update decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-constitutional-change-stardog-update-stardog-update-integration": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-constitutional-change-system-propagation": {
+          "name": "System Propagation",
+          "description": "System Propagation stage in Constitutional Change",
+          "preOutcomeId": "out-constitutional-change-stardog-update-complete",
+          "postOutcomeId": "out-constitutional-change-system-propagation-complete",
+          "requiresCapabilityIds": [
+            "cap-constitutional-change-system-propagation-system-propagation-execution",
+            "cap-constitutional-change-system-propagation-system-propagation-governance",
+            "cap-constitutional-change-system-propagation-system-propagation-integration"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl-no-propagation-mechanism-exists-to-cascade-constitutional-changes-to-dependent-systems-and-instances"
+          ],
+          "capabilityPPIT": {
+            "cap-constitutional-change-system-propagation-system-propagation-execution": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Initiate system propagation process",
+                "Execute core system propagation activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-constitutional-change-system-propagation-system-propagation-governance": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for system propagation decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-constitutional-change-system-propagation-system-propagation-integration": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-constitutional-change-instance-impact-management": {
+          "name": "Instance Impact Management",
+          "description": "Instance Impact Management stage in Constitutional Change",
+          "preOutcomeId": "out-constitutional-change-system-propagation-complete",
+          "postOutcomeId": "out-constitutional-change-instance-impact-management-complete",
+          "requiresCapabilityIds": [
+            "cap-constitutional-change-instance-impact-management-instance-impact-management-execution",
+            "cap-constitutional-change-instance-impact-management-instance-impact-management-governance",
+            "cap-constitutional-change-instance-impact-management-instance-impact-management-integration"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-constitutional-change-instance-impact-management-instance-impact-management-execution": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Initiate instance impact management process",
+                "Execute core instance impact management activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-constitutional-change-instance-impact-management-instance-impact-management-governance": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for instance impact management decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-constitutional-change-instance-impact-management-instance-impact-management-integration": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-constitutional-change-delivery-layer-update": {
+          "name": "Delivery Layer Update",
+          "description": "Delivery Layer Update stage in Constitutional Change",
+          "preOutcomeId": "out-constitutional-change-instance-impact-management-complete",
+          "postOutcomeId": "out-constitutional-change-delivery-layer-update-complete",
+          "requiresCapabilityIds": [
+            "cap-constitutional-change-delivery-layer-update-execution-management",
+            "cap-constitutional-change-delivery-layer-update-quality-assurance",
+            "cap-constitutional-change-delivery-layer-update-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-constitutional-change-delivery-layer-update-execution-management": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-constitutional-change-delivery-layer-update-quality-assurance": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-constitutional-change-delivery-layer-update-handoff-coordination": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            }
+          }
+        }
+      },
+      "capabilities": {
+        "cap-lightweight-content-change-trigger-identification-trigger-identification-execution": {
+          "name": "Trigger Identification Execution",
+          "description": "Ability to execute Trigger Identification activities within Lightweight Content Change"
+        },
+        "cap-lightweight-content-change-trigger-identification-trigger-identification-governance": {
+          "name": "Trigger Identification Governance",
+          "description": "Ability to oversee and control Trigger Identification outcomes"
+        },
+        "cap-lightweight-content-change-trigger-identification-trigger-identification-integration": {
+          "name": "Trigger Identification Integration",
+          "description": "Ability to coordinate Trigger Identification across teams and systems"
+        },
+        "cap-lightweight-content-change-authority-assignment-decision-authority": {
+          "name": "Decision Authority",
+          "description": "Ability to make and record binding decisions within delegated authority"
+        },
+        "cap-lightweight-content-change-authority-assignment-escalation-management": {
+          "name": "Escalation Management",
+          "description": "Ability to escalate decisions that exceed local authority"
+        },
+        "cap-lightweight-content-change-authority-assignment-compliance-verification": {
+          "name": "Compliance Verification",
+          "description": "Ability to verify decisions comply with policy and regulation"
+        },
+        "cap-lightweight-content-change-content-authoring-content-authoring-execution": {
+          "name": "Content Authoring Execution",
+          "description": "Ability to execute Content Authoring activities within Lightweight Content Change"
+        },
+        "cap-lightweight-content-change-content-authoring-content-authoring-governance": {
+          "name": "Content Authoring Governance",
+          "description": "Ability to oversee and control Content Authoring outcomes"
+        },
+        "cap-lightweight-content-change-content-authoring-content-authoring-integration": {
+          "name": "Content Authoring Integration",
+          "description": "Ability to coordinate Content Authoring across teams and systems"
+        },
+        "cap-lightweight-content-change-content-review-assessment-execution": {
+          "name": "Assessment Execution",
+          "description": "Ability to conduct structured assessment of subject matter"
+        },
+        "cap-lightweight-content-change-content-review-risk-identification": {
+          "name": "Risk Identification",
+          "description": "Ability to identify and classify risks arising from assessment"
+        },
+        "cap-lightweight-content-change-content-review-outcome-determination": {
+          "name": "Outcome Determination",
+          "description": "Ability to reach and document a defensible assessment outcome"
+        },
+        "cap-lightweight-content-change-web-publishing-web-publishing-execution": {
+          "name": "Web Publishing Execution",
+          "description": "Ability to execute Web Publishing activities within Lightweight Content Change"
+        },
+        "cap-lightweight-content-change-web-publishing-web-publishing-governance": {
+          "name": "Web Publishing Governance",
+          "description": "Ability to oversee and control Web Publishing outcomes"
+        },
+        "cap-lightweight-content-change-web-publishing-web-publishing-integration": {
+          "name": "Web Publishing Integration",
+          "description": "Ability to coordinate Web Publishing across teams and systems"
+        },
+        "cap-lightweight-content-change-pdf-production-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-lightweight-content-change-pdf-production-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-lightweight-content-change-pdf-production-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-constitutional-change-trigger-identification-trigger-identification-execution": {
+          "name": "Trigger Identification Execution",
+          "description": "Ability to execute Trigger Identification activities within Constitutional Change"
+        },
+        "cap-constitutional-change-trigger-identification-trigger-identification-governance": {
+          "name": "Trigger Identification Governance",
+          "description": "Ability to oversee and control Trigger Identification outcomes"
+        },
+        "cap-constitutional-change-trigger-identification-trigger-identification-integration": {
+          "name": "Trigger Identification Integration",
+          "description": "Ability to coordinate Trigger Identification across teams and systems"
+        },
+        "cap-constitutional-change-authority-approval-decision-authority": {
+          "name": "Decision Authority",
+          "description": "Ability to make and record binding decisions within delegated authority"
+        },
+        "cap-constitutional-change-authority-approval-escalation-management": {
+          "name": "Escalation Management",
+          "description": "Ability to escalate decisions that exceed local authority"
+        },
+        "cap-constitutional-change-authority-approval-compliance-verification": {
+          "name": "Compliance Verification",
+          "description": "Ability to verify decisions comply with policy and regulation"
+        },
+        "cap-constitutional-change-stardog-update-stardog-update-execution": {
+          "name": "Stardog Update Execution",
+          "description": "Ability to execute Stardog Update activities within Constitutional Change"
+        },
+        "cap-constitutional-change-stardog-update-stardog-update-governance": {
+          "name": "Stardog Update Governance",
+          "description": "Ability to oversee and control Stardog Update outcomes"
+        },
+        "cap-constitutional-change-stardog-update-stardog-update-integration": {
+          "name": "Stardog Update Integration",
+          "description": "Ability to coordinate Stardog Update across teams and systems"
+        },
+        "cap-constitutional-change-system-propagation-system-propagation-execution": {
+          "name": "System Propagation Execution",
+          "description": "Ability to execute System Propagation activities within Constitutional Change"
+        },
+        "cap-constitutional-change-system-propagation-system-propagation-governance": {
+          "name": "System Propagation Governance",
+          "description": "Ability to oversee and control System Propagation outcomes"
+        },
+        "cap-constitutional-change-system-propagation-system-propagation-integration": {
+          "name": "System Propagation Integration",
+          "description": "Ability to coordinate System Propagation across teams and systems"
+        },
+        "cap-constitutional-change-instance-impact-management-instance-impact-management-execution": {
+          "name": "Instance Impact Management Execution",
+          "description": "Ability to execute Instance Impact Management activities within Constitutional Change"
+        },
+        "cap-constitutional-change-instance-impact-management-instance-impact-management-governance": {
+          "name": "Instance Impact Management Governance",
+          "description": "Ability to oversee and control Instance Impact Management outcomes"
+        },
+        "cap-constitutional-change-instance-impact-management-instance-impact-management-integration": {
+          "name": "Instance Impact Management Integration",
+          "description": "Ability to coordinate Instance Impact Management across teams and systems"
+        },
+        "cap-constitutional-change-delivery-layer-update-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-constitutional-change-delivery-layer-update-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-constitutional-change-delivery-layer-update-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        }
+      },
+      "roles": {
+        "role-content-owner": {
+          "name": "Content Owner"
+        },
+        "role-content-lead": {
+          "name": "Content Lead"
+        },
+        "role-standards-committee": {
+          "name": "Standards Committee"
+        },
+        "role-formal-governance-body": {
+          "name": "Formal Governance Body"
+        },
+        "role-voice-editor": {
+          "name": "Voice Editor"
+        }
+      },
+      "outcomes": {
+        "out-lightweight-content-change-entry": {
+          "name": "Lightweight Content Change initiated",
+          "status": "active"
+        },
+        "out-lightweight-content-change-trigger-identification-complete": {
+          "name": "Trigger Identification complete",
+          "status": "active"
+        },
+        "out-lightweight-content-change-authority-assignment-complete": {
+          "name": "Authority Assignment complete",
+          "status": "active"
+        },
+        "out-lightweight-content-change-content-authoring-complete": {
+          "name": "Content Authoring complete",
+          "status": "active"
+        },
+        "out-lightweight-content-change-content-review-complete": {
+          "name": "Content Review complete",
+          "status": "active"
+        },
+        "out-lightweight-content-change-web-publishing-complete": {
+          "name": "Web Publishing complete",
+          "status": "active"
+        },
+        "out-lightweight-content-change-pdf-production-complete": {
+          "name": "PDF Production complete",
+          "status": "active"
+        },
+        "out-constitutional-change-entry": {
+          "name": "Constitutional Change initiated",
+          "status": "active"
+        },
+        "out-constitutional-change-trigger-identification-complete": {
+          "name": "Trigger Identification complete",
+          "status": "active"
+        },
+        "out-constitutional-change-authority-approval-complete": {
+          "name": "Authority Approval complete",
+          "status": "active"
+        },
+        "out-constitutional-change-stardog-update-complete": {
+          "name": "Stardog Update complete",
+          "status": "active"
+        },
+        "out-constitutional-change-system-propagation-complete": {
+          "name": "System Propagation complete",
+          "status": "active"
+        },
+        "out-constitutional-change-instance-impact-management-complete": {
+          "name": "Instance Impact Management complete",
+          "status": "active"
+        },
+        "out-constitutional-change-delivery-layer-update-complete": {
+          "name": "Delivery Layer Update complete",
+          "status": "active"
+        }
+      },
+      "metrics": {
+        "metric-change-cycle-time-tier-1": {
+          "name": "Change cycle time Tier 1"
+        },
+        "metric-change-cycle-time-tier-2": {
+          "name": "Change cycle time Tier 2"
+        },
+        "metric-change-cycle-time-tier-4": {
+          "name": "Change cycle time Tier 4"
+        },
+        "metric-pdf-production-effort": {
+          "name": "PDF production effort"
+        }
+      },
+      "controls": {
+        "ctrl-no-formal-pathway-exists-for-tier-1-2-changes-forcing-all-changes-through-heavyweight-governance-or-preventing-them-entirely": {
+          "name": "No formal pathway exists for Tier 1/2 changes, forcing all c"
+        },
+        "ctrl-content-lead-position-is-currently-open-creating-proxy-requirement-and-governance-delays": {
+          "name": "Content Lead position is currently open, creating proxy requ"
+        },
+        "ctrl-manual-indesign-pdf-production-requires-full-document-reconstruction-for-any-change": {
+          "name": "Manual InDesign PDF production requires full document recons"
+        },
+        "ctrl-no-standing-governance-bodies-exist-for-tiers-3-and-4-requiring-committee-reconstitution-for-each-change": {
+          "name": "No standing governance bodies exist for Tiers 3 and 4, requi"
+        },
+        "ctrl-no-propagation-mechanism-exists-to-cascade-constitutional-changes-to-dependent-systems-and-instances": {
+          "name": "No propagation mechanism exists to cascade constitutional ch"
+        },
+        "ctrl-manual-web-publishing-with-no-automated-linking-causes-references-to-go-stale": {
+          "name": "Manual web publishing with no automated linking causes refer"
+        }
+      },
+      "informationObjects": {},
+      "technologyApps": {
+        "tech-stardog": {
+          "name": "Stardog",
+          "type": "Custom"
+        },
+        "tech-strapi": {
+          "name": "Strapi",
+          "type": "Custom"
+        },
+        "tech-astro": {
+          "name": "Astro",
+          "type": "Custom"
+        },
+        "tech-indesign": {
+          "name": "InDesign",
+          "type": "Other"
+        },
+        "tech-mediawiki": {
+          "name": "MediaWiki",
+          "type": "Other"
+        },
+        "tech-github-actions": {
+          "name": "GitHub Actions",
+          "type": "Other"
+        }
+      }
+    },
+    "crossStreamOutcomes": [],
+    "scaffoldIntegrityHash": "c2NhZmZvbGQtaWliYS1rbm93bGVkZ2Ut"
+  },
+  "heatmaps": [
+    {
+      "heatmapId": "heatmap-vs-lightweight-content-change-1772665629912",
+      "scaffoldId": "scaffold-iiba-knowledge-hub",
+      "valueStreamId": "vs-lightweight-content-change",
+      "observations": [
+        {
+          "observationId": "fr_001_missing_tier_1_2_governance_pathway",
+          "category": "GovernanceRiskFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-lightweight-content-change-authority-assignment"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 10
+          },
+          "rationale": "No formal pathway exists for Tier 1/2 changes, forcing all changes through heavyweight governance or preventing them entirely, creating severe bottleneck at Authority Assignment stage",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_1",
+              "excerpt": "No formal pathway exists for Tier 1/2 changes, forcing all changes through heavyweight governance or preventing them entirely"
+            }
+          ],
+          "observedAt": "2026-03-04T23:06:37.358Z"
+        },
+        {
+          "observationId": "fr_002_content_lead_vacancy_proxy_delays",
+          "category": "IncentiveCapacityFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-lightweight-content-change-authority-assignment"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 8
+          },
+          "rationale": "Content Lead position vacancy creates proxy requirement and governance delays at Authority Assignment stage, reducing capacity and creating approval bottlenecks",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_2",
+              "excerpt": "Content Lead position is currently open, creating proxy requirement and governance delays"
+            }
+          ],
+          "observedAt": "2026-03-04T23:06:37.358Z"
+        },
+        {
+          "observationId": "fr_003_manual_pdf_full_reconstruction",
+          "category": "ProcessHandoffFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-lightweight-content-change-pdf-production"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 9
+          },
+          "rationale": "Manual InDesign PDF production requires full document reconstruction for any change, creating massive rework friction at final stage",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_3",
+              "excerpt": "Manual InDesign PDF production requires full document reconstruction for any change"
+            }
+          ],
+          "observedAt": "2026-03-04T23:06:37.358Z"
+        },
+        {
+          "observationId": "fr_004_manual_web_publishing_stale_references",
+          "category": "ProcessHandoffFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-lightweight-content-change-web-publishing"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 7
+          },
+          "rationale": "Manual web publishing with no automated linking causes references to go stale, creating quality and maintenance friction",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_6",
+              "excerpt": "Manual web publishing with no automated linking causes references to go stale"
+            }
+          ],
+          "observedAt": "2026-03-04T23:06:37.358Z"
+        }
+      ],
+      "bindingConstraint": {
+        "findingId": "bc_001",
+        "bindingAnchor": {
+          "anchorType": "Activity",
+          "anchorId": "act-lightweight-content-change-authority-assignment"
+        },
+        "bindingAnchorObservationId": "fr_001_missing_tier_1_2_governance_pathway",
+        "justification": "Authority Assignment activity has highest constraint score due to complete absence of formal pathways for Tier 1/2 changes, forcing all changes through heavyweight governance. This creates a structural bottleneck that affects all downstream activities and has maximum intensity (10/10) with high centralization and dependency characteristics.",
+        "constraintScoring": {
+          "candidates": [
+            {
+              "anchorId": "act-lightweight-content-change-authority-assignment",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 2,
+                "authorityCentralisation": 3,
+                "downstreamDependency": 3,
+                "controlLayering": 2,
+                "capacityConstraint": 2
+              },
+              "totalScore": 12
+            },
+            {
+              "anchorId": "act-lightweight-content-change-pdf-production",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 1,
+                "authorityCentralisation": 1,
+                "downstreamDependency": 2,
+                "controlLayering": 0,
+                "capacityConstraint": 3
+              },
+              "totalScore": 7
+            },
+            {
+              "anchorId": "act-lightweight-content-change-web-publishing",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 1,
+                "authorityCentralisation": 0,
+                "downstreamDependency": 2,
+                "controlLayering": 0,
+                "capacityConstraint": 2
+              },
+              "totalScore": 5
+            }
+          ],
+          "selectedAnchorId": "act-lightweight-content-change-authority-assignment",
+          "selectionRationale": "Highest total score (12) among eligible candidates with multiple high-intensity observations and critical downstream dependencies"
+        },
+        "confidence": 0.8,
+        "observedAt": "2026-03-04T23:06:37.358Z"
+      },
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-04T23:06:37.358Z"
+    },
+    {
+      "heatmapId": "heatmap-vs-constitutional-change-1772665629912",
+      "scaffoldId": "scaffold-iiba-knowledge-hub",
+      "valueStreamId": "vs-constitutional-change",
+      "observations": [
+        {
+          "observationId": "fr_005_no_standing_governance_tier_3_4",
+          "category": "GovernanceRiskFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-constitutional-change-authority-approval"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 9
+          },
+          "rationale": "No standing governance bodies exist for Tiers 3 and 4, requiring committee reconstitution for each change, creating severe governance friction at Authority Approval stage",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_4",
+              "excerpt": "No standing governance bodies exist for Tiers 3 and 4, requiring committee reconstitution for each change"
+            }
+          ],
+          "observedAt": "2026-03-04T23:06:37.358Z"
+        },
+        {
+          "observationId": "fr_006_no_constitutional_change_propagation",
+          "category": "ProcessHandoffFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-constitutional-change-system-propagation"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 8
+          },
+          "rationale": "No propagation mechanism exists to cascade constitutional changes to dependent systems and instances, creating handoff failure at System Propagation stage",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_5",
+              "excerpt": "No propagation mechanism exists to cascade constitutional changes to dependent systems and instances"
+            }
+          ],
+          "observedAt": "2026-03-04T23:06:37.358Z"
+        }
+      ],
+      "bindingConstraint": {
+        "findingId": "bc_002",
+        "bindingAnchor": {
+          "anchorType": "Activity",
+          "anchorId": "act-constitutional-change-authority-approval"
+        },
+        "bindingAnchorObservationId": "fr_005_no_standing_governance_tier_3_4",
+        "justification": "Authority Approval activity represents the binding constraint due to absence of standing governance bodies for Tiers 3 and 4, requiring committee reconstitution for each change. This creates high authority centralization and significant downstream dependencies, as no subsequent constitutional changes can proceed without governance approval.",
+        "constraintScoring": {
+          "candidates": [
+            {
+              "anchorId": "act-constitutional-change-authority-approval",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 1,
+                "authorityCentralisation": 3,
+                "downstreamDependency": 3,
+                "controlLayering": 2,
+                "capacityConstraint": 1
+              },
+              "totalScore": 10
+            },
+            {
+              "anchorId": "act-constitutional-change-system-propagation",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 1,
+                "authorityCentralisation": 1,
+                "downstreamDependency": 2,
+                "controlLayering": 0,
+                "capacityConstraint": 2
+              },
+              "totalScore": 6
+            }
+          ],
+          "selectedAnchorId": "act-constitutional-change-authority-approval",
+          "selectionRationale": "Highest total score (10) with critical authority centralization and downstream dependency characteristics"
+        },
+        "confidence": 0.67,
+        "observedAt": "2026-03-04T23:06:37.358Z"
+      },
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-04T23:06:37.358Z"
+    }
+  ]
+}

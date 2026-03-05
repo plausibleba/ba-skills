@@ -1,0 +1,1888 @@
+{
+  "bundleVersion": "1.0",
+  "createdAt": "2026-03-04T20:48:13.893Z",
+  "scaffold": {
+    "schemaVersion": "1.0",
+    "scaffoldId": "scaffold-iiba",
+    "name": "IIBA",
+    "description": "Generated from discovery intake \u2014 Nonprofit 0\u2013500",
+    "createdAt": "2026-03-04T20:48:13.893Z",
+    "elements": {
+      "valueStreams": {
+        "vs-content-change-delivery": {
+          "name": "Content Change Delivery",
+          "description": "End-to-end flow from content change request through published delivery to practitioners",
+          "activityIds": [
+            "act-content-change-delivery-change-request-trigger",
+            "act-content-change-delivery-authority-assignment",
+            "act-content-change-delivery-content-authoring",
+            "act-content-change-delivery-content-review",
+            "act-content-change-delivery-web-publishing",
+            "act-content-change-delivery-pdf-production"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "Business analysis practitioners and certification candidates"
+        },
+        "vs-knowledge-standards-evolution": {
+          "name": "Knowledge Standards Evolution",
+          "description": "End-to-end flow from structural knowledge gap through constitutional governance to propagated system update",
+          "activityIds": [
+            "act-knowledge-standards-evolution-constitutional-gap-trigger",
+            "act-knowledge-standards-evolution-governance-authority",
+            "act-knowledge-standards-evolution-ontology-update",
+            "act-knowledge-standards-evolution-system-propagation",
+            "act-knowledge-standards-evolution-instance-impact-management",
+            "act-knowledge-standards-evolution-delivery-layer-update"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "Standards governance body and content system integrity"
+        },
+        "vs-knowledge-asset-creation": {
+          "name": "Knowledge Asset Creation",
+          "description": "End-to-end flow from identified knowledge gap through collaborative authoring to published knowledge asset",
+          "activityIds": [
+            "act-knowledge-asset-creation-initial-stage",
+            "act-knowledge-asset-creation-final-stage"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "Professional community and knowledge practitioners"
+        }
+      },
+      "activities": {
+        "act-content-change-delivery-change-request-trigger": {
+          "name": "Change Request Trigger",
+          "description": "Change Request Trigger stage in Content Change Delivery",
+          "preOutcomeId": "out-content-change-delivery-entry",
+          "postOutcomeId": "out-content-change-delivery-change-request-trigger-complete",
+          "requiresCapabilityIds": [
+            "cap-content-change-delivery-change-request-trigger-demand-capture",
+            "cap-content-change-delivery-change-request-trigger-data-validation",
+            "cap-content-change-delivery-change-request-trigger-intake-routing"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-change-request-cycle-time",
+            "metric-tier1-cycle-time",
+            "metric-tier2-cycle-time",
+            "metric-approval-queue-depth"
+          ],
+          "controlIds": [
+            "ctrl-no-formal-pathway-exists-for-tier-1-2-changes-all-changes-routed-through-heavyweight-governance-or-nothing-happens-creating-years-long-batch-release-cycle"
+          ],
+          "capabilityPPIT": {
+            "cap-content-change-delivery-change-request-trigger-demand-capture": {
+              "roleIds": [
+                "role-content-owner",
+                "role-practitioners"
+              ],
+              "activities": [
+                "Capture incoming content change requests from all channels",
+                "Validate completeness of submitted information",
+                "Acknowledge receipt and assign tracking reference"
+              ],
+              "informationObjectIds": [
+                "info-change-request",
+                "info-tier-classification"
+              ],
+              "technologyAppIds": [
+                "tech-strapi"
+              ]
+            },
+            "cap-content-change-delivery-change-request-trigger-data-validation": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Check mandatory fields against business rules",
+                "Validate identifiers against master data",
+                "Flag and route exceptions for manual review"
+              ],
+              "informationObjectIds": [
+                "info-change-request",
+                "info-tier-classification",
+                "info-validation-report"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-stardog"
+              ]
+            },
+            "cap-content-change-delivery-change-request-trigger-intake-routing": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Classify request by type and priority",
+                "Assign to responsible team or queue",
+                "Notify stakeholders of receipt and expected timeline"
+              ],
+              "informationObjectIds": [
+                "info-change-request",
+                "info-tier-classification",
+                "info-lifecycle-state-record"
+              ],
+              "technologyAppIds": [
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-content-change-delivery-authority-assignment": {
+          "name": "Authority Assignment",
+          "description": "Authority Assignment stage in Content Change Delivery",
+          "preOutcomeId": "out-content-change-delivery-change-request-trigger-complete",
+          "postOutcomeId": "out-content-change-delivery-authority-assignment-complete",
+          "requiresCapabilityIds": [
+            "cap-content-change-delivery-authority-assignment-decision-authority",
+            "cap-content-change-delivery-authority-assignment-escalation-management",
+            "cap-content-change-delivery-authority-assignment-compliance-verification"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-governance-lag",
+            "metric-approval-queue-depth"
+          ],
+          "controlIds": [
+            "ctrl-content-lead-position-currently-open-requiring-proxy-arrangement-for-tier-2-approvals-compounded-by-concurrent-it-leadership-vacancy"
+          ],
+          "capabilityPPIT": {
+            "cap-content-change-delivery-authority-assignment-decision-authority": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Review recommendation and supporting evidence",
+                "Apply decision criteria within delegated authority",
+                "Record decision with rationale and timestamp"
+              ],
+              "informationObjectIds": [
+                "info-tier-classification",
+                "info-approval-record",
+                "info-lifecycle-state-record"
+              ],
+              "technologyAppIds": [
+                "tech-strapi"
+              ]
+            },
+            "cap-content-change-delivery-authority-assignment-escalation-management": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Identify when escalation thresholds are breached",
+                "Prepare escalation pack with recommendation",
+                "Route to appropriate authority and track to resolution"
+              ],
+              "informationObjectIds": [
+                "info-escalation-flag",
+                "info-approval-record",
+                "info-tier-classification"
+              ],
+              "technologyAppIds": [
+                "tech-strapi"
+              ]
+            },
+            "cap-content-change-delivery-authority-assignment-compliance-verification": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Check decision against applicable policy rules",
+                "Verify required approvals have been obtained",
+                "Flag non-compliant decisions for remediation"
+              ],
+              "informationObjectIds": [
+                "info-approval-record",
+                "info-validation-report",
+                "info-tier-classification"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-stardog"
+              ]
+            }
+          }
+        },
+        "act-content-change-delivery-content-authoring": {
+          "name": "Content Authoring",
+          "description": "Content Authoring stage in Content Change Delivery",
+          "preOutcomeId": "out-content-change-delivery-authority-assignment-complete",
+          "postOutcomeId": "out-content-change-delivery-content-authoring-complete",
+          "requiresCapabilityIds": [
+            "cap-content-change-delivery-content-authoring-execution-management",
+            "cap-content-change-delivery-content-authoring-quality-assurance",
+            "cap-content-change-delivery-content-authoring-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-tier2-cycle-time",
+            "metric-ai-draft-acceptance"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-content-change-delivery-content-authoring-execution-management": {
+              "roleIds": [
+                "role-content-lead",
+                "role-content-owner"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [
+                "info-content-object",
+                "info-lifecycle-state-record",
+                "info-quality-check-result"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-llm-api"
+              ]
+            },
+            "cap-content-change-delivery-content-authoring-quality-assurance": {
+              "roleIds": [
+                "role-content-lead",
+                "role-voice-editor"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [
+                "info-content-object",
+                "info-quality-check-result",
+                "info-validation-report"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-llm-api"
+              ]
+            },
+            "cap-content-change-delivery-content-authoring-handoff-coordination": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Transfer ownership and supporting documentation",
+                "Notify downstream stage of handoff"
+              ],
+              "informationObjectIds": [
+                "info-content-object",
+                "info-lifecycle-state-record",
+                "info-approval-record"
+              ],
+              "technologyAppIds": [
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-content-change-delivery-content-review": {
+          "name": "Content Review",
+          "description": "Content Review stage in Content Change Delivery",
+          "preOutcomeId": "out-content-change-delivery-content-authoring-complete",
+          "postOutcomeId": "out-content-change-delivery-content-review-complete",
+          "requiresCapabilityIds": [
+            "cap-content-change-delivery-content-review-assessment-execution",
+            "cap-content-change-delivery-content-review-risk-identification",
+            "cap-content-change-delivery-content-review-outcome-determination"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-tier2-cycle-time",
+            "metric-instance-conformance"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-content-change-delivery-content-review-assessment-execution": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Gather evidence and data required for assessment",
+                "Apply assessment criteria against gathered evidence",
+                "Record findings with supporting rationale"
+              ],
+              "informationObjectIds": [
+                "info-content-object",
+                "info-quality-check-result",
+                "info-validation-report"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-stardog"
+              ]
+            },
+            "cap-content-change-delivery-content-review-risk-identification": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Identify risks from assessment findings",
+                "Classify risks by likelihood and impact",
+                "Assign risk ownership and mitigation actions"
+              ],
+              "informationObjectIds": [
+                "info-validation-report",
+                "info-escalation-flag",
+                "info-approval-record"
+              ],
+              "technologyAppIds": [
+                "tech-strapi"
+              ]
+            },
+            "cap-content-change-delivery-content-review-outcome-determination": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Synthesise findings into assessment conclusion",
+                "Document outcome with evidence trail",
+                "Communicate outcome to relevant stakeholders"
+              ],
+              "informationObjectIds": [
+                "info-approval-record",
+                "info-validation-report",
+                "info-lifecycle-state-record"
+              ],
+              "technologyAppIds": [
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-content-change-delivery-web-publishing": {
+          "name": "Web Publishing",
+          "description": "Web Publishing stage in Content Change Delivery",
+          "preOutcomeId": "out-content-change-delivery-content-review-complete",
+          "postOutcomeId": "out-content-change-delivery-web-publishing-complete",
+          "requiresCapabilityIds": [
+            "cap-content-change-delivery-web-publishing-execution-management",
+            "cap-content-change-delivery-web-publishing-quality-assurance",
+            "cap-content-change-delivery-web-publishing-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-manual-publishing-effort"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-content-change-delivery-web-publishing-execution-management": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [
+                "info-content-object",
+                "info-published-content",
+                "info-lifecycle-state-record"
+              ],
+              "technologyAppIds": [
+                "tech-astro",
+                "tech-strapi",
+                "tech-github-actions"
+              ]
+            },
+            "cap-content-change-delivery-web-publishing-quality-assurance": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [
+                "info-published-content",
+                "info-quality-check-result",
+                "info-validation-report"
+              ],
+              "technologyAppIds": [
+                "tech-astro",
+                "tech-strapi"
+              ]
+            },
+            "cap-content-change-delivery-web-publishing-handoff-coordination": {
+              "roleIds": [
+                "role-content-owner",
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Transfer ownership and supporting documentation",
+                "Notify downstream stage of handoff"
+              ],
+              "informationObjectIds": [
+                "info-published-content",
+                "info-lifecycle-state-record",
+                "info-approval-record"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-astro"
+              ]
+            }
+          }
+        },
+        "act-content-change-delivery-pdf-production": {
+          "name": "PDF Production",
+          "description": "PDF Production stage in Content Change Delivery",
+          "preOutcomeId": "out-content-change-delivery-web-publishing-complete",
+          "postOutcomeId": "out-content-change-delivery-pdf-production-complete",
+          "requiresCapabilityIds": [
+            "cap-content-change-delivery-pdf-production-execution-management",
+            "cap-content-change-delivery-pdf-production-quality-assurance",
+            "cap-content-change-delivery-pdf-production-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-manual-publishing-effort"
+          ],
+          "controlIds": [
+            "ctrl-manual-indesign-pdf-production-requires-full-document-reconstruction-for-any-change-creating-publishing-bottleneck"
+          ],
+          "capabilityPPIT": {
+            "cap-content-change-delivery-pdf-production-execution-management": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [
+                "info-content-object",
+                "info-published-content",
+                "info-lifecycle-state-record"
+              ],
+              "technologyAppIds": [
+                "tech-indesign",
+                "tech-strapi"
+              ]
+            },
+            "cap-content-change-delivery-pdf-production-quality-assurance": {
+              "roleIds": [
+                "role-content-lead",
+                "role-voice-editor"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [
+                "info-published-content",
+                "info-quality-check-result",
+                "info-validation-report"
+              ],
+              "technologyAppIds": [
+                "tech-indesign"
+              ]
+            },
+            "cap-content-change-delivery-pdf-production-handoff-coordination": {
+              "roleIds": [
+                "role-content-owner",
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Transfer ownership and supporting documentation",
+                "Notify downstream stage of handoff"
+              ],
+              "informationObjectIds": [
+                "info-published-content",
+                "info-version-record",
+                "info-approval-record"
+              ],
+              "technologyAppIds": [
+                "tech-indesign",
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-knowledge-standards-evolution-constitutional-gap-trigger": {
+          "name": "Constitutional Gap Trigger",
+          "description": "Constitutional Gap Trigger stage in Knowledge Standards Evolution",
+          "preOutcomeId": "out-knowledge-standards-evolution-entry",
+          "postOutcomeId": "out-knowledge-standards-evolution-constitutional-gap-trigger-complete",
+          "requiresCapabilityIds": [
+            "cap-knowledge-standards-evolution-constitutional-gap-trigger-constitutional-gap-trigger-execution",
+            "cap-knowledge-standards-evolution-constitutional-gap-trigger-constitutional-gap-trigger-governance",
+            "cap-knowledge-standards-evolution-constitutional-gap-trigger-constitutional-gap-trigger-integration"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-content-coverage-gap"
+          ],
+          "controlIds": [
+            "ctrl-no-escalation-path-from-instance-work-to-constitutional-changes-when-structural-gaps-discovered"
+          ],
+          "capabilityPPIT": {
+            "cap-knowledge-standards-evolution-constitutional-gap-trigger-constitutional-gap-trigger-execution": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead",
+                "role-practitioners"
+              ],
+              "activities": [
+                "Initiate constitutional gap trigger process",
+                "Execute core constitutional gap trigger activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [
+                "info-escalation-flag",
+                "info-change-request",
+                "info-gap-detection-report"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-stardog"
+              ]
+            },
+            "cap-knowledge-standards-evolution-constitutional-gap-trigger-constitutional-gap-trigger-governance": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for constitutional gap trigger decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [
+                "info-escalation-flag",
+                "info-approval-record",
+                "info-tier-classification"
+              ],
+              "technologyAppIds": [
+                "tech-strapi"
+              ]
+            },
+            "cap-knowledge-standards-evolution-constitutional-gap-trigger-constitutional-gap-trigger-integration": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [
+                "info-escalation-flag",
+                "info-propagation-manifest",
+                "info-lifecycle-state-record"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-github-actions"
+              ]
+            }
+          }
+        },
+        "act-knowledge-standards-evolution-governance-authority": {
+          "name": "Governance Authority",
+          "description": "Governance Authority stage in Knowledge Standards Evolution",
+          "preOutcomeId": "out-knowledge-standards-evolution-constitutional-gap-trigger-complete",
+          "postOutcomeId": "out-knowledge-standards-evolution-governance-authority-complete",
+          "requiresCapabilityIds": [
+            "cap-knowledge-standards-evolution-governance-authority-governance-authority-execution",
+            "cap-knowledge-standards-evolution-governance-authority-governance-authority-governance",
+            "cap-knowledge-standards-evolution-governance-authority-governance-authority-integration"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-governance-lag",
+            "metric-tier4-cycle-time"
+          ],
+          "controlIds": [
+            "ctrl-standards-committee-and-formal-governance-body-only-exist-ad-hoc-during-major-revisions-not-as-standing-bodies"
+          ],
+          "capabilityPPIT": {
+            "cap-knowledge-standards-evolution-governance-authority-governance-authority-execution": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Initiate governance authority update process",
+                "Execute core governance authority activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [
+                "info-ontology-class-def",
+                "info-approval-record",
+                "info-version-record"
+              ],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-knowledge-standards-evolution-governance-authority-governance-authority-governance": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for governance authority decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [
+                "info-approval-record",
+                "info-validation-report",
+                "info-tier-classification"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-stardog"
+              ]
+            },
+            "cap-knowledge-standards-evolution-governance-authority-governance-authority-integration": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [
+                "info-propagation-manifest",
+                "info-lifecycle-state-record",
+                "info-approval-record"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-github-actions"
+              ]
+            }
+          }
+        },
+        "act-knowledge-standards-evolution-ontology-update": {
+          "name": "Ontology Update",
+          "description": "Ontology Update stage in Knowledge Standards Evolution",
+          "preOutcomeId": "out-knowledge-standards-evolution-governance-authority-complete",
+          "postOutcomeId": "out-knowledge-standards-evolution-ontology-update-complete",
+          "requiresCapabilityIds": [
+            "cap-knowledge-standards-evolution-ontology-update-ontology-update-execution",
+            "cap-knowledge-standards-evolution-ontology-update-ontology-update-governance",
+            "cap-knowledge-standards-evolution-ontology-update-ontology-update-integration"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-tier4-cycle-time",
+            "metric-instance-conformance"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-knowledge-standards-evolution-ontology-update-ontology-update-execution": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Initiate ontology update process",
+                "Execute core ontology update activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [
+                "info-ontology-class-def",
+                "info-content-type-schema",
+                "info-version-record"
+              ],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-github-actions"
+              ]
+            },
+            "cap-knowledge-standards-evolution-ontology-update-ontology-update-governance": {
+              "roleIds": [
+                "role-formal-governance-body",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for ontology update decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [
+                "info-approval-record",
+                "info-validation-report",
+                "info-ontology-class-def"
+              ],
+              "technologyAppIds": [
+                "tech-stardog",
+                "tech-strapi"
+              ]
+            },
+            "cap-knowledge-standards-evolution-ontology-update-ontology-update-integration": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [
+                "info-propagation-manifest",
+                "info-content-type-schema",
+                "info-lifecycle-state-record"
+              ],
+              "technologyAppIds": [
+                "tech-github-actions",
+                "tech-strapi",
+                "tech-mediawiki"
+              ]
+            }
+          }
+        },
+        "act-knowledge-standards-evolution-system-propagation": {
+          "name": "System Propagation",
+          "description": "System Propagation stage in Knowledge Standards Evolution",
+          "preOutcomeId": "out-knowledge-standards-evolution-ontology-update-complete",
+          "postOutcomeId": "out-knowledge-standards-evolution-system-propagation-complete",
+          "requiresCapabilityIds": [
+            "cap-knowledge-standards-evolution-system-propagation-system-propagation-execution",
+            "cap-knowledge-standards-evolution-system-propagation-system-propagation-governance",
+            "cap-knowledge-standards-evolution-system-propagation-system-propagation-integration"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-constitutional-change-propagation",
+            "metric-orphan-entity-count"
+          ],
+          "controlIds": [
+            "ctrl-no-propagation-mechanism-from-ontology-changes-to-downstream-systems-updates-done-manually-inconsistently-or-not-at-all"
+          ],
+          "capabilityPPIT": {
+            "cap-knowledge-standards-evolution-system-propagation-system-propagation-execution": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Initiate system propagation process",
+                "Execute core system propagation activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [
+                "info-propagation-manifest",
+                "info-content-type-schema",
+                "info-instance-impact-report"
+              ],
+              "technologyAppIds": [
+                "tech-github-actions",
+                "tech-strapi",
+                "tech-stardog"
+              ]
+            },
+            "cap-knowledge-standards-evolution-system-propagation-system-propagation-governance": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for system propagation decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [
+                "info-approval-record",
+                "info-validation-report",
+                "info-propagation-manifest"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-github-actions"
+              ]
+            },
+            "cap-knowledge-standards-evolution-system-propagation-system-propagation-integration": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [
+                "info-propagation-manifest",
+                "info-instance-impact-report",
+                "info-lifecycle-state-record"
+              ],
+              "technologyAppIds": [
+                "tech-github-actions",
+                "tech-strapi",
+                "tech-mediawiki"
+              ]
+            }
+          }
+        },
+        "act-knowledge-standards-evolution-instance-impact-management": {
+          "name": "Instance Impact Management",
+          "description": "Instance Impact Management stage in Knowledge Standards Evolution",
+          "preOutcomeId": "out-knowledge-standards-evolution-system-propagation-complete",
+          "postOutcomeId": "out-knowledge-standards-evolution-instance-impact-management-complete",
+          "requiresCapabilityIds": [
+            "cap-knowledge-standards-evolution-instance-impact-management-instance-impact-management-execution",
+            "cap-knowledge-standards-evolution-instance-impact-management-instance-impact-management-governance",
+            "cap-knowledge-standards-evolution-instance-impact-management-instance-impact-management-integration"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-instance-conformance",
+            "metric-orphan-entity-count"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-knowledge-standards-evolution-instance-impact-management-instance-impact-management-execution": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Initiate instance impact management process",
+                "Execute core instance impact management activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [
+                "info-instance-impact-report",
+                "info-content-object",
+                "info-validation-report"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-llm-api"
+              ]
+            },
+            "cap-knowledge-standards-evolution-instance-impact-management-instance-impact-management-governance": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for instance impact management decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [
+                "info-approval-record",
+                "info-validation-report",
+                "info-instance-impact-report"
+              ],
+              "technologyAppIds": [
+                "tech-strapi"
+              ]
+            },
+            "cap-knowledge-standards-evolution-instance-impact-management-instance-impact-management-integration": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [
+                "info-instance-impact-report",
+                "info-propagation-manifest",
+                "info-lifecycle-state-record"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-github-actions"
+              ]
+            }
+          }
+        },
+        "act-knowledge-standards-evolution-delivery-layer-update": {
+          "name": "Delivery Layer Update",
+          "description": "Delivery Layer Update stage in Knowledge Standards Evolution",
+          "preOutcomeId": "out-knowledge-standards-evolution-instance-impact-management-complete",
+          "postOutcomeId": "out-knowledge-standards-evolution-delivery-layer-update-complete",
+          "requiresCapabilityIds": [
+            "cap-knowledge-standards-evolution-delivery-layer-update-execution-management",
+            "cap-knowledge-standards-evolution-delivery-layer-update-quality-assurance",
+            "cap-knowledge-standards-evolution-delivery-layer-update-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [
+            "metric-manual-publishing-effort"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-knowledge-standards-evolution-delivery-layer-update-execution-management": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [
+                "info-published-content",
+                "info-content-object",
+                "info-lifecycle-state-record"
+              ],
+              "technologyAppIds": [
+                "tech-astro",
+                "tech-github-actions",
+                "tech-indesign"
+              ]
+            },
+            "cap-knowledge-standards-evolution-delivery-layer-update-quality-assurance": {
+              "roleIds": [
+                "role-content-lead",
+                "role-voice-editor"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [
+                "info-published-content",
+                "info-quality-check-result",
+                "info-validation-report"
+              ],
+              "technologyAppIds": [
+                "tech-astro"
+              ]
+            },
+            "cap-knowledge-standards-evolution-delivery-layer-update-handoff-coordination": {
+              "roleIds": [
+                "role-content-owner",
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Transfer ownership and supporting documentation",
+                "Notify downstream stage of handoff"
+              ],
+              "informationObjectIds": [
+                "info-published-content",
+                "info-version-record",
+                "info-approval-record"
+              ],
+              "technologyAppIds": [
+                "tech-astro",
+                "tech-strapi"
+              ]
+            }
+          }
+        },
+        "act-knowledge-asset-creation-initial-stage": {
+          "name": "Initial Stage",
+          "description": "Initial Stage stage in Knowledge Asset Creation",
+          "preOutcomeId": "out-knowledge-asset-creation-entry",
+          "postOutcomeId": "out-knowledge-asset-creation-initial-stage-complete",
+          "requiresCapabilityIds": [
+            "cap-knowledge-asset-creation-initial-stage-initial-stage-execution",
+            "cap-knowledge-asset-creation-initial-stage-initial-stage-governance",
+            "cap-knowledge-asset-creation-initial-stage-initial-stage-integration"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-knowledge-asset-creation-initial-stage-initial-stage-execution": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead",
+                "role-practitioners"
+              ],
+              "activities": [
+                "Initiate knowledge asset creation process",
+                "Define scope and structure of the asset",
+                "Validate initial inputs against ontology constraints"
+              ],
+              "informationObjectIds": [
+                "info-change-request",
+                "info-ontology-class-def",
+                "info-learning-pathway"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-stardog",
+                "tech-llm-api"
+              ]
+            },
+            "cap-knowledge-asset-creation-initial-stage-initial-stage-governance": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for asset creation",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [
+                "info-approval-record",
+                "info-tier-classification",
+                "info-lifecycle-state-record"
+              ],
+              "technologyAppIds": [
+                "tech-strapi"
+              ]
+            },
+            "cap-knowledge-asset-creation-initial-stage-initial-stage-integration": {
+              "roleIds": [
+                "role-standards-committee",
+                "role-formal-governance-body"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [
+                "info-propagation-manifest",
+                "info-lifecycle-state-record",
+                "info-escalation-flag"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-github-actions"
+              ]
+            }
+          }
+        },
+        "act-knowledge-asset-creation-final-stage": {
+          "name": "Final Stage",
+          "description": "Final Stage stage in Knowledge Asset Creation",
+          "preOutcomeId": "out-knowledge-asset-creation-initial-stage-complete",
+          "postOutcomeId": "out-knowledge-asset-creation-final-stage-complete",
+          "requiresCapabilityIds": [
+            "cap-knowledge-asset-creation-final-stage-closure-verification",
+            "cap-knowledge-asset-creation-final-stage-record-keeping",
+            "cap-knowledge-asset-creation-final-stage-lessons-learned"
+          ],
+          "performedByRoleIds": [
+            "role-content-owner",
+            "role-content-lead"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-knowledge-asset-creation-final-stage-closure-verification": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee"
+              ],
+              "activities": [
+                "Confirm all obligations for this stage are met",
+                "Verify completeness of all required outputs",
+                "Obtain sign-off from accountable authority"
+              ],
+              "informationObjectIds": [
+                "info-approval-record",
+                "info-validation-report",
+                "info-lifecycle-state-record"
+              ],
+              "technologyAppIds": [
+                "tech-strapi"
+              ]
+            },
+            "cap-knowledge-asset-creation-final-stage-record-keeping": {
+              "roleIds": [
+                "role-content-owner",
+                "role-content-lead"
+              ],
+              "activities": [
+                "Archive records in compliance with retention policy",
+                "Tag and classify records for future retrieval",
+                "Confirm archive integrity and completeness"
+              ],
+              "informationObjectIds": [
+                "info-version-record",
+                "info-content-object",
+                "info-approval-record"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-stardog"
+              ]
+            },
+            "cap-knowledge-asset-creation-final-stage-lessons-learned": {
+              "roleIds": [
+                "role-content-lead",
+                "role-standards-committee",
+                "role-practitioners"
+              ],
+              "activities": [
+                "Capture improvement insights from delivery",
+                "Classify and prioritise identified improvements",
+                "Communicate findings to relevant governance bodies"
+              ],
+              "informationObjectIds": [
+                "info-gap-detection-report",
+                "info-validation-report",
+                "info-learning-pathway"
+              ],
+              "technologyAppIds": [
+                "tech-strapi",
+                "tech-llm-api"
+              ]
+            }
+          }
+        }
+      },
+      "capabilities": {
+        "cap-content-change-delivery-change-request-trigger-demand-capture": {
+          "name": "Demand Capture",
+          "description": "Ability to receive and record incoming requests in Content Change Delivery"
+        },
+        "cap-content-change-delivery-change-request-trigger-data-validation": {
+          "name": "Data Validation",
+          "description": "Ability to verify accuracy and completeness of captured data"
+        },
+        "cap-content-change-delivery-change-request-trigger-intake-routing": {
+          "name": "Intake Routing",
+          "description": "Ability to route validated requests to the correct handling path"
+        },
+        "cap-content-change-delivery-authority-assignment-decision-authority": {
+          "name": "Decision Authority",
+          "description": "Ability to make and record binding decisions within delegated authority"
+        },
+        "cap-content-change-delivery-authority-assignment-escalation-management": {
+          "name": "Escalation Management",
+          "description": "Ability to escalate decisions that exceed local authority"
+        },
+        "cap-content-change-delivery-authority-assignment-compliance-verification": {
+          "name": "Compliance Verification",
+          "description": "Ability to verify decisions comply with policy and regulation"
+        },
+        "cap-content-change-delivery-content-authoring-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-content-change-delivery-content-authoring-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-content-change-delivery-content-authoring-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-content-change-delivery-content-review-assessment-execution": {
+          "name": "Assessment Execution",
+          "description": "Ability to conduct structured assessment of subject matter"
+        },
+        "cap-content-change-delivery-content-review-risk-identification": {
+          "name": "Risk Identification",
+          "description": "Ability to identify and classify risks arising from assessment"
+        },
+        "cap-content-change-delivery-content-review-outcome-determination": {
+          "name": "Outcome Determination",
+          "description": "Ability to reach and document a defensible assessment outcome"
+        },
+        "cap-content-change-delivery-web-publishing-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-content-change-delivery-web-publishing-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-content-change-delivery-web-publishing-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-content-change-delivery-pdf-production-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-content-change-delivery-pdf-production-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-content-change-delivery-pdf-production-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-knowledge-standards-evolution-constitutional-gap-trigger-constitutional-gap-trigger-execution": {
+          "name": "Constitutional Gap Trigger Execution",
+          "description": "Ability to execute Constitutional Gap Trigger activities within Knowledge Standards Evolution"
+        },
+        "cap-knowledge-standards-evolution-constitutional-gap-trigger-constitutional-gap-trigger-governance": {
+          "name": "Constitutional Gap Trigger Governance",
+          "description": "Ability to oversee and control Constitutional Gap Trigger outcomes"
+        },
+        "cap-knowledge-standards-evolution-constitutional-gap-trigger-constitutional-gap-trigger-integration": {
+          "name": "Constitutional Gap Trigger Integration",
+          "description": "Ability to coordinate Constitutional Gap Trigger across teams and systems"
+        },
+        "cap-knowledge-standards-evolution-governance-authority-governance-authority-execution": {
+          "name": "Governance Authority Execution",
+          "description": "Ability to execute Governance Authority activities within Knowledge Standards Evolution"
+        },
+        "cap-knowledge-standards-evolution-governance-authority-governance-authority-governance": {
+          "name": "Governance Authority Governance",
+          "description": "Ability to oversee and control Governance Authority outcomes"
+        },
+        "cap-knowledge-standards-evolution-governance-authority-governance-authority-integration": {
+          "name": "Governance Authority Integration",
+          "description": "Ability to coordinate Governance Authority across teams and systems"
+        },
+        "cap-knowledge-standards-evolution-ontology-update-ontology-update-execution": {
+          "name": "Ontology Update Execution",
+          "description": "Ability to execute Ontology Update activities within Knowledge Standards Evolution"
+        },
+        "cap-knowledge-standards-evolution-ontology-update-ontology-update-governance": {
+          "name": "Ontology Update Governance",
+          "description": "Ability to oversee and control Ontology Update outcomes"
+        },
+        "cap-knowledge-standards-evolution-ontology-update-ontology-update-integration": {
+          "name": "Ontology Update Integration",
+          "description": "Ability to coordinate Ontology Update across teams and systems"
+        },
+        "cap-knowledge-standards-evolution-system-propagation-system-propagation-execution": {
+          "name": "System Propagation Execution",
+          "description": "Ability to execute System Propagation activities within Knowledge Standards Evolution"
+        },
+        "cap-knowledge-standards-evolution-system-propagation-system-propagation-governance": {
+          "name": "System Propagation Governance",
+          "description": "Ability to oversee and control System Propagation outcomes"
+        },
+        "cap-knowledge-standards-evolution-system-propagation-system-propagation-integration": {
+          "name": "System Propagation Integration",
+          "description": "Ability to coordinate System Propagation across teams and systems"
+        },
+        "cap-knowledge-standards-evolution-instance-impact-management-instance-impact-management-execution": {
+          "name": "Instance Impact Management Execution",
+          "description": "Ability to execute Instance Impact Management activities within Knowledge Standards Evolution"
+        },
+        "cap-knowledge-standards-evolution-instance-impact-management-instance-impact-management-governance": {
+          "name": "Instance Impact Management Governance",
+          "description": "Ability to oversee and control Instance Impact Management outcomes"
+        },
+        "cap-knowledge-standards-evolution-instance-impact-management-instance-impact-management-integration": {
+          "name": "Instance Impact Management Integration",
+          "description": "Ability to coordinate Instance Impact Management across teams and systems"
+        },
+        "cap-knowledge-standards-evolution-delivery-layer-update-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-knowledge-standards-evolution-delivery-layer-update-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-knowledge-standards-evolution-delivery-layer-update-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-knowledge-asset-creation-initial-stage-initial-stage-execution": {
+          "name": "Initial Stage Execution",
+          "description": "Ability to execute Initial Stage activities within Knowledge Asset Creation"
+        },
+        "cap-knowledge-asset-creation-initial-stage-initial-stage-governance": {
+          "name": "Initial Stage Governance",
+          "description": "Ability to oversee and control Initial Stage outcomes"
+        },
+        "cap-knowledge-asset-creation-initial-stage-initial-stage-integration": {
+          "name": "Initial Stage Integration",
+          "description": "Ability to coordinate Initial Stage across teams and systems"
+        },
+        "cap-knowledge-asset-creation-final-stage-closure-verification": {
+          "name": "Closure Verification",
+          "description": "Ability to confirm all obligations for this stage are met"
+        },
+        "cap-knowledge-asset-creation-final-stage-record-keeping": {
+          "name": "Record Keeping",
+          "description": "Ability to archive records in compliance with retention policy"
+        },
+        "cap-knowledge-asset-creation-final-stage-lessons-learned": {
+          "name": "Lessons Learned",
+          "description": "Ability to capture and act on improvement insights"
+        }
+      },
+      "roles": {
+        "role-content-owner": {
+          "name": "Content Owner"
+        },
+        "role-content-lead": {
+          "name": "Content Lead"
+        },
+        "role-standards-committee": {
+          "name": "Standards Committee"
+        },
+        "role-formal-governance-body": {
+          "name": "Formal Governance Body"
+        },
+        "role-voice-editor": {
+          "name": "Voice Editor"
+        },
+        "role-practitioners": {
+          "name": "Practitioners"
+        }
+      },
+      "outcomes": {
+        "out-content-change-delivery-entry": {
+          "name": "Content Change Delivery initiated",
+          "status": "active"
+        },
+        "out-content-change-delivery-change-request-trigger-complete": {
+          "name": "Change Request Trigger complete",
+          "status": "active"
+        },
+        "out-content-change-delivery-authority-assignment-complete": {
+          "name": "Authority Assignment complete",
+          "status": "active"
+        },
+        "out-content-change-delivery-content-authoring-complete": {
+          "name": "Content Authoring complete",
+          "status": "active"
+        },
+        "out-content-change-delivery-content-review-complete": {
+          "name": "Content Review complete",
+          "status": "active"
+        },
+        "out-content-change-delivery-web-publishing-complete": {
+          "name": "Web Publishing complete",
+          "status": "active"
+        },
+        "out-content-change-delivery-pdf-production-complete": {
+          "name": "PDF Production complete",
+          "status": "active"
+        },
+        "out-knowledge-standards-evolution-entry": {
+          "name": "Knowledge Standards Evolution initiated",
+          "status": "active"
+        },
+        "out-knowledge-standards-evolution-constitutional-gap-trigger-complete": {
+          "name": "Constitutional Gap Trigger complete",
+          "status": "active"
+        },
+        "out-knowledge-standards-evolution-governance-authority-complete": {
+          "name": "Governance Authority complete",
+          "status": "active"
+        },
+        "out-knowledge-standards-evolution-ontology-update-complete": {
+          "name": "Ontology Update complete",
+          "status": "active"
+        },
+        "out-knowledge-standards-evolution-system-propagation-complete": {
+          "name": "System Propagation complete",
+          "status": "active"
+        },
+        "out-knowledge-standards-evolution-instance-impact-management-complete": {
+          "name": "Instance Impact Management complete",
+          "status": "active"
+        },
+        "out-knowledge-standards-evolution-delivery-layer-update-complete": {
+          "name": "Delivery Layer Update complete",
+          "status": "active"
+        },
+        "out-knowledge-asset-creation-entry": {
+          "name": "Knowledge Asset Creation initiated",
+          "status": "active"
+        },
+        "out-knowledge-asset-creation-initial-stage-complete": {
+          "name": "Initial Stage complete",
+          "status": "active"
+        },
+        "out-knowledge-asset-creation-final-stage-complete": {
+          "name": "Final Stage complete",
+          "status": "active"
+        }
+      },
+      "metrics": {
+        "metric-change-request-cycle-time": {
+          "name": "Change Request Cycle Time"
+        },
+        "metric-manual-publishing-effort": {
+          "name": "Manual Publishing Effort"
+        },
+        "metric-constitutional-change-propagation": {
+          "name": "Constitutional Change Propagation"
+        },
+        "metric-tier1-cycle-time": {
+          "name": "Tier 1 Cycle Time (Days)"
+        },
+        "metric-tier2-cycle-time": {
+          "name": "Tier 2 Cycle Time (Days)"
+        },
+        "metric-tier3-cycle-time": {
+          "name": "Tier 3 Cycle Time (Weeks)"
+        },
+        "metric-tier4-cycle-time": {
+          "name": "Tier 4 Cycle Time (Months)"
+        },
+        "metric-approval-queue-depth": {
+          "name": "Approval Queue Depth"
+        },
+        "metric-instance-conformance": {
+          "name": "Instance Conformance Rate"
+        },
+        "metric-orphan-entity-count": {
+          "name": "Orphan Entity Count"
+        },
+        "metric-ai-draft-acceptance": {
+          "name": "AI Draft Acceptance Rate"
+        },
+        "metric-governance-lag": {
+          "name": "Governance Decision Lag"
+        },
+        "metric-content-coverage-gap": {
+          "name": "Content Coverage Gap"
+        }
+      },
+      "controls": {
+        "ctrl-no-formal-pathway-exists-for-tier-1-2-changes-all-changes-routed-through-heavyweight-governance-or-nothing-happens-creating-years-long-batch-release-cycle": {
+          "name": "No formal pathway exists for Tier 1/2 changes - all changes "
+        },
+        "ctrl-content-lead-position-currently-open-requiring-proxy-arrangement-for-tier-2-approvals-compounded-by-concurrent-it-leadership-vacancy": {
+          "name": "Content Lead position currently open requiring proxy arrange"
+        },
+        "ctrl-standards-committee-and-formal-governance-body-only-exist-ad-hoc-during-major-revisions-not-as-standing-bodies": {
+          "name": "Standards Committee and Formal Governance Body only exist ad"
+        },
+        "ctrl-manual-indesign-pdf-production-requires-full-document-reconstruction-for-any-change-creating-publishing-bottleneck": {
+          "name": "Manual InDesign PDF production requires full document recons"
+        },
+        "ctrl-no-propagation-mechanism-from-ontology-changes-to-downstream-systems-updates-done-manually-inconsistently-or-not-at-all": {
+          "name": "No propagation mechanism from ontology changes to downstream"
+        },
+        "ctrl-no-escalation-path-from-instance-work-to-constitutional-changes-when-structural-gaps-discovered": {
+          "name": "No escalation path from instance work to constitutional chan"
+        }
+      },
+      "informationObjects": {
+        "info-change-request": {
+          "name": "Change Request",
+          "type": "Document"
+        },
+        "info-tier-classification": {
+          "name": "Tier Classification",
+          "type": "Record"
+        },
+        "info-content-object": {
+          "name": "Content Object",
+          "type": "Document"
+        },
+        "info-ontology-class-def": {
+          "name": "Ontology Class Definition",
+          "type": "Schema"
+        },
+        "info-lifecycle-state-record": {
+          "name": "Lifecycle State Record",
+          "type": "Record"
+        },
+        "info-validation-report": {
+          "name": "Validation Report",
+          "type": "Report"
+        },
+        "info-approval-record": {
+          "name": "Approval Record",
+          "type": "Record"
+        },
+        "info-content-type-schema": {
+          "name": "Content Type Schema",
+          "type": "Schema"
+        },
+        "info-propagation-manifest": {
+          "name": "Propagation Manifest",
+          "type": "Document"
+        },
+        "info-instance-impact-report": {
+          "name": "Instance Impact Report",
+          "type": "Report"
+        },
+        "info-published-content": {
+          "name": "Published Content",
+          "type": "Document"
+        },
+        "info-version-record": {
+          "name": "Version Record",
+          "type": "Record"
+        },
+        "info-quality-check-result": {
+          "name": "Quality Check Result",
+          "type": "Report"
+        },
+        "info-escalation-flag": {
+          "name": "Escalation Flag",
+          "type": "Record"
+        },
+        "info-gap-detection-report": {
+          "name": "Gap Detection Report",
+          "type": "Report"
+        },
+        "info-learning-pathway": {
+          "name": "Learning Pathway",
+          "type": "Document"
+        }
+      },
+      "technologyApps": {
+        "tech-stardog": {
+          "name": "Stardog",
+          "type": "Custom"
+        },
+        "tech-strapi": {
+          "name": "Strapi",
+          "type": "CMS"
+        },
+        "tech-astro": {
+          "name": "Astro",
+          "type": "Other"
+        },
+        "tech-indesign": {
+          "name": "InDesign",
+          "type": "Other"
+        },
+        "tech-github-actions": {
+          "name": "GitHub Actions",
+          "type": "Other"
+        },
+        "tech-mediawiki": {
+          "name": "MediaWiki",
+          "type": "Other"
+        },
+        "tech-llm-api": {
+          "name": "LLM API",
+          "type": "Other"
+        }
+      }
+    },
+    "crossStreamOutcomes": [],
+    "scaffoldIntegrityHash": "2b987f8a77cae0897ee2f4fdb7dc8f32846572d40fd61bdd5a2ddd6163dd7d9b"
+  },
+  "heatmaps": [
+    {
+      "heatmapId": "heatmap-vs-content-change-delivery-1772657326664",
+      "scaffoldId": "scaffold-iiba",
+      "valueStreamId": "vs-content-change-delivery",
+      "observations": [
+        {
+          "observationId": "fr_001_no_formal_pathway_tier_changes",
+          "category": "ProcessHandoffFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-content-change-delivery-change-request-trigger"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 9
+          },
+          "rationale": "Change Request Trigger activity has control indicating no formal pathway exists for Tier 1/2 changes, forcing all changes through heavyweight governance or creating stagnation",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_1",
+              "excerpt": "No formal pathway exists for Tier 1/2 changes - all changes routed through heavyweight governance or nothing happens, creating years-long batch release cycle"
+            }
+          ],
+          "observedAt": "2026-03-04T20:48:13.893Z"
+        },
+        {
+          "observationId": "fr_002_content_lead_vacancy_proxy",
+          "category": "DecisionAuthorityFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-content-change-delivery-authority-assignment"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 8
+          },
+          "rationale": "Authority Assignment activity has control indicating Content Lead position vacancy requiring proxy arrangements, compounded by concurrent IT leadership vacancy",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_2",
+              "excerpt": "Content Lead position currently open requiring proxy arrangement for Tier 2 approvals, compounded by concurrent IT leadership vacancy"
+            }
+          ],
+          "observedAt": "2026-03-04T20:48:13.893Z"
+        },
+        {
+          "observationId": "fr_003_manual_indesign_reconstruction",
+          "category": "TechnologyIntegrationFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-content-change-delivery-pdf-production"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 7
+          },
+          "rationale": "PDF Production activity has control indicating manual InDesign production requires full document reconstruction for any change, creating publishing bottleneck",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_4",
+              "excerpt": "Manual InDesign PDF production requires full document reconstruction for any change, creating publishing bottleneck"
+            }
+          ],
+          "observedAt": "2026-03-04T20:48:13.893Z"
+        }
+      ],
+      "bindingConstraint": {
+        "findingId": "bc_001",
+        "bindingAnchor": {
+          "anchorType": "Activity",
+          "anchorId": "act-content-change-delivery-change-request-trigger"
+        },
+        "bindingAnchorObservationId": "fr_001_no_formal_pathway_tier_changes",
+        "justification": "Change Request Trigger represents the binding constraint as it blocks all downstream content delivery activities through lack of formal pathways, creating system-wide bottleneck with highest downstream dependency",
+        "constraintScoring": {
+          "candidates": [
+            {
+              "anchorId": "act-content-change-delivery-change-request-trigger",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 3,
+                "authorityCentralisation": 3,
+                "downstreamDependency": 3,
+                "controlLayering": 2,
+                "capacityConstraint": 2
+              },
+              "totalScore": 13
+            },
+            {
+              "anchorId": "act-content-change-delivery-authority-assignment",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 2,
+                "authorityCentralisation": 3,
+                "downstreamDependency": 2,
+                "controlLayering": 1,
+                "capacityConstraint": 2
+              },
+              "totalScore": 10
+            },
+            {
+              "anchorId": "act-content-change-delivery-pdf-production",
+              "eligible": false,
+              "scores": {
+                "observationFrequency": 1,
+                "authorityCentralisation": 1,
+                "downstreamDependency": 1,
+                "controlLayering": 1,
+                "capacityConstraint": 2
+              },
+              "totalScore": 6
+            }
+          ],
+          "selectedAnchorId": "act-content-change-delivery-change-request-trigger",
+          "selectionRationale": "Highest score among eligible candidates with maximum downstream dependency blocking entire value stream"
+        },
+        "confidence": 0.87,
+        "observedAt": "2026-03-04T20:48:13.893Z"
+      },
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-04T20:48:13.893Z"
+    },
+    {
+      "heatmapId": "heatmap-vs-knowledge-standards-evolution-1772657326664",
+      "scaffoldId": "scaffold-iiba",
+      "valueStreamId": "vs-knowledge-standards-evolution",
+      "observations": [
+        {
+          "observationId": "fr_004_ad_hoc_governance_bodies",
+          "category": "GovernanceRiskFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-knowledge-standards-evolution-governance-authority"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 8
+          },
+          "rationale": "Governance Authority activity has control indicating Standards Committee and Formal Governance Body only exist ad hoc during major revisions, not as standing bodies",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_3",
+              "excerpt": "Standards Committee and Formal Governance Body only exist ad hoc during major revisions, not as standing bodies"
+            }
+          ],
+          "observedAt": "2026-03-04T20:48:13.893Z"
+        },
+        {
+          "observationId": "fr_005_no_ontology_propagation_mechanism",
+          "category": "DataSignalFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-knowledge-standards-evolution-system-propagation"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 7
+          },
+          "rationale": "System Propagation activity has control indicating no propagation mechanism from ontology changes to downstream systems, updates done manually or inconsistently",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_5",
+              "excerpt": "No propagation mechanism from ontology changes to downstream systems - updates done manually, inconsistently, or not at all"
+            }
+          ],
+          "observedAt": "2026-03-04T20:48:13.893Z"
+        },
+        {
+          "observationId": "fr_006_no_escalation_path_constitutional_gaps",
+          "category": "ProcessHandoffFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-knowledge-standards-evolution-constitutional-gap-trigger"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 6
+          },
+          "rationale": "Constitutional Gap Trigger activity has control indicating no escalation path from instance work to constitutional changes when structural gaps discovered",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_6",
+              "excerpt": "No escalation path from instance work to constitutional changes when structural gaps discovered"
+            }
+          ],
+          "observedAt": "2026-03-04T20:48:13.893Z"
+        }
+      ],
+      "bindingConstraint": {
+        "findingId": "bc_002",
+        "bindingAnchor": {
+          "anchorType": "Activity",
+          "anchorId": "act-knowledge-standards-evolution-governance-authority"
+        },
+        "bindingAnchorObservationId": "fr_004_ad_hoc_governance_bodies",
+        "justification": "Governance Authority represents the binding constraint as ad hoc governance bodies create authority vacuum that blocks constitutional decision-making across all downstream knowledge evolution activities",
+        "constraintScoring": {
+          "candidates": [
+            {
+              "anchorId": "act-knowledge-standards-evolution-governance-authority",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 2,
+                "authorityCentralisation": 3,
+                "downstreamDependency": 3,
+                "controlLayering": 2,
+                "capacityConstraint": 1
+              },
+              "totalScore": 11
+            },
+            {
+              "anchorId": "act-knowledge-standards-evolution-system-propagation",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 2,
+                "authorityCentralisation": 2,
+                "downstreamDependency": 2,
+                "controlLayering": 1,
+                "capacityConstraint": 2
+              },
+              "totalScore": 9
+            },
+            {
+              "anchorId": "act-knowledge-standards-evolution-constitutional-gap-trigger",
+              "eligible": false,
+              "scores": {
+                "observationFrequency": 1,
+                "authorityCentralisation": 1,
+                "downstreamDependency": 1,
+                "controlLayering": 1,
+                "capacityConstraint": 1
+              },
+              "totalScore": 5
+            }
+          ],
+          "selectedAnchorId": "act-knowledge-standards-evolution-governance-authority",
+          "selectionRationale": "Highest score among eligible candidates with critical authority centralisation blocking downstream evolution"
+        },
+        "confidence": 0.73,
+        "observedAt": "2026-03-04T20:48:13.893Z"
+      },
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-04T20:48:13.893Z"
+    }
+  ]
+}

@@ -1,0 +1,1861 @@
+{
+  "bundleVersion": "1.0",
+  "createdAt": "2026-03-05T05:49:14.427Z",
+  "scaffold": {
+    "schemaVersion": "1.0",
+    "scaffoldId": "scaffold-puretec",
+    "name": "PureTec",
+    "description": "Generated from discovery intake — Consumer Goods 0–500",
+    "createdAt": "2026-03-05T05:49:14.427Z",
+    "elements": {
+      "valueStreams": {
+        "vs-channel-partner-sales": {
+          "name": "Channel Partner Sales",
+          "description": "End-to-end flow from territory planning through partner-enabled deal closure",
+          "activityIds": [
+            "act-channel-partner-sales-territory-assignment",
+            "act-channel-partner-sales-pre-visit-planning",
+            "act-channel-partner-sales-partner-engagement",
+            "act-channel-partner-sales-opportunity-development",
+            "act-channel-partner-sales-deal-execution",
+            "act-channel-partner-sales-revenue-recognition"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "Trade partners (plumbers and distributors)"
+        },
+        "vs-customer-maintenance-delivery": {
+          "name": "Customer Maintenance Delivery",
+          "description": "End-to-end flow from maintenance trigger through cartridge replacement completion",
+          "activityIds": [
+            "act-customer-maintenance-delivery-cycle-monitoring",
+            "act-customer-maintenance-delivery-customer-notification",
+            "act-customer-maintenance-delivery-service-scheduling",
+            "act-customer-maintenance-delivery-cartridge-replacement",
+            "act-customer-maintenance-delivery-revenue-capture"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "End customers requiring ongoing maintenance"
+        },
+        "vs-systems-integration-foundation": {
+          "name": "Systems Integration Foundation",
+          "description": "End-to-end flow from integration requirements through operational data flow",
+          "activityIds": [
+            "act-systems-integration-foundation-requirements-definition",
+            "act-systems-integration-foundation-partner-selection",
+            "act-systems-integration-foundation-integration-development",
+            "act-systems-integration-foundation-testing-and-validation",
+            "act-systems-integration-foundation-production-deployment",
+            "act-systems-integration-foundation-data-flow-monitoring"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "Internal operations and sales teams"
+        }
+      },
+      "activities": {
+        "act-channel-partner-sales-territory-assignment": {
+          "name": "Territory Assignment",
+          "description": "Territory Assignment stage in Channel Partner Sales",
+          "preOutcomeId": "out-channel-partner-sales-entry",
+          "postOutcomeId": "out-channel-partner-sales-territory-assignment-complete",
+          "requiresCapabilityIds": [
+            "cap-channel-partner-sales-territory-assignment-decision-authority",
+            "cap-channel-partner-sales-territory-assignment-escalation-management",
+            "cap-channel-partner-sales-territory-assignment-compliance-verification"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-channel-partner-sales-territory-assignment-decision-authority": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Review recommendation and supporting evidence",
+                "Apply decision criteria within delegated authority",
+                "Record decision with rationale and timestamp"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-channel-partner-sales-territory-assignment-escalation-management": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Identify when escalation thresholds are breached",
+                "Prepare escalation pack with recommendation",
+                "Route to appropriate authority and track to resolution"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-channel-partner-sales-territory-assignment-compliance-verification": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Check decision against applicable policy rules",
+                "Verify required approvals have been obtained",
+                "Flag non-compliant decisions for remediation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-channel-partner-sales-pre-visit-planning": {
+          "name": "Pre-Visit Planning",
+          "description": "Pre-Visit Planning stage in Channel Partner Sales",
+          "preOutcomeId": "out-channel-partner-sales-territory-assignment-complete",
+          "postOutcomeId": "out-channel-partner-sales-pre-visit-planning-complete",
+          "requiresCapabilityIds": [
+            "cap-channel-partner-sales-pre-visit-planning-capacity-planning",
+            "cap-channel-partner-sales-pre-visit-planning-resource-scheduling",
+            "cap-channel-partner-sales-pre-visit-planning-plan-governance"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [
+            "metric-sales-admin-time-lost"
+          ],
+          "controlIds": [
+            "ctrl-sales-team-lacks-pre-visit-customer-intelligence-requiring-manual-information-gathering"
+          ],
+          "capabilityPPIT": {
+            "cap-channel-partner-sales-pre-visit-planning-capacity-planning": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Aggregate demand signals from all sources",
+                "Compare demand forecast against available capacity",
+                "Identify capacity gaps and escalate constraints"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-channel-partner-sales-pre-visit-planning-resource-scheduling": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Assign resources based on availability and skill",
+                "Create schedule and communicate to participants",
+                "Adjust schedule in response to changes or conflicts"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-channel-partner-sales-pre-visit-planning-plan-governance": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Review plan against policy and constraints",
+                "Obtain required approvals from accountable stakeholders",
+                "Publish baselined plan to all execution teams"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-channel-partner-sales-partner-engagement": {
+          "name": "Partner Engagement",
+          "description": "Partner Engagement stage in Channel Partner Sales",
+          "preOutcomeId": "out-channel-partner-sales-pre-visit-planning-complete",
+          "postOutcomeId": "out-channel-partner-sales-partner-engagement-complete",
+          "requiresCapabilityIds": [
+            "cap-channel-partner-sales-partner-engagement-partner-engagement-execution",
+            "cap-channel-partner-sales-partner-engagement-partner-engagement-governance",
+            "cap-channel-partner-sales-partner-engagement-partner-engagement-integration"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl-staff-forced-to-use-multiple-disparate-systems-despite-having-crm-tools",
+            "ctrl-sales-team-not-logging-crm-activities-due-to-system-reliability-concerns"
+          ],
+          "capabilityPPIT": {
+            "cap-channel-partner-sales-partner-engagement-partner-engagement-execution": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Initiate partner engagement process",
+                "Execute core partner engagement activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-channel-partner-sales-partner-engagement-partner-engagement-governance": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for partner engagement decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-channel-partner-sales-partner-engagement-partner-engagement-integration": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-channel-partner-sales-opportunity-development": {
+          "name": "Opportunity Development",
+          "description": "Opportunity Development stage in Channel Partner Sales",
+          "preOutcomeId": "out-channel-partner-sales-partner-engagement-complete",
+          "postOutcomeId": "out-channel-partner-sales-opportunity-development-complete",
+          "requiresCapabilityIds": [
+            "cap-channel-partner-sales-opportunity-development-opportunity-development-execution",
+            "cap-channel-partner-sales-opportunity-development-opportunity-development-governance",
+            "cap-channel-partner-sales-opportunity-development-opportunity-development-integration"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [
+            "metric-product-skus"
+          ],
+          "controlIds": [
+            "ctrl-distributors-being-passive-order-takers-rather-than-proactive-sellers"
+          ],
+          "capabilityPPIT": {
+            "cap-channel-partner-sales-opportunity-development-opportunity-development-execution": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Initiate opportunity development process",
+                "Execute core opportunity development activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-channel-partner-sales-opportunity-development-opportunity-development-governance": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for opportunity development decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-channel-partner-sales-opportunity-development-opportunity-development-integration": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-channel-partner-sales-deal-execution": {
+          "name": "Deal Execution",
+          "description": "Deal Execution stage in Channel Partner Sales",
+          "preOutcomeId": "out-channel-partner-sales-opportunity-development-complete",
+          "postOutcomeId": "out-channel-partner-sales-deal-execution-complete",
+          "requiresCapabilityIds": [
+            "cap-channel-partner-sales-deal-execution-execution-management",
+            "cap-channel-partner-sales-deal-execution-quality-assurance",
+            "cap-channel-partner-sales-deal-execution-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-channel-partner-sales-deal-execution-execution-management": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-channel-partner-sales-deal-execution-quality-assurance": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-channel-partner-sales-deal-execution-handoff-coordination": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-channel-partner-sales-revenue-recognition": {
+          "name": "Revenue Recognition",
+          "description": "Revenue Recognition stage in Channel Partner Sales",
+          "preOutcomeId": "out-channel-partner-sales-deal-execution-complete",
+          "postOutcomeId": "out-channel-partner-sales-revenue-recognition-complete",
+          "requiresCapabilityIds": [
+            "cap-channel-partner-sales-revenue-recognition-revenue-recognition-execution",
+            "cap-channel-partner-sales-revenue-recognition-revenue-recognition-governance",
+            "cap-channel-partner-sales-revenue-recognition-revenue-recognition-integration"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [
+            "metric-company-growth-rate"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-channel-partner-sales-revenue-recognition-revenue-recognition-execution": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Initiate revenue recognition process",
+                "Execute core revenue recognition activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-channel-partner-sales-revenue-recognition-revenue-recognition-governance": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for revenue recognition decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-channel-partner-sales-revenue-recognition-revenue-recognition-integration": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-customer-maintenance-delivery-cycle-monitoring": {
+          "name": "Cycle Monitoring",
+          "description": "Cycle Monitoring stage in Customer Maintenance Delivery",
+          "preOutcomeId": "out-customer-maintenance-delivery-entry",
+          "postOutcomeId": "out-customer-maintenance-delivery-cycle-monitoring-complete",
+          "requiresCapabilityIds": [
+            "cap-customer-maintenance-delivery-cycle-monitoring-execution-management",
+            "cap-customer-maintenance-delivery-cycle-monitoring-quality-assurance",
+            "cap-customer-maintenance-delivery-cycle-monitoring-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [
+            "metric-cartridge-replacement-cycle"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-customer-maintenance-delivery-cycle-monitoring-execution-management": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-customer-maintenance-delivery-cycle-monitoring-quality-assurance": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-customer-maintenance-delivery-cycle-monitoring-handoff-coordination": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-customer-maintenance-delivery-customer-notification": {
+          "name": "Customer Notification",
+          "description": "Customer Notification stage in Customer Maintenance Delivery",
+          "preOutcomeId": "out-customer-maintenance-delivery-cycle-monitoring-complete",
+          "postOutcomeId": "out-customer-maintenance-delivery-customer-notification-complete",
+          "requiresCapabilityIds": [
+            "cap-customer-maintenance-delivery-customer-notification-execution-management",
+            "cap-customer-maintenance-delivery-customer-notification-quality-assurance",
+            "cap-customer-maintenance-delivery-customer-notification-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-customer-maintenance-delivery-customer-notification-execution-management": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-customer-maintenance-delivery-customer-notification-quality-assurance": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-customer-maintenance-delivery-customer-notification-handoff-coordination": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-customer-maintenance-delivery-service-scheduling": {
+          "name": "Service Scheduling",
+          "description": "Service Scheduling stage in Customer Maintenance Delivery",
+          "preOutcomeId": "out-customer-maintenance-delivery-customer-notification-complete",
+          "postOutcomeId": "out-customer-maintenance-delivery-service-scheduling-complete",
+          "requiresCapabilityIds": [
+            "cap-customer-maintenance-delivery-service-scheduling-capacity-planning",
+            "cap-customer-maintenance-delivery-service-scheduling-resource-scheduling",
+            "cap-customer-maintenance-delivery-service-scheduling-plan-governance"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-customer-maintenance-delivery-service-scheduling-capacity-planning": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Aggregate demand signals from all sources",
+                "Compare demand forecast against available capacity",
+                "Identify capacity gaps and escalate constraints"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-customer-maintenance-delivery-service-scheduling-resource-scheduling": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Assign resources based on availability and skill",
+                "Create schedule and communicate to participants",
+                "Adjust schedule in response to changes or conflicts"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-customer-maintenance-delivery-service-scheduling-plan-governance": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Review plan against policy and constraints",
+                "Obtain required approvals from accountable stakeholders",
+                "Publish baselined plan to all execution teams"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-customer-maintenance-delivery-cartridge-replacement": {
+          "name": "Cartridge Replacement",
+          "description": "Cartridge Replacement stage in Customer Maintenance Delivery",
+          "preOutcomeId": "out-customer-maintenance-delivery-service-scheduling-complete",
+          "postOutcomeId": "out-customer-maintenance-delivery-cartridge-replacement-complete",
+          "requiresCapabilityIds": [
+            "cap-customer-maintenance-delivery-cartridge-replacement-execution-management",
+            "cap-customer-maintenance-delivery-cartridge-replacement-quality-assurance",
+            "cap-customer-maintenance-delivery-cartridge-replacement-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-customer-maintenance-delivery-cartridge-replacement-execution-management": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-customer-maintenance-delivery-cartridge-replacement-quality-assurance": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-customer-maintenance-delivery-cartridge-replacement-handoff-coordination": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-customer-maintenance-delivery-revenue-capture": {
+          "name": "Revenue Capture",
+          "description": "Revenue Capture stage in Customer Maintenance Delivery",
+          "preOutcomeId": "out-customer-maintenance-delivery-cartridge-replacement-complete",
+          "postOutcomeId": "out-customer-maintenance-delivery-revenue-capture-complete",
+          "requiresCapabilityIds": [
+            "cap-customer-maintenance-delivery-revenue-capture-demand-capture",
+            "cap-customer-maintenance-delivery-revenue-capture-data-validation",
+            "cap-customer-maintenance-delivery-revenue-capture-intake-routing"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-customer-maintenance-delivery-revenue-capture-demand-capture": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Capture incoming request from all channels",
+                "Validate completeness of submitted information",
+                "Acknowledge receipt and assign tracking reference"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-customer-maintenance-delivery-revenue-capture-data-validation": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Check mandatory fields against business rules",
+                "Validate identifiers against master data",
+                "Flag and route exceptions for manual review"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-customer-maintenance-delivery-revenue-capture-intake-routing": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Classify request by type and priority",
+                "Assign to responsible team or queue",
+                "Notify stakeholders of receipt and expected timeline"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-systems-integration-foundation-requirements-definition": {
+          "name": "Requirements Definition",
+          "description": "Requirements Definition stage in Systems Integration Foundation",
+          "preOutcomeId": "out-systems-integration-foundation-entry",
+          "postOutcomeId": "out-systems-integration-foundation-requirements-definition-complete",
+          "requiresCapabilityIds": [
+            "cap-systems-integration-foundation-requirements-definition-requirements-definition-execution",
+            "cap-systems-integration-foundation-requirements-definition-requirements-definition-governance",
+            "cap-systems-integration-foundation-requirements-definition-requirements-definition-integration"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl-90-salesforce-customizations-making-standard-implementations-difficult"
+          ],
+          "capabilityPPIT": {
+            "cap-systems-integration-foundation-requirements-definition-requirements-definition-execution": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Initiate requirements definition process",
+                "Execute core requirements definition activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-systems-integration-foundation-requirements-definition-requirements-definition-governance": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for requirements definition decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-systems-integration-foundation-requirements-definition-requirements-definition-integration": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-systems-integration-foundation-partner-selection": {
+          "name": "Partner Selection",
+          "description": "Partner Selection stage in Systems Integration Foundation",
+          "preOutcomeId": "out-systems-integration-foundation-requirements-definition-complete",
+          "postOutcomeId": "out-systems-integration-foundation-partner-selection-complete",
+          "requiresCapabilityIds": [
+            "cap-systems-integration-foundation-partner-selection-partner-selection-execution",
+            "cap-systems-integration-foundation-partner-selection-partner-selection-governance",
+            "cap-systems-integration-foundation-partner-selection-partner-selection-integration"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-systems-integration-foundation-partner-selection-partner-selection-execution": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Initiate partner selection process",
+                "Execute core partner selection activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-systems-integration-foundation-partner-selection-partner-selection-governance": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for partner selection decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-systems-integration-foundation-partner-selection-partner-selection-integration": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-systems-integration-foundation-integration-development": {
+          "name": "Integration Development",
+          "description": "Integration Development stage in Systems Integration Foundation",
+          "preOutcomeId": "out-systems-integration-foundation-partner-selection-complete",
+          "postOutcomeId": "out-systems-integration-foundation-integration-development-complete",
+          "requiresCapabilityIds": [
+            "cap-systems-integration-foundation-integration-development-integration-development-execution",
+            "cap-systems-integration-foundation-integration-development-integration-development-governance",
+            "cap-systems-integration-foundation-integration-development-integration-development-integration"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [
+            "metric-integration-timeline"
+          ],
+          "controlIds": [
+            "ctrl-netsuite-integration-project-6-months-overdue-causing-foundational-data-flow-issues"
+          ],
+          "capabilityPPIT": {
+            "cap-systems-integration-foundation-integration-development-integration-development-execution": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Initiate integration development process",
+                "Execute core integration development activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-systems-integration-foundation-integration-development-integration-development-governance": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for integration development decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-systems-integration-foundation-integration-development-integration-development-integration": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-systems-integration-foundation-testing-and-validation": {
+          "name": "Testing and Validation",
+          "description": "Testing and Validation stage in Systems Integration Foundation",
+          "preOutcomeId": "out-systems-integration-foundation-integration-development-complete",
+          "postOutcomeId": "out-systems-integration-foundation-testing-and-validation-complete",
+          "requiresCapabilityIds": [
+            "cap-systems-integration-foundation-testing-and-validation-testing-and-validation-execution",
+            "cap-systems-integration-foundation-testing-and-validation-testing-and-validation-governance",
+            "cap-systems-integration-foundation-testing-and-validation-testing-and-validation-integration"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-systems-integration-foundation-testing-and-validation-testing-and-validation-execution": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Initiate testing and validation process",
+                "Execute core testing and validation activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-systems-integration-foundation-testing-and-validation-testing-and-validation-governance": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for testing and validation decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-systems-integration-foundation-testing-and-validation-testing-and-validation-integration": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-systems-integration-foundation-production-deployment": {
+          "name": "Production Deployment",
+          "description": "Production Deployment stage in Systems Integration Foundation",
+          "preOutcomeId": "out-systems-integration-foundation-testing-and-validation-complete",
+          "postOutcomeId": "out-systems-integration-foundation-production-deployment-complete",
+          "requiresCapabilityIds": [
+            "cap-systems-integration-foundation-production-deployment-execution-management",
+            "cap-systems-integration-foundation-production-deployment-quality-assurance",
+            "cap-systems-integration-foundation-production-deployment-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-systems-integration-foundation-production-deployment-execution-management": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-systems-integration-foundation-production-deployment-quality-assurance": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-systems-integration-foundation-production-deployment-handoff-coordination": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-systems-integration-foundation-data-flow-monitoring": {
+          "name": "Data Flow Monitoring",
+          "description": "Data Flow Monitoring stage in Systems Integration Foundation",
+          "preOutcomeId": "out-systems-integration-foundation-production-deployment-complete",
+          "postOutcomeId": "out-systems-integration-foundation-data-flow-monitoring-complete",
+          "requiresCapabilityIds": [
+            "cap-systems-integration-foundation-data-flow-monitoring-data-aggregation",
+            "cap-systems-integration-foundation-data-flow-monitoring-performance-measurement",
+            "cap-systems-integration-foundation-data-flow-monitoring-stakeholder-reporting"
+          ],
+          "performedByRoleIds": [
+            "role-sales-team",
+            "role-plumbers"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-systems-integration-foundation-data-flow-monitoring-data-aggregation": {
+              "roleIds": [
+                "role-sales-team",
+                "role-plumbers"
+              ],
+              "activities": [
+                "Extract data from source systems for reporting period",
+                "Validate data completeness and consistency",
+                "Aggregate into reporting structure"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-systems-integration-foundation-data-flow-monitoring-performance-measurement": {
+              "roleIds": [
+                "role-plumbers",
+                "role-distributors"
+              ],
+              "activities": [
+                "Calculate KPIs against defined targets",
+                "Identify variances and investigate root causes",
+                "Prepare commentary on performance trends"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-systems-integration-foundation-data-flow-monitoring-stakeholder-reporting": {
+              "roleIds": [
+                "role-distributors",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Format report for target audience",
+                "Distribute report through agreed channels",
+                "Respond to stakeholder queries on reported data"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        }
+      },
+      "capabilities": {
+        "cap-channel-partner-sales-territory-assignment-decision-authority": {
+          "name": "Decision Authority",
+          "description": "Ability to make and record binding decisions within delegated authority"
+        },
+        "cap-channel-partner-sales-territory-assignment-escalation-management": {
+          "name": "Escalation Management",
+          "description": "Ability to escalate decisions that exceed local authority"
+        },
+        "cap-channel-partner-sales-territory-assignment-compliance-verification": {
+          "name": "Compliance Verification",
+          "description": "Ability to verify decisions comply with policy and regulation"
+        },
+        "cap-channel-partner-sales-pre-visit-planning-capacity-planning": {
+          "name": "Capacity Planning",
+          "description": "Ability to assess available capacity against demand"
+        },
+        "cap-channel-partner-sales-pre-visit-planning-resource-scheduling": {
+          "name": "Resource Scheduling",
+          "description": "Ability to allocate resources to planned work"
+        },
+        "cap-channel-partner-sales-pre-visit-planning-plan-governance": {
+          "name": "Plan Governance",
+          "description": "Ability to approve and baseline the agreed plan"
+        },
+        "cap-channel-partner-sales-partner-engagement-partner-engagement-execution": {
+          "name": "Partner Engagement Execution",
+          "description": "Ability to execute Partner Engagement activities within Channel Partner Sales"
+        },
+        "cap-channel-partner-sales-partner-engagement-partner-engagement-governance": {
+          "name": "Partner Engagement Governance",
+          "description": "Ability to oversee and control Partner Engagement outcomes"
+        },
+        "cap-channel-partner-sales-partner-engagement-partner-engagement-integration": {
+          "name": "Partner Engagement Integration",
+          "description": "Ability to coordinate Partner Engagement across teams and systems"
+        },
+        "cap-channel-partner-sales-opportunity-development-opportunity-development-execution": {
+          "name": "Opportunity Development Execution",
+          "description": "Ability to execute Opportunity Development activities within Channel Partner Sales"
+        },
+        "cap-channel-partner-sales-opportunity-development-opportunity-development-governance": {
+          "name": "Opportunity Development Governance",
+          "description": "Ability to oversee and control Opportunity Development outcomes"
+        },
+        "cap-channel-partner-sales-opportunity-development-opportunity-development-integration": {
+          "name": "Opportunity Development Integration",
+          "description": "Ability to coordinate Opportunity Development across teams and systems"
+        },
+        "cap-channel-partner-sales-deal-execution-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-channel-partner-sales-deal-execution-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-channel-partner-sales-deal-execution-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-channel-partner-sales-revenue-recognition-revenue-recognition-execution": {
+          "name": "Revenue Recognition Execution",
+          "description": "Ability to execute Revenue Recognition activities within Channel Partner Sales"
+        },
+        "cap-channel-partner-sales-revenue-recognition-revenue-recognition-governance": {
+          "name": "Revenue Recognition Governance",
+          "description": "Ability to oversee and control Revenue Recognition outcomes"
+        },
+        "cap-channel-partner-sales-revenue-recognition-revenue-recognition-integration": {
+          "name": "Revenue Recognition Integration",
+          "description": "Ability to coordinate Revenue Recognition across teams and systems"
+        },
+        "cap-customer-maintenance-delivery-cycle-monitoring-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-customer-maintenance-delivery-cycle-monitoring-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-customer-maintenance-delivery-cycle-monitoring-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-customer-maintenance-delivery-customer-notification-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-customer-maintenance-delivery-customer-notification-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-customer-maintenance-delivery-customer-notification-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-customer-maintenance-delivery-service-scheduling-capacity-planning": {
+          "name": "Capacity Planning",
+          "description": "Ability to assess available capacity against demand"
+        },
+        "cap-customer-maintenance-delivery-service-scheduling-resource-scheduling": {
+          "name": "Resource Scheduling",
+          "description": "Ability to allocate resources to planned work"
+        },
+        "cap-customer-maintenance-delivery-service-scheduling-plan-governance": {
+          "name": "Plan Governance",
+          "description": "Ability to approve and baseline the agreed plan"
+        },
+        "cap-customer-maintenance-delivery-cartridge-replacement-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-customer-maintenance-delivery-cartridge-replacement-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-customer-maintenance-delivery-cartridge-replacement-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-customer-maintenance-delivery-revenue-capture-demand-capture": {
+          "name": "Demand Capture",
+          "description": "Ability to receive and record incoming requests in Customer Maintenance Delivery"
+        },
+        "cap-customer-maintenance-delivery-revenue-capture-data-validation": {
+          "name": "Data Validation",
+          "description": "Ability to verify accuracy and completeness of captured data"
+        },
+        "cap-customer-maintenance-delivery-revenue-capture-intake-routing": {
+          "name": "Intake Routing",
+          "description": "Ability to route validated requests to the correct handling path"
+        },
+        "cap-systems-integration-foundation-requirements-definition-requirements-definition-execution": {
+          "name": "Requirements Definition Execution",
+          "description": "Ability to execute Requirements Definition activities within Systems Integration Foundation"
+        },
+        "cap-systems-integration-foundation-requirements-definition-requirements-definition-governance": {
+          "name": "Requirements Definition Governance",
+          "description": "Ability to oversee and control Requirements Definition outcomes"
+        },
+        "cap-systems-integration-foundation-requirements-definition-requirements-definition-integration": {
+          "name": "Requirements Definition Integration",
+          "description": "Ability to coordinate Requirements Definition across teams and systems"
+        },
+        "cap-systems-integration-foundation-partner-selection-partner-selection-execution": {
+          "name": "Partner Selection Execution",
+          "description": "Ability to execute Partner Selection activities within Systems Integration Foundation"
+        },
+        "cap-systems-integration-foundation-partner-selection-partner-selection-governance": {
+          "name": "Partner Selection Governance",
+          "description": "Ability to oversee and control Partner Selection outcomes"
+        },
+        "cap-systems-integration-foundation-partner-selection-partner-selection-integration": {
+          "name": "Partner Selection Integration",
+          "description": "Ability to coordinate Partner Selection across teams and systems"
+        },
+        "cap-systems-integration-foundation-integration-development-integration-development-execution": {
+          "name": "Integration Development Execution",
+          "description": "Ability to execute Integration Development activities within Systems Integration Foundation"
+        },
+        "cap-systems-integration-foundation-integration-development-integration-development-governance": {
+          "name": "Integration Development Governance",
+          "description": "Ability to oversee and control Integration Development outcomes"
+        },
+        "cap-systems-integration-foundation-integration-development-integration-development-integration": {
+          "name": "Integration Development Integration",
+          "description": "Ability to coordinate Integration Development across teams and systems"
+        },
+        "cap-systems-integration-foundation-testing-and-validation-testing-and-validation-execution": {
+          "name": "Testing and Validation Execution",
+          "description": "Ability to execute Testing and Validation activities within Systems Integration Foundation"
+        },
+        "cap-systems-integration-foundation-testing-and-validation-testing-and-validation-governance": {
+          "name": "Testing and Validation Governance",
+          "description": "Ability to oversee and control Testing and Validation outcomes"
+        },
+        "cap-systems-integration-foundation-testing-and-validation-testing-and-validation-integration": {
+          "name": "Testing and Validation Integration",
+          "description": "Ability to coordinate Testing and Validation across teams and systems"
+        },
+        "cap-systems-integration-foundation-production-deployment-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-systems-integration-foundation-production-deployment-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-systems-integration-foundation-production-deployment-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-systems-integration-foundation-data-flow-monitoring-data-aggregation": {
+          "name": "Data Aggregation",
+          "description": "Ability to collect and consolidate data for reporting"
+        },
+        "cap-systems-integration-foundation-data-flow-monitoring-performance-measurement": {
+          "name": "Performance Measurement",
+          "description": "Ability to calculate and interpret performance against targets"
+        },
+        "cap-systems-integration-foundation-data-flow-monitoring-stakeholder-reporting": {
+          "name": "Stakeholder Reporting",
+          "description": "Ability to present performance information to stakeholders"
+        }
+      },
+      "roles": {
+        "role-sales-team": {
+          "name": "Sales Team"
+        },
+        "role-plumbers": {
+          "name": "Plumbers"
+        },
+        "role-distributors": {
+          "name": "Distributors"
+        },
+        "role-customer-care": {
+          "name": "Customer Care"
+        },
+        "role-head-of-tech": {
+          "name": "Head of Tech"
+        },
+        "role-implementation-partners": {
+          "name": "Implementation Partners"
+        }
+      },
+      "outcomes": {
+        "out-channel-partner-sales-entry": {
+          "name": "Channel Partner Sales initiated",
+          "status": "active"
+        },
+        "out-channel-partner-sales-territory-assignment-complete": {
+          "name": "Territory Assignment complete",
+          "status": "active"
+        },
+        "out-channel-partner-sales-pre-visit-planning-complete": {
+          "name": "Pre-Visit Planning complete",
+          "status": "active"
+        },
+        "out-channel-partner-sales-partner-engagement-complete": {
+          "name": "Partner Engagement complete",
+          "status": "active"
+        },
+        "out-channel-partner-sales-opportunity-development-complete": {
+          "name": "Opportunity Development complete",
+          "status": "active"
+        },
+        "out-channel-partner-sales-deal-execution-complete": {
+          "name": "Deal Execution complete",
+          "status": "active"
+        },
+        "out-channel-partner-sales-revenue-recognition-complete": {
+          "name": "Revenue Recognition complete",
+          "status": "active"
+        },
+        "out-customer-maintenance-delivery-entry": {
+          "name": "Customer Maintenance Delivery initiated",
+          "status": "active"
+        },
+        "out-customer-maintenance-delivery-cycle-monitoring-complete": {
+          "name": "Cycle Monitoring complete",
+          "status": "active"
+        },
+        "out-customer-maintenance-delivery-customer-notification-complete": {
+          "name": "Customer Notification complete",
+          "status": "active"
+        },
+        "out-customer-maintenance-delivery-service-scheduling-complete": {
+          "name": "Service Scheduling complete",
+          "status": "active"
+        },
+        "out-customer-maintenance-delivery-cartridge-replacement-complete": {
+          "name": "Cartridge Replacement complete",
+          "status": "active"
+        },
+        "out-customer-maintenance-delivery-revenue-capture-complete": {
+          "name": "Revenue Capture complete",
+          "status": "active"
+        },
+        "out-systems-integration-foundation-entry": {
+          "name": "Systems Integration Foundation initiated",
+          "status": "active"
+        },
+        "out-systems-integration-foundation-requirements-definition-complete": {
+          "name": "Requirements Definition complete",
+          "status": "active"
+        },
+        "out-systems-integration-foundation-partner-selection-complete": {
+          "name": "Partner Selection complete",
+          "status": "active"
+        },
+        "out-systems-integration-foundation-integration-development-complete": {
+          "name": "Integration Development complete",
+          "status": "active"
+        },
+        "out-systems-integration-foundation-testing-and-validation-complete": {
+          "name": "Testing and Validation complete",
+          "status": "active"
+        },
+        "out-systems-integration-foundation-production-deployment-complete": {
+          "name": "Production Deployment complete",
+          "status": "active"
+        },
+        "out-systems-integration-foundation-data-flow-monitoring-complete": {
+          "name": "Data Flow Monitoring complete",
+          "status": "active"
+        }
+      },
+      "metrics": {
+        "metric-integration-timeline": {
+          "name": "Integration Timeline"
+        },
+        "metric-sales-admin-time-lost": {
+          "name": "Sales Admin Time Lost"
+        },
+        "metric-company-growth-rate": {
+          "name": "Company Growth Rate"
+        },
+        "metric-product-skus": {
+          "name": "Product SKUs"
+        },
+        "metric-cartridge-replacement-cycle": {
+          "name": "Cartridge Replacement Cycle"
+        }
+      },
+      "controls": {
+        "ctrl-netsuite-integration-project-6-months-overdue-causing-foundational-data-flow-issues": {
+          "name": "NetSuite integration project 6 months overdue causing founda"
+        },
+        "ctrl-sales-team-lacks-pre-visit-customer-intelligence-requiring-manual-information-gathering": {
+          "name": "Sales team lacks pre-visit customer intelligence requiring m"
+        },
+        "ctrl-staff-forced-to-use-multiple-disparate-systems-despite-having-crm-tools": {
+          "name": "Staff forced to use multiple disparate systems despite havin"
+        },
+        "ctrl-90-salesforce-customizations-making-standard-implementations-difficult": {
+          "name": "90+ Salesforce customizations making standard implementation"
+        },
+        "ctrl-sales-team-not-logging-crm-activities-due-to-system-reliability-concerns": {
+          "name": "Sales team not logging CRM activities due to system reliabil"
+        },
+        "ctrl-distributors-being-passive-order-takers-rather-than-proactive-sellers": {
+          "name": "Distributors being passive order takers rather than proactiv"
+        }
+      },
+      "informationObjects": {},
+      "technologyApps": {
+        "tech-salesforce": {
+          "name": "Salesforce",
+          "type": "CRM"
+        },
+        "tech-netsuite": {
+          "name": "NetSuite",
+          "type": "ERP"
+        },
+        "tech-mulesoft": {
+          "name": "Mulesoft",
+          "type": "Other"
+        },
+        "tech-whatsapp": {
+          "name": "WhatsApp",
+          "type": "Comms"
+        },
+        "tech-sms": {
+          "name": "SMS",
+          "type": "Comms"
+        },
+        "tech-microsoft-teams": {
+          "name": "Microsoft Teams",
+          "type": "Comms"
+        },
+        "tech-slack": {
+          "name": "Slack",
+          "type": "Comms"
+        }
+      }
+    },
+    "crossStreamOutcomes": [],
+    "scaffoldIntegrityHash": "c2NhZmZvbGQtcHVyZXRlYzE3NzI2ODk3"
+  },
+  "heatmaps": [
+    {
+      "heatmapId": "heatmap-vs-systems-integration-foundation-1772689787387",
+      "scaffoldId": "scaffold-puretec",
+      "valueStreamId": "vs-systems-integration-foundation",
+      "observations": [
+        {
+          "observationId": "fr_001_netsuite_integration_overdue",
+          "category": "DataSignalFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-systems-integration-foundation-integration-development"
+          },
+          "contributingAnchors": [
+            {
+              "anchorType": "Activity",
+              "anchorId": "act-systems-integration-foundation-data-flow-monitoring"
+            }
+          ],
+          "intensity": {
+            "scale": "0-10",
+            "score": 9
+          },
+          "rationale": "NetSuite integration project 6 months overdue creates foundational data flow bottleneck blocking downstream systems integration and operational data availability",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_1",
+              "excerpt": "NetSuite integration project 6 months overdue causing foundational data flow issues"
+            }
+          ],
+          "observedAt": "2026-03-05T05:49:14.427Z"
+        },
+        {
+          "observationId": "fr_002_salesforce_customization_complexity",
+          "category": "GovernanceRiskFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-systems-integration-foundation-requirements-definition"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 8
+          },
+          "rationale": "90+ Salesforce customizations create governance complexity during requirements definition, making standard implementations difficult and increasing control layering",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_4",
+              "excerpt": "90+ Salesforce customizations making standard implementations difficult"
+            }
+          ],
+          "observedAt": "2026-03-05T05:49:14.427Z"
+        }
+      ],
+      "bindingConstraint": {
+        "findingId": "bc_001",
+        "bindingAnchor": {
+          "anchorType": "Activity",
+          "anchorId": "act-systems-integration-foundation-integration-development"
+        },
+        "bindingAnchorObservationId": "fr_001_netsuite_integration_overdue",
+        "justification": "Integration Development activity has highest downstream dependency as it blocks data flow monitoring and impacts both channel partner sales (pre-visit planning) and customer maintenance delivery value streams through foundational data availability",
+        "constraintScoring": {
+          "candidates": [
+            {
+              "anchorId": "act-systems-integration-foundation-integration-development",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 3,
+                "authorityCentralisation": 2,
+                "downstreamDependency": 3,
+                "controlLayering": 2,
+                "capacityConstraint": 2
+              },
+              "totalScore": 12
+            },
+            {
+              "anchorId": "act-systems-integration-foundation-requirements-definition",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 2,
+                "authorityCentralisation": 3,
+                "downstreamDependency": 2,
+                "controlLayering": 3,
+                "capacityConstraint": 1
+              },
+              "totalScore": 11
+            }
+          ],
+          "selectedAnchorId": "act-systems-integration-foundation-integration-development",
+          "selectionRationale": "Highest total score (12) with maximum downstream dependency impact across multiple value streams"
+        },
+        "confidence": 0.8,
+        "observedAt": "2026-03-05T05:49:14.427Z"
+      },
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-05T05:49:14.427Z"
+    },
+    {
+      "heatmapId": "heatmap-vs-channel-partner-sales-1772689787387",
+      "scaffoldId": "scaffold-puretec",
+      "valueStreamId": "vs-channel-partner-sales",
+      "observations": [
+        {
+          "observationId": "fr_003_pre_visit_intelligence_gap",
+          "category": "DataSignalFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-channel-partner-sales-pre-visit-planning"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 8
+          },
+          "rationale": "Sales team lacks pre-visit customer intelligence requiring manual information gathering, creating data signal fragmentation and decision latency",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_2",
+              "excerpt": "Sales team lacks pre-visit customer intelligence requiring manual information gathering"
+            }
+          ],
+          "observedAt": "2026-03-05T05:49:14.427Z"
+        },
+        {
+          "observationId": "fr_004_disparate_systems_usage",
+          "category": "ProcessHandoffFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-channel-partner-sales-partner-engagement"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 7
+          },
+          "rationale": "Staff forced to use multiple disparate systems despite having CRM tools creates handoff friction and rework during partner engagement activities",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_3",
+              "excerpt": "Staff forced to use multiple disparate systems despite having CRM tools"
+            }
+          ],
+          "observedAt": "2026-03-05T05:49:14.427Z"
+        },
+        {
+          "observationId": "fr_005_crm_reliability_concerns",
+          "category": "IncentiveCapacityFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-channel-partner-sales-partner-engagement"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 6
+          },
+          "rationale": "Sales team not logging CRM activities due to system reliability concerns creates incentive misalignment and capacity friction in partner engagement",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_5",
+              "excerpt": "Sales team not logging CRM activities due to system reliability concerns"
+            }
+          ],
+          "observedAt": "2026-03-05T05:49:14.427Z"
+        },
+        {
+          "observationId": "fr_006_passive_distributor_behavior",
+          "category": "IncentiveCapacityFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-channel-partner-sales-opportunity-development"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 7
+          },
+          "rationale": "Distributors being passive order takers rather than proactive sellers indicates incentive structure distorts behavior during opportunity development",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_6",
+              "excerpt": "Distributors being passive order takers rather than proactive sellers"
+            }
+          ],
+          "observedAt": "2026-03-05T05:49:14.427Z"
+        }
+      ],
+      "bindingConstraint": {
+        "findingId": "bc_002",
+        "bindingAnchor": {
+          "anchorType": "Activity",
+          "anchorId": "act-channel-partner-sales-pre-visit-planning"
+        },
+        "bindingAnchorObservationId": "fr_003_pre_visit_intelligence_gap",
+        "justification": "Pre-Visit Planning activity has highest downstream dependency as intelligence gaps cascade through partner engagement, opportunity development, and deal execution stages, creating cumulative friction across the entire sales value stream",
+        "constraintScoring": {
+          "candidates": [
+            {
+              "anchorId": "act-channel-partner-sales-pre-visit-planning",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 2,
+                "authorityCentralisation": 2,
+                "downstreamDependency": 3,
+                "controlLayering": 1,
+                "capacityConstraint": 2
+              },
+              "totalScore": 10
+            },
+            {
+              "anchorId": "act-channel-partner-sales-partner-engagement",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 3,
+                "authorityCentralisation": 1,
+                "downstreamDependency": 2,
+                "controlLayering": 2,
+                "capacityConstraint": 2
+              },
+              "totalScore": 10
+            },
+            {
+              "anchorId": "act-channel-partner-sales-opportunity-development",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 2,
+                "authorityCentralisation": 1,
+                "downstreamDependency": 2,
+                "controlLayering": 1,
+                "capacityConstraint": 2
+              },
+              "totalScore": 8
+            }
+          ],
+          "selectedAnchorId": "act-channel-partner-sales-pre-visit-planning",
+          "selectionRationale": "Tied highest score but selected due to upstream position creating cascade effect through subsequent activities"
+        },
+        "confidence": 0.67,
+        "observedAt": "2026-03-05T05:49:14.427Z"
+      },
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-05T05:49:14.427Z"
+    },
+    {
+      "heatmapId": "heatmap-vs-customer-maintenance-delivery-1772689787387",
+      "scaffoldId": "scaffold-puretec",
+      "valueStreamId": "vs-customer-maintenance-delivery",
+      "observations": [],
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-05T05:49:14.427Z"
+    }
+  ]
+}

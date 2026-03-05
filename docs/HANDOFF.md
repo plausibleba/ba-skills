@@ -6,57 +6,76 @@ How to onboard a new participant (model or human) to the VCC project.
 
 ## Quick Orientation
 
-The **Value Cognition Canvas (VCC)** is a governance instrument for value stream analysis. It has two views:
+The **Value Cognition Canvas (VCC)** is a presales intelligence instrument. It turns a client discovery conversation into a structured operating model diagnostic — surfacing friction points, binding constraints, and technology solution recommendations.
 
-1. **Network View** — Enterprise-level topology showing how 6 value streams connect
-2. **Stage View** — Per-stream drill-through showing stages, capabilities, and PPIT layers
+**The four-step rep workflow:**
+1. Run Discovery Intake (paste transcript → generate scaffold)
+2. Inspect Network View (value stream topology)
+3. Assess Friction (Pass 3 → observations + binding constraint)
+4. Enrich Solutions (Pass 4 → vendor feature matching + customer stories)
 
-The project has two codebases:
-- **Frontend** — React/Vite/Tailwind SPA, no backend needed
-- **Pipeline** — Python scripts that transform XLSX business models into scaffold JSON
+**Two ways to load a model:**
+- **New Discovery** — paste transcript into Discovery Intake form, AI builds scaffold + heatmap
+- **Load Bundle** — load a previously saved VCC Bundle JSON (scaffold + heatmaps)
 
 ---
 
 ## Read These First
 
-1. `ARCHITECTURE.md` — System overview, data model, component tree
-2. `DESIGN-PRINCIPLES.md` — Reviewer's design rules (essential for UI work)
-3. `DECISIONS.md` — Why things are the way they are
-4. `SESSION-LOG.md` — What was built when
+1. `CURRENT-STATE.md` — one-page status, what's stable, what's next
+2. `ARCHITECTURE.md` — system overview, data model, component tree
+3. `DESIGN-PRINCIPLES.md` — Reviewer's design rules (essential for UI work)
+4. `DECISIONS.md` — why things are the way they are (D-001 through D-040)
+5. `SESSION-LOG.md` — chronological build record
 
 ---
 
 ## Key Concepts
 
 ### Scaffold
-The canonical data model. A JSON file containing value streams, activities (stages), capabilities, roles, metrics, outcomes, and PPIT assignments. Everything renders from this.
-
-### PPIT
-People, (Activities), Information, Technology — the four layers that describe HOW a capability operates within a specific stage. These are toggled on/off in the Stage View toolbar.
-
-### Activities vs Capabilities
-**Capability** = "what the organisation must be able to do" (stable, noun-like)
-**Activity** = "what actually happens" (observable, verb-object, atomic)
-
-These are distinct ontological layers. Never conflate them. See DESIGN-PRINCIPLES.md for the Reviewer's rules.
+The canonical data model. A JSON file containing value streams, stages (activities), capabilities, roles, metrics, outcomes, and PPIT assignments. Everything renders from this.
 
 ### Heatmap
-An assessment overlay that adds friction observations to a scaffold. Loaded separately, matched by scaffoldId.
+An assessment overlay that adds friction observations and a binding constraint to a scaffold VS. Loaded separately via the Stage Wizard or embedded in a Bundle.
 
-### IR (Intermediate Representation)
-Transient staging format between XLSX and scaffold. Not durable. Not canonical.
+### Bundle
+A single JSON file containing scaffold + all heatmaps for an engagement. The save/load unit for presales work.
+
+### The Four Passes
+
+| Pass | Runs In | What It Does |
+|------|---------|-------------|
+| 1 | Discovery Intake | Defines board-level value streams (outcome-driven, 2–4 max) |
+| 2 | Discovery Intake | Extracts stages, roles, tech, pain points per VS |
+| 3 | Stage Wizard Step 2 | Friction assessment — observations + binding constraint |
+| 4 | Stage Wizard Step 3 | Vendor enrichment — technology features per friction point |
+
+All passes run at `temperature: 0` for deterministic output.
+
+### PPIT
+People, (Activities), Information, Technology — the four layers that describe HOW a capability operates. Toggled on/off in the Stage View toolbar.
+
+### Binding Constraint
+The single highest-leverage friction point — the one that cascades through the most downstream activities. Highlighted in red on the Stage View.
 
 ---
 
 ## Working on the Frontend
 
-**Stack:** React 18 + Vite + Tailwind CSS + Zustand
+**Stack:** React 18 + Vite + Tailwind CSS + Zustand  
+**Deployment:** Vercel (auto-deploy from GitHub main)
 
-**Key files to understand:**
-- `store/canvas-store.ts` — All state lives here
-- `CanvasView.tsx` — Stage view orchestrator
-- `NetworkView.tsx` — Network view orchestrator
-- `components/canvas/CapabilityBlock.tsx` — Most complex rendering component
+**Key files:**
+- `store/canvas-store.ts` — all state, `enrichVersion` counter, `loadHeatmap`, `selectVs`
+- `store/scaffold-resolver.ts` — resolves metric measure IDs to inline values
+- `store/network-derivation.ts` — DAG topology, node/edge derivation
+- `components/StageWizard.tsx` — three-step wizard bar (Stage View toolbar)
+- `components/UserGuidePanel.tsx` — fixed bottom-left contextual guide
+- `components/DiscoveryIntake.tsx` — four-pass intake form
+- `components/FrictionPanel.tsx` — editable friction overlay panel
+- `components/CanvasView.tsx` — Stage View orchestrator
+- `components/NetworkView.tsx` — Network View orchestrator
+- `fixtures/vendor-libraries/salesforce-agentforce.json` — 47 features, customer stories
 
 **Running locally:**
 ```bash
@@ -65,74 +84,50 @@ npm install
 npm run dev
 ```
 
-Load a scaffold JSON via the file loader. The IIBA scaffold is in `fixtures/iiba/scaffold.json`.
-
 ---
 
-## Working on the Pipeline
+## Key Architecture Decisions to Know
 
-**Stack:** Python 3.12, no external dependencies (stdlib only)
+**enrichVersion pattern:** `loadHeatmap` increments `enrichVersion` in the store. `FrictionPanel` uses `key={selectedActivityId-enrichVersion}` to force remount after enrichment, ensuring updated observations (with solutions) are picked up from local state.
 
-**Key files:**
-- `src/generate_scaffold.py` — Main generator
-- `src/ppit_assignments.py` — All 70 capability PPIT maps
+**selectVs after enrichment:** After Pass 4 completes, `selectVs(currentVsId)` is called to re-derive `heatmapData` from the updated `heatmapsByVs` map.
 
-**Running:**
-```bash
-cd pipeline/src
-python3 generate_scaffold.py
-# Outputs to ../outputs/iiba_scaffold.json
-```
+**scaffold-resolver guard:** `resolveScaffoldMeasures` returns early if `elements.metrics` is missing or empty — discovery-generated scaffolds may not have a metrics collection.
 
-After regenerating, copy to frontend fixtures:
-```bash
-cp pipeline/outputs/iiba_scaffold.json frontend/fixtures/iiba/scaffold.json
-```
+**Temperature 0:** All API calls use `temperature: 0`. Never change this without recording it as a decision — it affects output reproducibility.
 
 ---
 
 ## Collaboration Protocol
 
 ### For AI Participants
-1. Read `ARCHITECTURE.md` and `DESIGN-PRINCIPLES.md` before making changes
-2. Follow the Reviewer's activity statement rules (Verb + Object, 6-12 words, no conjunctions)
-3. Follow the colour semantics (blue=roles, violet=activities, amber=info, emerald=tech)
-4. Update `SESSION-LOG.md` with what you changed
-5. Update `DECISIONS.md` if you made a non-trivial design choice
-
-### For the Reviewer
-- Feedback goes into the conversation, then gets distilled into `DESIGN-PRINCIPLES.md`
-- Focus on ontological clarity and visual hierarchy
-- Flag semantic blur (e.g., capability descriptions restating activities)
+1. Read `CURRENT-STATE.md` first — it's one page
+2. Read `ARCHITECTURE.md` and `DESIGN-PRINCIPLES.md` before UI changes
+3. Follow the Reviewer's activity statement rules (Verb + Object, 6–12 words, no conjunctions)
+4. Follow colour semantics: blue=roles, violet=activities, amber=info, emerald=tech
+5. Update `SESSION-LOG.md` with what you changed
+6. Update `DECISIONS.md` for any non-trivial design choice (next number: D-041)
+7. Update `CURRENT-STATE.md` to reflect new stable state
 
 ### For Terry
 - Upload relevant docs from `/docs` at the start of each session
-- The participant reads them, works, produces updated files + updated docs
-- You commit everything to the repo
+- Commit all outputs to repo after each session
+- Share production URL with Daniel after stable deploys
 
----
-
-## Current State (as of 24 Feb 2026)
-
-**Working:**
-- Full IIBA scaffold with 6 VS, 28 stages, 70 capabilities, 233 activities
-- Network View with two-layer topology
-- Stage View with PPIT layer toggles, info tooltips, VS selector
-- Pipeline: XLSX → IR → scaffold with PPIT enrichment
-
-**Not yet built:**
-- IIBA heatmap (need to fill discovery questionnaire first)
-- Friction Signal Agent (Track B)
-- TransformationPane content (painpoints, ideas, requirements)
-- Activity-level PPIT anchoring (currently capability-level)
+### For Daniel
+- Use the QuickStart guide (`VCC_QuickStart_Daniel.docx`) for first run
+- Run a full transcript → generate → assess → enrich flow before reporting feedback
+- Note which VS and which stage produced unexpected results
 
 ---
 
 ## Anti-Patterns to Avoid
 
-1. **Don't restate capabilities as activities** — If the activity text sounds like the capability name in different words, it's wrong
+1. **Don't restate capabilities as activities** — activity text ≠ capability name in different words
 2. **Don't use composite activities** — "Process payment and send confirmation" is two activities
-3. **Don't vary edge stroke widths** — Uniform encoding discipline
-4. **Don't add colours without semantic meaning** — Every colour must mean something
-5. **Don't skip the Decisions log** — If you chose between options, record it
-6. **Don't treat IR as canonical** — It's a workspace, not a deliverable
+3. **Don't vary edge stroke widths** — uniform encoding discipline
+4. **Don't add colours without semantic meaning** — every colour must mean something
+5. **Don't skip the Decisions log** — if you chose between options, record it
+6. **Don't treat IR as canonical** — it's a workspace, not a deliverable
+7. **Don't run Pass 3/4 at temperature > 0** — breaks output reproducibility
+8. **Don't gate "Open in Canvas" on saving** — was reversed in D-033, don't reintroduce

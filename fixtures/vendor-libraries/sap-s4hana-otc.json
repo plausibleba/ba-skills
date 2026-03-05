@@ -1,0 +1,44 @@
+{
+  "vendorId": "sap-s4hana",
+  "vendorName": "SAP S/4HANA",
+  "version": "1.0",
+  "vendorDescription": "SAP S/4HANA is an intelligent ERP system built on the SAP HANA in-memory database. It provides real-time processing across finance, procurement, manufacturing, supply chain, and sales.",
+  "categories": [
+    {
+      "categoryId": "cat_sap_otc",
+      "categoryName": "Order to Cash",
+      "features": [
+        {
+          "featureId": "sap-sd-order-mgmt",
+          "name": "SD Order Management",
+          "description": "End-to-end sales order processing with automated pricing, ATP checking, and multi-channel order capture including EDI and customer portals.",
+          "customerStoryIds": ["cs_sap_volvo_01", "cs_sap_scania_01"]
+        },
+        {
+          "featureId": "sap-fscm-credit",
+          "name": "FSCM Credit Management",
+          "description": "Real-time credit exposure monitoring with automated order blocking, credit limit management, and risk-class-based segmentation across all business units.",
+          "customerStoryIds": ["cs_sap_volvo_01"]
+        },
+        {
+          "featureId": "sap-billing-invoicing",
+          "name": "Billing & e-Invoicing",
+          "description": "Automated billing document creation with global tax determination, multi-format invoice output, and e-invoicing compliance for 60+ countries.",
+          "customerStoryIds": ["cs_sap_scania_01", "cs_sap_caterpillar_01"]
+        },
+        {
+          "featureId": "sap-fscm-collections",
+          "name": "FSCM Collections & Dispute Management",
+          "description": "Intelligent collections worklist with automated dunning, dispute case management, and promise-to-pay tracking integrated with accounts receivable.",
+          "customerStoryIds": ["cs_sap_caterpillar_01"]
+        },
+        {
+          "featureId": "sap-cash-application",
+          "name": "Cash Application & Bank Integration",
+          "description": "Automated bank statement import with ML-assisted payment matching, lockbox processing, and real-time accounts receivable clearing.",
+          "customerStoryIds": ["cs_sap_volvo_01", "cs_sap_caterpillar_01"]
+        }
+      ]
+    }
+  ]
+}

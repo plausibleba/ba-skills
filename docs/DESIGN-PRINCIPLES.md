@@ -130,14 +130,48 @@ This is the default. Compact. Scannable. Board-safe.
 
 ---
 
-## 9. What Doesn't Belong (Yet)
+## 9. Transformation Artefacts
 
-The Transformation pane is reserved for **future transformation artefacts**:
-- Painpoints
-- Ideas
-- Requirements
-- Acceptance criteria
-- Epics
-- Initiatives
+The Transformation pane anchors delivery artefacts to friction observations (SBRs):
+- **User Stories** — As a / I want / So that / Acceptance Criteria — generated from SBR rationale and role context
+- Epics, Initiatives — future grouping layer
+- Stories export to Jira via CSV (storyId, summary, description, AC, points, priority, epic link)
 
-These are not yet modelled. When they are, they will anchor to activities (not capabilities), because activities are where friction lives.
+Artefacts anchor to **activities** (not capabilities), because activities are where friction lives and where delivery accountability is assigned.
+
+---
+
+## 10. Plausible Over Perfect
+
+*Captured from project insight, 5 Mar 2026.*
+
+**The central failure mode of Business Architecture is the pursuit of the correct model.**
+
+The architecture community has historically treated value stream and capability models as taxonomic truth — something to be discovered, validated, and defended. This produces models that take months to build, are owned by specialists, and arrive too late to influence the decisions they were meant to inform.
+
+**There is no correct model. Models are perspectives. Points of view.**
+
+A value stream model is not a map of reality. It is a shared lens that a team agrees to look through together. Its value is not in being right — it is in being *useful enough to drive a conversation and fast enough to be relevant to the decision at hand.*
+
+### Implications for VCC
+
+**Generation target:** A plausible scaffold generated from a 60-minute discovery conversation is more valuable than a perfect scaffold delivered in six months. The model is a conversation starter, not a deliverable.
+
+**Validation threshold:** The VCC validator enforces structural integrity (no broken references, valid schema, consistent anchor IDs). It does not enforce semantic correctness. Semantic correctness is the user's judgment call — not the tool's.
+
+**Iteration over perfection:** A BA should be able to load a scaffold, identify where it is wrong, and fix it in minutes. The model should be cheap to challenge and cheap to change. Friction that is wrongly classified at `DataSignalFriction` instead of `ProcessHandoffFriction` is not a crisis — it is a discussion prompt.
+
+**Democratisation:** The technique must not remain in the custody of architects. Business Analysts, product owners, and delivery leads can generate a plausible model from a discovery session, derive user stories from it, and take those stories into sprint planning — without waiting for architectural sign-off. This is the workflow VCC is designed to enable.
+
+### The Principle in Practice
+
+| Old model | VCC model |
+|-----------|-----------|
+| Months to produce | Hours to generate |
+| Owned by architects | Used by BAs and delivery teams |
+| Validated before use | Used before validated |
+| Correct or wrong | Plausible or implausible |
+| Document | Instrument |
+| Describes the enterprise | Drives the conversation |
+
+**"Good enough to be useful. Fast enough to be relevant."**

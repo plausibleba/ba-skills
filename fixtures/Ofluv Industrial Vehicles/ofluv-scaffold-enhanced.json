@@ -1,0 +1,2327 @@
+{
+  "schemaVersion": "1.0.0",
+  "scaffoldId": "scaffold_ofluv_sap_rollout_v1",
+  "name": "Ofluv Industrial Vehicles \u2014 Global SAP S/4HANA Transformation",
+  "description": "Illustrative operating model for Ofluv Industrial Vehicles's global SAP S/4HANA programme. Twelve value streams across six domains. Order to Cash fully elaborated as reference stream. All other streams are structural stubs.",
+  "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "createdAt": "2026-03-04T20:00:00Z",
+  "elements": {
+    "valueStreams": {
+      "vs_order_to_cash": {
+        "id": "vs_order_to_cash",
+        "elementType": "ValueStream",
+        "name": "Order to Cash",
+        "description": "End-to-end flow from customer order receipt through fulfilment, invoicing, and cash collection. Primary revenue realisation stream for Ofluv trucks and components across all sales regions.",
+        "layoutZone": "ecosystem",
+        "accountableRoleId": "role_global_sales_ops_director",
+        "trigger": "Customer purchase order received",
+        "terminalOutcome": "Cash received and reconciled to order",
+        "activityIds": [
+          "act_otc_receive_validate_order",
+          "act_otc_check_credit_availability",
+          "act_otc_confirm_schedule_delivery",
+          "act_otc_pick_pack_dispatch",
+          "act_otc_generate_invoice",
+          "act_otc_manage_collections",
+          "act_otc_reconcile_apply_cash",
+          "act_otc_handle_disputes_returns"
+        ],
+        "capabilityIds": [
+          "cap_order_management",
+          "cap_credit_risk_control",
+          "cap_fulfilment_coordination",
+          "cap_billing_invoicing",
+          "cap_collections_management",
+          "cap_revenue_accounting"
+        ],
+        "metricIds": [
+          "metric_otc_order_to_invoice_days",
+          "metric_otc_dso",
+          "metric_otc_first_pass_invoice_accuracy",
+          "metric_otc_collection_rate"
+        ],
+        "outcomeIds": [
+          "out_otc_order_received",
+          "out_otc_credit_approved",
+          "out_otc_delivery_confirmed",
+          "out_otc_goods_dispatched",
+          "out_otc_invoice_issued",
+          "out_otc_payment_collected",
+          "out_otc_cash_reconciled"
+        ]
+      },
+      "vs_dealer_channel_mgmt": {
+        "id": "vs_dealer_channel_mgmt",
+        "elementType": "ValueStream",
+        "name": "Dealer & Channel Management",
+        "description": "Management of Ofluv's global dealer network including onboarding, performance monitoring, incentive management, and channel conflict resolution.",
+        "layoutZone": "ecosystem",
+        "accountableRoleId": "role_channel_director",
+        "trigger": "Dealer agreement signed or renewal due",
+        "terminalOutcome": "Dealer performing at target with active incentive alignment",
+        "activityIds": [],
+        "capabilityIds": [],
+        "metricIds": [],
+        "outcomeIds": []
+      },
+      "vs_warranty_returns": {
+        "id": "vs_warranty_returns",
+        "elementType": "ValueStream",
+        "name": "Warranty & Returns",
+        "description": "Processing of warranty claims, product returns, and credit notes across all markets. Interfaces with quality management and supplier recovery.",
+        "layoutZone": "ecosystem",
+        "accountableRoleId": "role_aftersales_director",
+        "trigger": "Warranty claim or return request submitted",
+        "terminalOutcome": "Claim resolved and credit or replacement issued",
+        "activityIds": [],
+        "capabilityIds": [],
+        "metricIds": [],
+        "outcomeIds": []
+      },
+      "vs_service_parts_planning": {
+        "id": "vs_service_parts_planning",
+        "elementType": "ValueStream",
+        "name": "Service Parts Planning",
+        "description": "Demand-driven planning and distribution of spare parts to support global aftersales service commitments and dealer inventory targets.",
+        "layoutZone": "ecosystem",
+        "accountableRoleId": "role_parts_supply_director",
+        "trigger": "Parts demand signal from dealer or service network",
+        "terminalOutcome": "Parts available at point of service within committed lead time",
+        "activityIds": [],
+        "capabilityIds": [],
+        "metricIds": [],
+        "outcomeIds": []
+      },
+      "vs_source_to_contract": {
+        "id": "vs_source_to_contract",
+        "elementType": "ValueStream",
+        "name": "Source to Contract",
+        "description": "Strategic sourcing activities from spend analysis and supplier identification through RFx, negotiation, and contract execution for direct and indirect categories.",
+        "layoutZone": "knowledge",
+        "accountableRoleId": "role_chief_procurement_officer",
+        "trigger": "Sourcing need identified from category plan or requisition",
+        "terminalOutcome": "Supplier contract active and available for purchase orders",
+        "activityIds": [],
+        "capabilityIds": [],
+        "metricIds": [],
+        "outcomeIds": []
+      },
+      "vs_purchase_to_pay": {
+        "id": "vs_purchase_to_pay",
+        "elementType": "ValueStream",
+        "name": "Purchase to Pay",
+        "description": "Operational procurement from purchase requisition through goods receipt, invoice matching, and supplier payment across all Ofluv entities.",
+        "layoutZone": "knowledge",
+        "accountableRoleId": "role_procurement_operations_director",
+        "trigger": "Purchase requisition approved",
+        "terminalOutcome": "Supplier invoice paid and goods or services received",
+        "activityIds": [
+          "act_p2p_create_requisition",
+          "act_p2p_issue_purchase_order",
+          "act_p2p_receive_goods_services",
+          "act_p2p_process_supplier_invoice",
+          "act_p2p_execute_payment"
+        ],
+        "capabilityIds": [],
+        "metricIds": [],
+        "outcomeIds": []
+      },
+      "vs_demand_supply_planning": {
+        "id": "vs_demand_supply_planning",
+        "elementType": "ValueStream",
+        "name": "Demand & Supply Planning",
+        "description": "Integrated business planning process aligning market demand signals with production capacity, supply commitments, and inventory policy across all product lines.",
+        "layoutZone": "knowledge",
+        "accountableRoleId": "role_supply_chain_director",
+        "trigger": "Monthly IBP cycle or demand signal variance",
+        "terminalOutcome": "Agreed production and supply plan published to all execution streams",
+        "activityIds": [
+          "act_dsp_generate_demand_forecast",
+          "act_dsp_generate_supply_plan",
+          "act_dsp_run_sop",
+          "act_dsp_release_production_schedule",
+          "act_dsp_manage_inventory_policy"
+        ],
+        "capabilityIds": [],
+        "metricIds": [],
+        "outcomeIds": []
+      },
+      "vs_inbound_logistics": {
+        "id": "vs_inbound_logistics",
+        "elementType": "ValueStream",
+        "name": "Inbound Logistics",
+        "description": "Movement of direct materials from suppliers to Ofluv manufacturing sites including transport management, customs, and goods receipt.",
+        "layoutZone": "knowledge",
+        "accountableRoleId": "role_logistics_director",
+        "trigger": "Purchase order confirmed with supplier",
+        "terminalOutcome": "Materials received, inspected, and available for production",
+        "activityIds": [],
+        "capabilityIds": [],
+        "metricIds": [],
+        "outcomeIds": []
+      },
+      "vs_production_planning_execution": {
+        "id": "vs_production_planning_execution",
+        "elementType": "ValueStream",
+        "name": "Production Planning & Execution",
+        "description": "Translation of the agreed supply plan into plant-level production orders, scheduling, shop floor execution, and completion reporting.",
+        "layoutZone": "knowledge",
+        "accountableRoleId": "role_vp_manufacturing",
+        "trigger": "Production plan released from IBP",
+        "terminalOutcome": "Finished goods confirmed and transferred to warehouse",
+        "activityIds": [],
+        "capabilityIds": [],
+        "metricIds": [],
+        "outcomeIds": []
+      },
+      "vs_quality_compliance": {
+        "id": "vs_quality_compliance",
+        "elementType": "ValueStream",
+        "name": "Quality & Compliance",
+        "description": "Quality assurance across inbound materials, in-process production, and finished goods, including regulatory compliance for all markets.",
+        "layoutZone": "knowledge",
+        "accountableRoleId": "role_vp_quality",
+        "trigger": "Quality inspection triggered or non-conformance reported",
+        "terminalOutcome": "Product certified compliant or non-conformance resolved",
+        "activityIds": [],
+        "capabilityIds": [],
+        "metricIds": [],
+        "outcomeIds": []
+      },
+      "vs_financial_planning_consolidation": {
+        "id": "vs_financial_planning_consolidation",
+        "elementType": "ValueStream",
+        "name": "Financial Planning & Consolidation",
+        "description": "Annual and rolling financial planning, budgeting, and group consolidation across all Ofluv entities and reporting segments.",
+        "layoutZone": "knowledge",
+        "accountableRoleId": "role_group_cfo",
+        "trigger": "Annual planning cycle or reforecast trigger",
+        "terminalOutcome": "Approved group financial plan and consolidated forecast published",
+        "activityIds": [],
+        "capabilityIds": [],
+        "metricIds": [],
+        "outcomeIds": []
+      },
+      "vs_financial_close_reporting": {
+        "id": "vs_financial_close_reporting",
+        "elementType": "ValueStream",
+        "name": "Financial Close & Reporting",
+        "description": "Month-end and year-end close process including journal posting, reconciliation, statutory reporting, and external financial disclosure.",
+        "layoutZone": "knowledge",
+        "accountableRoleId": "role_group_controller",
+        "trigger": "Period end date reached",
+        "terminalOutcome": "Financial statements published and filed within regulatory deadlines",
+        "activityIds": [
+          "act_fcr_execute_period_close",
+          "act_fcr_reconcile_intercompany",
+          "act_fcr_consolidate_group",
+          "act_fcr_prepare_tax_filings",
+          "act_fcr_publish_reports"
+        ],
+        "capabilityIds": [],
+        "metricIds": [],
+        "outcomeIds": []
+      }
+    },
+    "activities": {
+      "act_otc_receive_validate_order": {
+        "id": "act_otc_receive_validate_order",
+        "elementType": "Activity",
+        "name": "Receive and Validate Customer Order",
+        "description": "Capture inbound purchase orders from all channels and validate against customer master, pricing agreements, and product availability.",
+        "performedByRoleIds": [
+          "role_order_management_specialist",
+          "role_customer_service_rep"
+        ],
+        "preOutcomeId": "out_otc_order_received",
+        "postOutcomeId": "out_otc_order_received",
+        "requiresCapabilityIds": [
+          "cap_order_management",
+          "cap_customer_master_governance"
+        ],
+        "metricIds": [
+          "metric_otc_order_to_invoice_days",
+          "metric_otc_order_error_rate"
+        ],
+        "controlIds": [
+          "ctrl_otc_order_completeness_check"
+        ],
+        "nextActivityId": "act_otc_check_credit_availability",
+        "capabilityPPIT": {
+          "cap_order_management": {
+            "roleIds": [
+              "role_order_management_specialist",
+              "role_customer_service_rep"
+            ],
+            "activities": [
+              "Capture purchase order from EDI, portal, or manual channel",
+              "Validate order against current price list and discount agreements",
+              "Confirm product codes and configuration against SAP material master",
+              "Flag incomplete or exception orders for manual review",
+              "Acknowledge order receipt to customer within SLA"
+            ],
+            "informationObjectIds": [
+              "info_customer_purchase_order",
+              "info_pricing_agreement",
+              "info_material_master"
+            ],
+            "technologyIds": [
+              "tech_sap_sd",
+              "tech_edi_gateway",
+              "tech_customer_portal"
+            ]
+          },
+          "cap_customer_master_governance": {
+            "roleIds": [
+              "role_order_management_specialist"
+            ],
+            "activities": [
+              "Validate customer sold-to and ship-to party assignments against SAP customer master",
+              "Confirm pricing conditions and agreement validity for the ordering entity",
+              "Check legal entity assignment and intercompany flag for cross-border orders",
+              "Flag incomplete customer master records for MDM remediation",
+              "Apply duplicate order detection against open order backlog"
+            ],
+            "informationObjectIds": [
+              "info_customer_master",
+              "info_pricing_agreement"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_otc_check_credit_availability": {
+        "id": "act_otc_check_credit_availability",
+        "elementType": "Activity",
+        "name": "Check Credit Limit and Availability",
+        "description": "Verify customer credit exposure against approved limit and release or block the order accordingly.",
+        "performedByRoleIds": [
+          "role_credit_controller",
+          "role_order_management_specialist"
+        ],
+        "preOutcomeId": "out_otc_order_received",
+        "postOutcomeId": "out_otc_credit_approved",
+        "requiresCapabilityIds": [
+          "cap_credit_risk_control"
+        ],
+        "metricIds": [
+          "metric_otc_credit_decision_latency"
+        ],
+        "controlIds": [
+          "ctrl_otc_credit_block_rule"
+        ],
+        "nextActivityId": "act_otc_confirm_schedule_delivery",
+        "capabilityPPIT": {
+          "cap_credit_risk_control": {
+            "roleIds": [
+              "role_credit_controller"
+            ],
+            "activities": [
+              "Query current customer credit exposure in SAP FSCM",
+              "Compare open orders and receivables against approved credit limit",
+              "Release order automatically if within tolerance",
+              "Escalate blocked orders to credit manager for manual review",
+              "Update customer credit master following limit change decisions"
+            ],
+            "informationObjectIds": [
+              "info_customer_credit_master",
+              "info_open_receivables",
+              "info_credit_limit_policy"
+            ],
+            "technologyIds": [
+              "tech_sap_fscm",
+              "tech_sap_sd"
+            ]
+          }
+        }
+      },
+      "act_otc_confirm_schedule_delivery": {
+        "id": "act_otc_confirm_schedule_delivery",
+        "elementType": "Activity",
+        "name": "Confirm and Schedule Delivery",
+        "description": "Confirm available-to-promise date with supply chain and schedule delivery to customer location including carrier assignment.",
+        "performedByRoleIds": [
+          "role_logistics_coordinator",
+          "role_order_management_specialist"
+        ],
+        "preOutcomeId": "out_otc_credit_approved",
+        "postOutcomeId": "out_otc_delivery_confirmed",
+        "requiresCapabilityIds": [
+          "cap_fulfilment_coordination",
+          "cap_available_to_promise"
+        ],
+        "metricIds": [],
+        "controlIds": [],
+        "nextActivityId": "act_otc_pick_pack_dispatch",
+        "capabilityPPIT": {
+          "cap_fulfilment_coordination": {
+            "roleIds": [
+              "role_logistics_coordinator",
+              "role_order_management_specialist"
+            ],
+            "activities": [
+              "Run ATP check in SAP MM to confirm stock availability",
+              "Assign delivery date based on ATP result and carrier lead time",
+              "Create outbound delivery document in SAP SD",
+              "Notify customer of confirmed delivery date via portal or email",
+              "Coordinate with warehouse for pick scheduling"
+            ],
+            "informationObjectIds": [
+              "info_atp_result",
+              "info_delivery_schedule",
+              "info_carrier_contract"
+            ],
+            "technologyIds": [
+              "tech_sap_sd",
+              "tech_sap_mm",
+              "tech_tms"
+            ]
+          },
+          "cap_available_to_promise": {
+            "roleIds": [
+              "role_logistics_coordinator"
+            ],
+            "activities": [
+              "Run advanced ATP check against confirmed stock, production, and purchase order supply",
+              "Confirm requested delivery date or propose earliest alternative delivery date",
+              "Reserve stock and create delivery scheduling agreement in SAP S/4HANA",
+              "Trigger rescheduling workflow when ATP result conflicts with customer expectation",
+              "Communicate confirmed delivery date to customer service for order acknowledgement"
+            ],
+            "informationObjectIds": [
+              "info_atp_result",
+              "info_delivery_schedule"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_otc_pick_pack_dispatch": {
+        "id": "act_otc_pick_pack_dispatch",
+        "elementType": "Activity",
+        "name": "Pick, Pack, and Dispatch Goods",
+        "description": "Execute warehouse pick and pack operations and hand goods to carrier for delivery to customer.",
+        "performedByRoleIds": [
+          "role_warehouse_operative",
+          "role_logistics_coordinator"
+        ],
+        "preOutcomeId": "out_otc_delivery_confirmed",
+        "postOutcomeId": "out_otc_goods_dispatched",
+        "requiresCapabilityIds": [
+          "cap_fulfilment_coordination"
+        ],
+        "metricIds": [],
+        "controlIds": [
+          "ctrl_otc_goods_issue_confirmation"
+        ],
+        "nextActivityId": "act_otc_generate_invoice",
+        "capabilityPPIT": {
+          "cap_fulfilment_coordination": {
+            "roleIds": [
+              "role_warehouse_operative"
+            ],
+            "activities": [
+              "Execute transfer order pick in SAP WM or EWM",
+              "Confirm picked quantities against delivery document",
+              "Pack goods according to shipping specifications",
+              "Post goods issue in SAP to trigger inventory reduction",
+              "Hand over to carrier and capture proof of dispatch"
+            ],
+            "informationObjectIds": [
+              "info_transfer_order",
+              "info_packing_slip",
+              "info_goods_issue_document"
+            ],
+            "technologyIds": [
+              "tech_sap_ewm",
+              "tech_warehouse_scanner",
+              "tech_tms"
+            ]
+          }
+        }
+      },
+      "act_otc_generate_invoice": {
+        "id": "act_otc_generate_invoice",
+        "elementType": "Activity",
+        "name": "Generate and Issue Customer Invoice",
+        "description": "Create and issue invoice to customer following goods despatch, applying correct pricing, tax, and entity determination.",
+        "performedByRoleIds": [
+          "role_billing_specialist",
+          "role_order_management_specialist"
+        ],
+        "preOutcomeId": "out_otc_goods_dispatched",
+        "postOutcomeId": "out_otc_invoice_issued",
+        "requiresCapabilityIds": [
+          "cap_billing_invoicing",
+          "cap_einvoicing_compliance"
+        ],
+        "metricIds": [
+          "metric_otc_first_pass_invoice_accuracy",
+          "metric_otc_einvoice_compliance_rate"
+        ],
+        "controlIds": [
+          "ctrl_otc_tax_determination",
+          "ctrl_otc_invoice_approval_rule"
+        ],
+        "nextActivityId": "act_otc_manage_collections",
+        "capabilityPPIT": {
+          "cap_billing_invoicing": {
+            "roleIds": [
+              "role_billing_specialist"
+            ],
+            "activities": [
+              "Trigger billing run from goods issue or milestone event",
+              "Determine correct legal entity, tax code, and output format",
+              "Generate invoice document in SAP Billing",
+              "Transmit invoice via EDI, e-invoicing platform, or print",
+              "Post invoice to accounts receivable and revenue accounts"
+            ],
+            "informationObjectIds": [
+              "info_billing_document",
+              "info_tax_determination",
+              "info_customer_invoice"
+            ],
+            "technologyIds": [
+              "tech_sap_billing",
+              "tech_einvoicing_platform",
+              "tech_sap_fico"
+            ]
+          },
+          "cap_einvoicing_compliance": {
+            "roleIds": [
+              "role_billing_specialist"
+            ],
+            "activities": [
+              "Submit invoice to country-specific tax authority portal via SAP Document Compliance",
+              "Validate invoice against jurisdiction-specific schema and mandatory field requirements",
+              "Receive and store tax authority clearance token or acknowledgement",
+              "Handle rejection responses and trigger invoice correction workflow",
+              "Archive compliant e-invoice document with audit trail for statutory retention period"
+            ],
+            "informationObjectIds": [
+              "info_customer_invoice",
+              "info_tax_determination"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_otc_manage_collections": {
+        "id": "act_otc_manage_collections",
+        "elementType": "Activity",
+        "name": "Manage Collections and Dunning",
+        "description": "Monitor overdue receivables, execute dunning programmes, and escalate high-risk accounts to credit management.",
+        "performedByRoleIds": [
+          "role_credit_controller",
+          "role_collections_specialist"
+        ],
+        "preOutcomeId": "out_otc_invoice_issued",
+        "postOutcomeId": "out_otc_payment_collected",
+        "requiresCapabilityIds": [
+          "cap_collections_management",
+          "cap_credit_risk_control"
+        ],
+        "metricIds": [
+          "metric_otc_dso",
+          "metric_otc_collection_rate"
+        ],
+        "controlIds": [
+          "ctrl_otc_dunning_level_rule"
+        ],
+        "nextActivityId": "act_otc_reconcile_apply_cash",
+        "capabilityPPIT": {
+          "cap_collections_management": {
+            "roleIds": [
+              "role_credit_controller",
+              "role_collections_specialist"
+            ],
+            "activities": [
+              "Run daily overdue receivables report from SAP FSCM",
+              "Execute automated dunning letters at configured intervals",
+              "Contact customers directly for high-value overdue accounts",
+              "Escalate unresolved accounts to legal or collections agency",
+              "Record collection activities and commitments in FSCM worklist"
+            ],
+            "informationObjectIds": [
+              "info_dunning_notice",
+              "info_overdue_receivables_report",
+              "info_customer_contact_log"
+            ],
+            "technologyIds": [
+              "tech_sap_fscm",
+              "tech_sap_fico"
+            ]
+          }
+        }
+      },
+      "act_otc_reconcile_apply_cash": {
+        "id": "act_otc_reconcile_apply_cash",
+        "elementType": "Activity",
+        "name": "Reconcile and Apply Cash Receipts",
+        "description": "Match incoming payments to open invoices and post cash application to clear accounts receivable.",
+        "performedByRoleIds": [
+          "role_cash_application_specialist",
+          "role_credit_controller"
+        ],
+        "preOutcomeId": "out_otc_payment_collected",
+        "postOutcomeId": "out_otc_cash_reconciled",
+        "requiresCapabilityIds": [
+          "cap_revenue_accounting",
+          "cap_cash_application_automation"
+        ],
+        "metricIds": [
+          "metric_otc_cash_auto_match_rate"
+        ],
+        "controlIds": [
+          "ctrl_otc_cash_application_tolerance"
+        ],
+        "nextActivityId": "act_otc_handle_disputes_returns",
+        "capabilityPPIT": {
+          "cap_revenue_accounting": {
+            "roleIds": [
+              "role_cash_application_specialist"
+            ],
+            "activities": [
+              "Import bank statement and payment advices into SAP",
+              "Auto-match payments to open invoices using remittance data",
+              "Manually resolve unmatched payments using lockbox details",
+              "Post cash application and clear open items in SAP FICO",
+              "Escalate unresolved items to credit controller for investigation"
+            ],
+            "informationObjectIds": [
+              "info_bank_statement",
+              "info_remittance_advice",
+              "info_cash_application_posting"
+            ],
+            "technologyIds": [
+              "tech_sap_fico",
+              "tech_bank_integration",
+              "tech_sap_fscm"
+            ]
+          },
+          "cap_cash_application_automation": {
+            "roleIds": [
+              "role_cash_application_specialist"
+            ],
+            "activities": [
+              "Ingest bank statement and remittance data from multiple formats and channels",
+              "Apply ML matching algorithm to propose payment-to-invoice assignments",
+              "Auto-post high-confidence matches within configured tolerance thresholds",
+              "Route low-confidence matches to manual review worklist with suggested assignments",
+              "Generate unmatched payment exception report for escalation to collections team"
+            ],
+            "informationObjectIds": [
+              "info_bank_statement",
+              "info_remittance_advice"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_otc_handle_disputes_returns": {
+        "id": "act_otc_handle_disputes_returns",
+        "elementType": "Activity",
+        "name": "Handle Invoice Disputes and Returns",
+        "description": "Resolve customer invoice disputes and process approved returns or credit notes to maintain customer relationship and accurate AR.",
+        "performedByRoleIds": [
+          "role_collections_specialist",
+          "role_billing_specialist",
+          "role_customer_service_rep"
+        ],
+        "preOutcomeId": "out_otc_invoice_issued",
+        "postOutcomeId": "out_otc_cash_reconciled",
+        "requiresCapabilityIds": [
+          "cap_billing_invoicing",
+          "cap_collections_management",
+          "cap_dispute_case_management"
+        ],
+        "metricIds": [
+          "metric_otc_dispute_resolution_days"
+        ],
+        "controlIds": [
+          "ctrl_otc_credit_note_approval"
+        ],
+        "nextActivityId": null,
+        "capabilityPPIT": {
+          "cap_billing_invoicing": {
+            "roleIds": [
+              "role_billing_specialist",
+              "role_customer_service_rep"
+            ],
+            "activities": [
+              "Log customer dispute against open invoice in FSCM dispute case",
+              "Investigate root cause: pricing error, short delivery, or quality issue",
+              "Coordinate resolution with sales, logistics, or quality teams",
+              "Issue credit note or corrected invoice upon resolution",
+              "Close dispute case and update customer communication log"
+            ],
+            "informationObjectIds": [
+              "info_dispute_case",
+              "info_credit_note",
+              "info_return_delivery"
+            ],
+            "technologyIds": [
+              "tech_sap_fscm",
+              "tech_sap_sd",
+              "tech_sap_billing"
+            ]
+          },
+          "cap_dispute_case_management": {
+            "roleIds": [
+              "role_billing_specialist",
+              "role_customer_service_rep",
+              "role_collections_specialist"
+            ],
+            "activities": [
+              "Open structured dispute case in SAP FSCM with classification, amount, and responsible party",
+              "Route dispute to owning team based on dispute reason code and value threshold",
+              "Track dispute status, SLA countdown, and escalation triggers in unified worklist",
+              "Coordinate evidence gathering from sales, logistics, and quality teams within case",
+              "Close dispute with approved credit note posting or payment confirmation and audit record"
+            ],
+            "informationObjectIds": [
+              "info_dispute_case",
+              "info_credit_note"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_p2p_create_requisition": {
+        "id": "act_p2p_create_requisition",
+        "elementType": "Activity",
+        "name": "Create and Approve Purchase Requisition",
+        "description": "Initiates procurement process through self-service requisition with workflow-based approval against spend authority matrix.",
+        "performedByRoleIds": [
+          "role_procurement_specialist",
+          "role_buyer"
+        ],
+        "requiresCapabilityIds": [
+          "cap_purchase_requisitioning",
+          "cap_spend_analytics"
+        ],
+        "metricIds": [
+          "metric_p2p_po_compliance"
+        ],
+        "controlIds": [
+          "ctrl_p2p_spend_authority"
+        ],
+        "preOutcomeId": "out_p2p_need_identified",
+        "postOutcomeId": "out_p2p_pr_approved",
+        "capabilityPPIT": {
+          "cap_purchase_requisitioning": {
+            "roleIds": [
+              "role_procurement_specialist"
+            ],
+            "activities": [
+              "Create purchase requisition from catalogue item or free-text description with cost centre assignment",
+              "Attach business justification and budget confirmation to requisition record",
+              "Route requisition through spend-authority-based approval workflow",
+              "Monitor approval status and chase overdue approvals within SLA",
+              "Convert approved requisition to purchase order or sourcing event"
+            ],
+            "informationObjectIds": [
+              "info_purchase_requisition",
+              "info_budget_availability"
+            ],
+            "technologyAppIds": []
+          },
+          "cap_spend_analytics": {
+            "roleIds": [
+              "role_category_manager"
+            ],
+            "activities": [
+              "Classify requisition against spend category taxonomy for analytics capture",
+              "Flag requisition as maverick spend if outside preferred supplier or contract",
+              "Validate requisition against category strategy and sourcing policy"
+            ],
+            "informationObjectIds": [
+              "info_spend_category",
+              "info_preferred_supplier_list"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_p2p_issue_purchase_order": {
+        "id": "act_p2p_issue_purchase_order",
+        "elementType": "Activity",
+        "name": "Issue Purchase Order to Supplier",
+        "description": "Converts approved requisition into a legally binding purchase order and transmits to supplier with acknowledgement tracking.",
+        "performedByRoleIds": [
+          "role_buyer",
+          "role_procurement_specialist"
+        ],
+        "requiresCapabilityIds": [
+          "cap_po_management",
+          "cap_supplier_performance"
+        ],
+        "metricIds": [
+          "metric_p2p_po_cycle_time",
+          "metric_p2p_po_compliance"
+        ],
+        "controlIds": [
+          "ctrl_p2p_vendor_approval"
+        ],
+        "preOutcomeId": "out_p2p_pr_approved",
+        "postOutcomeId": "out_p2p_po_issued",
+        "capabilityPPIT": {
+          "cap_po_management": {
+            "roleIds": [
+              "role_buyer"
+            ],
+            "activities": [
+              "Create purchase order with confirmed pricing, delivery date, and terms from contract or spot negotiation",
+              "Transmit PO to supplier via EDI, Ariba Network, or email with confirmation request",
+              "Record supplier order acknowledgement and confirmed delivery date against PO",
+              "Process PO change orders when delivery date, quantity, or price requires revision",
+              "Escalate unacknowledged POs beyond SLA to vendor manager for follow-up"
+            ],
+            "informationObjectIds": [
+              "info_purchase_order",
+              "info_supplier_contract"
+            ],
+            "technologyAppIds": []
+          },
+          "cap_supplier_performance": {
+            "roleIds": [
+              "role_vendor_manager"
+            ],
+            "activities": [
+              "Log PO issuance event against supplier scorecard for delivery performance tracking",
+              "Validate supplier is on approved vendor list and has current compliance certifications"
+            ],
+            "informationObjectIds": [
+              "info_approved_vendor_list",
+              "info_supplier_scorecard"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_p2p_receive_goods_services": {
+        "id": "act_p2p_receive_goods_services",
+        "elementType": "Activity",
+        "name": "Receive Goods or Confirm Service Delivery",
+        "description": "Records goods receipt or service entry sheet in SAP S/4HANA MM to confirm delivery against purchase order.",
+        "performedByRoleIds": [
+          "role_warehouse_operative",
+          "role_procurement_specialist"
+        ],
+        "requiresCapabilityIds": [
+          "cap_po_management",
+          "cap_supplier_performance"
+        ],
+        "metricIds": [
+          "metric_p2p_supplier_otd"
+        ],
+        "controlIds": [
+          "ctrl_p2p_three_way_match"
+        ],
+        "preOutcomeId": "out_p2p_po_issued",
+        "postOutcomeId": "out_p2p_goods_received",
+        "capabilityPPIT": {
+          "cap_po_management": {
+            "roleIds": [
+              "role_warehouse_operative"
+            ],
+            "activities": [
+              "Post goods receipt in SAP against purchase order line items with quantity and quality confirmation",
+              "Record partial deliveries and update open PO quantity accordingly",
+              "Create service entry sheet for service-based POs upon completion confirmation",
+              "Flag delivery shortfalls, damages, and quality rejections against PO record",
+              "Trigger returns and debit memo process for rejected goods"
+            ],
+            "informationObjectIds": [
+              "info_goods_receipt",
+              "info_delivery_note"
+            ],
+            "technologyAppIds": []
+          },
+          "cap_supplier_performance": {
+            "roleIds": [
+              "role_vendor_manager"
+            ],
+            "activities": [
+              "Record on-time delivery result against PO due date for supplier scorecard",
+              "Capture quality rejection data for supplier performance review"
+            ],
+            "informationObjectIds": [
+              "info_supplier_scorecard",
+              "info_quality_inspection_result"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_p2p_process_supplier_invoice": {
+        "id": "act_p2p_process_supplier_invoice",
+        "elementType": "Activity",
+        "name": "Process and Match Supplier Invoice",
+        "description": "Receives supplier invoice and performs automated three-way match against PO and goods receipt, routing exceptions for resolution.",
+        "performedByRoleIds": [
+          "role_accounts_payable_specialist"
+        ],
+        "requiresCapabilityIds": [
+          "cap_supplier_invoice_processing",
+          "cap_spend_analytics"
+        ],
+        "metricIds": [
+          "metric_p2p_invoice_match_rate"
+        ],
+        "controlIds": [
+          "ctrl_p2p_three_way_match"
+        ],
+        "preOutcomeId": "out_p2p_goods_received",
+        "postOutcomeId": "out_p2p_invoice_matched",
+        "capabilityPPIT": {
+          "cap_supplier_invoice_processing": {
+            "roleIds": [
+              "role_accounts_payable_specialist"
+            ],
+            "activities": [
+              "Ingest supplier invoice via OCR capture, EDI, or supplier portal submission",
+              "Execute automated three-way match against PO price, quantity, and goods receipt",
+              "Post matched invoice to accounting with GL account and cost object determination",
+              "Route mismatched invoices to exception worklist with mismatch reason and suggested resolution",
+              "Communicate invoice status and payment schedule to supplier on request"
+            ],
+            "informationObjectIds": [
+              "info_supplier_invoice",
+              "info_purchase_order",
+              "info_goods_receipt"
+            ],
+            "technologyAppIds": []
+          },
+          "cap_spend_analytics": {
+            "roleIds": [
+              "role_category_manager"
+            ],
+            "activities": [
+              "Validate invoice spend category classification for analytics accuracy",
+              "Flag invoices without backing PO as maverick spend for management reporting"
+            ],
+            "informationObjectIds": [
+              "info_spend_category"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_p2p_execute_payment": {
+        "id": "act_p2p_execute_payment",
+        "elementType": "Activity",
+        "name": "Execute Supplier Payment Run",
+        "description": "Runs automated payment proposal and executes payment to suppliers within agreed terms via SAP S/4HANA FI-AP.",
+        "performedByRoleIds": [
+          "role_accounts_payable_specialist"
+        ],
+        "requiresCapabilityIds": [
+          "cap_accounts_payable"
+        ],
+        "metricIds": [
+          "metric_p2p_payment_on_time"
+        ],
+        "controlIds": [
+          "ctrl_p2p_payment_terms_policy"
+        ],
+        "preOutcomeId": "out_p2p_invoice_matched",
+        "postOutcomeId": "out_p2p_payment_made",
+        "capabilityPPIT": {
+          "cap_accounts_payable": {
+            "roleIds": [
+              "role_accounts_payable_specialist"
+            ],
+            "activities": [
+              "Generate payment proposal run for invoices due within payment terms window",
+              "Review and approve payment proposal, excluding blocked or disputed invoices",
+              "Execute payment run and transmit payment files to bank via SAP Bank Communication Management",
+              "Post payment clearing entries and update supplier open item ledger",
+              "Reconcile bank confirmation against payment run and resolve exceptions"
+            ],
+            "informationObjectIds": [
+              "info_payment_proposal",
+              "info_bank_transfer_file"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_fcr_execute_period_close": {
+        "id": "act_fcr_execute_period_close",
+        "elementType": "Activity",
+        "name": "Execute Period-End Close",
+        "description": "Orchestrates the financial period-end close sequence across all entities, managing task dependencies and sign-off using SAP Financial Closing Cockpit.",
+        "performedByRoleIds": [
+          "role_financial_controller",
+          "role_group_accountant"
+        ],
+        "requiresCapabilityIds": [
+          "cap_period_end_close"
+        ],
+        "metricIds": [
+          "metric_fcr_close_cycle_days"
+        ],
+        "controlIds": [
+          "ctrl_fcr_close_checklist"
+        ],
+        "preOutcomeId": "out_fcr_period_closed",
+        "postOutcomeId": "out_fcr_ic_eliminated",
+        "capabilityPPIT": {
+          "cap_period_end_close": {
+            "roleIds": [
+              "role_financial_controller",
+              "role_group_accountant"
+            ],
+            "activities": [
+              "Activate period close task list in SAP Financial Closing Cockpit for all in-scope entities",
+              "Monitor task completion status and chase overdue items against close calendar",
+              "Post accruals, prepayments, and depreciation runs for the closing period",
+              "Reconcile sub-ledgers (AR, AP, Asset Accounting) to general ledger balances",
+              "Obtain entity controller sign-off and lock posting period in SAP"
+            ],
+            "informationObjectIds": [
+              "info_close_task_list",
+              "info_trial_balance"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_fcr_reconcile_intercompany": {
+        "id": "act_fcr_reconcile_intercompany",
+        "elementType": "Activity",
+        "name": "Reconcile Intercompany Balances",
+        "description": "Matches and eliminates intercompany trading balances across all Ofluv legal entities prior to group consolidation.",
+        "performedByRoleIds": [
+          "role_group_accountant",
+          "role_financial_controller"
+        ],
+        "requiresCapabilityIds": [
+          "cap_intercompany_reconciliation",
+          "cap_period_end_close"
+        ],
+        "metricIds": [
+          "metric_fcr_ic_reconciliation_rate"
+        ],
+        "controlIds": [
+          "ctrl_fcr_ic_tolerance"
+        ],
+        "preOutcomeId": "out_fcr_period_closed",
+        "postOutcomeId": "out_fcr_ic_eliminated",
+        "capabilityPPIT": {
+          "cap_intercompany_reconciliation": {
+            "roleIds": [
+              "role_group_accountant"
+            ],
+            "activities": [
+              "Run automated intercompany matching against counterparty balances across all entities",
+              "Identify and classify unmatched differences by root cause (timing, FX, missing postings)",
+              "Coordinate resolution of matched differences with entity controllers within SLA",
+              "Post intercompany elimination journals for confirmed matched balances",
+              "Escalate unresolved differences above materiality threshold to group controller"
+            ],
+            "informationObjectIds": [
+              "info_ic_balance_report",
+              "info_elimination_journal"
+            ],
+            "technologyAppIds": []
+          },
+          "cap_period_end_close": {
+            "roleIds": [
+              "role_financial_controller"
+            ],
+            "activities": [
+              "Validate intercompany reconciliation completion as close checklist gate",
+              "Approve intercompany elimination postings before consolidation run"
+            ],
+            "informationObjectIds": [
+              "info_trial_balance"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_fcr_consolidate_group": {
+        "id": "act_fcr_consolidate_group",
+        "elementType": "Activity",
+        "name": "Consolidate Group Financial Statements",
+        "description": "Produces consolidated group P&L, balance sheet, and cash flow using SAP S/4HANA Group Reporting with automated eliminations.",
+        "performedByRoleIds": [
+          "role_group_controller",
+          "role_group_accountant"
+        ],
+        "requiresCapabilityIds": [
+          "cap_group_consolidation"
+        ],
+        "metricIds": [
+          "metric_fcr_close_cycle_days",
+          "metric_fcr_restatement_count"
+        ],
+        "controlIds": [
+          "ctrl_fcr_consolidation_rules"
+        ],
+        "preOutcomeId": "out_fcr_ic_eliminated",
+        "postOutcomeId": "out_fcr_group_consolidated",
+        "capabilityPPIT": {
+          "cap_group_consolidation": {
+            "roleIds": [
+              "role_group_controller"
+            ],
+            "activities": [
+              "Load entity trial balances into SAP Group Reporting consolidation unit",
+              "Run automated currency translation at applicable period-end rates",
+              "Execute intercompany elimination rules for trading, loans, and dividends",
+              "Calculate minority interest and equity method investment adjustments",
+              "Produce consolidated P&L, balance sheet, and cash flow statement for review"
+            ],
+            "informationObjectIds": [
+              "info_consolidated_trial_balance",
+              "info_group_financial_statements"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_fcr_prepare_tax_filings": {
+        "id": "act_fcr_prepare_tax_filings",
+        "elementType": "Activity",
+        "name": "Prepare and Submit Tax Filings",
+        "description": "Calculates tax provisions and prepares statutory tax filings for all jurisdictions using SAP Tax Compliance.",
+        "performedByRoleIds": [
+          "role_tax_specialist",
+          "role_financial_controller"
+        ],
+        "requiresCapabilityIds": [
+          "cap_tax_reporting"
+        ],
+        "metricIds": [
+          "metric_fcr_tax_filing_compliance"
+        ],
+        "controlIds": [
+          "ctrl_fcr_tax_review"
+        ],
+        "preOutcomeId": "out_fcr_group_consolidated",
+        "postOutcomeId": "out_fcr_tax_filed",
+        "capabilityPPIT": {
+          "cap_tax_reporting": {
+            "roleIds": [
+              "role_tax_specialist"
+            ],
+            "activities": [
+              "Calculate current and deferred tax provisions from S/4HANA Universal Journal data",
+              "Prepare VAT/GST returns for each jurisdiction using SAP Tax Compliance",
+              "Generate transfer pricing documentation and country-by-country report",
+              "Submit statutory tax filings via jurisdiction-specific e-filing integration",
+              "Maintain tax audit trail and supporting documentation for statutory retention"
+            ],
+            "informationObjectIds": [
+              "info_tax_provision",
+              "info_vat_return",
+              "info_cbcr_report"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_fcr_publish_reports": {
+        "id": "act_fcr_publish_reports",
+        "elementType": "Activity",
+        "name": "Publish Management and Board Reports",
+        "description": "Delivers management accounts, KPI dashboards, and board reporting packs using SAP Analytics Cloud.",
+        "performedByRoleIds": [
+          "role_group_controller",
+          "role_fp_analyst"
+        ],
+        "requiresCapabilityIds": [
+          "cap_management_reporting",
+          "cap_group_consolidation"
+        ],
+        "metricIds": [
+          "metric_fcr_forecast_accuracy"
+        ],
+        "controlIds": [],
+        "preOutcomeId": "out_fcr_tax_filed",
+        "postOutcomeId": "out_fcr_reports_published",
+        "capabilityPPIT": {
+          "cap_management_reporting": {
+            "roleIds": [
+              "role_fp_analyst"
+            ],
+            "activities": [
+              "Publish P&L, balance sheet, and cash flow actuals vs budget vs prior year in SAP Analytics Cloud",
+              "Produce KPI variance commentary and exception highlights for management review",
+              "Update rolling 3-month financial forecast with latest actuals and trading assumptions",
+              "Distribute board reporting pack with narrative, financials, and forward outlook",
+              "Respond to ad hoc queries from CFO and business unit leadership on financial results"
+            ],
+            "informationObjectIds": [
+              "info_management_accounts",
+              "info_board_pack",
+              "info_rolling_forecast"
+            ],
+            "technologyAppIds": []
+          },
+          "cap_group_consolidation": {
+            "roleIds": [
+              "role_group_controller"
+            ],
+            "activities": [
+              "Validate published figures against signed-off consolidation output",
+              "Approve group accounts for external publication and audit submission"
+            ],
+            "informationObjectIds": [
+              "info_group_financial_statements"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_dsp_generate_demand_forecast": {
+        "id": "act_dsp_generate_demand_forecast",
+        "elementType": "Activity",
+        "name": "Generate and Review Statistical Demand Forecast",
+        "description": "Produces SKU-level demand forecast using SAP IBP statistical algorithms, incorporating market intelligence and consensus adjustment.",
+        "performedByRoleIds": [
+          "role_demand_planner",
+          "role_s_and_op_lead"
+        ],
+        "requiresCapabilityIds": [
+          "cap_demand_forecasting",
+          "cap_inventory_policy"
+        ],
+        "metricIds": [
+          "metric_dsp_forecast_accuracy"
+        ],
+        "controlIds": [
+          "ctrl_dsp_forecast_review"
+        ],
+        "preOutcomeId": "out_dsp_inventory_targets_set",
+        "postOutcomeId": "out_dsp_demand_forecast_published",
+        "capabilityPPIT": {
+          "cap_demand_forecasting": {
+            "roleIds": [
+              "role_demand_planner"
+            ],
+            "activities": [
+              "Run statistical forecast models in SAP IBP using historical demand, seasonality, and trend algorithms",
+              "Apply promotion uplift and new product introduction adjustments to baseline forecast",
+              "Incorporate market intelligence and sales team input through consensus planning workflow",
+              "Identify and correct demand outliers and data anomalies before forecast publication",
+              "Publish approved 24-month rolling demand forecast to supply planning"
+            ],
+            "informationObjectIds": [
+              "info_statistical_forecast",
+              "info_demand_history",
+              "info_market_intelligence"
+            ],
+            "technologyAppIds": []
+          },
+          "cap_inventory_policy": {
+            "roleIds": [
+              "role_demand_planner"
+            ],
+            "activities": [
+              "Update safety stock calculations based on revised forecast error and service level targets",
+              "Flag SKUs where forecast volatility requires inventory policy review"
+            ],
+            "informationObjectIds": [
+              "info_safety_stock_policy"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_dsp_generate_supply_plan": {
+        "id": "act_dsp_generate_supply_plan",
+        "elementType": "Activity",
+        "name": "Generate Unconstrained Supply Plan",
+        "description": "Translates demand forecast into supply requirements across the network using SAP IBP Supply planning engine.",
+        "performedByRoleIds": [
+          "role_supply_planner"
+        ],
+        "requiresCapabilityIds": [
+          "cap_supply_network_planning",
+          "cap_inventory_policy"
+        ],
+        "metricIds": [
+          "metric_dsp_inventory_turns",
+          "metric_dsp_excess_inventory"
+        ],
+        "controlIds": [
+          "ctrl_dsp_capacity_feasibility"
+        ],
+        "preOutcomeId": "out_dsp_demand_forecast_published",
+        "postOutcomeId": "out_dsp_supply_plan_approved",
+        "capabilityPPIT": {
+          "cap_supply_network_planning": {
+            "roleIds": [
+              "role_supply_planner"
+            ],
+            "activities": [
+              "Run supply network planning engine in SAP IBP to generate replenishment requirements",
+              "Optimise inventory deployment across distribution centres against service level targets",
+              "Identify supply shortfalls and excess positions by SKU and location",
+              "Generate supplier purchase requirements and production work orders for planning period",
+              "Highlight capacity constraints and supply risks for S&OP review"
+            ],
+            "informationObjectIds": [
+              "info_supply_plan",
+              "info_inventory_position",
+              "info_supplier_lead_times"
+            ],
+            "technologyAppIds": []
+          },
+          "cap_inventory_policy": {
+            "roleIds": [
+              "role_supply_planner"
+            ],
+            "activities": [
+              "Apply safety stock and reorder point parameters to supply plan generation",
+              "Review excess inventory recommendations against write-down thresholds"
+            ],
+            "informationObjectIds": [
+              "info_safety_stock_policy",
+              "info_inventory_target"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_dsp_run_sop": {
+        "id": "act_dsp_run_sop",
+        "elementType": "Activity",
+        "name": "Run Monthly S&OP Process",
+        "description": "Facilitates executive S&OP to reconcile demand, supply, inventory, and financial plans using SAP IBP S&OP scenario modelling.",
+        "performedByRoleIds": [
+          "role_s_and_op_lead",
+          "role_supply_chain_director"
+        ],
+        "requiresCapabilityIds": [
+          "cap_sales_operations_planning"
+        ],
+        "metricIds": [
+          "metric_dsp_service_level"
+        ],
+        "controlIds": [
+          "ctrl_dsp_sop_approval"
+        ],
+        "preOutcomeId": "out_dsp_supply_plan_approved",
+        "postOutcomeId": "out_dsp_sop_aligned",
+        "capabilityPPIT": {
+          "cap_sales_operations_planning": {
+            "roleIds": [
+              "role_s_and_op_lead"
+            ],
+            "activities": [
+              "Prepare S&OP input pack with demand vs supply gap analysis and scenario options",
+              "Facilitate demand review, supply review, and pre-S&OP meetings to resolve imbalances",
+              "Model supply scenarios in SAP IBP to evaluate trade-offs between service level, cost, and inventory",
+              "Present recommended plan and exception decisions to executive S&OP for approval",
+              "Publish approved demand, supply, and inventory plan for execution by planning teams"
+            ],
+            "informationObjectIds": [
+              "info_sop_pack",
+              "info_scenario_model",
+              "info_approved_plan"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_dsp_release_production_schedule": {
+        "id": "act_dsp_release_production_schedule",
+        "elementType": "Activity",
+        "name": "Release Master Production Schedule",
+        "description": "Converts approved supply plan into feasible production schedule considering capacity and material constraints in SAP PP/DS.",
+        "performedByRoleIds": [
+          "role_master_scheduler"
+        ],
+        "requiresCapabilityIds": [
+          "cap_master_production_scheduling",
+          "cap_supply_network_planning"
+        ],
+        "metricIds": [
+          "metric_dsp_plan_adherence"
+        ],
+        "controlIds": [
+          "ctrl_dsp_capacity_feasibility"
+        ],
+        "preOutcomeId": "out_dsp_sop_aligned",
+        "postOutcomeId": "out_dsp_mps_released",
+        "capabilityPPIT": {
+          "cap_master_production_scheduling": {
+            "roleIds": [
+              "role_master_scheduler"
+            ],
+            "activities": [
+              "Convert approved supply plan into time-phased production orders in SAP S/4HANA PP/DS",
+              "Level production schedule against confirmed plant capacity and shift patterns",
+              "Resolve material availability exceptions before releasing schedule to shop floor",
+              "Communicate frozen schedule horizon and change freeze rules to production teams",
+              "Monitor schedule adherence daily and update rolling MPS for remaining planning period"
+            ],
+            "informationObjectIds": [
+              "info_master_production_schedule",
+              "info_capacity_plan",
+              "info_material_requirement"
+            ],
+            "technologyAppIds": []
+          },
+          "cap_supply_network_planning": {
+            "roleIds": [
+              "role_supply_planner"
+            ],
+            "activities": [
+              "Validate production schedule output aligns with distribution replenishment requirements",
+              "Adjust supply network plan where MPS capacity constraints create delivery risk"
+            ],
+            "informationObjectIds": [
+              "info_supply_plan"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      },
+      "act_dsp_manage_inventory_policy": {
+        "id": "act_dsp_manage_inventory_policy",
+        "elementType": "Activity",
+        "name": "Review and Maintain Inventory Policy",
+        "description": "Reviews and updates safety stock levels, replenishment parameters, and inventory targets by SKU using SAP IBP Inventory optimisation.",
+        "performedByRoleIds": [
+          "role_supply_planner",
+          "role_s_and_op_lead"
+        ],
+        "requiresCapabilityIds": [
+          "cap_inventory_policy",
+          "cap_supply_network_planning"
+        ],
+        "metricIds": [
+          "metric_dsp_inventory_turns",
+          "metric_dsp_excess_inventory"
+        ],
+        "controlIds": [
+          "ctrl_dsp_inventory_policy_review"
+        ],
+        "preOutcomeId": "out_dsp_mps_released",
+        "postOutcomeId": "out_dsp_inventory_targets_set",
+        "capabilityPPIT": {
+          "cap_inventory_policy": {
+            "roleIds": [
+              "role_supply_planner"
+            ],
+            "activities": [
+              "Run inventory optimisation model in SAP IBP to calculate optimal safety stock by SKU",
+              "Review ABC/XYZ classification of SKUs and apply appropriate replenishment strategy",
+              "Identify slow-moving and obsolete inventory candidates for markdown or write-off",
+              "Update reorder points, min/max levels, and lot size parameters in SAP master data",
+              "Report excess and obsolete inventory value to finance for provision review"
+            ],
+            "informationObjectIds": [
+              "info_safety_stock_policy",
+              "info_inventory_target",
+              "info_abc_xyz_classification"
+            ],
+            "technologyAppIds": []
+          },
+          "cap_supply_network_planning": {
+            "roleIds": [
+              "role_s_and_op_lead"
+            ],
+            "activities": [
+              "Validate revised inventory targets against network service level and cost objectives"
+            ],
+            "informationObjectIds": [
+              "info_approved_plan"
+            ],
+            "technologyAppIds": []
+          }
+        }
+      }
+    },
+    "capabilities": {
+      "cap_order_management": {
+        "id": "cap_order_management",
+        "elementType": "Capability",
+        "name": "Order Management",
+        "description": "Ability to capture, validate, and maintain customer orders across all channels and regions with full SAP SD integration."
+      },
+      "cap_credit_risk_control": {
+        "id": "cap_credit_risk_control",
+        "elementType": "Capability",
+        "name": "Credit Risk Control",
+        "description": "Ability to assess, monitor, and enforce customer credit exposure limits in real time across all order and receivables activity."
+      },
+      "cap_fulfilment_coordination": {
+        "id": "cap_fulfilment_coordination",
+        "elementType": "Capability",
+        "name": "Fulfilment Coordination",
+        "description": "Ability to coordinate available-to-promise checks, delivery scheduling, warehouse execution, and carrier handover."
+      },
+      "cap_billing_invoicing": {
+        "id": "cap_billing_invoicing",
+        "elementType": "Capability",
+        "name": "Billing & Invoicing",
+        "description": "Ability to generate accurate, compliant customer invoices across all legal entities, tax regimes, and output formats."
+      },
+      "cap_collections_management": {
+        "id": "cap_collections_management",
+        "elementType": "Capability",
+        "name": "Collections Management",
+        "description": "Ability to monitor overdue receivables, execute dunning programmes, and manage escalation of high-risk accounts."
+      },
+      "cap_revenue_accounting": {
+        "id": "cap_revenue_accounting",
+        "elementType": "Capability",
+        "name": "Revenue Accounting",
+        "description": "Ability to apply cash receipts, reconcile bank statements, and maintain accurate accounts receivable subledger."
+      },
+      "cap_customer_master_governance": {
+        "id": "cap_customer_master_governance",
+        "elementType": "Capability",
+        "name": "Customer Master Governance",
+        "description": "Maintains accuracy and completeness of global customer master data in SAP S/4HANA SD, including sold-to/ship-to hierarchy, pricing conditions, and legal entity assignments."
+      },
+      "cap_available_to_promise": {
+        "id": "cap_available_to_promise",
+        "elementType": "Capability",
+        "name": "Available-to-Promise (ATP)",
+        "description": "Determines product availability and delivery dates using SAP S/4HANA Advanced ATP, incorporating stock, production orders, and purchasing documents in real time."
+      },
+      "cap_einvoicing_compliance": {
+        "id": "cap_einvoicing_compliance",
+        "elementType": "Capability",
+        "name": "E-Invoicing & Tax Compliance",
+        "description": "Manages mandatory e-invoicing submissions and tax determination across 14 jurisdictions using SAP Document Compliance and country-specific localisation."
+      },
+      "cap_cash_application_automation": {
+        "id": "cap_cash_application_automation",
+        "elementType": "Capability",
+        "name": "Cash Application Automation",
+        "description": "Applies ML-assisted matching of incoming payments to open receivables using SAP FSCM, reducing manual reconciliation and improving auto-match rates."
+      },
+      "cap_dispute_case_management": {
+        "id": "cap_dispute_case_management",
+        "elementType": "Capability",
+        "name": "Dispute Case Management",
+        "description": "Manages invoice disputes and credit claims through structured workflow in SAP FSCM Dispute Management, providing end-to-end visibility and SLA tracking."
+      },
+      "cap_purchase_requisitioning": {
+        "id": "cap_purchase_requisitioning",
+        "elementType": "Capability",
+        "name": "Purchase Requisitioning",
+        "description": "Manages self-service purchase requisition creation and approval workflows in SAP S/4HANA MM, including catalogue-based and free-text procurement."
+      },
+      "cap_po_management": {
+        "id": "cap_po_management",
+        "elementType": "Capability",
+        "name": "Purchase Order Management",
+        "description": "Creates, transmits, and manages purchase orders in SAP S/4HANA MM, including version management, acknowledgement tracking, and change order workflow."
+      },
+      "cap_supplier_invoice_processing": {
+        "id": "cap_supplier_invoice_processing",
+        "elementType": "Capability",
+        "name": "Supplier Invoice Processing",
+        "description": "Processes supplier invoices via SAP Document Management and three-way match, automating PO/GR/invoice reconciliation and exception handling."
+      },
+      "cap_accounts_payable": {
+        "id": "cap_accounts_payable",
+        "elementType": "Capability",
+        "name": "Accounts Payable & Payment Run",
+        "description": "Manages payment terms, payment proposals, and payment runs in SAP S/4HANA FI-AP, including bank communication and payment status tracking."
+      },
+      "cap_supplier_performance": {
+        "id": "cap_supplier_performance",
+        "elementType": "Capability",
+        "name": "Supplier Performance Management",
+        "description": "Tracks on-time delivery, quality rejection rates, and commercial compliance for strategic suppliers using SAP Ariba and S/4HANA analytics."
+      },
+      "cap_spend_analytics": {
+        "id": "cap_spend_analytics",
+        "elementType": "Capability",
+        "name": "Spend Analytics & Compliance",
+        "description": "Provides category-level spend visibility, PO compliance rates, and maverick spend identification using SAP Spend Control Tower."
+      },
+      "cap_period_end_close": {
+        "id": "cap_period_end_close",
+        "elementType": "Capability",
+        "name": "Period-End Close Orchestration",
+        "description": "Manages the financial period-end close process using SAP Financial Closing Cockpit, coordinating task sequences, dependencies, and sign-off across entities."
+      },
+      "cap_intercompany_reconciliation": {
+        "id": "cap_intercompany_reconciliation",
+        "elementType": "Capability",
+        "name": "Intercompany Reconciliation",
+        "description": "Automates matching and elimination of intercompany balances across Ofluv legal entities using SAP Advanced Intercompany Reconciliation."
+      },
+      "cap_group_consolidation": {
+        "id": "cap_group_consolidation",
+        "elementType": "Capability",
+        "name": "Group Consolidation & Reporting",
+        "description": "Consolidates group financial statements across 14 legal entities using SAP S/4HANA Group Reporting with automated eliminations and minority interest calculations."
+      },
+      "cap_tax_reporting": {
+        "id": "cap_tax_reporting",
+        "elementType": "Capability",
+        "name": "Tax Reporting & Compliance",
+        "description": "Manages statutory tax filings, transfer pricing documentation, and tax provision calculation using SAP Tax Compliance and country localisation."
+      },
+      "cap_management_reporting": {
+        "id": "cap_management_reporting",
+        "elementType": "Capability",
+        "name": "Management Reporting & Analytics",
+        "description": "Delivers management accounts, KPI dashboards, and variance analysis using SAP Analytics Cloud integrated with S/4HANA Universal Journal."
+      },
+      "cap_demand_forecasting": {
+        "id": "cap_demand_forecasting",
+        "elementType": "Capability",
+        "name": "Demand Forecasting",
+        "description": "Generates statistical demand forecasts using SAP IBP Demand with ML-based algorithms, incorporating market intelligence, seasonality, and promotion uplift."
+      },
+      "cap_supply_network_planning": {
+        "id": "cap_supply_network_planning",
+        "elementType": "Capability",
+        "name": "Supply Network Planning",
+        "description": "Optimises supply network inventory positions and replenishment plans across Ofluv distribution centres using SAP IBP Supply."
+      },
+      "cap_sales_operations_planning": {
+        "id": "cap_sales_operations_planning",
+        "elementType": "Capability",
+        "name": "Sales & Operations Planning",
+        "description": "Facilitates monthly S&OP process to align demand, supply, and financial plans using SAP IBP S&OP with integrated scenario modelling."
+      },
+      "cap_master_production_scheduling": {
+        "id": "cap_master_production_scheduling",
+        "elementType": "Capability",
+        "name": "Master Production Scheduling",
+        "description": "Translates approved supply plan into feasible production schedule considering capacity constraints using SAP S/4HANA PP/DS."
+      },
+      "cap_inventory_policy": {
+        "id": "cap_inventory_policy",
+        "elementType": "Capability",
+        "name": "Inventory Policy Management",
+        "description": "Defines and maintains safety stock policies, replenishment parameters, and inventory targets by SKU and location using SAP IBP Inventory."
+      }
+    },
+    "roles": {
+      "role_global_sales_ops_director": {
+        "id": "role_global_sales_ops_director",
+        "elementType": "Role",
+        "name": "Global Sales Operations Director"
+      },
+      "role_channel_director": {
+        "id": "role_channel_director",
+        "elementType": "Role",
+        "name": "Channel Director"
+      },
+      "role_aftersales_director": {
+        "id": "role_aftersales_director",
+        "elementType": "Role",
+        "name": "Aftersales Director"
+      },
+      "role_parts_supply_director": {
+        "id": "role_parts_supply_director",
+        "elementType": "Role",
+        "name": "Parts Supply Director"
+      },
+      "role_chief_procurement_officer": {
+        "id": "role_chief_procurement_officer",
+        "elementType": "Role",
+        "name": "Chief Procurement Officer"
+      },
+      "role_procurement_operations_director": {
+        "id": "role_procurement_operations_director",
+        "elementType": "Role",
+        "name": "Procurement Operations Director"
+      },
+      "role_supply_chain_director": {
+        "id": "role_supply_chain_director",
+        "elementType": "Role",
+        "name": "Supply Chain Director"
+      },
+      "role_logistics_director": {
+        "id": "role_logistics_director",
+        "elementType": "Role",
+        "name": "Logistics Director"
+      },
+      "role_vp_manufacturing": {
+        "id": "role_vp_manufacturing",
+        "elementType": "Role",
+        "name": "VP Manufacturing"
+      },
+      "role_vp_quality": {
+        "id": "role_vp_quality",
+        "elementType": "Role",
+        "name": "VP Quality & Compliance"
+      },
+      "role_group_cfo": {
+        "id": "role_group_cfo",
+        "elementType": "Role",
+        "name": "Group CFO"
+      },
+      "role_group_controller": {
+        "id": "role_group_controller",
+        "elementType": "Role",
+        "name": "Group Controller"
+      },
+      "role_order_management_specialist": {
+        "id": "role_order_management_specialist",
+        "elementType": "Role",
+        "name": "Order Management Specialist"
+      },
+      "role_customer_service_rep": {
+        "id": "role_customer_service_rep",
+        "elementType": "Role",
+        "name": "Customer Service Representative"
+      },
+      "role_credit_controller": {
+        "id": "role_credit_controller",
+        "elementType": "Role",
+        "name": "Credit Controller"
+      },
+      "role_logistics_coordinator": {
+        "id": "role_logistics_coordinator",
+        "elementType": "Role",
+        "name": "Logistics Coordinator"
+      },
+      "role_warehouse_operative": {
+        "id": "role_warehouse_operative",
+        "elementType": "Role",
+        "name": "Warehouse Operative"
+      },
+      "role_billing_specialist": {
+        "id": "role_billing_specialist",
+        "elementType": "Role",
+        "name": "Billing Specialist"
+      },
+      "role_collections_specialist": {
+        "id": "role_collections_specialist",
+        "elementType": "Role",
+        "name": "Collections Specialist"
+      },
+      "role_cash_application_specialist": {
+        "id": "role_cash_application_specialist",
+        "elementType": "Role",
+        "name": "Cash Application Specialist"
+      },
+      "role_procurement_specialist": {
+        "id": "role_procurement_specialist",
+        "elementType": "Role",
+        "name": "Procurement Specialist"
+      },
+      "role_buyer": {
+        "id": "role_buyer",
+        "elementType": "Role",
+        "name": "Strategic Buyer"
+      },
+      "role_accounts_payable_specialist": {
+        "id": "role_accounts_payable_specialist",
+        "elementType": "Role",
+        "name": "Accounts Payable Specialist"
+      },
+      "role_category_manager": {
+        "id": "role_category_manager",
+        "elementType": "Role",
+        "name": "Category Manager"
+      },
+      "role_vendor_manager": {
+        "id": "role_vendor_manager",
+        "elementType": "Role",
+        "name": "Vendor Manager"
+      },
+      "role_group_accountant": {
+        "id": "role_group_accountant",
+        "elementType": "Role",
+        "name": "Group Accountant"
+      },
+      "role_financial_controller": {
+        "id": "role_financial_controller",
+        "elementType": "Role",
+        "name": "Financial Controller"
+      },
+      "role_tax_specialist": {
+        "id": "role_tax_specialist",
+        "elementType": "Role",
+        "name": "Tax Specialist"
+      },
+      "role_fp_analyst": {
+        "id": "role_fp_analyst",
+        "elementType": "Role",
+        "name": "FP&A Analyst"
+      },
+      "role_demand_planner": {
+        "id": "role_demand_planner",
+        "elementType": "Role",
+        "name": "Demand Planner"
+      },
+      "role_supply_planner": {
+        "id": "role_supply_planner",
+        "elementType": "Role",
+        "name": "Supply Planner"
+      },
+      "role_s_and_op_lead": {
+        "id": "role_s_and_op_lead",
+        "elementType": "Role",
+        "name": "S&OP Process Lead"
+      },
+      "role_master_scheduler": {
+        "id": "role_master_scheduler",
+        "elementType": "Role",
+        "name": "Master Scheduler"
+      }
+    },
+    "outcomes": {
+      "out_otc_order_received": {
+        "id": "out_otc_order_received",
+        "elementType": "Outcome",
+        "name": "Customer order received and validated",
+        "status": "active"
+      },
+      "out_otc_credit_approved": {
+        "id": "out_otc_credit_approved",
+        "elementType": "Outcome",
+        "name": "Credit limit confirmed and order released",
+        "status": "active"
+      },
+      "out_otc_delivery_confirmed": {
+        "id": "out_otc_delivery_confirmed",
+        "elementType": "Outcome",
+        "name": "Delivery date confirmed and scheduled",
+        "status": "active"
+      },
+      "out_otc_goods_dispatched": {
+        "id": "out_otc_goods_dispatched",
+        "elementType": "Outcome",
+        "name": "Goods picked, packed, and handed to carrier",
+        "status": "active"
+      },
+      "out_otc_invoice_issued": {
+        "id": "out_otc_invoice_issued",
+        "elementType": "Outcome",
+        "name": "Invoice issued to customer",
+        "status": "active"
+      },
+      "out_otc_payment_collected": {
+        "id": "out_otc_payment_collected",
+        "elementType": "Outcome",
+        "name": "Payment received from customer",
+        "status": "active"
+      },
+      "out_otc_cash_reconciled": {
+        "id": "out_otc_cash_reconciled",
+        "elementType": "Outcome",
+        "name": "Cash applied and receivable cleared",
+        "status": "active"
+      },
+      "out_p2p_need_identified": {
+        "id": "out_p2p_need_identified",
+        "elementType": "Outcome",
+        "name": "Procurement need identified and approved"
+      },
+      "out_p2p_pr_approved": {
+        "id": "out_p2p_pr_approved",
+        "elementType": "Outcome",
+        "name": "Purchase requisition approved"
+      },
+      "out_p2p_po_issued": {
+        "id": "out_p2p_po_issued",
+        "elementType": "Outcome",
+        "name": "Purchase order issued to supplier"
+      },
+      "out_p2p_goods_received": {
+        "id": "out_p2p_goods_received",
+        "elementType": "Outcome",
+        "name": "Goods or services received and confirmed"
+      },
+      "out_p2p_invoice_matched": {
+        "id": "out_p2p_invoice_matched",
+        "elementType": "Outcome",
+        "name": "Invoice matched and approved for payment"
+      },
+      "out_p2p_payment_made": {
+        "id": "out_p2p_payment_made",
+        "elementType": "Outcome",
+        "name": "Supplier payment executed"
+      },
+      "out_fcr_period_closed": {
+        "id": "out_fcr_period_closed",
+        "elementType": "Outcome",
+        "name": "Accounting period closed and sub-ledgers reconciled"
+      },
+      "out_fcr_ic_eliminated": {
+        "id": "out_fcr_ic_eliminated",
+        "elementType": "Outcome",
+        "name": "Intercompany balances matched and elimination entries posted"
+      },
+      "out_fcr_group_consolidated": {
+        "id": "out_fcr_group_consolidated",
+        "elementType": "Outcome",
+        "name": "Group consolidated trial balance produced"
+      },
+      "out_fcr_tax_filed": {
+        "id": "out_fcr_tax_filed",
+        "elementType": "Outcome",
+        "name": "Statutory tax filings submitted"
+      },
+      "out_fcr_reports_published": {
+        "id": "out_fcr_reports_published",
+        "elementType": "Outcome",
+        "name": "Management and statutory reports published"
+      },
+      "out_dsp_demand_forecast_published": {
+        "id": "out_dsp_demand_forecast_published",
+        "elementType": "Outcome",
+        "name": "Statistical demand forecast published and reviewed"
+      },
+      "out_dsp_supply_plan_approved": {
+        "id": "out_dsp_supply_plan_approved",
+        "elementType": "Outcome",
+        "name": "Unconstrained supply plan generated and reviewed"
+      },
+      "out_dsp_sop_aligned": {
+        "id": "out_dsp_sop_aligned",
+        "elementType": "Outcome",
+        "name": "Demand, supply, and financial plan aligned through S&OP"
+      },
+      "out_dsp_mps_released": {
+        "id": "out_dsp_mps_released",
+        "elementType": "Outcome",
+        "name": "Master production schedule released to manufacturing"
+      },
+      "out_dsp_inventory_targets_set": {
+        "id": "out_dsp_inventory_targets_set",
+        "elementType": "Outcome",
+        "name": "Inventory policy and safety stock targets confirmed"
+      }
+    },
+    "metrics": {
+      "metric_otc_order_to_invoice_days": {
+        "id": "metric_otc_order_to_invoice_days",
+        "elementType": "Metric",
+        "name": "Order-to-Invoice Cycle Time",
+        "description": "Average days from customer order receipt to invoice issuance",
+        "unit": "days",
+        "direction": "Decrease",
+        "currentMeasure": 4.2,
+        "targetMeasure": 2.0
+      },
+      "metric_otc_dso": {
+        "id": "metric_otc_dso",
+        "elementType": "Metric",
+        "name": "Days Sales Outstanding (DSO)",
+        "description": "Average days to collect payment after invoice issuance",
+        "unit": "days",
+        "direction": "Decrease",
+        "currentMeasure": 48,
+        "targetMeasure": 35
+      },
+      "metric_otc_first_pass_invoice_accuracy": {
+        "id": "metric_otc_first_pass_invoice_accuracy",
+        "elementType": "Metric",
+        "name": "First-Pass Invoice Accuracy",
+        "description": "Percentage of invoices issued without error or dispute",
+        "unit": "%",
+        "direction": "Increase",
+        "currentMeasure": 87,
+        "targetMeasure": 98
+      },
+      "metric_otc_collection_rate": {
+        "id": "metric_otc_collection_rate",
+        "elementType": "Metric",
+        "name": "Collection Rate",
+        "description": "Percentage of invoiced revenue collected within payment terms",
+        "unit": "%",
+        "direction": "Increase",
+        "currentMeasure": 91,
+        "targetMeasure": 97
+      },
+      "metric_otc_order_error_rate": {
+        "id": "metric_otc_order_error_rate",
+        "elementType": "Metric",
+        "name": "Order Entry Error Rate",
+        "unit": "%",
+        "direction": "Decrease",
+        "currentMeasure": 13.0,
+        "targetMeasure": 2.0,
+        "description": "Percentage of orders requiring correction after initial entry due to data quality issues."
+      },
+      "metric_otc_credit_decision_latency": {
+        "id": "metric_otc_credit_decision_latency",
+        "elementType": "Metric",
+        "name": "Credit Decision Latency",
+        "unit": "hours",
+        "direction": "Decrease",
+        "currentMeasure": 18.0,
+        "targetMeasure": 0.25,
+        "description": "Time from order submission to credit approval decision. Current overnight batch vs target real-time."
+      },
+      "metric_otc_einvoice_compliance_rate": {
+        "id": "metric_otc_einvoice_compliance_rate",
+        "elementType": "Metric",
+        "name": "E-Invoice Compliance Rate",
+        "unit": "%",
+        "direction": "Increase",
+        "currentMeasure": 94.0,
+        "targetMeasure": 100.0,
+        "description": "Percentage of invoices successfully submitted to tax authorities within statutory deadlines."
+      },
+      "metric_otc_cash_auto_match_rate": {
+        "id": "metric_otc_cash_auto_match_rate",
+        "elementType": "Metric",
+        "name": "Cash Auto-Match Rate",
+        "unit": "%",
+        "direction": "Increase",
+        "currentMeasure": 40.0,
+        "targetMeasure": 85.0,
+        "description": "Percentage of incoming payments automatically matched to open receivables without manual intervention."
+      },
+      "metric_otc_dispute_resolution_days": {
+        "id": "metric_otc_dispute_resolution_days",
+        "elementType": "Metric",
+        "name": "Dispute Resolution Cycle Time",
+        "unit": "days",
+        "direction": "Decrease",
+        "currentMeasure": 18.0,
+        "targetMeasure": 5.0,
+        "description": "Average calendar days from dispute opening to resolution and credit note issuance."
+      },
+      "metric_p2p_po_cycle_time": {
+        "id": "metric_p2p_po_cycle_time",
+        "elementType": "Metric",
+        "name": "Purchase Order Cycle Time",
+        "unit": "days",
+        "direction": "Decrease",
+        "currentMeasure": 5.2,
+        "targetMeasure": 1.5,
+        "description": "Time from approved purchase requisition to issued purchase order."
+      },
+      "metric_p2p_invoice_match_rate": {
+        "id": "metric_p2p_invoice_match_rate",
+        "elementType": "Metric",
+        "name": "First-Pass Invoice Match Rate",
+        "unit": "%",
+        "direction": "Increase",
+        "currentMeasure": 72.0,
+        "targetMeasure": 95.0,
+        "description": "Percentage of supplier invoices matched automatically on first attempt without manual intervention."
+      },
+      "metric_p2p_payment_on_time": {
+        "id": "metric_p2p_payment_on_time",
+        "elementType": "Metric",
+        "name": "On-Time Payment Rate",
+        "unit": "%",
+        "direction": "Increase",
+        "currentMeasure": 84.0,
+        "targetMeasure": 98.0,
+        "description": "Percentage of supplier invoices paid within agreed payment terms."
+      },
+      "metric_p2p_po_compliance": {
+        "id": "metric_p2p_po_compliance",
+        "elementType": "Metric",
+        "name": "PO-Backed Spend Rate",
+        "unit": "%",
+        "direction": "Increase",
+        "currentMeasure": 68.0,
+        "targetMeasure": 92.0,
+        "description": "Percentage of addressable spend backed by a purchase order at time of invoice receipt."
+      },
+      "metric_p2p_supplier_otd": {
+        "id": "metric_p2p_supplier_otd",
+        "elementType": "Metric",
+        "name": "Supplier On-Time Delivery Rate",
+        "unit": "%",
+        "direction": "Increase",
+        "currentMeasure": 81.0,
+        "targetMeasure": 93.0,
+        "description": "Percentage of purchase order line items delivered within the confirmed delivery date."
+      },
+      "metric_fcr_close_cycle_days": {
+        "id": "metric_fcr_close_cycle_days",
+        "elementType": "Metric",
+        "name": "Financial Close Cycle Time",
+        "unit": "days",
+        "direction": "Decrease",
+        "currentMeasure": 12.0,
+        "targetMeasure": 5.0,
+        "description": "Calendar days from period end to published group management accounts."
+      },
+      "metric_fcr_ic_reconciliation_rate": {
+        "id": "metric_fcr_ic_reconciliation_rate",
+        "elementType": "Metric",
+        "name": "Intercompany Auto-Reconciliation Rate",
+        "unit": "%",
+        "direction": "Increase",
+        "currentMeasure": 61.0,
+        "targetMeasure": 95.0,
+        "description": "Percentage of intercompany balances automatically matched without manual adjustment."
+      },
+      "metric_fcr_restatement_count": {
+        "id": "metric_fcr_restatement_count",
+        "elementType": "Metric",
+        "name": "Period Restatement Count",
+        "unit": "count",
+        "direction": "Decrease",
+        "currentMeasure": 4.2,
+        "targetMeasure": 0.0,
+        "description": "Average number of prior-period restatements per financial year across all entities."
+      },
+      "metric_fcr_tax_filing_compliance": {
+        "id": "metric_fcr_tax_filing_compliance",
+        "elementType": "Metric",
+        "name": "Tax Filing On-Time Compliance",
+        "unit": "%",
+        "direction": "Increase",
+        "currentMeasure": 91.0,
+        "targetMeasure": 100.0,
+        "description": "Percentage of statutory tax filings submitted on time across all jurisdictions."
+      },
+      "metric_fcr_forecast_accuracy": {
+        "id": "metric_fcr_forecast_accuracy",
+        "elementType": "Metric",
+        "name": "Rolling Forecast Accuracy",
+        "unit": "%",
+        "direction": "Increase",
+        "currentMeasure": 74.0,
+        "targetMeasure": 90.0,
+        "description": "Percentage accuracy of 3-month rolling financial forecast vs actual results."
+      },
+      "metric_dsp_forecast_accuracy": {
+        "id": "metric_dsp_forecast_accuracy",
+        "elementType": "Metric",
+        "name": "Demand Forecast Accuracy (WMAPE)",
+        "unit": "%",
+        "direction": "Decrease",
+        "currentMeasure": 32.0,
+        "targetMeasure": 18.0,
+        "description": "Weighted Mean Absolute Percentage Error of 13-week statistical demand forecast vs actuals."
+      },
+      "metric_dsp_inventory_turns": {
+        "id": "metric_dsp_inventory_turns",
+        "elementType": "Metric",
+        "name": "Inventory Turns",
+        "unit": "turns/year",
+        "direction": "Increase",
+        "currentMeasure": 4.2,
+        "targetMeasure": 6.5,
+        "description": "Annual inventory turns calculated as COGS divided by average inventory value."
+      },
+      "metric_dsp_service_level": {
+        "id": "metric_dsp_service_level",
+        "elementType": "Metric",
+        "name": "Customer Service Level (OTIF)",
+        "unit": "%",
+        "direction": "Increase",
+        "currentMeasure": 78.0,
+        "targetMeasure": 94.0,
+        "description": "On-Time In-Full delivery rate against confirmed customer delivery dates."
+      },
+      "metric_dsp_excess_inventory": {
+        "id": "metric_dsp_excess_inventory",
+        "elementType": "Metric",
+        "name": "Excess & Obsolete Inventory",
+        "unit": "% of total",
+        "direction": "Decrease",
+        "currentMeasure": 11.0,
+        "targetMeasure": 4.0,
+        "description": "Value of slow-moving and obsolete inventory as a percentage of total inventory value."
+      },
+      "metric_dsp_plan_adherence": {
+        "id": "metric_dsp_plan_adherence",
+        "elementType": "Metric",
+        "name": "Production Plan Adherence",
+        "unit": "%",
+        "direction": "Increase",
+        "currentMeasure": 71.0,
+        "targetMeasure": 90.0,
+        "description": "Percentage of master production schedule executed within the confirmed planning period."
+      }
+    },
+    "controls": {
+      "ctrl_otc_order_completeness_check": {
+        "id": "ctrl_otc_order_completeness_check",
+        "elementType": "Control",
+        "name": "Order Completeness Gate",
+        "description": "Mandatory field validation on customer order before progression to credit check"
+      },
+      "ctrl_otc_credit_block_rule": {
+        "id": "ctrl_otc_credit_block_rule",
+        "elementType": "Control",
+        "name": "Credit Block Rule",
+        "description": "Automatic order block triggered when customer exposure exceeds approved credit limit"
+      },
+      "ctrl_otc_goods_issue_confirmation": {
+        "id": "ctrl_otc_goods_issue_confirmation",
+        "elementType": "Control",
+        "name": "Goods Issue Confirmation",
+        "description": "Warehouse confirmation of goods issue required before billing document creation"
+      },
+      "ctrl_otc_tax_determination": {
+        "id": "ctrl_otc_tax_determination",
+        "elementType": "Control",
+        "name": "Tax Determination Check",
+        "description": "Automated tax code determination validated against ship-to country and product tax classification"
+      },
+      "ctrl_otc_invoice_approval_rule": {
+        "id": "ctrl_otc_invoice_approval_rule",
+        "elementType": "Control",
+        "name": "High-Value Invoice Approval",
+        "description": "Invoices above threshold require billing manager approval before transmission"
+      },
+      "ctrl_otc_dunning_level_rule": {
+        "id": "ctrl_otc_dunning_level_rule",
+        "elementType": "Control",
+        "name": "Dunning Escalation Rule",
+        "description": "Automated escalation to next dunning level based on days overdue and account risk class"
+      },
+      "ctrl_otc_cash_application_tolerance": {
+        "id": "ctrl_otc_cash_application_tolerance",
+        "elementType": "Control",
+        "name": "Cash Application Tolerance",
+        "description": "Automatic write-off of underpayment differences within approved tolerance band"
+      },
+      "ctrl_otc_credit_note_approval": {
+        "id": "ctrl_otc_credit_note_approval",
+        "elementType": "Control",
+        "name": "Credit Note Approval",
+        "description": "Credit notes above threshold require sales manager and finance approval before issuance"
+      },
+      "ctrl_p2p_spend_authority": {
+        "id": "ctrl_p2p_spend_authority",
+        "elementType": "Control",
+        "name": "Spend Authority Matrix"
+      },
+      "ctrl_p2p_three_way_match": {
+        "id": "ctrl_p2p_three_way_match",
+        "elementType": "Control",
+        "name": "Three-Way Match Rule (PO/GR/Invoice)"
+      },
+      "ctrl_p2p_payment_terms_policy": {
+        "id": "ctrl_p2p_payment_terms_policy",
+        "elementType": "Control",
+        "name": "Payment Terms Policy"
+      },
+      "ctrl_p2p_vendor_approval": {
+        "id": "ctrl_p2p_vendor_approval",
+        "elementType": "Control",
+        "name": "Approved Vendor List Check"
+      },
+      "ctrl_fcr_close_checklist": {
+        "id": "ctrl_fcr_close_checklist",
+        "elementType": "Control",
+        "name": "Period Close Checklist Sign-Off"
+      },
+      "ctrl_fcr_ic_tolerance": {
+        "id": "ctrl_fcr_ic_tolerance",
+        "elementType": "Control",
+        "name": "Intercompany Matching Tolerance Policy"
+      },
+      "ctrl_fcr_consolidation_rules": {
+        "id": "ctrl_fcr_consolidation_rules",
+        "elementType": "Control",
+        "name": "Consolidation Rules & Elimination Policy"
+      },
+      "ctrl_fcr_tax_review": {
+        "id": "ctrl_fcr_tax_review",
+        "elementType": "Control",
+        "name": "Tax Provision Review and Approval"
+      },
+      "ctrl_dsp_forecast_review": {
+        "id": "ctrl_dsp_forecast_review",
+        "elementType": "Control",
+        "name": "Demand Review Sign-Off Gate"
+      },
+      "ctrl_dsp_capacity_feasibility": {
+        "id": "ctrl_dsp_capacity_feasibility",
+        "elementType": "Control",
+        "name": "Capacity Feasibility Check"
+      },
+      "ctrl_dsp_sop_approval": {
+        "id": "ctrl_dsp_sop_approval",
+        "elementType": "Control",
+        "name": "S&OP Executive Approval"
+      },
+      "ctrl_dsp_inventory_policy_review": {
+        "id": "ctrl_dsp_inventory_policy_review",
+        "elementType": "Control",
+        "name": "Inventory Policy Review Cycle"
+      }
+    },
+    "informationObjects": {
+      "info_customer_master": {
+        "id": "info_customer_master",
+        "elementType": "InformationObject",
+        "name": "Customer Master Record"
+      },
+      "info_purchase_requisition": {
+        "id": "info_purchase_requisition",
+        "elementType": "InformationObject",
+        "name": "Purchase Requisition"
+      },
+      "info_budget_availability": {
+        "id": "info_budget_availability",
+        "elementType": "InformationObject",
+        "name": "Budget Availability Report"
+      },
+      "info_spend_category": {
+        "id": "info_spend_category",
+        "elementType": "InformationObject",
+        "name": "Spend Category Taxonomy"
+      },
+      "info_preferred_supplier_list": {
+        "id": "info_preferred_supplier_list",
+        "elementType": "InformationObject",
+        "name": "Preferred Supplier List"
+      },
+      "info_purchase_order": {
+        "id": "info_purchase_order",
+        "elementType": "InformationObject",
+        "name": "Purchase Order"
+      },
+      "info_supplier_contract": {
+        "id": "info_supplier_contract",
+        "elementType": "InformationObject",
+        "name": "Supplier Contract"
+      },
+      "info_approved_vendor_list": {
+        "id": "info_approved_vendor_list",
+        "elementType": "InformationObject",
+        "name": "Approved Vendor List"
+      },
+      "info_supplier_scorecard": {
+        "id": "info_supplier_scorecard",
+        "elementType": "InformationObject",
+        "name": "Supplier Performance Scorecard"
+      },
+      "info_goods_receipt": {
+        "id": "info_goods_receipt",
+        "elementType": "InformationObject",
+        "name": "Goods Receipt Document"
+      },
+      "info_delivery_note": {
+        "id": "info_delivery_note",
+        "elementType": "InformationObject",
+        "name": "Supplier Delivery Note"
+      },
+      "info_quality_inspection_result": {
+        "id": "info_quality_inspection_result",
+        "elementType": "InformationObject",
+        "name": "Quality Inspection Result"
+      },
+      "info_supplier_invoice": {
+        "id": "info_supplier_invoice",
+        "elementType": "InformationObject",
+        "name": "Supplier Invoice"
+      },
+      "info_payment_proposal": {
+        "id": "info_payment_proposal",
+        "elementType": "InformationObject",
+        "name": "Payment Proposal"
+      },
+      "info_bank_transfer_file": {
+        "id": "info_bank_transfer_file",
+        "elementType": "InformationObject",
+        "name": "Bank Transfer File"
+      }
+    }
+  }
+}

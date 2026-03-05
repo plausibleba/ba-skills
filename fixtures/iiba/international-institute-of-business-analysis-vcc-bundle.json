@@ -1,0 +1,2033 @@
+{
+  "bundleVersion": "1.0",
+  "createdAt": "2026-03-05T06:53:33.836Z",
+  "scaffold": {
+    "schemaVersion": "1.0",
+    "scaffoldId": "scaffold-international-institute-of-business-analysis",
+    "name": "International Institute of Business Analysis",
+    "description": "Generated from discovery intake — Professional Association Medium",
+    "createdAt": "2026-03-05T06:53:33.836Z",
+    "elements": {
+      "valueStreams": {
+        "vs-member-engagement-lifecycle": {
+          "name": "Member Engagement Lifecycle",
+          "description": "End-to-end flow from prospect awareness through membership renewal and retention",
+          "activityIds": [
+            "act-member-engagement-lifecycle-marketing-awareness",
+            "act-member-engagement-lifecycle-registration-onboarding",
+            "act-member-engagement-lifecycle-member-education",
+            "act-member-engagement-lifecycle-ongoing-value-delivery",
+            "act-member-engagement-lifecycle-renewal-retention"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "Business Analysis Professionals"
+        },
+        "vs-professional-certification-delivery": {
+          "name": "Professional Certification Delivery",
+          "description": "Complete certification pathway from candidate inquiry through credential maintenance",
+          "activityIds": [
+            "act-professional-certification-delivery-certification-promotion",
+            "act-professional-certification-delivery-application-processing",
+            "act-professional-certification-delivery-exam-preparation-support",
+            "act-professional-certification-delivery-examination-administration",
+            "act-professional-certification-delivery-credential-issuance",
+            "act-professional-certification-delivery-recertification-management"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "Certification Candidates"
+        },
+        "vs-knowledge-standards-creation": {
+          "name": "Knowledge Standards Creation",
+          "description": "Development and distribution of authoritative business analysis standards and content",
+          "activityIds": [
+            "act-knowledge-standards-creation-research-content-development",
+            "act-knowledge-standards-creation-review-approval",
+            "act-knowledge-standards-creation-publication-distribution",
+            "act-knowledge-standards-creation-feedback-improvement"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "Business Analysis Community"
+        },
+        "vs-partnership-development": {
+          "name": "Partnership Development",
+          "description": "Corporate and institutional partnership lifecycle from prospect to renewal",
+          "activityIds": [
+            "act-partnership-development-partner-qualification",
+            "act-partnership-development-agreement-onboarding",
+            "act-partnership-development-service-delivery",
+            "act-partnership-development-feedback-collection",
+            "act-partnership-development-renewal-expansion"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "Corporate and Institutional Partners"
+        }
+      },
+      "activities": {
+        "act-member-engagement-lifecycle-marketing-awareness": {
+          "name": "Marketing & Awareness",
+          "description": "Marketing & Awareness stage in Member Engagement Lifecycle",
+          "preOutcomeId": "out-member-engagement-lifecycle-entry",
+          "postOutcomeId": "out-member-engagement-lifecycle-marketing-awareness-complete",
+          "requiresCapabilityIds": [
+            "cap-member-engagement-lifecycle-marketing-awareness-marketing-awareness-execution",
+            "cap-member-engagement-lifecycle-marketing-awareness-marketing-awareness-governance",
+            "cap-member-engagement-lifecycle-marketing-awareness-marketing-awareness-integration"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-member-engagement-lifecycle-marketing-awareness-marketing-awareness-execution": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate marketing & awareness process",
+                "Execute core marketing & awareness activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-member-engagement-lifecycle-marketing-awareness-marketing-awareness-governance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for marketing & awareness decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-member-engagement-lifecycle-marketing-awareness-marketing-awareness-integration": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-member-engagement-lifecycle-registration-onboarding": {
+          "name": "Registration & Onboarding",
+          "description": "Registration & Onboarding stage in Member Engagement Lifecycle",
+          "preOutcomeId": "out-member-engagement-lifecycle-marketing-awareness-complete",
+          "postOutcomeId": "out-member-engagement-lifecycle-registration-onboarding-complete",
+          "requiresCapabilityIds": [
+            "cap-member-engagement-lifecycle-registration-onboarding-registration-onboarding-execution",
+            "cap-member-engagement-lifecycle-registration-onboarding-registration-onboarding-governance",
+            "cap-member-engagement-lifecycle-registration-onboarding-registration-onboarding-integration"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [
+            "metric-activation-time",
+            "metric-conversion-rate"
+          ],
+          "controlIds": [
+            "ctrl-manual-processes-for-member-onboarding-and-benefit-access-setup-causing-delays-in-activation-time"
+          ],
+          "capabilityPPIT": {
+            "cap-member-engagement-lifecycle-registration-onboarding-registration-onboarding-execution": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate registration & onboarding process",
+                "Execute core registration & onboarding activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-member-engagement-lifecycle-registration-onboarding-registration-onboarding-governance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for registration & onboarding decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-member-engagement-lifecycle-registration-onboarding-registration-onboarding-integration": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-member-engagement-lifecycle-member-education": {
+          "name": "Member Education",
+          "description": "Member Education stage in Member Engagement Lifecycle",
+          "preOutcomeId": "out-member-engagement-lifecycle-registration-onboarding-complete",
+          "postOutcomeId": "out-member-engagement-lifecycle-member-education-complete",
+          "requiresCapabilityIds": [
+            "cap-member-engagement-lifecycle-member-education-member-education-execution",
+            "cap-member-engagement-lifecycle-member-education-member-education-governance",
+            "cap-member-engagement-lifecycle-member-education-member-education-integration"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-member-engagement-lifecycle-member-education-member-education-execution": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate member education process",
+                "Execute core member education activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-member-engagement-lifecycle-member-education-member-education-governance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for member education decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-member-engagement-lifecycle-member-education-member-education-integration": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-member-engagement-lifecycle-ongoing-value-delivery": {
+          "name": "Ongoing Value Delivery",
+          "description": "Ongoing Value Delivery stage in Member Engagement Lifecycle",
+          "preOutcomeId": "out-member-engagement-lifecycle-member-education-complete",
+          "postOutcomeId": "out-member-engagement-lifecycle-ongoing-value-delivery-complete",
+          "requiresCapabilityIds": [
+            "cap-member-engagement-lifecycle-ongoing-value-delivery-execution-management",
+            "cap-member-engagement-lifecycle-ongoing-value-delivery-quality-assurance",
+            "cap-member-engagement-lifecycle-ongoing-value-delivery-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-member-engagement-lifecycle-ongoing-value-delivery-execution-management": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-member-engagement-lifecycle-ongoing-value-delivery-quality-assurance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-member-engagement-lifecycle-ongoing-value-delivery-handoff-coordination": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-member-engagement-lifecycle-renewal-retention": {
+          "name": "Renewal & Retention",
+          "description": "Renewal & Retention stage in Member Engagement Lifecycle",
+          "preOutcomeId": "out-member-engagement-lifecycle-ongoing-value-delivery-complete",
+          "postOutcomeId": "out-member-engagement-lifecycle-renewal-retention-complete",
+          "requiresCapabilityIds": [
+            "cap-member-engagement-lifecycle-renewal-retention-renewal-retention-execution",
+            "cap-member-engagement-lifecycle-renewal-retention-renewal-retention-governance",
+            "cap-member-engagement-lifecycle-renewal-retention-renewal-retention-integration"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [
+            "metric-renewal-rate"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-member-engagement-lifecycle-renewal-retention-renewal-retention-execution": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate renewal & retention process",
+                "Execute core renewal & retention activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-member-engagement-lifecycle-renewal-retention-renewal-retention-governance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for renewal & retention decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-member-engagement-lifecycle-renewal-retention-renewal-retention-integration": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-professional-certification-delivery-certification-promotion": {
+          "name": "Certification Promotion",
+          "description": "Certification Promotion stage in Professional Certification Delivery",
+          "preOutcomeId": "out-professional-certification-delivery-entry",
+          "postOutcomeId": "out-professional-certification-delivery-certification-promotion-complete",
+          "requiresCapabilityIds": [
+            "cap-professional-certification-delivery-certification-promotion-execution-management",
+            "cap-professional-certification-delivery-certification-promotion-quality-assurance",
+            "cap-professional-certification-delivery-certification-promotion-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-professional-certification-delivery-certification-promotion-execution-management": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-professional-certification-delivery-certification-promotion-quality-assurance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-professional-certification-delivery-certification-promotion-handoff-coordination": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-professional-certification-delivery-application-processing": {
+          "name": "Application Processing",
+          "description": "Application Processing stage in Professional Certification Delivery",
+          "preOutcomeId": "out-professional-certification-delivery-certification-promotion-complete",
+          "postOutcomeId": "out-professional-certification-delivery-application-processing-complete",
+          "requiresCapabilityIds": [
+            "cap-professional-certification-delivery-application-processing-execution-management",
+            "cap-professional-certification-delivery-application-processing-quality-assurance",
+            "cap-professional-certification-delivery-application-processing-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [
+            "metric-approval-turnaround-time"
+          ],
+          "controlIds": [
+            "ctrl-fragmented-systems-between-certification-application-processing-and-exam-scheduling-leading-to-approval-turnaround-delays"
+          ],
+          "capabilityPPIT": {
+            "cap-professional-certification-delivery-application-processing-execution-management": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-professional-certification-delivery-application-processing-quality-assurance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-professional-certification-delivery-application-processing-handoff-coordination": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-professional-certification-delivery-exam-preparation-support": {
+          "name": "Exam Preparation Support",
+          "description": "Exam Preparation Support stage in Professional Certification Delivery",
+          "preOutcomeId": "out-professional-certification-delivery-application-processing-complete",
+          "postOutcomeId": "out-professional-certification-delivery-exam-preparation-support-complete",
+          "requiresCapabilityIds": [
+            "cap-professional-certification-delivery-exam-preparation-support-execution-management",
+            "cap-professional-certification-delivery-exam-preparation-support-quality-assurance",
+            "cap-professional-certification-delivery-exam-preparation-support-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-professional-certification-delivery-exam-preparation-support-execution-management": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-professional-certification-delivery-exam-preparation-support-quality-assurance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-professional-certification-delivery-exam-preparation-support-handoff-coordination": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-professional-certification-delivery-examination-administration": {
+          "name": "Examination Administration",
+          "description": "Examination Administration stage in Professional Certification Delivery",
+          "preOutcomeId": "out-professional-certification-delivery-exam-preparation-support-complete",
+          "postOutcomeId": "out-professional-certification-delivery-examination-administration-complete",
+          "requiresCapabilityIds": [
+            "cap-professional-certification-delivery-examination-administration-execution-management",
+            "cap-professional-certification-delivery-examination-administration-quality-assurance",
+            "cap-professional-certification-delivery-examination-administration-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [
+            "metric-pass-rate"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-professional-certification-delivery-examination-administration-execution-management": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-professional-certification-delivery-examination-administration-quality-assurance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-professional-certification-delivery-examination-administration-handoff-coordination": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-professional-certification-delivery-credential-issuance": {
+          "name": "Credential Issuance",
+          "description": "Credential Issuance stage in Professional Certification Delivery",
+          "preOutcomeId": "out-professional-certification-delivery-examination-administration-complete",
+          "postOutcomeId": "out-professional-certification-delivery-credential-issuance-complete",
+          "requiresCapabilityIds": [
+            "cap-professional-certification-delivery-credential-issuance-execution-management",
+            "cap-professional-certification-delivery-credential-issuance-quality-assurance",
+            "cap-professional-certification-delivery-credential-issuance-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-professional-certification-delivery-credential-issuance-execution-management": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-professional-certification-delivery-credential-issuance-quality-assurance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-professional-certification-delivery-credential-issuance-handoff-coordination": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-professional-certification-delivery-recertification-management": {
+          "name": "Recertification Management",
+          "description": "Recertification Management stage in Professional Certification Delivery",
+          "preOutcomeId": "out-professional-certification-delivery-credential-issuance-complete",
+          "postOutcomeId": "out-professional-certification-delivery-recertification-management-complete",
+          "requiresCapabilityIds": [
+            "cap-professional-certification-delivery-recertification-management-execution-management",
+            "cap-professional-certification-delivery-recertification-management-quality-assurance",
+            "cap-professional-certification-delivery-recertification-management-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [
+            "metric-recertification-rate"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-professional-certification-delivery-recertification-management-execution-management": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-professional-certification-delivery-recertification-management-quality-assurance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-professional-certification-delivery-recertification-management-handoff-coordination": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-knowledge-standards-creation-research-content-development": {
+          "name": "Research & Content Development",
+          "description": "Research & Content Development stage in Knowledge Standards Creation",
+          "preOutcomeId": "out-knowledge-standards-creation-entry",
+          "postOutcomeId": "out-knowledge-standards-creation-research-content-development-complete",
+          "requiresCapabilityIds": [
+            "cap-knowledge-standards-creation-research-content-development-research-content-development-execution",
+            "cap-knowledge-standards-creation-research-content-development-research-content-development-governance",
+            "cap-knowledge-standards-creation-research-content-development-research-content-development-integration"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-knowledge-standards-creation-research-content-development-research-content-development-execution": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate research & content development process",
+                "Execute core research & content development activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-knowledge-standards-creation-research-content-development-research-content-development-governance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for research & content development decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-knowledge-standards-creation-research-content-development-research-content-development-integration": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-knowledge-standards-creation-review-approval": {
+          "name": "Review & Approval",
+          "description": "Review & Approval stage in Knowledge Standards Creation",
+          "preOutcomeId": "out-knowledge-standards-creation-research-content-development-complete",
+          "postOutcomeId": "out-knowledge-standards-creation-review-approval-complete",
+          "requiresCapabilityIds": [
+            "cap-knowledge-standards-creation-review-approval-assessment-execution",
+            "cap-knowledge-standards-creation-review-approval-risk-identification",
+            "cap-knowledge-standards-creation-review-approval-outcome-determination"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [
+            "metric-review-cycle-time"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-knowledge-standards-creation-review-approval-assessment-execution": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Gather evidence and data required for assessment",
+                "Apply assessment criteria against gathered evidence",
+                "Record findings with supporting rationale"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-knowledge-standards-creation-review-approval-risk-identification": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Identify risks from assessment findings",
+                "Classify risks by likelihood and impact",
+                "Assign risk ownership and mitigation actions"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-knowledge-standards-creation-review-approval-outcome-determination": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Synthesise findings into assessment conclusion",
+                "Document outcome with evidence trail",
+                "Communicate outcome to relevant stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-knowledge-standards-creation-publication-distribution": {
+          "name": "Publication & Distribution",
+          "description": "Publication & Distribution stage in Knowledge Standards Creation",
+          "preOutcomeId": "out-knowledge-standards-creation-review-approval-complete",
+          "postOutcomeId": "out-knowledge-standards-creation-publication-distribution-complete",
+          "requiresCapabilityIds": [
+            "cap-knowledge-standards-creation-publication-distribution-publication-distribution-execution",
+            "cap-knowledge-standards-creation-publication-distribution-publication-distribution-governance",
+            "cap-knowledge-standards-creation-publication-distribution-publication-distribution-integration"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-knowledge-standards-creation-publication-distribution-publication-distribution-execution": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate publication & distribution process",
+                "Execute core publication & distribution activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-knowledge-standards-creation-publication-distribution-publication-distribution-governance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for publication & distribution decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-knowledge-standards-creation-publication-distribution-publication-distribution-integration": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-knowledge-standards-creation-feedback-improvement": {
+          "name": "Feedback & Improvement",
+          "description": "Feedback & Improvement stage in Knowledge Standards Creation",
+          "preOutcomeId": "out-knowledge-standards-creation-publication-distribution-complete",
+          "postOutcomeId": "out-knowledge-standards-creation-feedback-improvement-complete",
+          "requiresCapabilityIds": [
+            "cap-knowledge-standards-creation-feedback-improvement-feedback-improvement-execution",
+            "cap-knowledge-standards-creation-feedback-improvement-feedback-improvement-governance",
+            "cap-knowledge-standards-creation-feedback-improvement-feedback-improvement-integration"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl-inconsistent-feedback-collection-mechanisms-across-different-content-types-impacting-improvement-backlog-prioritization"
+          ],
+          "capabilityPPIT": {
+            "cap-knowledge-standards-creation-feedback-improvement-feedback-improvement-execution": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate feedback & improvement process",
+                "Execute core feedback & improvement activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-knowledge-standards-creation-feedback-improvement-feedback-improvement-governance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for feedback & improvement decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-knowledge-standards-creation-feedback-improvement-feedback-improvement-integration": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-partnership-development-partner-qualification": {
+          "name": "Partner Qualification",
+          "description": "Partner Qualification stage in Partnership Development",
+          "preOutcomeId": "out-partnership-development-entry",
+          "postOutcomeId": "out-partnership-development-partner-qualification-complete",
+          "requiresCapabilityIds": [
+            "cap-partnership-development-partner-qualification-partner-qualification-execution",
+            "cap-partnership-development-partner-qualification-partner-qualification-governance",
+            "cap-partnership-development-partner-qualification-partner-qualification-integration"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-partnership-development-partner-qualification-partner-qualification-execution": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate partner qualification process",
+                "Execute core partner qualification activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-partnership-development-partner-qualification-partner-qualification-governance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for partner qualification decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-partnership-development-partner-qualification-partner-qualification-integration": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-partnership-development-agreement-onboarding": {
+          "name": "Agreement & Onboarding",
+          "description": "Agreement & Onboarding stage in Partnership Development",
+          "preOutcomeId": "out-partnership-development-partner-qualification-complete",
+          "postOutcomeId": "out-partnership-development-agreement-onboarding-complete",
+          "requiresCapabilityIds": [
+            "cap-partnership-development-agreement-onboarding-agreement-onboarding-execution",
+            "cap-partnership-development-agreement-onboarding-agreement-onboarding-governance",
+            "cap-partnership-development-agreement-onboarding-agreement-onboarding-integration"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-partnership-development-agreement-onboarding-agreement-onboarding-execution": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate agreement & onboarding process",
+                "Execute core agreement & onboarding activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-partnership-development-agreement-onboarding-agreement-onboarding-governance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for agreement & onboarding decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-partnership-development-agreement-onboarding-agreement-onboarding-integration": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-partnership-development-service-delivery": {
+          "name": "Service Delivery",
+          "description": "Service Delivery stage in Partnership Development",
+          "preOutcomeId": "out-partnership-development-agreement-onboarding-complete",
+          "postOutcomeId": "out-partnership-development-service-delivery-complete",
+          "requiresCapabilityIds": [
+            "cap-partnership-development-service-delivery-execution-management",
+            "cap-partnership-development-service-delivery-quality-assurance",
+            "cap-partnership-development-service-delivery-handoff-coordination"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [
+            "metric-utilisation-rate"
+          ],
+          "controlIds": [
+            "ctrl-limited-integration-between-partner-portal-and-membership-management-systems-affecting-utilization-rate-tracking"
+          ],
+          "capabilityPPIT": {
+            "cap-partnership-development-service-delivery-execution-management": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate work execution against confirmed plan",
+                "Monitor progress against schedule and quality standards",
+                "Resolve execution blockers and escalate where needed"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-partnership-development-service-delivery-quality-assurance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Define quality criteria for this stage output",
+                "Inspect or test output against criteria",
+                "Approve or reject output and record result"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-partnership-development-service-delivery-handoff-coordination": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Confirm output is complete and accepted",
+                "Notify downstream stage of handoff",
+                "Transfer ownership and supporting documentation"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-partnership-development-feedback-collection": {
+          "name": "Feedback Collection",
+          "description": "Feedback Collection stage in Partnership Development",
+          "preOutcomeId": "out-partnership-development-service-delivery-complete",
+          "postOutcomeId": "out-partnership-development-feedback-collection-complete",
+          "requiresCapabilityIds": [
+            "cap-partnership-development-feedback-collection-billing-execution",
+            "cap-partnership-development-feedback-collection-collections-management",
+            "cap-partnership-development-feedback-collection-cash-reconciliation"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-partnership-development-feedback-collection-billing-execution": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Trigger billing from completion event or milestone",
+                "Apply correct pricing, tax, and entity determination",
+                "Issue billing document via appropriate channel"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-partnership-development-feedback-collection-collections-management": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Monitor overdue accounts against agreed terms",
+                "Execute collections contact or dunning programme",
+                "Escalate high-risk accounts to senior collections"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-partnership-development-feedback-collection-cash-reconciliation": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Match incoming payments to open obligations",
+                "Resolve unmatched items through investigation",
+                "Post cleared items and update financial records"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        },
+        "act-partnership-development-renewal-expansion": {
+          "name": "Renewal & Expansion",
+          "description": "Renewal & Expansion stage in Partnership Development",
+          "preOutcomeId": "out-partnership-development-feedback-collection-complete",
+          "postOutcomeId": "out-partnership-development-renewal-expansion-complete",
+          "requiresCapabilityIds": [
+            "cap-partnership-development-renewal-expansion-renewal-expansion-execution",
+            "cap-partnership-development-renewal-expansion-renewal-expansion-governance",
+            "cap-partnership-development-renewal-expansion-renewal-expansion-integration"
+          ],
+          "performedByRoleIds": [
+            "role-marketing-team",
+            "role-membership-services"
+          ],
+          "metricIds": [
+            "metric-renewal-rate"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-partnership-development-renewal-expansion-renewal-expansion-execution": {
+              "roleIds": [
+                "role-marketing-team",
+                "role-membership-services"
+              ],
+              "activities": [
+                "Initiate renewal & expansion process",
+                "Execute core renewal & expansion activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-partnership-development-renewal-expansion-renewal-expansion-governance": {
+              "roleIds": [
+                "role-membership-services",
+                "role-certification-services"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for renewal & expansion decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            },
+            "cap-partnership-development-renewal-expansion-renewal-expansion-integration": {
+              "roleIds": [
+                "role-certification-services",
+                "role-chapter-leaders"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-knowledgehub",
+                "tech-member-portal"
+              ]
+            }
+          }
+        }
+      },
+      "capabilities": {
+        "cap-member-engagement-lifecycle-marketing-awareness-marketing-awareness-execution": {
+          "name": "Marketing & Awareness Execution",
+          "description": "Ability to execute Marketing & Awareness activities within Member Engagement Lifecycle"
+        },
+        "cap-member-engagement-lifecycle-marketing-awareness-marketing-awareness-governance": {
+          "name": "Marketing & Awareness Governance",
+          "description": "Ability to oversee and control Marketing & Awareness outcomes"
+        },
+        "cap-member-engagement-lifecycle-marketing-awareness-marketing-awareness-integration": {
+          "name": "Marketing & Awareness Integration",
+          "description": "Ability to coordinate Marketing & Awareness across teams and systems"
+        },
+        "cap-member-engagement-lifecycle-registration-onboarding-registration-onboarding-execution": {
+          "name": "Registration & Onboarding Execution",
+          "description": "Ability to execute Registration & Onboarding activities within Member Engagement Lifecycle"
+        },
+        "cap-member-engagement-lifecycle-registration-onboarding-registration-onboarding-governance": {
+          "name": "Registration & Onboarding Governance",
+          "description": "Ability to oversee and control Registration & Onboarding outcomes"
+        },
+        "cap-member-engagement-lifecycle-registration-onboarding-registration-onboarding-integration": {
+          "name": "Registration & Onboarding Integration",
+          "description": "Ability to coordinate Registration & Onboarding across teams and systems"
+        },
+        "cap-member-engagement-lifecycle-member-education-member-education-execution": {
+          "name": "Member Education Execution",
+          "description": "Ability to execute Member Education activities within Member Engagement Lifecycle"
+        },
+        "cap-member-engagement-lifecycle-member-education-member-education-governance": {
+          "name": "Member Education Governance",
+          "description": "Ability to oversee and control Member Education outcomes"
+        },
+        "cap-member-engagement-lifecycle-member-education-member-education-integration": {
+          "name": "Member Education Integration",
+          "description": "Ability to coordinate Member Education across teams and systems"
+        },
+        "cap-member-engagement-lifecycle-ongoing-value-delivery-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-member-engagement-lifecycle-ongoing-value-delivery-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-member-engagement-lifecycle-ongoing-value-delivery-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-member-engagement-lifecycle-renewal-retention-renewal-retention-execution": {
+          "name": "Renewal & Retention Execution",
+          "description": "Ability to execute Renewal & Retention activities within Member Engagement Lifecycle"
+        },
+        "cap-member-engagement-lifecycle-renewal-retention-renewal-retention-governance": {
+          "name": "Renewal & Retention Governance",
+          "description": "Ability to oversee and control Renewal & Retention outcomes"
+        },
+        "cap-member-engagement-lifecycle-renewal-retention-renewal-retention-integration": {
+          "name": "Renewal & Retention Integration",
+          "description": "Ability to coordinate Renewal & Retention across teams and systems"
+        },
+        "cap-professional-certification-delivery-certification-promotion-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-professional-certification-delivery-certification-promotion-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-professional-certification-delivery-certification-promotion-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-professional-certification-delivery-application-processing-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-professional-certification-delivery-application-processing-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-professional-certification-delivery-application-processing-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-professional-certification-delivery-exam-preparation-support-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-professional-certification-delivery-exam-preparation-support-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-professional-certification-delivery-exam-preparation-support-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-professional-certification-delivery-examination-administration-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-professional-certification-delivery-examination-administration-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-professional-certification-delivery-examination-administration-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-professional-certification-delivery-credential-issuance-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-professional-certification-delivery-credential-issuance-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-professional-certification-delivery-credential-issuance-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-professional-certification-delivery-recertification-management-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-professional-certification-delivery-recertification-management-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-professional-certification-delivery-recertification-management-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-knowledge-standards-creation-research-content-development-research-content-development-execution": {
+          "name": "Research & Content Development Execution",
+          "description": "Ability to execute Research & Content Development activities within Knowledge Standards Creation"
+        },
+        "cap-knowledge-standards-creation-research-content-development-research-content-development-governance": {
+          "name": "Research & Content Development Governance",
+          "description": "Ability to oversee and control Research & Content Development outcomes"
+        },
+        "cap-knowledge-standards-creation-research-content-development-research-content-development-integration": {
+          "name": "Research & Content Development Integration",
+          "description": "Ability to coordinate Research & Content Development across teams and systems"
+        },
+        "cap-knowledge-standards-creation-review-approval-assessment-execution": {
+          "name": "Assessment Execution",
+          "description": "Ability to conduct structured assessment of subject matter"
+        },
+        "cap-knowledge-standards-creation-review-approval-risk-identification": {
+          "name": "Risk Identification",
+          "description": "Ability to identify and classify risks arising from assessment"
+        },
+        "cap-knowledge-standards-creation-review-approval-outcome-determination": {
+          "name": "Outcome Determination",
+          "description": "Ability to reach and document a defensible assessment outcome"
+        },
+        "cap-knowledge-standards-creation-publication-distribution-publication-distribution-execution": {
+          "name": "Publication & Distribution Execution",
+          "description": "Ability to execute Publication & Distribution activities within Knowledge Standards Creation"
+        },
+        "cap-knowledge-standards-creation-publication-distribution-publication-distribution-governance": {
+          "name": "Publication & Distribution Governance",
+          "description": "Ability to oversee and control Publication & Distribution outcomes"
+        },
+        "cap-knowledge-standards-creation-publication-distribution-publication-distribution-integration": {
+          "name": "Publication & Distribution Integration",
+          "description": "Ability to coordinate Publication & Distribution across teams and systems"
+        },
+        "cap-knowledge-standards-creation-feedback-improvement-feedback-improvement-execution": {
+          "name": "Feedback & Improvement Execution",
+          "description": "Ability to execute Feedback & Improvement activities within Knowledge Standards Creation"
+        },
+        "cap-knowledge-standards-creation-feedback-improvement-feedback-improvement-governance": {
+          "name": "Feedback & Improvement Governance",
+          "description": "Ability to oversee and control Feedback & Improvement outcomes"
+        },
+        "cap-knowledge-standards-creation-feedback-improvement-feedback-improvement-integration": {
+          "name": "Feedback & Improvement Integration",
+          "description": "Ability to coordinate Feedback & Improvement across teams and systems"
+        },
+        "cap-partnership-development-partner-qualification-partner-qualification-execution": {
+          "name": "Partner Qualification Execution",
+          "description": "Ability to execute Partner Qualification activities within Partnership Development"
+        },
+        "cap-partnership-development-partner-qualification-partner-qualification-governance": {
+          "name": "Partner Qualification Governance",
+          "description": "Ability to oversee and control Partner Qualification outcomes"
+        },
+        "cap-partnership-development-partner-qualification-partner-qualification-integration": {
+          "name": "Partner Qualification Integration",
+          "description": "Ability to coordinate Partner Qualification across teams and systems"
+        },
+        "cap-partnership-development-agreement-onboarding-agreement-onboarding-execution": {
+          "name": "Agreement & Onboarding Execution",
+          "description": "Ability to execute Agreement & Onboarding activities within Partnership Development"
+        },
+        "cap-partnership-development-agreement-onboarding-agreement-onboarding-governance": {
+          "name": "Agreement & Onboarding Governance",
+          "description": "Ability to oversee and control Agreement & Onboarding outcomes"
+        },
+        "cap-partnership-development-agreement-onboarding-agreement-onboarding-integration": {
+          "name": "Agreement & Onboarding Integration",
+          "description": "Ability to coordinate Agreement & Onboarding across teams and systems"
+        },
+        "cap-partnership-development-service-delivery-execution-management": {
+          "name": "Execution Management",
+          "description": "Ability to coordinate and direct execution of work"
+        },
+        "cap-partnership-development-service-delivery-quality-assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to verify output meets required standards"
+        },
+        "cap-partnership-development-service-delivery-handoff-coordination": {
+          "name": "Handoff Coordination",
+          "description": "Ability to transfer completed output to the next stage"
+        },
+        "cap-partnership-development-feedback-collection-billing-execution": {
+          "name": "Billing Execution",
+          "description": "Ability to generate accurate and timely billing documents"
+        },
+        "cap-partnership-development-feedback-collection-collections-management": {
+          "name": "Collections Management",
+          "description": "Ability to pursue and collect outstanding amounts"
+        },
+        "cap-partnership-development-feedback-collection-cash-reconciliation": {
+          "name": "Cash Reconciliation",
+          "description": "Ability to match and apply incoming payments to obligations"
+        },
+        "cap-partnership-development-renewal-expansion-renewal-expansion-execution": {
+          "name": "Renewal & Expansion Execution",
+          "description": "Ability to execute Renewal & Expansion activities within Partnership Development"
+        },
+        "cap-partnership-development-renewal-expansion-renewal-expansion-governance": {
+          "name": "Renewal & Expansion Governance",
+          "description": "Ability to oversee and control Renewal & Expansion outcomes"
+        },
+        "cap-partnership-development-renewal-expansion-renewal-expansion-integration": {
+          "name": "Renewal & Expansion Integration",
+          "description": "Ability to coordinate Renewal & Expansion across teams and systems"
+        }
+      },
+      "roles": {
+        "role-marketing-team": {
+          "name": "Marketing Team"
+        },
+        "role-membership-services": {
+          "name": "Membership Services"
+        },
+        "role-certification-services": {
+          "name": "Certification Services"
+        },
+        "role-chapter-leaders": {
+          "name": "Chapter Leaders"
+        },
+        "role-training-partners": {
+          "name": "Training Partners"
+        },
+        "role-partner-manager": {
+          "name": "Partner Manager"
+        },
+        "role-knowledge-team": {
+          "name": "Knowledge Team"
+        },
+        "role-volunteers": {
+          "name": "Volunteers"
+        }
+      },
+      "outcomes": {
+        "out-member-engagement-lifecycle-entry": {
+          "name": "Member Engagement Lifecycle initiated",
+          "status": "active"
+        },
+        "out-member-engagement-lifecycle-marketing-awareness-complete": {
+          "name": "Marketing & Awareness complete",
+          "status": "active"
+        },
+        "out-member-engagement-lifecycle-registration-onboarding-complete": {
+          "name": "Registration & Onboarding complete",
+          "status": "active"
+        },
+        "out-member-engagement-lifecycle-member-education-complete": {
+          "name": "Member Education complete",
+          "status": "active"
+        },
+        "out-member-engagement-lifecycle-ongoing-value-delivery-complete": {
+          "name": "Ongoing Value Delivery complete",
+          "status": "active"
+        },
+        "out-member-engagement-lifecycle-renewal-retention-complete": {
+          "name": "Renewal & Retention complete",
+          "status": "active"
+        },
+        "out-professional-certification-delivery-entry": {
+          "name": "Professional Certification Delivery initiated",
+          "status": "active"
+        },
+        "out-professional-certification-delivery-certification-promotion-complete": {
+          "name": "Certification Promotion complete",
+          "status": "active"
+        },
+        "out-professional-certification-delivery-application-processing-complete": {
+          "name": "Application Processing complete",
+          "status": "active"
+        },
+        "out-professional-certification-delivery-exam-preparation-support-complete": {
+          "name": "Exam Preparation Support complete",
+          "status": "active"
+        },
+        "out-professional-certification-delivery-examination-administration-complete": {
+          "name": "Examination Administration complete",
+          "status": "active"
+        },
+        "out-professional-certification-delivery-credential-issuance-complete": {
+          "name": "Credential Issuance complete",
+          "status": "active"
+        },
+        "out-professional-certification-delivery-recertification-management-complete": {
+          "name": "Recertification Management complete",
+          "status": "active"
+        },
+        "out-knowledge-standards-creation-entry": {
+          "name": "Knowledge Standards Creation initiated",
+          "status": "active"
+        },
+        "out-knowledge-standards-creation-research-content-development-complete": {
+          "name": "Research & Content Development complete",
+          "status": "active"
+        },
+        "out-knowledge-standards-creation-review-approval-complete": {
+          "name": "Review & Approval complete",
+          "status": "active"
+        },
+        "out-knowledge-standards-creation-publication-distribution-complete": {
+          "name": "Publication & Distribution complete",
+          "status": "active"
+        },
+        "out-knowledge-standards-creation-feedback-improvement-complete": {
+          "name": "Feedback & Improvement complete",
+          "status": "active"
+        },
+        "out-partnership-development-entry": {
+          "name": "Partnership Development initiated",
+          "status": "active"
+        },
+        "out-partnership-development-partner-qualification-complete": {
+          "name": "Partner Qualification complete",
+          "status": "active"
+        },
+        "out-partnership-development-agreement-onboarding-complete": {
+          "name": "Agreement & Onboarding complete",
+          "status": "active"
+        },
+        "out-partnership-development-service-delivery-complete": {
+          "name": "Service Delivery complete",
+          "status": "active"
+        },
+        "out-partnership-development-feedback-collection-complete": {
+          "name": "Feedback Collection complete",
+          "status": "active"
+        },
+        "out-partnership-development-renewal-expansion-complete": {
+          "name": "Renewal & Expansion complete",
+          "status": "active"
+        }
+      },
+      "metrics": {
+        "metric-activation-time": {
+          "name": "Activation Time"
+        },
+        "metric-conversion-rate": {
+          "name": "Conversion Rate"
+        },
+        "metric-renewal-rate": {
+          "name": "Renewal Rate"
+        },
+        "metric-pass-rate": {
+          "name": "Pass Rate"
+        },
+        "metric-approval-turnaround-time": {
+          "name": "Approval Turnaround Time"
+        },
+        "metric-recertification-rate": {
+          "name": "Recertification Rate"
+        },
+        "metric-review-cycle-time": {
+          "name": "Review Cycle Time"
+        },
+        "metric-utilisation-rate": {
+          "name": "Utilisation Rate"
+        }
+      },
+      "controls": {
+        "ctrl-manual-processes-for-member-onboarding-and-benefit-access-setup-causing-delays-in-activation-time": {
+          "name": "Manual processes for member onboarding and benefit access se"
+        },
+        "ctrl-fragmented-systems-between-certification-application-processing-and-exam-scheduling-leading-to-approval-turnaround-delays": {
+          "name": "Fragmented systems between certification application process"
+        },
+        "ctrl-limited-integration-between-partner-portal-and-membership-management-systems-affecting-utilization-rate-tracking": {
+          "name": "Limited integration between partner portal and membership ma"
+        },
+        "ctrl-inconsistent-feedback-collection-mechanisms-across-different-content-types-impacting-improvement-backlog-prioritization": {
+          "name": "Inconsistent feedback collection mechanisms across different"
+        }
+      },
+      "informationObjects": {},
+      "technologyApps": {
+        "tech-knowledgehub": {
+          "name": "KnowledgeHub",
+          "type": "Custom"
+        },
+        "tech-member-portal": {
+          "name": "Member Portal",
+          "type": "CRM"
+        },
+        "tech-certification-platform": {
+          "name": "Certification Platform",
+          "type": "Custom"
+        },
+        "tech-digital-badging-provider": {
+          "name": "Digital Badging Provider",
+          "type": "Other"
+        },
+        "tech-exam-proctoring-system": {
+          "name": "Exam Proctoring System",
+          "type": "Other"
+        },
+        "tech-partner-portal": {
+          "name": "Partner Portal",
+          "type": "CRM"
+        }
+      }
+    },
+    "crossStreamOutcomes": [],
+    "scaffoldIntegrityHash": "c2NhZmZvbGQtaW50ZXJuYXRpb25hbC1p"
+  },
+  "heatmaps": [
+    {
+      "heatmapId": "heatmap-vs-member-engagement-lifecycle-1772693636334",
+      "scaffoldId": "scaffold-international-institute-of-business-analysis",
+      "valueStreamId": "vs-member-engagement-lifecycle",
+      "observations": [
+        {
+          "observationId": "fr_001_manual_onboarding_delays",
+          "category": "ProcessHandoffFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-member-engagement-lifecycle-registration-onboarding"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 7
+          },
+          "rationale": "Manual processes for member onboarding and benefit access setup causing delays in activation time, directly impacting the Registration & Onboarding activity performance",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_1",
+              "excerpt": "Manual processes for member onboarding and benefit access setup causing delays in activation time (intensity 7/10, stage: Member Engagement Lifecycle → Registration & Onboarding)"
+            }
+          ],
+          "observedAt": "2026-03-05T06:53:33.836Z"
+        }
+      ],
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-05T06:53:33.836Z"
+    },
+    {
+      "heatmapId": "heatmap-vs-professional-certification-delivery-1772693636334",
+      "scaffoldId": "scaffold-international-institute-of-business-analysis",
+      "valueStreamId": "vs-professional-certification-delivery",
+      "observations": [
+        {
+          "observationId": "fr_002_fragmented_certification_systems",
+          "category": "DataSignalFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-professional-certification-delivery-application-processing"
+          },
+          "contributingAnchors": [
+            {
+              "anchorType": "Activity",
+              "anchorId": "act-professional-certification-delivery-exam-preparation-support"
+            }
+          ],
+          "intensity": {
+            "scale": "0-10",
+            "score": 8
+          },
+          "rationale": "Fragmented systems between certification application processing and exam scheduling create data silos, leading to approval turnaround delays and downstream impact on exam preparation",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_2",
+              "excerpt": "Fragmented systems between certification application processing and exam scheduling leading to approval turnaround delays (intensity 8/10, stage: Professional Certification Delivery → Application Processing)"
+            }
+          ],
+          "observedAt": "2026-03-05T06:53:33.836Z"
+        }
+      ],
+      "bindingConstraint": {
+        "findingId": "bc_001",
+        "bindingAnchor": {
+          "anchorType": "Activity",
+          "anchorId": "act-professional-certification-delivery-application-processing"
+        },
+        "bindingAnchorObservationId": "fr_002_fragmented_certification_systems",
+        "justification": "Application Processing creates the highest constraint impact as fragmented systems block the entire downstream certification flow, affecting exam preparation, administration, and credential issuance activities",
+        "constraintScoring": {
+          "candidates": [
+            {
+              "anchorId": "act-professional-certification-delivery-application-processing",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 1,
+                "authorityCentralisation": 2,
+                "downstreamDependency": 3,
+                "controlLayering": 1,
+                "capacityConstraint": 1
+              },
+              "totalScore": 8
+            }
+          ],
+          "selectedAnchorId": "act-professional-certification-delivery-application-processing",
+          "selectionRationale": "Only eligible candidate with downstream dependency score ≥ 2"
+        },
+        "confidence": 0.53,
+        "observedAt": "2026-03-05T06:53:33.836Z"
+      },
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-05T06:53:33.836Z"
+    },
+    {
+      "heatmapId": "heatmap-vs-partnership-development-1772693636334",
+      "scaffoldId": "scaffold-international-institute-of-business-analysis",
+      "valueStreamId": "vs-partnership-development",
+      "observations": [
+        {
+          "observationId": "fr_003_partner_portal_integration_gaps",
+          "category": "DataSignalFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-partnership-development-service-delivery"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 6
+          },
+          "rationale": "Limited integration between partner portal and membership management systems creates information fragmentation affecting utilization rate tracking during service delivery",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_3",
+              "excerpt": "Limited integration between partner portal and membership management systems affecting utilization rate tracking (intensity 6/10, stage: Partnership Development → Service Delivery)"
+            }
+          ],
+          "observedAt": "2026-03-05T06:53:33.836Z"
+        }
+      ],
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-05T06:53:33.836Z"
+    },
+    {
+      "heatmapId": "heatmap-vs-knowledge-standards-creation-1772693636334",
+      "scaffoldId": "scaffold-international-institute-of-business-analysis",
+      "valueStreamId": "vs-knowledge-standards-creation",
+      "observations": [
+        {
+          "observationId": "fr_004_inconsistent_feedback_mechanisms",
+          "category": "ProcessHandoffFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-knowledge-standards-creation-feedback-improvement"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 5
+          },
+          "rationale": "Inconsistent feedback collection mechanisms across different content types create process handoff friction impacting improvement backlog prioritization",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_4",
+              "excerpt": "Inconsistent feedback collection mechanisms across different content types impacting improvement backlog prioritization (intensity 5/10, stage: Knowledge Standards Creation → Feedback & Improvement)"
+            }
+          ],
+          "observedAt": "2026-03-05T06:53:33.836Z"
+        }
+      ],
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-05T06:53:33.836Z"
+    }
+  ]
+}
