@@ -175,3 +175,70 @@ A value stream model is not a map of reality. It is a shared lens that a team ag
 | Describes the enterprise | Drives the conversation |
 
 **"Good enough to be useful. Fast enough to be relevant."**
+
+---
+
+## 11. Four Architectural Invariants
+
+*Derived from Session 10 design spar, 6 March 2026. These invariants are the fast audit test for any implementation decision. If a proposed change violates any of them, stop and reconsider.*
+
+---
+
+### Invariant 1: Constitutional Scaffold Discipline
+
+The scaffold must contain only **asserted structure** — never derived structure.
+
+Activities assert roles, capabilities, controls, application functions, and record classes. Topology, capability instances, and interference meshes are derived artefacts computed from the scaffold. They must never be authored directly into the scaffold.
+
+If derived constructs leak into the scaffold layer, the model becomes self-referential and the reasoning layer produces circular explanations.
+
+**Test:** Can this field be computed deterministically from other scaffold content? If yes, it does not belong in the scaffold.
+
+---
+
+### Invariant 2: Layer Separation in Reasoning
+
+The architecture has three reasoning layers that must remain distinct:
+
+| Layer | Content | May mutate? |
+|-------|---------|-------------|
+| Structural | The scaffold | Only via explicit human authoring or reviewed generation |
+| Diagnostic | Friction observations | Yes — analytical assertions about scaffold elements |
+| Interpretive | Binding constraint, executive conclusions | Yes — human judgement formally committed |
+
+The structural layer must never mutate because of diagnostic findings. Diagnostic and interpretive artefacts reference the scaffold hash — they do not rewrite the scaffold.
+
+**Test:** Does this change write back into the scaffold as a result of friction analysis or constraint selection? If yes, it violates layer separation.
+
+---
+
+### Invariant 3: Deterministic Derivation Chain
+
+Everything downstream of the scaffold is a **pure function** of the sealed scaffold plus a versioned ruleset. The chain is:
+
+```
+Scaffold (sealed, hashed)
+  → CapabilityInstance derivation
+  → TopologyView / NetworkView
+  → Friction analysis
+  → Binding constraint selection
+  → Intervention derivation (solutions, user stories)
+```
+
+Each step takes immutable inputs and produces a deterministic output. No step depends on manual modelling outside this chain.
+
+**Test:** If we re-run this derivation step from the same sealed scaffold and ruleset version, do we get the same output? If not, the step is non-deterministic and must be corrected.
+
+---
+
+### Invariant 4: Grain Independence of Activities
+
+Every Activity is a legitimate state transition regardless of grain. Composite and part Activities are the same ontological type — they differ only in the parthood relationship between them.
+
+Composition via `compositeActivityId` changes parthood semantics and boundary continuity constraints. It does not change the type of the Activity or the rules that govern it.
+
+**Test:** Does this Activity — composite or part — have a valid preOutcome, postOutcome, primaryRecordClassId, and entitled Role? If all four are present, it is a valid Activity regardless of grain.
+
+---
+
+*These invariants were first articulated by the Solution Architect (GPT) during the Session 10 design spar and accepted as permanent architecture constraints by the Product Owner.*

@@ -255,7 +255,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
   const [generateStep, setGenerateStep] = useState(""); // "scaffold" | "friction" | ""
   const [generated, setGenerated] = useState(false);
   const [generatedBundle, setGeneratedBundle] = useState<any>(null);
-  const [bundleSaved, setBundleSaved] = useState(false);
+  // bundleSaved gate removed (D-033) — Open in Canvas available immediately on generation
   const dropRef = useRef<HTMLDivElement>(null);
 
   const readiness = calcReadiness(form);
@@ -361,6 +361,7 @@ ${transcript}`;
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 4000,
+          temperature: 0,
           messages: [{ role: "user", content: pass1Prompt }]
         })
       });
@@ -448,6 +449,7 @@ ${transcript}`;
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 6000,
+          temperature: 0,
           messages: [{ role: "user", content: pass2Prompt }]
         })
       });
@@ -636,6 +638,7 @@ CRITICAL: All 15 element maps must be present, even if empty. Include elementTyp
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 8000,
+          temperature: 0,
           messages: [{ role: "user", content: pass3Prompt }]
         })
       });
@@ -660,10 +663,37 @@ CRITICAL: All 15 element maps must be present, even if empty. Include elementTyp
         `${i + 1}. [${p.category || "unclassified"}] ${p.description} (intensity ${p.intensity ?? 7}/10, stage: ${p.affectedStage || "unknown"})${p.binding ? " ← flagged as binding" : ""}`
       ).join("\n");
 
-    const scaffoldForPrompt = JSON.parse(JSON.stringify(scaffold));
-    Object.values(scaffoldForPrompt.elements?.activities ?? {}).forEach((act: any) => {
-      delete act.capabilityPPIT;
-    });
+    // Strip scaffold to activity skeleton for Pass 4 (D-040)
+    // Keep only VS IDs, VS names, activity IDs, activity names, preOutcome, postOutcome
+    // Removes capabilities, metrics, conditions, PPIT — reduces token load significantly
+    const scaffoldForPrompt = {
+      scaffoldId: scaffold.scaffoldId,
+      orgName: scaffold.orgName,
+      elements: {
+        valueStreams: Object.fromEntries(
+          Object.entries(scaffold.elements?.valueStreams ?? {}).map(([vsId, vs]: [string, any]) => [
+            vsId,
+            {
+              valueStreamId: vs.valueStreamId,
+              name: vs.name,
+              activityIds: vs.activityIds ?? []
+            }
+          ])
+        ),
+        activities: Object.fromEntries(
+          Object.entries(scaffold.elements?.activities ?? {}).map(([actId, act]: [string, any]) => [
+            actId,
+            {
+              activityId: act.activityId,
+              name: act.name,
+              preOutcome: act.preOutcome,
+              postOutcome: act.postOutcome,
+              nextActivityId: act.nextActivityId
+            }
+          ])
+        )
+      }
+    };
 
     const pass4Prompt = `You are generating friction observations and a binding constraint assessment for a VCC governance diagnostic.
 
@@ -744,6 +774,7 @@ ${JSON.stringify(scaffoldForPrompt, null, 2)}`;
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 8000,
+          temperature: 0,
           messages: [{ role: "user", content: pass4Prompt }]
         })
       });
@@ -864,14 +895,12 @@ ${JSON.stringify(scaffoldForPrompt, null, 2)}`;
                   URL.revokeObjectURL(url);
                 }
               }
-              setBundleSaved(true);
             }} className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors">
               ↓ Save Bundle
             </button>
             <button
-              onClick={() => bundleSaved && onComplete?.(generatedBundle)}
-              disabled={!bundleSaved}
-              className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${bundleSaved ? "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer" : "border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed"}`}>
+              onClick={() => onComplete?.(generatedBundle)}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors">
               Open in Canvas →
             </button>
           </div>
