@@ -2,7 +2,7 @@
 
 **Read this first. Every session. One page.**
 
-Last updated: 2026-03-06
+Last updated: 2026-03-06 (Session 11)
 
 ---
 
@@ -69,28 +69,39 @@ The following decisions are now locked and will shape the next implementation ph
 
 ---
 
-## Schema Delta — Next Implementation Target
+## Schema Delta — Session 11 (Implemented)
 
-Three new fields on Activity (see SCHEMA_DELTA_Session10.md for full spec):
+Three new fields on Activity — **implemented in Session 11**:
 
 ```typescript
-primaryRecordClassId?: string      // RecordClass this Activity transitions
 applicationFunctionIds?: string[]  // Application Function substrate references
+primaryRecordClassId?: string      // RecordClass this Activity transitions
 compositeActivityId?: string       // Mereological parthood — ordered part of composite
 ```
 
-New top-level registries on ScaffoldData:
-- `recordClasses[]` — RecordClass type definitions
-- `applicationFunctions[]` — ApplicationFunction controlled identifier set
+New top-level registries on ScaffoldData — **implemented**:
+- `applicationFunctions` — ApplicationFunction controlled identifier set
+- `recordClasses` — RecordClass type definitions
 
-FrictionHeatmap restructured into three layers:
-- `observations[]` — diagnostic (pure friction)
-- `interpretations[]` — interpretation (binding constraint, executive narrative)
-- `interventions[]` — intervention (solutions, stories, vendor mappings)
+FrictionHeatmap three-layer target shape — **types implemented, migration function ready**:
+- `diagnosticLayer.observations[]` — pure friction/opportunity analysis
+- `interpretiveLayer.bindingConstraint` — human judgement formally committed
+- `interventionLayer.interventions[]` — solutions, stories, vendor mappings
 
-New derived artefacts (computed, never authored):
-- `CapabilityInstance` — per (capabilityId, valueStreamId, activityId) tuple
-- `TopologyView` — deterministic interference mesh with own hash and provenance
+New derived artefacts — **types and pure functions implemented in types.ts**:
+- `CapabilityInstance` + `deriveCapabilityInstances()` — per (capabilityId, valueStreamId, activityId)
+- `TopologyView` + `deriveTopologyView()` — deterministic interference mesh, six coupling signals
+
+Validator extended — **implemented**:
+- V-ACTIVITY-04/05/06: ref integrity for new fields
+- V-ACTIVITY-09/10: cardinality (Warning/Error based on registry presence)
+- V-COMPOSITE-02–06: mereological parthood semantics
+- V-HEATMAP-02–04: three-layer cross-reference integrity
+
+**Pending wiring:**
+- Move derivation functions from `types.ts` → `network-derivation.ts`
+- Wire into `canvas-store.ts` and `NetworkView.tsx`
+- Unit tests for new validator rules
 
 ---
 
@@ -98,16 +109,16 @@ New derived artefacts (computed, never authored):
 
 | Priority | Item |
 |----------|------|
-| 1 | Schema delta implementation (Activity fields, RecordClass + ApplicationFunction registries) |
-| 2 | FrictionHeatmap three-layer restructure (with migration path for existing fixtures) |
-| 3 | DiscoveryIntake.tsx fix — bundleSaved gate, temperature: 0, strip scaffold for Pass 4 |
-| 4 | PDS update — reflect three phases, pipeline, ontological foundations |
-| 5 | CapabilityInstance derivation in network-derivation.ts |
-| 6 | TopologyView derivation (extends Network View) |
-| 7 | Enhance Ofluv scaffold — applicationFunctionIds, recordClassIds |
+| 1 | DiscoveryIntake.tsx fix — bundleSaved gate removal, temperature: 0, Pass 4 scaffold strip |
+| 2 | Move derivation functions (`deriveCapabilityInstances`, `deriveTopologyView`) → `network-derivation.ts` |
+| 3 | Wire CapabilityInstance + TopologyView into canvas-store and NetworkView |
+| 4 | Unit tests for new validator rules (V-ACTIVITY-04–10, V-COMPOSITE-02–06, V-HEATMAP-02–04) |
+| 5 | Delete stale artefacts: `/schema/` directory + `ScaffoldModel_schema.json.bak` (D-059) |
+| 6 | PDS update — reflect three phases, pipeline, ontological foundations |
+| 7 | Enhance Ofluv scaffold — populate applicationFunctionIds, recordClassIds on key activities |
 | 8 | Jira export button — getAllUserStories() ready, needs CSV download trigger |
 | 9 | Customer story filtering by industry/size |
-| 10 | Dummy discovery datasets — 2-3 fictitious non-Salesforce demos |
+| 10 | Dummy discovery datasets — 2-3 fictitious non-Salesforce demos for Daniel |
 
 ---
 

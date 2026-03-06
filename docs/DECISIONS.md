@@ -204,3 +204,41 @@ Stage card hierarchy, component extraction, network view topology, edge encoding
 **Decision:** Record only for v1. `primaryRecordClassId` references a RecordClass — the type of governed interaction record that transitions through Outcome states. Party and Product are implied domain context, not scaffolded explicitly yet.
 **Rationale:** A Record already implies the other two: every Record has a subject (Party) and concerns an object (Product). Creating a Customer creates a Customer Record — distinct from the Customer person. Keeps the scaffold schema tight. The Verb+Noun activity pattern follows: Activity = transition operation (Verb) on a RecordClass (Noun) by an entitled Role.
 **v2 path:** Add PartyClass and ProductClass references once the Record foundation is established.
+
+## D-056: Validator Extended with Execution Grammar Rules
+**Date:** 2026-03-06
+**Context:** Session 11 schema delta introduced three new Activity fields. These require corresponding validator rules to enforce referential integrity and semantic constraints.
+**Decision:** Four new rule functions added to `packages/shared/src/validator.ts`:
+- `checkExecutionGrammarRefs()` — V-ACTIVITY-04/05/06: reference integrity for applicationFunctionIds, primaryRecordClassId, compositeActivityId
+- `checkExecutionGrammarCardinality()` — V-ACTIVITY-09/10: cardinality enforcement (Warning on legacy scaffolds, Error when new registries are present)
+- `checkCompositeActivitySemantics()` — V-COMPOSITE-02/03/04/05/06: mereological parthood semantics, boundary continuity, ordered chain integrity
+- `checkHeatmapLayerIntegrity()` — V-HEATMAP-02/03/04: three-layer heatmap cross-reference validation (skips gracefully on legacy flat heatmaps)
+**Validation phases extended:** Phase 4 (execution grammar), Phase 5 (composite), Phase 6 (friction + heatmap layer).
+**Rationale:** Architectural invariants must be machine-enforceable, not just documented. Gradual adoption path preserved via severity promotion logic.
+
+## D-057: Schema Files Updated with New Registries and Activity Fields
+**Date:** 2026-03-06
+**Context:** Session 11 schema delta required concrete JSON Schema changes.
+**Decision:**
+- `ScaffoldModel.schema.json`: Added `ApplicationFunction`, `RecordClass`, `ApplicationFunctionMap`, `RecordClassMap` defs. Added `applicationFunctionIds`, `primaryRecordClassId`, `compositeActivityId` to Activity properties. Added `applicationFunctions` and `recordClasses` to elements.
+- `FrictionHeatmap.schema.json`: Added `DiagnosticLayer`, `InterpretiveLayer`, `InterventionLayer`, `HeatmapVNext`, `DiagnosticObservation`, `InterpretiveConclusion`, `Intervention` defs. Legacy shape preserved for migration.
+**Rationale:** `schema-validator.ts` (AJV layer) requires no changes — it compiles schemas at load time. New schema content flows through automatically.
+
+## D-058: types.ts Extended with Derived Artefact Types and Functions
+**Date:** 2026-03-06
+**Context:** Session 11 required frontend type coverage for all new schema additions and derived artefacts.
+**Decision:** `packages/frontend/src/types.ts` extended with:
+- `ApplicationFunction`, `RecordClass` interfaces (new registries)
+- Three new Activity fields on `ScaffoldActivity`
+- `HeatmapVNext`, `DiagnosticLayer`, `InterpretiveLayer`, `InterventionLayer` and component types (three-layer heatmap)
+- `CapabilityInstance`, `CapabilityInstanceView`, `TopologyBasis`, `TopologyNode`, `TopologyEdge`, `TopologyView` (derived artefacts)
+- `migrateHeatmap(legacy) → HeatmapVNext` — deterministic migration function
+- `deriveCapabilityInstances(scaffold, hash) → CapabilityInstanceView` — pure function
+- `deriveTopologyView(scaffold, ciView, hash, rulesetVersion) → TopologyView` — pure function, six coupling signal types
+**Rationale:** All derivation functions are pure — identical inputs produce identical outputs. No hidden state. Ready to be moved to `network-derivation.ts` in a dedicated refactor session.
+
+## D-059: Stale Schema Artefacts Identified for Deletion
+**Date:** 2026-03-06
+**Context:** Found `/schema` directory alongside `/schemas` containing `ScaffoldModel_schema_v3.json` — a pre-Session-11 version of the scaffold schema. Also found `ScaffoldModel_schema.json.bak` in `/schemas`.
+**Decision:** Delete `/schema` directory and `ScaffoldModel_schema.json.bak`. Both are superseded noise with no referencing consumers.
+**Rationale:** Stale schema files create ambiguity about which version is canonical. `/schemas` is the canonical location.

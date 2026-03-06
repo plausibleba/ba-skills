@@ -4,6 +4,39 @@ Chronological record of what was built, decided, and learned.
 
 ---
 
+## Session 11 — Schema Delta Implementation
+**Date:** 2026-03-06
+**Duration:** ~45 minutes
+**Status:** Complete
+
+### Completed
+1. `types.ts` — ScaffoldActivity extended with `applicationFunctionIds`, `primaryRecordClassId`, `compositeActivityId`. New `ApplicationFunction` and `RecordClass` interfaces. New `ScaffoldData.elements` registries.
+2. `types.ts` — Three-layer heatmap types: `HeatmapVNext`, `DiagnosticLayer`, `InterpretiveLayer`, `InterventionLayer` and all component types. `migrateHeatmap()` migration function.
+3. `types.ts` — Derived artefact types: `CapabilityInstance`, `CapabilityInstanceView`, `TopologyView`, `TopologyBasis`, `TopologyNode`, `TopologyEdge`. `deriveCapabilityInstances()` and `deriveTopologyView()` pure functions.
+4. `ScaffoldModel.schema.json` — `ApplicationFunction`, `RecordClass`, map defs added. Activity patched with three new properties. Element registries added.
+5. `FrictionHeatmap.schema.json` — `HeatmapVNext` three-layer shape and all component defs added. Legacy shape preserved.
+6. `validator.ts` — Four new rule function families: `checkExecutionGrammarRefs()`, `checkExecutionGrammarCardinality()`, `checkCompositeActivitySemantics()`, `checkHeatmapLayerIntegrity()`. validateSemantic extended to Phase 6.
+7. `schema-validator.ts` — confirmed no changes needed (AJV compiles schemas at load time).
+8. Stale artefacts identified: `/schema/ScaffoldModel_schema_v3.json` and `ScaffoldModel_schema.json.bak` — flagged for deletion (D-059).
+
+### Decisions
+- D-056: Validator extended with execution grammar rules
+- D-057: Schema files updated with new registries and Activity fields
+- D-058: types.ts extended with derived artefact types and functions
+- D-059: Stale schema artefacts identified for deletion
+
+### Deferred to Next Session
+- Move `deriveCapabilityInstances()` and `deriveTopologyView()` from `types.ts` to `network-derivation.ts`
+- Unit tests for new validator rules (V-ACTIVITY-04–10, V-COMPOSITE-02–06, V-HEATMAP-02–04)
+- `DiscoveryIntake.tsx` fixes: bundleSaved gate removal, temperature: 0, Pass 4 scaffold strip
+- Wire `deriveCapabilityInstances()` and `deriveTopologyView()` into canvas-store / NetworkView
+
+### Commit Message
+`Session 11: schema delta — Activity execution grammar fields, three-layer heatmap, derived artefact types, validator rules D-056–D-059`
+
+---
+
+
 ## Session 1 — Saturday 22 Feb 2026
 
 ### Theme: Foundation

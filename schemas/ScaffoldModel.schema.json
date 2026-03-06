@@ -121,6 +121,14 @@
         },
         "conditions": {
           "$ref": "#/$defs/ConditionMap"
+        },
+        "applicationFunctions": {
+          "$ref": "#/$defs/ApplicationFunctionMap",
+          "description": "Controlled identifier set for ApplicationFunctions. Activities reference these via applicationFunctionIds."
+        },
+        "recordClasses": {
+          "$ref": "#/$defs/RecordClassMap",
+          "description": "RecordClass registry. Activities reference these via primaryRecordClassId. v1: Record only."
         }
       }
     },
@@ -382,6 +390,25 @@
         },
         "tags": {
           "$ref": "#/$defs/TagSet"
+        },
+        "applicationFunctionIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "description": "ApplicationFunction IDs this Activity draws on. Must resolve to ApplicationFunction in scaffold.elements.applicationFunctions. Controlled identifier set \u2014 never free-text."
+        },
+        "primaryRecordClassId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The RecordClass this Activity transitions. v1: one primary record only. Must resolve to RecordClass in scaffold.elements.recordClasses."
+        },
+        "compositeActivityId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Mereological parthood \u2014 this Activity is an ordered part of the named composite transition. Not a parent/child tree. Validator enforces: same primaryRecordClassId, continuous FSM chain, boundary continuity."
         }
       }
     },
@@ -972,6 +999,63 @@
         "anchorId": {
           "$ref": "#/$defs/Id"
         }
+      }
+    },
+    "ApplicationFunction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "prefLabel"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "prefLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "applicationId": {
+          "type": "string"
+        },
+        "applicationName": {
+          "type": "string"
+        }
+      }
+    },
+    "RecordClass": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "prefLabel"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "prefLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "ApplicationFunctionMap": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/ApplicationFunction"
+      }
+    },
+    "RecordClassMap": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/RecordClass"
       }
     }
   }
