@@ -333,21 +333,28 @@ Chronological record of what was built, decided, and learned.
 3. Code review — audit codebase against agreed design
 4. Refactor plan
 
-### Deferred Until After Design Spar
-5. DiscoveryIntake.tsx fix — remove bundleSaved gate, add temperature: 0, strip scaffold for Pass 4
-6. Enhance Ofluv scaffold — add 2-3 capabilities per stub VS + associated metrics
-7. Jira export button — getAllUserStories() store action ready, needs CSV download trigger
-8. Resolve 30 residual metric schema warnings in Puretec scaffold
-9. Customer story filtering by industry/size
-10. Dummy discovery datasets — 2-3 fictitious non-Salesforce demos for Daniel
+### Immediate (design spar complete — unblocked)
+5. Schema delta — Activity gains primaryRecordClassId, applicationFunctionIds, compositeActivityId (D-053/054/055)
+6. FrictionHeatmap three-layer restructure — Diagnostic / Interpretation / Intervention (D-050)
+7. DiscoveryIntake.tsx fix — remove bundleSaved gate, add temperature: 0, strip scaffold for Pass 4
+8. PDS update — reflect three phases, pipeline architecture, ontological foundations (D-048–D-055)
+
+### Near Term
+9. CapabilityInstance derivation in network-derivation.ts (D-051)
+10. TopologyView derivation — extends Network View (D-052)
+11. Enhance Ofluv scaffold — add applicationFunctionIds, recordClassIds to key activities
+12. Jira export button — getAllUserStories() store action ready, needs CSV download trigger
+13. Customer story filtering by industry/size
+14. Dummy discovery datasets — 2-3 fictitious non-Salesforce demos for Daniel
 
 ### Pipeline (Post-PDS)
-11. Formalise use-case-aware pipeline architecture in WORKFLOW.md
-12. Build Friction Signal Agent (Track B)
-13. Markdown export of scaffold + heatmap for human review
+15. Formalise use-case-aware pipeline architecture in WORKFLOW.md
+16. Build Friction Signal Agent (Track B)
+17. Markdown export of scaffold + heatmap for human review
 
 ### Future
-14. F-001 phase 2: delete observations, reassign binding constraint, persist edits
-15. Anchor roles/info/tech to specific activities (not whole capability)
-16. Story expansion UX: replace summaryOnly=false global with proper expand/collapse trigger
-17. Multi-vendor support beyond Salesforce
+18. F-001 phase 2: delete observations, reassign binding constraint, persist edits
+19. Anchor roles/info/tech to specific activities (not whole capability)
+20. Story expansion UX: replace summaryOnly=false global with proper expand/collapse trigger
+21. Multi-vendor support beyond Salesforce
+22. RecordClass and ApplicationFunction fixture population across all demo scaffolds
