@@ -209,6 +209,7 @@ export function CanvasView() {
       {selectedActivityId && heatmapData && selectedObs.length > 0 && (
         <div className="w-[480px] flex-shrink-0">
           <FrictionPanel
+            key={selectedActivityId}
             activityId={selectedActivityId}
             observations={selectedObs}
             heatmap={heatmapData}
