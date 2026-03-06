@@ -243,6 +243,7 @@ function NetworkNodeCard({
   onHover,
   onLeave,
   onClick,
+  couplingCount = 0,
 }: {
   node: NetworkNode;
   position: { x: number; y: number };
@@ -250,6 +251,7 @@ function NetworkNodeCard({
   onHover: () => void;
   onLeave: () => void;
   onClick: () => void;
+  couplingCount?: number;
 }) {
   // Visual encoding hierarchy (Reviewer spec):
   // 1. Position (layout)  2. Title  3. Edge direction
@@ -317,11 +319,20 @@ function NetworkNodeCard({
           )}
         </div>
 
-        {/* Bottom: stage count + binding indicator only */}
+        {/* Bottom: stage count + binding + coupling indicator */}
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-gray-400">
             {node.stageCount} stages
           </span>
+
+          {couplingCount > 0 && (
+            <>
+              <div className="h-3 w-px bg-gray-200" />
+              <span className="text-[10px] text-indigo-400" title="Value streams coupled via shared roles, controls, application functions, or record classes">
+                {couplingCount} coupled
+              </span>
+            </>
+          )}
 
           {node.hasBindingConstraint && (
             <>
@@ -343,10 +354,12 @@ function NodeTooltip({
   node,
   position,
   canvasHeight,
+  couplingCount = 0,
 }: {
   node: NetworkNode;
   position: { x: number; y: number };
   canvasHeight: number;
+  couplingCount?: number;
 }) {
   const tooltipWidth = 280;
   // Center horizontally on node
@@ -385,6 +398,9 @@ function NodeTooltip({
           {node.frictionCount > 0 && (
             <p>{node.frictionCount} friction observations</p>
           )}
+          {couplingCount > 0 && (
+            <p className="text-indigo-400">{couplingCount} coupled value stream{couplingCount !== 1 ? "s" : ""}</p>
+          )}
           {node.bindingStageName && (
             <p className="text-red-500">Binding: {node.bindingStageName}</p>
           )}
@@ -406,6 +422,7 @@ export function NetworkView() {
     networkNodes,
     networkForwardEdges,
     networkFeedbackEdges,
+    topologyView,
     selectVs,
     loadHeatmap,
   } = useCanvasStore();
@@ -422,6 +439,33 @@ export function NetworkView() {
   const hoveredPos = hoveredVsId ? positions.get(hoveredVsId) : null;
 
   const totalFriction = networkNodes.reduce((s, n) => s + n.frictionCount, 0);
+
+  // D-052: Coupling counts per VS — count topology edges where this VS's activities appear
+  const couplingByVs = new Map<string, number>();
+  if (topologyView && scaffoldData) {
+    for (const node of networkNodes) {
+      const vsActivities = new Set(
+        scaffoldData.elements.valueStreams[node.vsId]?.activityIds ?? []
+      );
+      const couplingEdges = topologyView.edges.filter(
+        e => vsActivities.has(e.sourceActivityId) || vsActivities.has(e.targetActivityId)
+      );
+      // Count unique partner VS ids (not self-edges)
+      const partners = new Set<string>();
+      for (const edge of couplingEdges) {
+        const partnerId = vsActivities.has(edge.sourceActivityId)
+          ? edge.targetActivityId
+          : edge.sourceActivityId;
+        // Find which VS the partner belongs to
+        for (const [vsId, vs] of Object.entries(scaffoldData.elements.valueStreams)) {
+          if (vsId !== node.vsId && vs.activityIds?.includes(partnerId)) {
+            partners.add(vsId);
+          }
+        }
+      }
+      couplingByVs.set(node.vsId, partners.size);
+    }
+  }
   const constrainedCount = networkNodes.filter((n) => n.hasBindingConstraint).length;
 
   // Highest friction stream (summary chip, no auto-focus)
@@ -655,6 +699,7 @@ export function NetworkView() {
                 onHover={() => setHoveredVsId(node.vsId)}
                 onLeave={() => setHoveredVsId(null)}
                 onClick={() => selectVs(node.vsId)}
+                couplingCount={couplingByVs.get(node.vsId) ?? 0}
               />
             );
           })}
@@ -665,6 +710,7 @@ export function NetworkView() {
               node={hoveredNode}
               position={hoveredPos}
               canvasHeight={canvasHeight}
+              couplingCount={couplingByVs.get(hoveredNode.vsId) ?? 0}
             />
           )}
         </svg>

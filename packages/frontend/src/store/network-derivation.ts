@@ -3,9 +3,20 @@ import type {
   ScaffoldData,
   ScaffoldActivity,
   ScaffoldValueStream,
+  ScaffoldElement,
   HeatmapData,
+  HeatmapVNext,
   NetworkNode,
   NetworkEdge,
+  CapabilityInstance,
+  CapabilityInstanceView,
+  TopologyBasis,
+  TopologyNode,
+  TopologyEdge,
+  TopologyView,
+  DiagnosticObservation,
+  InterpretiveConclusion,
+  Intervention,
 } from "../types.ts";
 
 /* ── Edge Derivation ──────────────────────────────────────────────── */
@@ -350,4 +361,252 @@ export function buildNetworkNodes(
   }
 
   return nodes;
+}
+
+
+/* ── Heatmap Migration (D-050) ────────────────────────────────────── */
+
+/**
+ * Migrate a legacy HeatmapData to the three-layer HeatmapVNext shape.
+ * Deterministic — same input always produces same output.
+ * Rules:
+ *  - observations → diagnosticLayer.observations
+ *  - bindingConstraint → interpretiveLayer.bindingConstraint
+ *  - solutions on observations → interventionLayer.interventions
+ */
+export function migrateHeatmap(legacy: HeatmapData): HeatmapVNext {
+  const diagnosticObservations: DiagnosticObservation[] = legacy.observations.map(obs => ({
+    id: obs.observationId,
+    type: 'friction' as const,
+    anchors: [obs.primaryAnchor.anchorId, ...(obs.contributingAnchors?.map(a => a.anchorId) ?? [])],
+    contributingAnchors: obs.contributingAnchors?.map(a => a.anchorId),
+    intensity: typeof obs.intensity.score === 'number' ? obs.intensity.score : undefined,
+    rationale: obs.rationale,
+    confidence: obs.confidence,
+    category: obs.category,
+  }));
+
+  const interventions: Intervention[] = legacy.observations
+    .filter(obs => obs.solutions && obs.solutions.length > 0)
+    .flatMap(obs => (obs.solutions ?? []).map((sol, i) => ({
+      id: `${obs.observationId}-sol-${i}`,
+      sourceObservationId: obs.observationId,
+      proposedSolution: sol.description,
+      vendorMappings: sol.vendorFeatureRef
+        ? [`${sol.vendorFeatureRef.vendorId}:${sol.vendorFeatureRef.featureId}`]
+        : undefined,
+    })));
+
+  const bindingConstraint: InterpretiveConclusion | undefined = legacy.bindingConstraint
+    ? {
+        sourceObservationId: legacy.bindingConstraint.bindingAnchorObservationId,
+        justification: legacy.bindingConstraint.justification,
+        confidence: legacy.bindingConstraint.confidence,
+      }
+    : undefined;
+
+  return {
+    schemaVersion: legacy.schemaVersion,
+    heatmapId: legacy.heatmapId,
+    scaffoldId: legacy.scaffoldId,
+    scaffoldIntegrityHash: legacy.scaffoldIntegrityHash,
+    valueStreamId: legacy.valueStreamId,
+    createdAt: legacy.createdAt,
+    diagnosticLayer: { observations: diagnosticObservations },
+    interpretiveLayer: { bindingConstraint },
+    interventionLayer: { interventions },
+  };
+}
+
+/* ── Capability Instance Derivation (D-051) ──────────────────────── */
+
+/** Derive a stable deterministic ID for a CapabilityInstance.
+ *  Identity: capabilityId + valueStreamId + activityId (stage excluded). */
+function deriveCapabilityInstanceId(
+  capabilityId: string,
+  valueStreamId: string,
+  activityId: string
+): string {
+  return `ci_${capabilityId}__${valueStreamId}__${activityId}`;
+}
+
+/**
+ * Derive all CapabilityInstances from a sealed scaffold.
+ * One instance per (capabilityId, valueStreamId, activityId) tuple.
+ * Pure function — never mutates scaffold. Never stored in scaffold.
+ */
+export function deriveCapabilityInstances(
+  scaffold: ScaffoldData,
+  scaffoldIntegrityHash: string
+): CapabilityInstanceView {
+  const instances: CapabilityInstance[] = [];
+  const activities = scaffold.elements.activities ?? {};
+  const valueStreams = scaffold.elements.valueStreams ?? {};
+
+  for (const [activityId, activity] of Object.entries(activities)) {
+    const capabilityIds = (activity as ScaffoldActivity).requiresCapabilityIds ?? [];
+    const vsId = Object.entries(valueStreams).find(
+      ([, vs]) => (vs as ScaffoldValueStream).activityIds?.includes(activityId)
+    )?.[0];
+
+    if (!vsId) continue;
+
+    const act = activity as ScaffoldActivity;
+    for (const capabilityId of capabilityIds) {
+      const id = deriveCapabilityInstanceId(capabilityId, vsId, activityId);
+      const capability = scaffold.elements.capabilities?.[capabilityId] as ScaffoldElement | undefined;
+      const vs = valueStreams[vsId] as ScaffoldValueStream;
+
+      instances.push({
+        id,
+        capabilityId,
+        valueStreamId: vsId,
+        activityId,
+        prefLabel: `${vs.name ?? vsId} — ${capability?.name ?? capabilityId}`,
+        roleIds: act.performedByRoleIds ?? [],
+        controlIds: act.controlIds ?? [],
+        applicationFunctionIds: act.applicationFunctionIds ?? [],
+        primaryRecordClassId: act.primaryRecordClassId ?? '',
+        scaffoldIntegrityHash,
+      });
+    }
+  }
+
+  return {
+    scaffoldId: scaffold.scaffoldId,
+    scaffoldIntegrityHash,
+    instances,
+  };
+}
+
+/* ── Topology View Derivation (D-052) ────────────────────────────── */
+
+/**
+ * Derive the topology interference mesh from a sealed scaffold + capability instances.
+ * Pure function — coupling edges based only on constitutionally asserted scaffold fields.
+ * Six coupling signals: outcomeAdjacency, sharedRole, sharedCapability,
+ * sharedControl, sharedApplicationFunction, sharedPrimaryRecord.
+ * Every edge carries explicit basis — no heuristic inference.
+ */
+export function deriveTopologyView(
+  scaffold: ScaffoldData,
+  capabilityInstanceView: CapabilityInstanceView,
+  scaffoldIntegrityHash: string,
+  rulesetVersion: string = 'topology-v1'
+): TopologyView {
+  const activities = scaffold.elements.activities ?? {};
+  const activityList = Object.entries(activities).map(([id, act]) => ({
+    id,
+    ...(act as ScaffoldActivity),
+  }));
+
+  const edgeMap = new Map<string, TopologyEdge>();
+
+  const addEdge = (sourceId: string, targetId: string, basis: TopologyBasis) => {
+    if (sourceId === targetId) return;
+    const key = `${sourceId}→${targetId}`;
+    if (edgeMap.has(key)) {
+      const existing = edgeMap.get(key)!;
+      if (!existing.basis.includes(basis)) existing.basis.push(basis);
+    } else {
+      edgeMap.set(key, { sourceActivityId: sourceId, targetActivityId: targetId, basis: [basis] });
+    }
+  };
+
+  // Signal 1: Outcome adjacency (FSM chain continuity)
+  for (const act of activityList) {
+    if (act.nextActivityId) {
+      addEdge(act.id, act.nextActivityId, 'outcomeAdjacency');
+    }
+  }
+
+  // Signals 2–4: Shared role, control, application function
+  const arrayFields: Array<{ key: keyof ScaffoldActivity; basis: TopologyBasis }> = [
+    { key: 'performedByRoleIds', basis: 'sharedRole' },
+    { key: 'controlIds', basis: 'sharedControl' },
+    { key: 'applicationFunctionIds', basis: 'sharedApplicationFunction' },
+  ];
+
+  for (const { key, basis } of arrayFields) {
+    const index = new Map<string, string[]>();
+    for (const act of activityList) {
+      const ids = (act[key] as string[] | undefined) ?? [];
+      for (const id of ids) {
+        if (!index.has(id)) index.set(id, []);
+        index.get(id)!.push(act.id);
+      }
+    }
+    for (const actIds of index.values()) {
+      for (let i = 0; i < actIds.length; i++) {
+        for (let j = i + 1; j < actIds.length; j++) {
+          addEdge(actIds[i], actIds[j], basis);
+          addEdge(actIds[j], actIds[i], basis);
+        }
+      }
+    }
+  }
+
+  // Signal 5: Shared primary record class
+  const recordIndex = new Map<string, string[]>();
+  for (const act of activityList) {
+    const rcId = act.primaryRecordClassId;
+    if (!rcId) continue;
+    if (!recordIndex.has(rcId)) recordIndex.set(rcId, []);
+    recordIndex.get(rcId)!.push(act.id);
+  }
+  for (const actIds of recordIndex.values()) {
+    for (let i = 0; i < actIds.length; i++) {
+      for (let j = i + 1; j < actIds.length; j++) {
+        addEdge(actIds[i], actIds[j], 'sharedPrimaryRecord');
+        addEdge(actIds[j], actIds[i], 'sharedPrimaryRecord');
+      }
+    }
+  }
+
+  // Signal 6: Capability co-deployment (via CapabilityInstances)
+  const capIndex = new Map<string, string[]>();
+  for (const inst of capabilityInstanceView.instances) {
+    if (!capIndex.has(inst.capabilityId)) capIndex.set(inst.capabilityId, []);
+    capIndex.get(inst.capabilityId)!.push(inst.activityId);
+  }
+  for (const actIds of capIndex.values()) {
+    const unique = [...new Set(actIds)];
+    for (let i = 0; i < unique.length; i++) {
+      for (let j = i + 1; j < unique.length; j++) {
+        addEdge(unique[i], unique[j], 'sharedCapability');
+        addEdge(unique[j], unique[i], 'sharedCapability');
+      }
+    }
+  }
+
+  // Build node list from all activities that appear in edges
+  const valueStreams = scaffold.elements.valueStreams ?? {};
+  const activityVsMap = new Map<string, string>();
+  for (const [vsId, vs] of Object.entries(valueStreams)) {
+    for (const actId of (vs as ScaffoldValueStream).activityIds ?? []) {
+      activityVsMap.set(actId, vsId);
+    }
+  }
+
+  const nodeIds = new Set<string>();
+  for (const edge of edgeMap.values()) {
+    nodeIds.add(edge.sourceActivityId);
+    nodeIds.add(edge.targetActivityId);
+  }
+
+  const nodes: TopologyNode[] = [...nodeIds].map(activityId => ({
+    activityId,
+    valueStreamId: activityVsMap.get(activityId) ?? '',
+  }));
+
+  const ciHash = `ci-hash-${capabilityInstanceView.instances.length}-${capabilityInstanceView.scaffoldIntegrityHash}`;
+
+  return {
+    sourceScaffoldHash: scaffoldIntegrityHash,
+    derivationRulesetVersion: rulesetVersion,
+    capabilityInstanceHash: ciHash,
+    derivedAt: new Date().toISOString(),
+    nodes,
+    edges: [...edgeMap.values()],
+  };
 }
