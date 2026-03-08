@@ -16,6 +16,7 @@ export default function App() {
     backToNetwork,
     goToIntake,
     loadScaffold,
+    loadHeatmap,
   } = useCanvasStore();
 
   const isLoaded = !!scaffoldData;
@@ -130,8 +131,10 @@ export default function App() {
         {/* Views */}
         {isIntake && (
           <DiscoveryIntake
-            onComplete={(scaffold) => {
-              loadScaffold(scaffold);
+            onComplete={(bundle) => {
+              const { scaffold, heatmaps = [] } = bundle;
+              loadScaffold(scaffold ?? bundle);
+              heatmaps.forEach((hm: any) => loadHeatmap(hm));
               backToNetwork();
             }}
           />
