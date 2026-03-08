@@ -19,6 +19,26 @@ import type {
   Intervention,
 } from "../types.ts";
 
+function resolveActivityIds(
+  vs: ScaffoldValueStream,
+  acts: Record<string, ScaffoldActivity>,
+): string[] {
+  if (Array.isArray((vs as any).activityIds)) {
+    return (vs as any).activityIds as string[];
+  }
+  const head = (vs as any).activityChainHead as string | undefined;
+  if (!head) return [];
+  const chain: string[] = [];
+  const seen = new Set<string>();
+  let current: string | null = head;
+  while (current && !seen.has(current) && acts[current]) {
+    seen.add(current);
+    chain.push(current);
+    current = (acts[current] as any).nextActivityId ?? null;
+  }
+  return chain;
+}
+
 /* ── Edge Derivation ──────────────────────────────────────────────── */
 
 /**
@@ -26,6 +46,7 @@ import type {
  * terminal outcomes of one VS to entry outcomes of another.
  * Supports secondaryTriggerOutcomeIds at VS level for feedback loops.
  */
+
 export function deriveNetworkEdges(scaffold: ScaffoldData): {
   forwardEdges: NetworkEdge[];
   feedbackEdges: NetworkEdge[];
@@ -43,7 +64,7 @@ export function deriveNetworkEdges(scaffold: ScaffoldData): {
 
   for (const [vsId, v] of Object.entries(vs)) {
     const vsTyped = v as ScaffoldValueStream;
-    const actIds = vsTyped.activityIds;
+    const actIds = resolveActivityIds(vsTyped, acts);
     if (actIds.length === 0) continue;
 
     const firstAct = acts[actIds[0]] as ScaffoldActivity;
@@ -104,7 +125,7 @@ export function deriveNetworkEdges(scaffold: ScaffoldData): {
   // In two-layer mode, all edges are semantically justified —
   // skip cycle detection, treat all as forward
   const hasTwoLayers = Object.values(vs).some(
-    (v) => (v as Record<string, unknown>).layoutZone,
+    (v) => (v as Record<string, unknown>).layoutZone ?? (v as Record<string, unknown>).zone,
   );
   if (hasTwoLayers) {
     return {
@@ -202,7 +223,7 @@ export function computeNodePositions(
 ): Map<string, { layer: number; row: number }> {
   // Check if scaffold has layoutZone metadata for two-layer mode
   const hasLayerMeta = scaffold && Object.values(scaffold.elements.valueStreams).some(
-    (vs) => (vs as Record<string, unknown>).layoutZone,
+    (vs) => (vs as Record<string, unknown>).layoutZone ?? (vs as Record<string, unknown>).zone,
   );
 
   if (hasLayerMeta && scaffold) {
@@ -230,7 +251,7 @@ function _twoLayerLayout(
 
   for (const vsId of nodeIds) {
     const vs = scaffold.elements.valueStreams[vsId] as Record<string, unknown>;
-    const layer = vs.layoutZone as string;
+    const layer = (vs.layoutZone ?? vs.zone) as string;
     if (layer === "ecosystem") {
       ecosystem.push(vsId);
     } else {
@@ -341,7 +362,7 @@ export function buildNetworkNodes(
       vsId,
       name: vsTyped.name ?? vsId,
       description: vsTyped.description,
-      stageCount: vsTyped.activityIds.length,
+      sstageCount: resolveActivityIds(vsTyped, scaffold.elements.activities as any).length,
       frictionCount: heatmap?.observations.length ?? 0,
       hasBindingConstraint: !!heatmap?.bindingConstraint,
       bindingStageName: heatmap?.bindingConstraint?.bindingAnchor

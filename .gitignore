@@ -10,3 +10,4 @@ __pycache__/
 packages/frontend/.vite/
 .vercel
 .env*.local
+.env.git

@@ -8,6 +8,7 @@ import type {
   VendorFeatureLibrary,
   VendorFeatureRef,
 } from "../types.ts";
+import { humanizeId } from "../lib/humanize-id.ts";
 import { classifyCategory, categoryLabel } from "./FrictionOverlay.tsx";
 import { ThroughputPanel } from "./ThroughputPanel.tsx";
 import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforce.json";
@@ -555,7 +556,7 @@ function ObservationCard({
       anchorType === "Role"       ? scaffold.elements.roles :
       anchorType === "Control"    ? scaffold.elements.controls :
       anchorType === "Capability" ? scaffold.elements.capabilities : null;
-    return (map?.[anchorId] as { name?: string } | undefined)?.name ?? anchorId;
+    return (map?.[anchorId] as { name?: string } | undefined)?.name ?? humanizeId(anchorId);
   }
 
   return (
@@ -750,7 +751,7 @@ export function FrictionPanel({
   onClose: () => void;
 }) {
   const activity = scaffold.elements.activities[activityId];
-  const activityName = activity?.name ?? activityId;
+  const activityName = activity?.name ?? humanizeId(activityId);
 
   const [justificationExpanded, setJustificationExpanded] = useState(false);
   const [editMode, setEditMode] = useState(false);

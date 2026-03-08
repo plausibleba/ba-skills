@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import type { TransformationUserStory } from "../types.ts";
 import { toJiraExport } from "../types.ts";
+import { humanizeId } from "../lib/humanize-id.ts";
 import {
   buildActivityFrictionMap,
   resolveBindingActivityIds,
@@ -55,7 +56,7 @@ export function CanvasView() {
 
   const vs =
     scaffoldData.elements.valueStreams[canvasViewModel.valueStreamId];
-  const vsName = vs?.name ?? canvasViewModel.valueStreamId;
+  const vsName = vs?.name ?? humanizeId(canvasViewModel.valueStreamId);
   const vsDescription = (
     vs as ScaffoldElement & { description?: string }
   )?.description;
@@ -65,9 +66,10 @@ export function CanvasView() {
 
   const bindingActivityName = heatmapData
     ? (() => {
-        const a = heatmapData.bindingConstraint.bindingAnchor;
+        const a = heatmapData.bindingConstraint?.bindingAnchor;
+        if (!a) return null;
         return a.anchorType === "Activity"
-          ? (scaffoldData.elements.activities[a.anchorId]?.name ?? a.anchorId)
+          ? (scaffoldData.elements.activities[a.anchorId]?.name ?? humanizeId(a.anchorId))
           : null;
       })()
     : null;
@@ -156,8 +158,8 @@ export function CanvasView() {
             heatmapData={heatmapData}
             bindingActivityName={bindingActivityName}
             onBindingClick={() => {
-              const a = heatmapData.bindingConstraint.bindingAnchor;
-              if (a.anchorType === "Activity") setSelectedActivityId(a.anchorId);
+              const a = heatmapData.bindingConstraint?.bindingAnchor;
+              if (a?.anchorType === "Activity") setSelectedActivityId(a.anchorId);
             }}
           />
         )}

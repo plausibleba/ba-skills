@@ -1,5 +1,6 @@
 import type { ScaffoldData, ScaffoldActivity, FrictionObservation } from "../../types.ts";
 import { FrictionBadge } from "../FrictionOverlay.tsx";
+import { humanizeId } from "../../lib/humanize-id.ts";
 
 /* ── Analytics Pane — scrollable, max-height ───────────────────────── */
 
@@ -48,7 +49,7 @@ export function AnalyticsPane({
             </span>
             {(activity.metricIds ?? []).map((mid) => (
               <p key={mid} className="text-[11px] text-gray-600">
-                {scaffold.elements.metrics[mid]?.name ?? mid}
+                {scaffold.elements.metrics[mid]?.name ?? humanizeId(mid)}
               </p>
             ))}
           </div>
@@ -74,7 +75,7 @@ export function AnalyticsPane({
             </span>
             {(activity.controlIds ?? []).map((cid) => (
               <p key={cid} className="text-[11px] text-gray-600">
-                {scaffold.elements.controls[cid]?.name ?? cid}
+                {scaffold.elements.controls[cid]?.name ?? humanizeId(cid)}
               </p>
             ))}
           </div>

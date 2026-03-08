@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforce.json";
 import type { VendorFeatureLibrary, Solution, FrictionObservation } from "../types.ts";
+import { humanizeId } from "../lib/humanize-id.ts";
 
 // ─── Vendor catalogue ─────────────────────────────────────────────────────────
 
@@ -219,7 +220,7 @@ export function ContentSelectors() {
         >
           {vsEntries.map(([vsId, vs]) => (
             <option key={vsId} value={vsId}>
-              {(vs as { name?: string }).name ?? vsId}
+              {(vs as { name?: string }).name ?? humanizeId(vsId)}
             </option>
           ))}
         </select>

@@ -32,8 +32,14 @@ export function FileLoader() {
               "Unrecognized JSON file. Expected a scaffold, heatmap, or VCC bundle.",
           });
         }
-      } catch {
-        useCanvasStore.setState({ error: "Failed to parse JSON file" });
+      } catch (err) {
+        console.error("[FileLoader] load error:", err);
+        useCanvasStore.setState({
+          error:
+            err instanceof Error
+              ? `Failed to load file: ${err.message}`
+              : "Failed to parse JSON file",
+        });
       }
     },
     [loadScaffold, loadHeatmap],

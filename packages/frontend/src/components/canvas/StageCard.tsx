@@ -32,7 +32,7 @@ export function StageCard({
 
   const { userStoriesByActivity, setActivityStories } = useCanvasStore();
 
-  const caps = activity.requiresCapabilityIds ?? [];
+  const caps = (activity as any).enabledByCapabilityIds ?? (activity as any).requiresCapabilityIds ?? [];
   const showSummary = false;
 
   return (

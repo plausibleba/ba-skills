@@ -250,20 +250,49 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       return;
     }
 
+    // Resolve ordered activity IDs — v4 uses activityIds[], v5 uses
+    // activityChainHead + nextActivityId chain on each activity.
+    const resolveOrderedActivityIds = (): string[] => {
+      // v4: activityIds array present and non-empty
+      if (Array.isArray((vs as any).activityIds) && (vs as any).activityIds.length > 0) {
+        return (vs as any).activityIds as string[];
+      }
+      // v5: walk nextActivityId chain from activityChainHead
+      const startId = (vs as any).activityChainHead;
+      if (!startId) return [];
+      const ordered: string[] = [];
+      const seen = new Set<string>();
+      let current: string | null = startId;
+      while (current && !seen.has(current)) {
+        seen.add(current);
+        ordered.push(current);
+        const act = scaffoldData.elements.activities[current];
+        current = (act as any)?.nextActivityId ?? null;
+      }
+      return ordered;
+    };
+
+    const orderedActivityIds = resolveOrderedActivityIds();
+
+    if (orderedActivityIds.length === 0) {
+      set({ error: `Value stream ${vsId} has no resolvable activities` });
+      return;
+    }
+
     // Build CanvasViewModel client-side from scaffold data
     // Each activity becomes a column (stage)
-    const columns = vs.activityIds.map((actId, idx) => {
+    const columns = orderedActivityIds.map((actId, idx) => {
       const act = scaffoldData.elements.activities[actId];
       return {
         columnId: `col_${idx}`,
         label: act?.name ?? actId,
         activityIds: [actId],
         aggregates: {
-          roleIds: act?.performedByRoleIds ?? [],
-          capabilityIds: act?.requiresCapabilityIds ?? [],
-          metricIds: act?.metricIds ?? [],
-          controlIds: act?.controlIds ?? [],
-          constraintIds: act?.constraintIds ?? [],
+          roleIds: (act as any)?.performedByRoleIds ?? [],
+          capabilityIds: (act as any)?.enabledByCapabilityIds ?? (act as any)?.requiresCapabilityIds ?? [],
+          metricIds: (act as any)?.metricIds ?? [],
+          controlIds: (act as any)?.controlIds ?? [],
+          constraintIds: (act as any)?.constraintIds ?? [],
         },
       };
     });
@@ -278,17 +307,17 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       generatedAt: new Date().toISOString(),
       columns,
       summary: {
-        totalActivities: vs.activityIds.length,
-        totalRoles: new Set(vs.activityIds.flatMap(
+        totalActivities: orderedActivityIds.length,
+        totalRoles: new Set(orderedActivityIds.flatMap(
           (a) => scaffoldData.elements.activities[a]?.performedByRoleIds ?? [],
         )).size,
-        totalCapabilities: new Set(vs.activityIds.flatMap(
-          (a) => scaffoldData.elements.activities[a]?.requiresCapabilityIds ?? [],
+        totalCapabilities: new Set(orderedActivityIds.flatMap(
+          (a) => scaffoldData.elements.activities[a]?.enabledByCapabilityIds ?? scaffoldData.elements.activities[a]?.requiresCapabilityIds ?? [],
         )).size,
-        totalMetrics: new Set(vs.activityIds.flatMap(
+        totalMetrics: new Set(orderedActivityIds.flatMap(
           (a) => scaffoldData.elements.activities[a]?.metricIds ?? [],
         )).size,
-        totalControls: new Set(vs.activityIds.flatMap(
+        totalControls: new Set(orderedActivityIds.flatMap(
           (a) => scaffoldData.elements.activities[a]?.controlIds ?? [],
         )).size,
         totalConstraints: 0,

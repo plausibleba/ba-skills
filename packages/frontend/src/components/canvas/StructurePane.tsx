@@ -1,4 +1,5 @@
 import type { ScaffoldData, ScaffoldActivity } from "../../types.ts";
+import { humanizeId } from "../../lib/humanize-id.ts";
 
 /* ── Structure Pane — entry/exit states + metrics ──────────────────── */
 
@@ -89,7 +90,7 @@ export function StructurePane({
                 <div className="flex flex-wrap justify-center gap-1">
                   {metricIds.map((mid) => (
                     <span key={mid} className="rounded-md bg-white/15 px-2.5 py-0.5 text-[10px] text-white/80">
-                      {scaffold.elements.metrics[mid]?.name ?? mid}
+                      {scaffold.elements.metrics[mid]?.name ?? humanizeId(mid)}
                     </span>
                   ))}
                 </div>

@@ -5,6 +5,7 @@ import type {
   ScaffoldMetric,
   EngagementParams,
 } from "../types.ts";
+import { humanizeId } from "../lib/humanize-id.ts";
 
 // ─── Throughput impact calculation ─────────────────────────────────
 // First-order arithmetic only. No simulation, no queuing theory.
@@ -335,7 +336,7 @@ export function ThroughputPanel({
 
   const confidence = heatmap.bindingConstraint.confidence ?? 0;
   const activityName =
-    scaffold.elements.activities[activityId]?.name ?? activityId;
+    scaffold.elements.activities[activityId]?.name ?? humanizeId(activityId);
   const hasData = effectivePrimary != null && effectivePrimary.currentMeasure != null && unavailableReason == null;
 
   // If no metric data or not designated, show a quiet unavailable notice

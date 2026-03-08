@@ -5,6 +5,7 @@ import type {
   FrictionObservation,
   TransformationUserStory,
 } from "../../types.ts";
+import { humanizeId } from "../../lib/humanize-id.ts";
 
 /* ── Category label map ─────────────────────────────────────────────── */
 const CATEGORY_LABELS: Record<string, { label: string; colour: string }> = {
@@ -479,7 +480,7 @@ export function TransformationPane({
   }
 
   const roleNames = (activity.performedByRoleIds ?? []).map(
-    (rid) => scaffold.elements.roles[rid]?.name ?? rid
+    (rid) => scaffold.elements.roles[rid]?.name ?? humanizeId(rid)
   );
 
   // Binding observation = highest score in this activity's observations
@@ -562,7 +563,7 @@ export function TransformationPane({
             <div className="mt-1 space-y-0.5">
               {(activity.controlIds ?? []).map((cid: string) => (
                 <p key={cid} className="text-[11px] text-gray-600">
-                  · {scaffold.elements.controls[cid]?.name ?? cid}
+                  · {scaffold.elements.controls[cid]?.name ?? humanizeId(cid)}
                 </p>
               ))}
             </div>

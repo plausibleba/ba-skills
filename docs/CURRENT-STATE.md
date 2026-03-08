@@ -1,208 +1,100 @@
-# Current State
+# Current State — VCC Frontend
 
-**Read this first. Every session. One page.**
-
-Last updated: 2026-03-07 (Session 13 — post GPT spar)
+_Last updated: 2026-03-08 — Session 14_
 
 ---
 
-## What We're Building
+## Deployment
 
-A **governed operating model reasoning instrument** built on the CAPSICUM ontological framework. The Value Cognition Canvas (VCC) turns a discovery conversation or structured source into a formal operating model — then provides diagnostic, interpretive, and intervention reasoning over it.
-
-Three phases of organisational cognition, one reasoning environment:
-1. **Model Construction** — generate or ingest a scaffold (plausible from transcript, or stable from structured source)
-2. **Diagnosis / Interpretation** — identify Friction and Opportunity across the operating model; commit binding constraints
-3. **Intervention Design** — propose solutions, delegate activities, generate user stories
-
-The canvas is the centre of gravity. Phase 1 produces input to it. Phase 3 derives from it.
+| Environment | URL |
+|-------------|-----|
+| Production alias | https://frontend-five-eta-l0j2mk66gi.vercel.app |
+| Deploy command | `cd packages/frontend && vercel --prod` |
 
 ---
 
-## Architecture Decisions from Session 10 Design Spar
+## What Works (as of this session)
 
-The following decisions are now locked and will shape the next implementation phase (D-048–D-055 in DECISIONS.md):
+### End-to-end v5 bundle loading ✅
 
-| Decision | Summary |
-|----------|---------|
-| D-048 | Friction/Opportunity are meta-layer diagnostics, not first-class objects |
-| D-049 | SBRs belong in Intent/Governance column, not anchored to Activities |
-| D-050 | Heatmap splits into three layers: Diagnostic / Interpretation / Intervention |
-| D-051 | CapabilityInstance is a derived artefact (capabilityId + valueStreamId + activityId) |
-| D-052 | Topology is a derived deterministic artefact with its own hash and provenance |
-| D-053 | Activity gains: primaryRecordClassId, applicationFunctionIds, compositeActivityId? |
-| D-054 | Composition is mereological parthood — field is compositeActivityId not parentActivityId |
-| D-055 | Record only for v1 — Party and Product are implied domain context |
+All five Water Filtration Company value streams load and render correctly in both Network View and Stage View:
 
----
+| Value Stream | Stages | Friction | Binding Constraint |
+|---|---|---|---|
+| Partner Channel Development | 5 | 1 obs | — |
+| Product Sales Lifecycle | 6 | 3 obs | — |
+| Technology Integration Delivery | 6 | 2 obs | Develop Integrations (87%) |
+| Maintenance Revenue Lifecycle | 5 | none loaded | — |
+| Sales Performance Management | 5 | 1 obs | — |
 
-## Zoom Levels
+### Stage View
+- Chain walk (`activityChainHead` + `nextActivityId`) resolves correctly for v5 bundles
+- Capability blocks render in all stages
+- Entry/exit states render correctly
+- Friction observations display with scores and Generate User Story buttons
+- Binding constraint highlighted in red with correct stage identification
+- PPIT layer toggles working: **Roles** and **Activities** populate from v5 activity fields
+- Info / Tech tabs correctly empty (v5 Water Filtration fixture has no `informationObjectIds` / `technologyAppIds`)
 
-| Level | View | Status |
-|-------|------|--------|
-| Enterprise | Network View — DAG topology of all value streams | **Stable** |
-| Stream | Stage View — per-VS stages, capabilities, PPIT layers | **Stable** |
-| Friction | Heatmap overlay — observations, binding constraints | **Stable** |
-| Solutions | Vendor enrichment — Salesforce Agentforce (47 features) | **Stable** |
-| Transformation | SBR cards + user story generation | **Stable** |
-| Topology | Derived interference mesh across value streams | **Not yet built** |
+### Network View
+- All 5 VS nodes render with friction badges and constrained indicator
+- Click-through to Stage View works for all nodes
 
----
-
-## What Is Stable
-
-- **Frontend**: React/Vite/Tailwind SPA, deployed on Vercel
-- **Discovery Intake**: Paste transcript → four-pass AI pipeline → scaffold + heatmap bundle
-- **Stage Wizard**: Three-step toolbar (Scaffold → Assess Friction → Enrich Solutions)
-- **User Guide Panel**: Fixed bottom-left, contextually aware, six states
-- **Pass 1–4**: VS definition → stage extraction → friction assessment → vendor enrichment
-- **TransformationPane**: SBR cards + user story generation via AI, Zustand state
-- **Fixtures**: Puretec (presales demo), IIBA (pipeline reference), Enterprise Banking, Ofluv (SAP transformation), Banking Regulation, Buildcraft (retail/home improvement, Henrik)
+### User Guide
+- Contextually aware across all steps (Welcome → Network → Friction → Solutions)
 
 ---
 
-## What Is Experimental / Needs Fixing
+## Schema Compatibility
 
-- **DiscoveryIntake.tsx**: Pre-Session-9 version in repo — bundleSaved gate still present, temperature: 0 missing (deferred pending design spar, now unblocked)
-- **Pass 3 quality**: Observation count varies by transcript richness
-- **Pass 4 matching**: Feature-to-friction heuristics are prompt-guided, not rule-based
+VCC frontend now handles both v4 and v5 scaffold formats:
 
----
-
-## Schema Delta — Session 11 (Implemented)
-
-Three new fields on Activity — **implemented in Session 11**:
-
-```typescript
-applicationFunctionIds?: string[]  // Application Function substrate references
-primaryRecordClassId?: string      // RecordClass this Activity transitions
-compositeActivityId?: string       // Mereological parthood — ordered part of composite
-```
-
-New top-level registries on ScaffoldData — **implemented**:
-- `applicationFunctions` — ApplicationFunction controlled identifier set
-- `recordClasses` — RecordClass type definitions
-
-FrictionHeatmap three-layer target shape — **types implemented, migration function ready**:
-- `diagnosticLayer.observations[]` — pure friction/opportunity analysis
-- `interpretiveLayer.bindingConstraint` — human judgement formally committed
-- `interventionLayer.interventions[]` — solutions, stories, vendor mappings
-
-New derived artefacts — **types and pure functions implemented in types.ts**:
-- `CapabilityInstance` + `deriveCapabilityInstances()` — per (capabilityId, valueStreamId, activityId)
-- `TopologyView` + `deriveTopologyView()` — deterministic interference mesh, six coupling signals
-
-Validator extended — **implemented**:
-- V-ACTIVITY-04/05/06: ref integrity for new fields
-- V-ACTIVITY-09/10: cardinality (Warning/Error based on registry presence)
-- V-COMPOSITE-02–06: mereological parthood semantics
-- V-HEATMAP-02–04: three-layer cross-reference integrity
-
-**Wired (Session 12):**
-- Derivation functions moved from `types.ts` → `network-derivation.ts` ✓
-- `canvas-store.ts` derives CapabilityInstanceView + TopologyView on `loadScaffold` ✓
-- `NetworkView.tsx` surfaces coupling counts from TopologyView ✓
-- `validator-session11.test.ts` in `packages/shared/src/` ✓
-
-**Session 13 fixes:**
-- Buildcraft fixture: all field names corrected to canonical schema (D-062) ✓
-- Buildcraft heatmaps split per-VS — `valueStreamId` required (D-063) ✓
-- `CanvasView.tsx`: `key={selectedActivityId}` on FrictionPanel — stale state fix (D-064) ✓
+| Field | v4 | v5 |
+|-------|----|----|
+| VS activity list | `activityIds[]` | `activityChainHead` + `nextActivityId` on activity |
+| VS layout zone | `layoutZone` | `zone` |
+| Capability refs on activity | `requiresCapabilityIds` | `enabledByCapabilityIds` |
+| PPIT breakdown | `activity.capabilityPPIT[capId]` | flat `performedByRoleIds` on activity (no per-cap PPIT) |
 
 ---
 
-## Pipeline Architecture — Locked (Session 13 GPT Spar)
+## Files Changed This Session
 
-Three-pass runtime. D-065–D-071 are the governing decisions.
-
-| Pass | Name | Steps | Gate |
-|------|------|-------|------|
-| A | Discovery IR | 01–04 (two internal calls: VS+stages, roles+caps) | None — generative |
-| B1 | Outcomes + Activities | 05–06 | **Gate 1** — mandatory. One bounded auto-repair retry. |
-| B2 | Controls + Metrics + Conditions + Assembly | 07–10 | Full scaffold validation |
-| C | Friction Heatmap | 11–13 | Full scaffold+heatmap validation |
-
-**Three persisted artefacts:** DiscoveryIR · ScaffoldModel (sealed) · HeatmapVNext — each recoverable if next pass fails.
-
-**Non-negotiable implementation rules (D-065):**
-- temperature: 0 at proxy level for B and C passes (D-069)
-- Validator invoked between subpasses, not just at end
-- Null binding constraint handled as distinct valid state (D-067)
-- DiscoveryIR surfaced as light review panel before B (D-068)
-- Open in Canvas enabled after valid scaffold, consistent with D-033
-- Friction remains on-demand from Stage Wizard, consistent with D-035
+| File | Change |
+|------|--------|
+| `src/store/canvas-store.ts` | v5 chain walk in `generateCanvasForVs`; dual capability field (`enabledByCapabilityIds ?? requiresCapabilityIds`) |
+| `src/components/CanvasView.tsx` | Guard `bindingConstraint?.bindingAnchor` against undefined |
+| `src/components/canvas/StageCard.tsx` | `enabledByCapabilityIds ?? requiresCapabilityIds` for capability block rendering |
+| `src/components/canvas/CapabilityBlock.tsx` | v5 PPIT fallback: reads `performedByRoleIds` for Roles layer, activity name for Activities layer |
 
 ---
 
-## What's Next
+## Known Gaps / Next Steps
 
-| Priority | Item |
-|----------|------|
-| 1 | **Pipeline rewrite** — implement three-pass architecture (D-065). Module structure: `domain/pipeline/{discovery-ir, scaffold-formaliser, scaffold-gates, heatmap-analyser, pipeline-orchestrator}.ts` + `store/discovery-session-store.ts`. Refactor DiscoveryIntake.tsx to thin shell. |
-| 2 | Deploy `CanvasView.tsx` FrictionPanel key fix (D-064) |
-| 3 | Delete stale artefacts: `/schema/` directory + `ScaffoldModel_schema.json.bak` (D-059) |
-| 4 | Add Buildcraft fixtures to `/fixtures` directory in repo |
-| 5 | Enhance Ofluv scaffold — populate applicationFunctionIds, recordClassIds on key activities |
-| 6 | Jira export button — getAllUserStories() ready, needs CSV download trigger |
-| 7 | Customer story filtering by industry/size |
+### Step 2 — UX flow decoupling (next)
+- Decouple friction from intake: scaffold generation → immediate canvas; friction on-demand from Stage Wizard Step 2
+- Pipeline rewrite: Passes A + B with Gate 1, IR surfacing, determinism enforced at proxy level
+- Aligns with D-035 and GPT architecture recommendation
 
----
+### Step 3 — Two-pass extraction rewrite
+- Replace single-pass extraction with properly sequenced multi-agent pipeline
+- Passes A + B with intermediate IR surfacing
+- Reference: `VCC_Scaffold_Generation_Prompt_Pack_v3_2`
 
-## Participants
+### Pause — Eric Broda spar
+- Question: Does Governance Kernel + GSM wire in as overlay (additive) or requires scaffold structural changes (breaking)?
+- Determine before building MVC demo
 
-| Role | Responsibility |
-|------|----------------|
-| **Terry** | Product Owner. Orchestrator. Owns repo. CAPSICUM author. |
-| **GPT** | Solution Architect. Structural critique. Ontological discipline. |
-| **Claude** | Dev team. Implementation. Architecture. Pipeline. Documentation. |
-| **Daniel** | Field tester. Salesforce pre-sales. Prospect-facing validation. |
-| **Henrik** | Transformation use case. Cordial/Volvo SAP rollout. |
+### Step 4 — MVC demo for Eric
+- Architecture diagram: VCC + MVC + Governance Kernel mapped onto Agentic Mesh Trust Framework
+- `StageCard` identified as natural host for Governance Kernel overlay (PPIT layer system is the hook)
 
----
-
-## Session Start Checklist
-
-Upload at the start of every session:
-- [ ] `docs/SESSION-LOG.md`
-- [ ] `docs/DECISIONS.md`
-- [ ] `docs/CURRENT-STATE.md`
-
-The `/mnt/project/` files are a stale snapshot — treat as background reference only.
+### Minor cosmetic
+- Network View VS cards show `stages` label with no count (stageCount not derived for v5 chain format)
 
 ---
 
-## Repo Structure
+## Design Notes
 
-```
-/docs         SESSION-LOG, DECISIONS (D-001–D-055), CURRENT-STATE, HANDOFF,
-              ARCHITECTURE, WORKFLOW, DESIGN-PRINCIPLES, SPAR_PROTOCOL, ENGAGEMENTS
-/prompts      00_GENERATION_GUIDE through 14_VALIDATION_REFERENCE (15-step prompt pack)
-/schemas      ScaffoldModel, FrictionHeatmap, CanvasViewModel, ExportBundle,
-              ValidationReport JSON schemas
-/fixtures     Banking Regulation, Enterprise Banking, IIBA Knowledge Hub,
-              Ofluv Industrial Vehicles, Puretec, golden, negative, paired-negative,
-              semantic-negative, vendor-libraries
-/runs         banking-supervision (full 15-step manual generation run)
-/packages
-  /frontend   Active React SPA (Vercel deployment)
-    src/
-      App.tsx, types.ts
-      store/    canvas-store, network-derivation, scaffold-resolver, throughput-validator
-      components/
-        DiscoveryIntake.tsx    ← four-pass pipeline (needs Session 9 fixes)
-        StageWizard.tsx        ← three-step wizard (Steps 1/2/3)
-        CanvasView.tsx         ← Stage View orchestrator
-        NetworkView.tsx        ← Enterprise DAG view
-        FrictionPanel.tsx      ← friction detail slide-in
-        FrictionOverlay.tsx    ← activity friction mapping
-        TransformationPane.tsx ← SBR cards + user story generation
-        UserGuidePanel.tsx     ← fixed bottom-left guide
-        FileLoader.tsx         ← bundle JSON file picker
-      canvas/
-        StageCard, StageColumn, CapabilityBlock, StructurePane, CanvasToolbar
-    api/claude.ts              ← Vercel serverless proxy to Anthropic API
-  /shared     validator, schema-validator, canvas-generator, export-bundle
-  /cli        validate, assemble, bundle, init commands
-  /pipeline   Python XLSX→IR→scaffold parser (IIBA source)
-  /backend    Stub (not deployed — optional persistence layer when needed)
-```
+- `StageCard` ↔ Eric Broda's Concept Card: structural alignment noted, no action yet
+- PPIT layer system (`ppitToggles`) is the natural extension point for Governance Kernel overlay

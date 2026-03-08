@@ -469,3 +469,10 @@ Pipeline rewrite implementation. Start with domain/pipeline/ module structure as
 - pipeline-orchestrator.ts
 - discovery-session-store.ts (in store/)
 - DiscoveryIntake.tsx refactored to thin interaction shell
+
+SESSION 14 — v5 Bundle Loading Fixed
+D-066 FileLoader.tsx — catch block now logs real error and surfaces err.message in UI instead of always showing "Failed to parse JSON file"
+D-067 network-derivation.ts — added resolveActivityIds() helper that handles both legacy activityIds[] format (v4) and pipeline activityChainHead + nextActivityId chain format (v5). Patched two call sites: deriveNetworkEdges and buildNetworkNodes
+D-068 network-derivation.ts — layoutZone vs zone field name mismatch. v5 bundles use zone, code expected layoutZone. Patched 3 locations to accept both via ?? fallback
+Result: v5 bundle loads cleanly — all 5 VS render in network view with correct two-row layout (3 ecosystem / 2 knowledge), friction badges, and constrained indicator
+Remaining: Stage view click-through not yet wired for v5 chain format — generateCanvasForVs expects lifecycleStages[] which v5 doesn't have. Next session item.

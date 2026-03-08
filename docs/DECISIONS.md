@@ -338,3 +338,7 @@ UI treatment for null: no gold banner, no binding badge. Neutral executive callo
 - No scenario modelling — PDS places this later, not needed to fix pipeline integrity
 - Do not merge friction generation back into scaffold generation for efficiency — directly violates structural-before-interpretive
 - Do not make binding constraint selection manual in intake pipeline — manual override belongs in canvas interpretation workflows, not initial heatmap generation
+
+D-072 FileLoader.tsx — catch block now logs real error and surfaces err.message in UI instead of always showing "Failed to parse JSON file"
+D-073 network-derivation.ts — added resolveActivityIds() helper that handles both legacy activityIds[] format (v4) and pipeline activityChainHead + nextActivityId chain format (v5). Patched two call sites: deriveNetworkEdges and buildNetworkNodes
+D-074 network-derivation.ts — layoutZone vs zone field name mismatch. v5 bundles use zone, code expected layoutZone. Patched 3 locations to accept both via ?? fallback

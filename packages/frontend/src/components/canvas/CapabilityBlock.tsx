@@ -2,6 +2,7 @@
 import type { ScaffoldData, ScaffoldActivity } from "../../types.ts";
 import type { PPITLayer } from "./ppit.ts";
 import { PPIT_LAYERS } from "./ppit.ts";
+import { humanizeId } from "../../lib/humanize-id.ts";
 
 /* ── PPIT data shape from capabilityPPIT ───────────────────────────── */
 interface CapPPIT {
@@ -55,32 +56,51 @@ export function CapabilityBlock({
   const cap = scaffold.elements.capabilities[capabilityId];
   const anyToggle = PPIT_LAYERS.some((l) => ppitToggles[l]);
 
-  // Read per-capability PPIT
+  // Read per-capability PPIT — v4 stores as activity.capabilityPPIT[capabilityId]
+  // v5 has no capabilityPPIT; fall back to activity-level fields
   const ppitMap = (activity as Record<string, unknown>).capabilityPPIT as
     Record<string, CapPPIT> | undefined;
   const capPPIT = ppitMap?.[capabilityId] ?? null;
+  const activityRec = activity as Record<string, unknown>;
 
-  // Resolve names
-  const roles = ppitToggles.roles && capPPIT
-    ? (capPPIT.roleIds ?? []).map((rid) => scaffold.elements.roles[rid]?.name ?? rid)
+  // Resolve names — v4 uses capPPIT, v5 falls back to activity-level arrays
+  const roles = ppitToggles.roles
+    ? capPPIT
+      ? (capPPIT.roleIds ?? []).map((rid) => scaffold.elements.roles[rid]?.name ?? humanizeId(rid))
+      : ((activityRec.performedByRoleIds as string[] | undefined) ?? [])
+          .map((rid) => scaffold.elements.roles[rid]?.name ?? humanizeId(rid))
     : [];
 
-  const activities = ppitToggles.activities && capPPIT
-    ? (capPPIT.activities ?? [])
+  const activities = ppitToggles.activities
+    ? capPPIT
+      ? (capPPIT.activities ?? [])
+      : [activity.name]
     : [];
 
-  const infoObjs = ppitToggles.concepts && capPPIT
-    ? (capPPIT.informationObjectIds ?? []).map((iid) => {
-        const el = (scaffold.elements as Record<string, Record<string, { name?: string }>>).informationObjects;
-        return el?.[iid]?.name ?? iid;
-      })
+  const infoObjs = ppitToggles.concepts
+    ? capPPIT
+      ? (capPPIT.informationObjectIds ?? []).map((iid) => {
+          const el = (scaffold.elements as Record<string, Record<string, { name?: string }>>).informationObjects;
+          return el?.[iid]?.name ?? humanizeId(iid);
+        })
+      : ((activityRec.informationObjectIds as string[] | undefined) ?? [])
+          .map((iid) => {
+            const el = (scaffold.elements as Record<string, Record<string, { name?: string }>>).informationObjects;
+            return el?.[iid]?.name ?? humanizeId(iid);
+          })
     : [];
 
-  const techApps = ppitToggles.applications && capPPIT
-    ? (capPPIT.technologyAppIds ?? []).map((tid) => {
-        const el = (scaffold.elements as Record<string, Record<string, { name?: string }>>).technologyApps;
-        return el?.[tid]?.name ?? tid;
-      })
+  const techApps = ppitToggles.applications
+    ? capPPIT
+      ? (capPPIT.technologyAppIds ?? []).map((tid) => {
+          const el = (scaffold.elements as Record<string, Record<string, { name?: string }>>).technologyApps;
+          return el?.[tid]?.name ?? humanizeId(tid);
+        })
+      : ((activityRec.technologyAppIds as string[] | undefined) ?? [])
+          .map((tid) => {
+            const el = (scaffold.elements as Record<string, Record<string, { name?: string }>>).technologyApps;
+            return el?.[tid]?.name ?? humanizeId(tid);
+          })
     : [];
 
   const hasContent = roles.length > 0 || activities.length > 0 || infoObjs.length > 0 || techApps.length > 0;
@@ -92,7 +112,7 @@ export function CapabilityBlock({
       {/* Capability name + badge counts */}
       <div className="flex items-start justify-between gap-1.5">
         <p className="min-w-0 text-xs font-medium text-gray-700">
-          {cap?.name ?? capabilityId}
+          {cap?.name ?? humanizeId(capabilityId)}
         </p>
         <div className="flex flex-shrink-0 items-center gap-1">
           {capDescription && (
