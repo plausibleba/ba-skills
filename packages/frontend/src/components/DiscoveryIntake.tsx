@@ -1,7 +1,4 @@
 import { useState, useCallback, useRef } from "react";
-import { runPipeline, continuePipeline } from "../domain/pipeline/pipeline-orchestrator";
-import type { PipelineProgress, PipelineStatus } from "../domain/pipeline/pipeline-orchestrator";
-import type { DiscoveryIR } from "../domain/pipeline/discovery-ir";
 
 // ─── Colour palette matching VCC design ───────────────────────────────────
 const INDUSTRY_OPTIONS = [
@@ -251,53 +248,15 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
   const [mode, setMode] = useState("freeform"); // "freeform" | "structured"
   const [transcript, setTranscript] = useState("");
   const [form, setForm] = useState(EMPTY_FORM);
-  // ── Pipeline state (D-065 three-pass architecture) ──────────────────────
-  const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus>("idle");
-  const [discoveryIR, setDiscoveryIR] = useState<DiscoveryIR | null>(null);
-  const [gate1Result, setGate1Result] = useState<any>(null);
+  const [extracting, setExtracting] = useState(false);
+  const [extractPass, setExtractPass] = useState(0); // 1 = VS & stages, 2 = roles & capabilities
+  const [extractDone, setExtractDone] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generateStep, setGenerateStep] = useState(""); // "scaffold" | "friction" | ""
+  const [generated, setGenerated] = useState(false);
   const [generatedBundle, setGeneratedBundle] = useState<any>(null);
-  const [pipelineError, setPipelineError] = useState<string | null>(null);
-  const [showReviewPanel, setShowReviewPanel] = useState(false);
-
-  // Derived convenience flags
-  const extracting = pipelineStatus === "pass-a1" || pipelineStatus === "pass-a2";
-  const extractPass = pipelineStatus === "pass-a1" ? 1 : pipelineStatus === "pass-a2" ? 2 : 0;
-  const extractDone = pipelineStatus === "pass-a-done" || pipelineStatus === "pass-b" ||
-    pipelineStatus === "pass-b-repairing" || pipelineStatus === "pass-b-failed" ||
-    pipelineStatus === "pass-c" || pipelineStatus === "done";
-  const generating = pipelineStatus === "pass-b" || pipelineStatus === "pass-b-repairing" || pipelineStatus === "pass-c";
-  const generateStep = pipelineStatus === "pass-c" ? "friction" : pipelineStatus === "pass-b" || pipelineStatus === "pass-b-repairing" ? "scaffold" : "";
-  const generated = pipelineStatus === "done";
-  const gate1Failed = pipelineStatus === "pass-b-failed";
   // bundleSaved gate removed (D-033) — Open in Canvas available immediately on generation
   const dropRef = useRef<HTMLDivElement>(null);
-
-  function handleProgress(progress: PipelineProgress) {
-    setPipelineStatus(progress.status);
-    if (progress.discoveryIR) {
-      setDiscoveryIR(progress.discoveryIR);
-      // Populate form from DiscoveryIR for display in existing form UI
-      const ir = progress.discoveryIR;
-      setForm(f => ({
-        ...f,
-        org: { name: ir.org.name ?? "", industry: ir.org.industry ?? "", companySize: ir.org.size ?? "", description: "", stakeholder: ir.org.stakeholder ?? "" },
-        valueStreams: ir.valueStreams.map((vs, i) => ({
-          id: i + 1, name: vs.name, description: vs.description,
-          zone: vs.zone as any, stages: vs.stages.map(s => ({ name: s })),
-          stakeholder: vs.stakeholder ?? "",
-        })),
-        roles: ir.roles.map((r, i) => ({ id: i + 1, name: r.name, type: "Internal", vsRefs: [], notes: r.description })),
-        tech: ir.tech.map((t, i) => ({ id: i + 1, name: t.name, type: t.type, friction: false, notes: "" })),
-        painPoints: ir.painPoints.map((p, i) => ({ id: i + 1, description: p.description, category: p.category ?? "", intensity: p.intensity ?? 7, affectedStage: p.affectedStage ?? "", binding: p.binding ?? false })),
-        metrics: ir.metrics.map((m, i) => ({ id: i + 1, name: m.name, current: m.current ?? "", target: m.target ?? "", stage: "" })),
-        gaps: ir.gaps,
-        extractionMeta: { extractedAt: ir.extractedAt, passes: 2 },
-      }));
-    }
-    if (progress.gate1) setGate1Result(progress.gate1);
-    if (progress.bundle) setGeneratedBundle(progress.bundle);
-    if (progress.errorMessage) setPipelineError(progress.errorMessage);
-  }
 
   const readiness = calcReadiness(form);
   // ─── Form updaters ───────────────────────────────────────────────────────
@@ -330,42 +289,536 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
 
   const dismissGap = (idx: number) => setForm(f => ({ ...f, gaps: f.gaps.filter((_, i) => i !== idx) }));
 
-  // ─── Pass A: Discovery IR (orchestrator) ─────────────────────────────────
+  // ─── LLM Extraction — Phase A Discovery (Passes 1 & 2) ──────────────────
+  //
+  // Pass 1 (Steps 01-02): VS Definition + Lifecycle Stages
+  //   Board-level. No VS cap — extract all that the source warrants.
+  //   Output: confirmed VS list with stages. Anchors all downstream naming.
+  //
+  // Pass 2 (Steps 03-04): Roles + Capabilities
+  //   Extracted from source, anchored to confirmed VS/stage names.
+  //   Capabilities are domain-specific from source — never keyword-derived.
+  //   Output: roles{}, capabilities{} keyed by confirmed VS name.
+  //
   async function runExtraction() {
-    setPipelineError(null);
-    await runPipeline(transcript, handleProgress);
-    // After pass-a-done: if user hasn't enabled review panel, proceed straight to B+C
-    // Review panel is optional/skippable (D-072)
-  }
+    if (!transcript.trim()) return;
+    setExtracting(true);
+    setExtractPass(1);
 
-  // Called when user clicks "Generate →" (skip review) or "Continue →" from review panel
-  async function proceedToFormalise() {
-    if (!discoveryIR) return;
-    setPipelineError(null);
-    await continuePipeline(discoveryIR, handleProgress);
-  }
+    const apiUrl = import.meta.env.DEV ? "/api/anthropic/v1/messages" : "/api/claude";
 
-    // ─── generateIR: now delegates to pipeline orchestrator (D-065) ──────────
-  // Called from the "Generate →" header button — runs full pipeline from transcript
-  // (Pass A then B+C without review pause, consistent with presales flow default)
-  async function generateIR() {
-    setPipelineError(null);
-    if (discoveryIR) {
-      // DiscoveryIR already available (user extracted first) — go straight to B+C
-      await continuePipeline(discoveryIR, handleProgress);
-    } else if (transcript.trim()) {
-      // Run full pipeline from transcript
-      await runPipeline(transcript, async (progress) => {
-        handleProgress(progress);
-        if (progress.status === "pass-a-done" && progress.discoveryIR) {
-          // Skip review (D-072 default) — continue immediately to B+C
-          await continuePipeline(progress.discoveryIR, handleProgress);
-        }
+    // ── Pass 1: VS Definition + Lifecycle Stages (Steps 01-02) ──────────────
+    const pass1Prompt = `You are a business architect defining Value Streams for a governance diagnostic.
+A ValueStream is the end-to-end flow that delivers measurable stakeholder value — triggered by a defined need, ending at a verifiable outcome. Work at board level: structural flow of value, not process detail.
+
+## Your Task
+From the source material below, identify ALL Value Streams present. Do not cap the number — extract every distinct end-to-end flow the source describes.
+
+## Rules
+- Each VS is outcome-driven, not function-driven ("Member Certification Lifecycle" not "Certification Team Activities")
+- Each VS has a clear trigger event and a clear terminal outcome
+- VS names are concise, 2-6 words, title case
+- zone: "ecosystem" = externally-facing (customer, member, partner, market); "knowledge" = internally-facing (operations, reporting, governance)
+- Stages: 4-8 per VS. Each stage = a governance phase or progression milestone, not a task. MECE — no gaps, no overlaps.
+- If the source contains tab names, sheet names, section headings, or column groupings that map to distinct end-to-end flows — each one is likely a separate VS. Extract them all.
+
+Return ONLY valid JSON, no markdown fences:
+{
+  "org": {
+    "name": "",
+    "industry": "",
+    "companySize": "",
+    "description": "",
+    "stakeholder": "",
+    "confidence": "high|medium|low"
+  },
+  "valueStreams": [
+    {
+      "id": 1,
+      "name": "Member Certification Lifecycle",
+      "description": "End-to-end flow from application through credential maintenance",
+      "zone": "ecosystem",
+      "trigger": "Candidate submits certification application",
+      "terminalOutcome": "Credential issued and maintained in good standing",
+      "stakeholder": "Candidate, Employer",
+      "confidence": "high|medium|low",
+      "stages": [
+        { "name": "Application Processing", "confidence": "high" },
+        { "name": "Exam Preparation", "confidence": "high" }
+      ]
+    }
+  ]
+}
+
+Source material:
+${transcript}`;
+
+    let pass1Result: any = null;
+    try {
+      const res1 = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 4000,
+          temperature: 0,
+          messages: [{ role: "user", content: pass1Prompt }]
+        })
       });
+      const data1 = await res1.json();
+      const text1 = data1.content?.find((b: any) => b.type === "text")?.text ?? "{}";
+      pass1Result = JSON.parse(text1.replace(/```json|```/g, "").trim());
+    } catch (e) {
+      console.error("Pass 1 extraction failed", e);
+      setExtracting(false);
+      return;
+    }
+
+    const confirmedVS = pass1Result.valueStreams ?? [];
+    setExtractPass(2);
+
+    // Build VS+stage reference for Pass 2 — model must anchor to these exactly
+    const vsStageRef = confirmedVS.map((vs: any) =>
+      `VS: "${vs.name}"\n  Stages: ${(vs.stages ?? []).map((s: any) => `"${s.name}"`).join(", ")}`
+    ).join("\n\n");
+
+    // ── Pass 2: Roles + Capabilities (Steps 03-04) ───────────────────────────
+    // Capabilities are extracted from the source — not derived from stage names.
+    // If the source contains a capability map, register, or column — use those names verbatim.
+    const pass2Prompt = `You are extracting Roles and Capabilities for a business architecture diagnostic.
+
+The following Value Streams and their stages are CONFIRMED. Do not rename, add, or remove them:
+${vsStageRef}
+
+## Roles (Step 03)
+Identify all roles that participate in these value streams. Roles are responsibility-bearing positions, not people or departments.
+- Include both execution roles (doing work) and governing roles (approving, overseeing)
+- 4-10 roles total across all value streams
+- Names are title-case position names
+
+## Capabilities (Step 04)
+Identify the Capabilities required. Capabilities are enduring organisational abilities — persistent, deployable, investment-relevant.
+- CRITICAL: If the source material contains a capability map, capability register, named capabilities, or column headers that describe organisational abilities — extract those names VERBATIM. Do not rename, generalise, or replace them with generic alternatives.
+- If no explicit capabilities exist in the source, derive them from the VS/stage content using Verb-Noun convention (e.g. "Manage Member Credentials", not "Credential Management Execution")
+- Assign capabilities to the VS they primarily support
+- 3-8 capabilities per VS
+
+Return ONLY valid JSON, no markdown fences:
+{
+  "roles": [
+    { "id": "role_credit_analyst", "name": "Credit Analyst", "type": "Internal", "description": "Responsible for quantitative credit assessment" }
+  ],
+  "capabilitiesByVS": [
+    {
+      "vsName": "MUST MATCH confirmed VS name exactly",
+      "capabilities": [
+        { "id": "cap_member_onboarding", "name": "Member Onboarding", "description": "Ability to onboard and orient new members" }
+      ]
+    }
+  ],
+  "tech": [
+    { "id": 1, "name": "", "type": "CRM|ERP|Comms|Analytics|Custom|Other", "friction": true, "notes": "" }
+  ],
+  "painPoints": [
+    {
+      "id": 1,
+      "description": "",
+      "category": "DataSignalFriction|ProcessHandoffFriction|GovernanceRiskFriction|IncentiveCapacityFriction|TechnologyIntegrationFriction",
+      "intensity": 7,
+      "affectedVsName": "MUST be one of the confirmed VS names above",
+      "affectedStage": "Stage name only",
+      "binding": false,
+      "confidence": "high|medium|low"
+    }
+  ],
+  "metrics": [
+    { "id": 1, "name": "", "current": "", "target": "", "affectedVsName": "confirmed VS name", "stage": "stage name only" }
+  ],
+  "gaps": [
+    { "severity": "required|recommended", "prompt": "Specific question to fill this gap" }
+  ]
+}
+
+Source material:
+${transcript}`;
+
+    try {
+      const res2 = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 6000,
+          temperature: 0,
+          messages: [{ role: "user", content: pass2Prompt }]
+        })
+      });
+      const data2 = await res2.json();
+      const text2 = data2.content?.find((b: any) => b.type === "text")?.text ?? "{}";
+      const pass2Result = JSON.parse(text2.replace(/```json|```/g, "").trim());
+
+      // Merge: Pass 1 is authoritative for VS structure; Pass 2 adds capabilities per VS
+      const mergedVS = confirmedVS.map((vs1: any, i: number) => {
+        // A2 now returns capabilityMap (L1/L2/L3) + stageCapabilities instead of capabilitiesByVS.
+        // For form display, flatten L3 capabilities as a fallback list.
+        const legacyCaps = pass2Result.capabilitiesByVS ?? [];
+        const capEntry = legacyCaps.find((c: any) => c.vsName === vs1.name) ?? legacyCaps[i];
+        return {
+          ...vs1,
+          id: vs1.id ?? Date.now() + i,
+          // A1 now returns enriched stage objects { name, entryCriteria, exitCriteria, ... }
+          // Normalise to { name, confidence } for StageTagInput display.
+          stages: (vs1.stages ?? []).map((s: any) =>
+            typeof s === "string"
+              ? { name: s, confidence: "extracted" }
+              : { name: s.name ?? String(s), confidence: "extracted" }
+          ),
+          extractedCapabilities: capEntry?.capabilities ?? [],
+        };
+      });
+
+      // Normalise pain points with VS → stage format
+      const normalisedPainPoints = (pass2Result.painPoints ?? []).map((p: any, i: number) => {
+        const vsName = p.affectedVsName ?? confirmedVS[0]?.name ?? "";
+        const stageName = p.affectedStage ?? "";
+        return {
+          ...p,
+          id: p.id ?? Date.now() + i,
+          affectedStage: vsName && stageName ? `${vsName} → ${stageName}` : stageName,
+        };
+      });
+
+      const normalisedMetrics = (pass2Result.metrics ?? []).map((m: any, i: number) => {
+        const vsName = m.affectedVsName ?? confirmedVS[0]?.name ?? "";
+        const stageName = m.stage ?? "";
+        return {
+          ...m,
+          id: m.id ?? Date.now() + i,
+          stage: vsName && stageName ? `${vsName} → ${stageName}` : stageName,
+        };
+      });
+
+      setForm(f => ({
+        ...f,
+        org: { ...f.org, ...pass1Result.org },
+        valueStreams: mergedVS,
+        roles: (pass2Result.roles ?? []).map((r: any, i: number) => ({ ...r, id: r.id ?? Date.now() + i })),
+        tech: (pass2Result.tech ?? []).map((t: any, i: number) => ({ ...t, id: t.id ?? Date.now() + i })),
+        painPoints: normalisedPainPoints,
+        metrics: normalisedMetrics,
+        gaps: pass2Result.gaps ?? [],
+        source: "freeform_extraction",
+        extractionMeta: { extractedAt: new Date().toISOString(), passes: 2 },
+      }));
+      setExtractDone(true);
+      setMode("structured");
+    } catch (e) {
+      console.error("Pass 2 extraction failed", e);
+    } finally {
+      setExtracting(false);
+      setExtractPass(0);
     }
   }
 
-    // ─── Drag-drop ───────────────────────────────────────────────────────────
+  // ─── Generate IR → Scaffold + Heatmap (Passes 3 & 4) ─────────────────────
+  //
+  // Pass 3 (Steps 05-06-10): LLM formalisation → full ScaffoldModel.json
+  //   Receives confirmed VS, stages, roles, capabilities from extraction.
+  //   Produces deterministic scaffold: outcomes, activities (FSM chain), assembly.
+  //   Replaces the old keyword-deriveCapabilities JS function entirely.
+  //
+  // Pass 4 (Steps 11-13): Friction assessment → heatmaps[]
+  //   Unchanged from previous implementation — already well-designed.
+  //
+  async function generateIR() {
+    setGenerating(true);
+    setGenerateStep("scaffold");
+
+    const apiUrl = import.meta.env.DEV ? "/api/anthropic/v1/messages" : "/api/claude";
+
+    const id = (prefix: string, name: string) =>
+      `${prefix}_${name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")}`;
+
+    // ── Pass 3: Scaffold Formalisation (Steps 05-06-10) ──────────────────────
+    // Build the VS+stage+role+capability context for the formalisation prompt
+    const vsContext = form.valueStreams.filter((vs: any) => vs.name).map((vs: any) => ({
+      vsName: vs.name,
+      vsId: id("vs", vs.name),
+      description: vs.description ?? "",
+      zone: vs.zone ?? "ecosystem",
+      trigger: vs.trigger ?? "",
+      terminalOutcome: vs.terminalOutcome ?? "",
+      stakeholder: vs.stakeholder ?? form.org.stakeholder ?? "",
+      stages: (vs.stages ?? []).map((s: any) => s.name ?? s),
+      capabilities: (vs.extractedCapabilities ?? []).map((c: any) => ({
+        id: c.id ?? id("cap", c.name),
+        name: c.name,
+        description: c.description ?? `Ability to ${c.name.toLowerCase()}`,
+      })),
+    }));
+
+    const roleContext = form.roles.filter((r: any) => r.name).map((r: any) => ({
+      id: r.id ?? id("role", r.name),
+      name: r.name,
+      description: r.description ?? "",
+    }));
+
+    const techContext = form.tech.filter((t: any) => t.name).map((t: any) => ({
+      id: id("tech", t.name),
+      name: t.name,
+      type: t.type ?? "Other",
+    }));
+
+    const pass3Prompt = `You are a business architect formalising a value stream model into a VCC ScaffoldModel.
+
+## Determinism Requirement
+This is a structural formalisation step — a pure function. Given these inputs, produce the same output every time. IDs are derived mechanically from element names (snake_case with type prefix). No creative variation.
+
+## ID Convention
+- vs_<snake_case_name>     e.g. vs_member_certification_lifecycle
+- outcome_<snake_case>     e.g. outcome_application_received
+- act_<snake_case_name>    e.g. act_process_certification_application
+- cap_<snake_case_name>    e.g. cap_member_onboarding
+- role_<snake_case_name>   e.g. role_credit_analyst
+- metric_<snake_case_name>
+
+## FSM Chain Rules (CRITICAL — violations fail validation)
+Each Value Stream is a single linear activity chain:
+1. Each activity has preOutcomeId !== postOutcomeId (no no-ops)
+2. activity[i].postOutcomeId === activity[i+1].preOutcomeId (adjacent consistency)
+3. nextActivityId chain has no breaks, no cycles — last activity has nextActivityId: null
+4. All activities reachable from chain head
+5. One activity per stage. Chain length = number of stages.
+6. performedByRoleIds: at least one role per activity
+
+## Your Task
+Given the confirmed VS definitions, stages, roles, and capabilities below, produce a complete ScaffoldModel.json.
+
+For each VS:
+- Create one Outcome per stage boundary (n stages → n+1 outcomes)  
+- Create one Activity per stage (pre/post outcomes, roles, capabilities from the lists provided)
+- Assign capabilities to activities based on stage semantics — use the provided capabilities, do not invent new ones
+- Distribute roles across activities sensibly based on stage content
+
+Confirmed inputs:
+${JSON.stringify({ valueStreams: vsContext, roles: roleContext, tech: techContext }, null, 2)}
+
+Also include these metrics (from discovery):
+${JSON.stringify(form.metrics.filter((m: any) => m.name).map((m: any) => ({ id: id("metric", m.name), name: m.name, current: m.current, target: m.target })), null, 2)}
+
+Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
+{
+  "schemaVersion": "1.0.0",
+  "scaffoldId": "scaffold_<org_name_snake>",
+  "name": "<Org Name> — Operating Model",
+  "description": "<brief>",
+  "createdAt": "<ISO timestamp>",
+  "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "elements": {
+    "valueStreams": {},
+    "activities": {},
+    "outcomes": {},
+    "roles": {},
+    "capabilities": {},
+    "controls": {},
+    "constraints": {},
+    "directives": {},
+    "deonticLogic": {},
+    "flowLogic": {},
+    "concepts": {},
+    "properties": {},
+    "metrics": {},
+    "measures": {},
+    "conditions": {}
+  }
+}
+
+CRITICAL: All 15 element maps must be present, even if empty. Include elementType on every element.`;
+
+    let scaffold: any = null;
+    const now = new Date().toISOString();
+    const orgSlug = form.org.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "discovery";
+
+    try {
+      const res3 = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 8000,
+          temperature: 0,
+          messages: [{ role: "user", content: pass3Prompt }]
+        })
+      });
+      const data3 = await res3.json();
+      const text3 = data3.content?.find((b: any) => b.type === "text")?.text ?? "{}";
+      scaffold = JSON.parse(text3.replace(/```json|```/g, "").trim());
+    } catch (e) {
+      console.error("Pass 3 scaffold formalisation failed", e);
+      setGenerating(false);
+      setGenerateStep("");
+      return;
+    }
+
+    // ── Pass 4: Friction Assessment (Steps 11-13) ────────────────────────────
+    setGenerateStep("friction");
+    const scaffoldId = scaffold.scaffoldId ?? `scaffold-${orgSlug}`;
+    const scaffoldVsIds = Object.keys(scaffold.elements?.valueStreams ?? {});
+
+    const ppSummary = form.painPoints
+      .filter((p: any) => p.description)
+      .map((p: any, i: number) =>
+        `${i + 1}. [${p.category || "unclassified"}] ${p.description} (intensity ${p.intensity ?? 7}/10, stage: ${p.affectedStage || "unknown"})${p.binding ? " ← flagged as binding" : ""}`
+      ).join("\n");
+
+    // Strip scaffold to activity skeleton for Pass 4 (D-040)
+    // Keep only VS IDs, VS names, activity IDs, activity names, preOutcome, postOutcome
+    // Removes capabilities, metrics, conditions, PPIT — reduces token load significantly
+    const scaffoldForPrompt = {
+      scaffoldId: scaffold.scaffoldId,
+      orgName: scaffold.orgName,
+      elements: {
+        valueStreams: Object.fromEntries(
+          Object.entries(scaffold.elements?.valueStreams ?? {}).map(([vsId, vs]: [string, any]) => [
+            vsId,
+            {
+              valueStreamId: vs.valueStreamId,
+              name: vs.name,
+              activityIds: vs.activityIds ?? []
+            }
+          ])
+        ),
+        activities: Object.fromEntries(
+          Object.entries(scaffold.elements?.activities ?? {}).map(([actId, act]: [string, any]) => [
+            actId,
+            {
+              activityId: act.activityId,
+              name: act.name,
+              preOutcome: act.preOutcome,
+              postOutcome: act.postOutcome,
+              nextActivityId: act.nextActivityId
+            }
+          ])
+        )
+      }
+    };
+
+    const pass4Prompt = `You are generating friction observations and a binding constraint assessment for a VCC governance diagnostic.
+
+The scaffold below represents a validated structural model. Every anchorId you reference MUST exist in the scaffold JSON.
+
+## Friction Taxonomy
+- ProcessHandoffFriction — work stalls between stages, handoff rework
+- TechnologyIntegrationFriction — systems don't interoperate, automation gaps
+- DataSignalFriction — information fragmented, decision latency
+- DecisionAuthorityFriction — decision rights ambiguous, approval concentration
+- GovernanceRiskFriction — control layering, compliance gates multiply
+- IncentiveCapacityFriction — performance measures distort behaviour, capacity limits
+
+## Evidence Basis Rules
+- EVIDENCED: directly stated in source material
+- INFERRED: derived from scaffold structure — requires structuralPattern
+- ASSUMED: domain heuristic only — intensity MUST NOT exceed 5
+
+## Binding Constraint Scoring
+Score each candidate on: observationFrequency (0-3), authorityCentralisation (0-3), downstreamDependency (0-3), controlLayering (0-3), capacityConstraint (0-3). Total 0-15.
+Eligibility: downstreamDependency must score ≥ 2. If no candidate qualifies, return null bindingConstraint.
+confidence = totalScore / 15.
+
+Return ONLY valid JSON, no markdown fences:
+{
+  "heatmaps": [
+    {
+      "valueStreamId": "vs-id-from-scaffold",
+      "observations": [
+        {
+          "observationId": "fr_001_snake_case_description",
+          "category": "DataSignalFriction",
+          "evidenceBasis": "EVIDENCED|INFERRED|ASSUMED",
+          "primaryAnchor": { "anchorType": "Activity", "anchorId": "act-id-from-scaffold" },
+          "contributingAnchors": [],
+          "intensity": { "scale": "0-10", "score": 8.0 },
+          "rationale": "Specific rationale citing scaffold elements or source evidence",
+          "evidence": [],
+          "observedAt": "${now}"
+        }
+      ],
+      "bindingConstraint": {
+        "findingId": "bc_001",
+        "bindingAnchor": { "anchorType": "Activity", "anchorId": "act-id-from-scaffold" },
+        "bindingAnchorObservationId": "fr_001_snake_case_description",
+        "justification": "Structural reasoning for binding constraint selection",
+        "constraintScoring": {
+          "candidates": [
+            {
+              "anchorId": "act-id",
+              "eligible": true,
+              "scores": { "observationFrequency": 2, "authorityCentralisation": 2, "downstreamDependency": 2, "controlLayering": 1, "capacityConstraint": 1 },
+              "totalScore": 8
+            }
+          ],
+          "selectedAnchorId": "act-id",
+          "selectionRationale": "Highest score among eligible candidates"
+        },
+        "confidence": 0.53,
+        "observedAt": "${now}"
+      }
+    }
+  ]
+}
+
+## Discovery Signal (pain points from extraction)
+${ppSummary || "No pain points recorded — derive observations from scaffold structure and domain heuristics (INFERRED or ASSUMED basis, intensity ≤ 5 for ASSUMED)."}
+
+## Scaffold JSON
+${JSON.stringify(scaffoldForPrompt, null, 2)}`;
+
+    let heatmaps: any[] = [];
+
+    try {
+      const res4 = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 8000,
+          temperature: 0,
+          messages: [{ role: "user", content: pass4Prompt }]
+        })
+      });
+      const data4 = await res4.json();
+      const text4 = data4.content?.find((b: any) => b.type === "text")?.text ?? "{}";
+      const pass4Result = JSON.parse(text4.replace(/```json|```/g, "").trim());
+
+      heatmaps = (pass4Result.heatmaps ?? []).map((h: any) => ({
+        heatmapId: `heatmap-${h.valueStreamId}-${Date.now()}`,
+        scaffoldId,
+        valueStreamId: h.valueStreamId,
+        observations: h.observations ?? [],
+        ...(h.bindingConstraint && { bindingConstraint: h.bindingConstraint }),
+        schemaVersion: "1.0.0",
+        createdAt: now,
+      }));
+    } catch (e) {
+      console.error("Pass 4 friction assessment failed — bundle saved without heatmaps", e);
+      // No fallback fabrication — an empty heatmap is better than a wrong one
+    }
+
+    const bundle = {
+      bundleVersion: "1.0",
+      createdAt: now,
+      scaffold,
+      heatmaps,
+    };
+
+    setGeneratedBundle(bundle);
+    setGenerating(false);
+    setGenerateStep("");
+    setGenerated(true);
+  }
+
+
+  // ─── Drag-drop ───────────────────────────────────────────────────────────
   const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
@@ -482,7 +935,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
               disabled={readiness < 41 || generating}
               className="rounded-lg bg-slate-800 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
-              {generating ? (generateStep === "friction" ? "Pass C — heatmap analysis…" : "Pass B — formalising scaffold…") : "Generate →"}
+              {generating ? (generateStep === "friction" ? "Pass 4 — assessing friction…" : "Pass 3 — formalising scaffold…") : "Generate →"}
             </button>
           </div>
         </div>
@@ -535,7 +988,7 @@ Example: 'We met with the head of tech at Puretec. They have 4000+ SKUs and 12-m
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                       </svg>
-                      {extractPass === 1 ? "Pass A1 — value streams & stages…" : "Pass A2 — roles & capabilities…"}
+                      {extractPass === 1 ? "Pass 1 — value streams & stages…" : "Pass 2 — roles & capabilities…"}
                     </span>
                   ) : "Extract → Fill form"}
                 </button>
@@ -543,72 +996,6 @@ Example: 'We met with the head of tech at Puretec. They have 4000+ SKUs and 12-m
             </div>
             {extractDone && (
               <ExtractionSummary meta={form.extractionMeta} form={form} />
-            )}
-
-            {/* ── Gate 1 failure banner ── */}
-            {gate1Failed && (
-              <div className="rounded-lg border border-red-200 bg-red-50 p-4 space-y-2">
-                <p className="text-xs font-semibold text-red-700">Scaffold formalisation failed validation</p>
-                <p className="text-xs text-red-600 leading-relaxed">
-                  The scaffold failed FSM chain integrity after one repair attempt. You can edit the form and try again.
-                </p>
-                {gate1Result?.errors?.map((e: string, i: number) => (
-                  <p key={i} className="text-[10px] font-mono text-red-500">✗ {e}</p>
-                ))}
-                <button
-                  onClick={proceedToFormalise}
-                  className="mt-2 rounded-md bg-red-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-800"
-                >
-                  Retry formalisation →
-                </button>
-              </div>
-            )}
-
-            {/* ── Optional DiscoveryIR review panel (D-068, D-072) ── */}
-            {pipelineStatus === "pass-a-done" && !showReviewPanel && (
-              <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5">
-                <p className="text-xs text-slate-500">Discovery complete — ready to formalise</p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowReviewPanel(true)}
-                    className="text-xs text-slate-500 hover:text-slate-700 underline"
-                  >
-                    Review discovery →
-                  </button>
-                  <button
-                    onClick={proceedToFormalise}
-                    className="rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700"
-                  >
-                    Continue →
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {showReviewPanel && pipelineStatus === "pass-a-done" && (
-              <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold text-indigo-800">Review Discovery IR</p>
-                  <button onClick={() => setShowReviewPanel(false)} className="text-indigo-400 hover:text-indigo-600 text-sm">×</button>
-                </div>
-                <p className="text-[11px] text-indigo-600 leading-relaxed">
-                  Edit the form below before formalising. Changes here affect the scaffold — add missing items or remove spurious ones.
-                </p>
-                <button
-                  onClick={() => { setShowReviewPanel(false); proceedToFormalise(); }}
-                  className="rounded-md bg-indigo-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-800"
-                >
-                  Formalise scaffold →
-                </button>
-              </div>
-            )}
-
-            {/* ── Pipeline error ── */}
-            {pipelineError && pipelineStatus === "error" && (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3">
-                <p className="text-xs font-semibold text-red-700">Pipeline error</p>
-                <p className="text-[10px] text-red-500 mt-1">{pipelineError}</p>
-              </div>
             )}
           </div>
         )}
@@ -856,7 +1243,7 @@ Example: 'We met with the head of tech at Puretec. They have 4000+ SKUs and 12-m
                   disabled={readiness < 41 || generating}
                   className="rounded-lg bg-slate-800 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all whitespace-nowrap"
                 >
-                  {generating ? (generateStep === "friction" ? "Pass C — heatmap analysis…" : "Pass B — formalising scaffold…") : `Generate scaffold →`}
+                  {generating ? (generateStep === "friction" ? "Pass 4 — assessing friction…" : "Pass 3 — formalising scaffold…") : `Generate scaffold →`}
                 </button>
               </div>
             </div>
