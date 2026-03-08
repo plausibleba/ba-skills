@@ -71,10 +71,6 @@ export interface ActivityElement extends BaseElement {
   entryConditionIds?: string[];
   exitConditionIds?: string[];
   flowLogicIds?: string[];
-  // D-053: Execution grammar fields (Session 11)
-  applicationFunctionIds?: string[];
-  primaryRecordClassId?: string;
-  compositeActivityId?: string;
 }
 
 export interface MetricElement extends BaseElement {
@@ -92,9 +88,6 @@ export interface MeasureElement extends BaseElement {
   measureAsOf?: string;
 }
 
-export interface ApplicationFunctionElement extends BaseElement {}
-export interface RecordClassElement extends BaseElement {}
-
 export interface ScaffoldElements {
   valueStreams: Record<string, ValueStreamElement>;
   activities: Record<string, ActivityElement>;
@@ -111,9 +104,6 @@ export interface ScaffoldElements {
   metrics: Record<string, MetricElement>;
   measures: Record<string, MeasureElement>;
   conditions: Record<string, BaseElement>;
-  // D-053: New reference registries (Session 11)
-  applicationFunctions?: Record<string, ApplicationFunctionElement>;
-  recordClasses?: Record<string, RecordClassElement>;
 }
 
 export interface ScaffoldInput {
@@ -280,14 +270,17 @@ export function checkReferentialIntegrity(
     const base = `/elements/metrics/${metricId}/measures`;
     const anchor: AnchorRef = { anchorType: "Metric", anchorId: metricId };
 
-    if (metric.measures.baselineMeasureId != null) {
-      checkSingleRef(metric.measures.baselineMeasureId, elements.measures, "measures", `${base}/baselineMeasureId`, anchor, findings);
-    }
-    if (metric.measures.currentMeasureId != null) {
-      checkSingleRef(metric.measures.currentMeasureId, elements.measures, "measures", `${base}/currentMeasureId`, anchor, findings);
-    }
-    if (metric.measures.targetMeasureId != null) {
-      checkSingleRef(metric.measures.targetMeasureId, elements.measures, "measures", `${base}/targetMeasureId`, anchor, findings);
+    // Guard: metrics produced by the pipeline may not have a canonical measures block
+    if (metric.measures) {
+      if (metric.measures.baselineMeasureId != null) {
+        checkSingleRef(metric.measures.baselineMeasureId, elements.measures, "measures", `${base}/baselineMeasureId`, anchor, findings);
+      }
+      if (metric.measures.currentMeasureId != null) {
+        checkSingleRef(metric.measures.currentMeasureId, elements.measures, "measures", `${base}/currentMeasureId`, anchor, findings);
+      }
+      if (metric.measures.targetMeasureId != null) {
+        checkSingleRef(metric.measures.targetMeasureId, elements.measures, "measures", `${base}/targetMeasureId`, anchor, findings);
+      }
     }
   }
 
@@ -508,7 +501,7 @@ export function checkCurrentMeasuresHaveTimestamp(
   const findings: Finding[] = [];
 
   for (const [metricId, metric] of Object.entries(elements.metrics)) {
-    const currentId = metric.measures.currentMeasureId;
+    const currentId = metric.measures?.currentMeasureId;
     if (currentId == null) continue;
 
     const measure = elements.measures[currentId];
@@ -536,7 +529,7 @@ export function checkMeasureValueTypes(
 ): Finding[] {
   const findings: Finding[] = [];
 
-  for (const [measureId, measure] of Object.entries(elements.measures)) {
+  for (const [measureId, measure] of Object.entries(elements.measures ?? {})) {
     if (measure.measureValue == null) continue;
 
     const { measureDataType, measureValue } = measure;
@@ -791,291 +784,6 @@ export function checkScaffoldIntegrityHash(
 
 // --- Orchestrator ---
 
-
-// --- Execution Grammar Rules (Session 11) ---
-
-/**
- * V-ACTIVITY-01–06: Reference integrity for new execution grammar fields.
- * applicationFunctionIds must resolve to applicationFunctions registry.
- * primaryRecordClassId must resolve to recordClasses registry.
- * compositeActivityId must resolve to an existing Activity.
- */
-export function checkExecutionGrammarRefs(elements: ScaffoldElements): Finding[] {
-  const findings: Finding[] = [];
-  const appFns = elements.applicationFunctions ?? {};
-  const recordClasses = elements.recordClasses ?? {};
-  const activities = elements.activities;
-
-  for (const [actId, act] of Object.entries(activities)) {
-    const path = `elements.activities.${actId}`;
-
-    // V-ACTIVITY-04: applicationFunctionIds must resolve
-    for (const afId of act.applicationFunctionIds ?? []) {
-      if (!appFns[afId]) {
-        findings.push({
-          severity: "Error",
-          ruleId: "V-ACTIVITY-04",
-          code: "UNRESOLVED_APPLICATION_FUNCTION",
-          message: `Activity '${actId}' references applicationFunction '${afId}' which does not exist in elements.applicationFunctions.`,
-          path: `${path}.applicationFunctionIds`,
-        });
-      }
-    }
-
-    // V-ACTIVITY-05: primaryRecordClassId must resolve
-    if (act.primaryRecordClassId) {
-      if (!recordClasses[act.primaryRecordClassId]) {
-        findings.push({
-          severity: "Error",
-          ruleId: "V-ACTIVITY-05",
-          code: "UNRESOLVED_RECORD_CLASS",
-          message: `Activity '${actId}' references recordClass '${act.primaryRecordClassId}' which does not exist in elements.recordClasses.`,
-          path: `${path}.primaryRecordClassId`,
-        });
-      }
-    }
-
-    // V-ACTIVITY-06: compositeActivityId must resolve to existing Activity
-    if (act.compositeActivityId) {
-      if (!activities[act.compositeActivityId]) {
-        findings.push({
-          severity: "Error",
-          ruleId: "V-ACTIVITY-06",
-          code: "UNRESOLVED_COMPOSITE_ACTIVITY",
-          message: `Activity '${actId}' has compositeActivityId '${act.compositeActivityId}' which does not exist in elements.activities.`,
-          path: `${path}.compositeActivityId`,
-        });
-      }
-    }
-  }
-
-  return findings;
-}
-
-/**
- * V-ACTIVITY-07–10: Minimum execution grammar cardinality.
- * Warns (not errors) on missing new fields to allow gradual adoption
- * on legacy scaffolds. Scaffolds explicitly version >= 2.0 will error.
- */
-export function checkExecutionGrammarCardinality(elements: ScaffoldElements): Finding[] {
-  const findings: Finding[] = [];
-  const hasAppFnRegistry = Object.keys(elements.applicationFunctions ?? {}).length > 0;
-  const hasRecordClassRegistry = Object.keys(elements.recordClasses ?? {}).length > 0;
-
-  // Only enforce if the scaffold has the new registries populated
-  // (migration mode: warn only if registries absent entirely)
-  const severity = (hasAppFnRegistry || hasRecordClassRegistry) ? "Error" : "Warning";
-
-  for (const [actId, act] of Object.entries(elements.activities)) {
-    const path = `elements.activities.${actId}`;
-
-    // V-ACTIVITY-09: at least one applicationFunctionId
-    if (!act.applicationFunctionIds || act.applicationFunctionIds.length === 0) {
-      findings.push({
-        severity,
-        ruleId: "V-ACTIVITY-09",
-        code: "MISSING_APPLICATION_FUNCTION",
-        message: `Activity '${actId}' has no applicationFunctionIds. Execution grammar requires: Role performs Capability under Control using ApplicationFunction to transition RecordClass.`,
-        path: `${path}.applicationFunctionIds`,
-      });
-    }
-
-    // V-ACTIVITY-10: primaryRecordClassId required
-    if (!act.primaryRecordClassId) {
-      findings.push({
-        severity,
-        ruleId: "V-ACTIVITY-10",
-        code: "MISSING_PRIMARY_RECORD_CLASS",
-        message: `Activity '${actId}' has no primaryRecordClassId. Every Activity must transition exactly one RecordClass in v1.`,
-        path: `${path}.primaryRecordClassId`,
-      });
-    }
-  }
-
-  return findings;
-}
-
-// --- Composite Activity Rules (Session 11) ---
-
-/**
- * V-COMPOSITE-01–06: Mereological parthood semantics for composite activities.
- * Enforces: same RecordClass, boundary continuity, continuous ordered chain, no branching.
- */
-export function checkCompositeActivitySemantics(elements: ScaffoldElements): Finding[] {
-  const findings: Finding[] = [];
-  const activities = elements.activities;
-
-  // Group parts by compositeActivityId
-  const compositeMap = new Map<string, string[]>();
-  for (const [actId, act] of Object.entries(activities)) {
-    if (act.compositeActivityId) {
-      if (!compositeMap.has(act.compositeActivityId)) {
-        compositeMap.set(act.compositeActivityId, []);
-      }
-      compositeMap.get(act.compositeActivityId)!.push(actId);
-    }
-  }
-
-  for (const [compositeId, partIds] of compositeMap.entries()) {
-    const composite = activities[compositeId];
-    if (!composite) continue; // caught by V-ACTIVITY-06
-
-    const compositePath = `elements.activities.${compositeId}`;
-
-    // V-COMPOSITE-02: all parts must share same primaryRecordClassId as composite
-    if (composite.primaryRecordClassId) {
-      for (const partId of partIds) {
-        const part = activities[partId];
-        if (part.primaryRecordClassId && part.primaryRecordClassId !== composite.primaryRecordClassId) {
-          findings.push({
-            severity: "Error",
-            ruleId: "V-COMPOSITE-02",
-            code: "COMPOSITE_RECORD_CLASS_MISMATCH",
-            message: `Part activity '${partId}' has primaryRecordClassId '${part.primaryRecordClassId}' but composite '${compositeId}' has '${composite.primaryRecordClassId}'. All parts must share the composite's RecordClass.`,
-            path: `elements.activities.${partId}.primaryRecordClassId`,
-          });
-        }
-      }
-    }
-
-    // Derive ordered chain from transition continuity: part[i].postOutcomeId == part[i+1].preOutcomeId
-    // Build adjacency: postOutcomeId -> activityId
-    const postOutcomeToAct = new Map<string, string>();
-    const preOutcomes = new Set<string>();
-    for (const partId of partIds) {
-      const part = activities[partId];
-      postOutcomeToAct.set(part.postOutcomeId, partId);
-      preOutcomes.add(part.preOutcomeId);
-    }
-
-    // Find the first part: preOutcomeId not in any postOutcomeId
-    const postOutcomes = new Set(partIds.map(id => activities[id].postOutcomeId));
-    const firstPartIds = partIds.filter(id => !postOutcomes.has(activities[id].preOutcomeId));
-
-    if (firstPartIds.length !== 1) {
-      findings.push({
-        severity: "Error",
-        ruleId: "V-COMPOSITE-05",
-        code: "COMPOSITE_CHAIN_AMBIGUOUS",
-        message: `Composite '${compositeId}' has ${firstPartIds.length} candidate first parts (expected 1). Parts must form a single unambiguous ordered chain.`,
-        path: compositePath,
-      });
-      continue; // can't do further chain checks
-    }
-
-    // Walk the chain
-    const orderedParts: string[] = [];
-    let current = firstPartIds[0];
-    const visited = new Set<string>();
-
-    while (current && !visited.has(current)) {
-      visited.add(current);
-      orderedParts.push(current);
-      const currentAct = activities[current];
-      current = postOutcomeToAct.get(currentAct.postOutcomeId) ?? '';
-      if (current && !partIds.includes(current)) break; // left the composite
-    }
-
-    // V-COMPOSITE-06: check for branching (all parts visited)
-    if (orderedParts.length !== partIds.length) {
-      findings.push({
-        severity: "Error",
-        ruleId: "V-COMPOSITE-06",
-        code: "COMPOSITE_CHAIN_INCOMPLETE",
-        message: `Composite '${compositeId}' chain covers ${orderedParts.length} of ${partIds.length} parts. Parts must form a continuous non-branching chain.`,
-        path: compositePath,
-      });
-      continue;
-    }
-
-    // V-COMPOSITE-03: firstPart.preOutcomeId == composite.preOutcomeId
-    const firstPart = activities[orderedParts[0]];
-    if (composite.preOutcomeId && firstPart.preOutcomeId !== composite.preOutcomeId) {
-      findings.push({
-        severity: "Error",
-        ruleId: "V-COMPOSITE-03",
-        code: "COMPOSITE_PRE_OUTCOME_MISMATCH",
-        message: `Composite '${compositeId}' preOutcomeId is '${composite.preOutcomeId}' but first part '${orderedParts[0]}' has preOutcomeId '${firstPart.preOutcomeId}'. They must match.`,
-        path: compositePath,
-      });
-    }
-
-    // V-COMPOSITE-04: lastPart.postOutcomeId == composite.postOutcomeId
-    const lastPart = activities[orderedParts[orderedParts.length - 1]];
-    if (composite.postOutcomeId && lastPart.postOutcomeId !== composite.postOutcomeId) {
-      findings.push({
-        severity: "Error",
-        ruleId: "V-COMPOSITE-04",
-        code: "COMPOSITE_POST_OUTCOME_MISMATCH",
-        message: `Composite '${compositeId}' postOutcomeId is '${composite.postOutcomeId}' but last part '${orderedParts[orderedParts.length - 1]}' has postOutcomeId '${lastPart.postOutcomeId}'. They must match.`,
-        path: compositePath,
-      });
-    }
-  }
-
-  return findings;
-}
-
-// --- Heatmap Layer Rules (Session 11) ---
-
-/**
- * V-HEATMAP-01–04: Three-layer heatmap structural invariants.
- * Applied when heatmap uses the new HeatmapVNext shape (has diagnosticLayer).
- */
-export function checkHeatmapLayerIntegrity(heatmap: HeatmapInput): Finding[] {
-  const findings: Finding[] = [];
-
-  // Only applies to the new three-layer shape — detect by presence of diagnosticLayer
-  const anyHeatmap = heatmap as any;
-  if (!anyHeatmap.diagnosticLayer) return findings; // legacy shape — skip
-
-  const diagnosticLayer = anyHeatmap.diagnosticLayer;
-  const interpretiveLayer = anyHeatmap.interpretiveLayer;
-  const interventionLayer = anyHeatmap.interventionLayer;
-
-  const observationIds = new Set(
-    (diagnosticLayer?.observations ?? []).map((o: any) => o.id)
-  );
-
-  // V-HEATMAP-02: binding constraint must reference valid diagnostic observation
-  const bc = interpretiveLayer?.bindingConstraint;
-  if (bc && !observationIds.has(bc.sourceObservationId)) {
-    findings.push({
-      severity: "Error",
-      ruleId: "V-HEATMAP-02",
-      code: "BINDING_CONSTRAINT_UNRESOLVED_OBSERVATION",
-      message: `Interpretive layer bindingConstraint references observation '${bc.sourceObservationId}' which does not exist in diagnosticLayer.observations.`,
-      path: "interpretiveLayer.bindingConstraint.sourceObservationId",
-    });
-  }
-
-  // V-HEATMAP-03: at most one binding constraint (schema enforces this — belt and braces)
-  if (interpretiveLayer && Array.isArray(interpretiveLayer.bindingConstraint)) {
-    findings.push({
-      severity: "Error",
-      ruleId: "V-HEATMAP-03",
-      code: "MULTIPLE_BINDING_CONSTRAINTS",
-      message: "Interpretive layer may contain at most one binding constraint.",
-      path: "interpretiveLayer.bindingConstraint",
-    });
-  }
-
-  // V-HEATMAP-04: intervention entries must reference valid diagnostic observation
-  for (const intervention of (interventionLayer?.interventions ?? [])) {
-    if (!observationIds.has(intervention.sourceObservationId)) {
-      findings.push({
-        severity: "Error",
-        ruleId: "V-HEATMAP-04",
-        code: "INTERVENTION_UNRESOLVED_OBSERVATION",
-        message: `Intervention '${intervention.id}' references observation '${intervention.sourceObservationId}' which does not exist in diagnosticLayer.observations.`,
-        path: `interventionLayer.interventions[${intervention.id}].sourceObservationId`,
-      });
-    }
-  }
-
-  return findings;
-}
-
 export function validateSemantic(
   scaffold: ScaffoldInput,
   heatmap?: HeatmapInput,
@@ -1109,21 +817,7 @@ export function validateSemantic(
     ...checkMeasureValueTypes(scaffold.elements),
   );
 
-  // Phase 4: execution grammar rules (Session 11)
-  // Ref integrity first, then cardinality (cardinality only meaningful if refs resolve)
-  const execGrammarRefFindings = checkExecutionGrammarRefs(scaffold.elements);
-  findings.push(...execGrammarRefFindings);
-  if (execGrammarRefFindings.filter(f => f.severity === "Error").length === 0) {
-    findings.push(...checkExecutionGrammarCardinality(scaffold.elements));
-  }
-
-  // Phase 5: composite activity semantics (Session 11)
-  // Only run if refs are clean — composite checks depend on resolving compositeActivityId
-  if (refFindings.length === 0 && execGrammarRefFindings.length === 0) {
-    findings.push(...checkCompositeActivitySemantics(scaffold.elements));
-  }
-
-  // Phase 6: friction rules (require heatmap)
+  // Phase 4: friction rules (require heatmap)
   if (heatmap) {
     findings.push(
       ...checkAnchorReferentialIntegrity(scaffold.elements, heatmap),
@@ -1131,7 +825,6 @@ export function validateSemantic(
       ...checkBindingAnchorSpecificity(heatmap),
       ...checkValueStreamIdExists(scaffold.elements, heatmap),
       ...checkScaffoldIntegrityHash(scaffold, heatmap),
-      ...checkHeatmapLayerIntegrity(heatmap),
     );
   }
 
