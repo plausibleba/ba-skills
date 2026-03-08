@@ -1,0 +1,188 @@
+{
+  "schemaVersion": "1.0",
+  "heatmapId": "buildcraft-heatmap-vs_multi_channel",
+  "scaffoldId": "buildcraft-cef-001",
+  "scaffoldIntegrityHash": "buildcraft-cef-001-v1",
+  "valueStreamId": "vs_multi_channel",
+  "createdAt": "2026-03-07T00:00:00Z",
+  "observations": [
+    {
+      "observationId": "fo_001",
+      "category": "TechnologyIntegrationFriction",
+      "evidenceBasis": "EVIDENCED",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_mcj_04"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_mcj_05"
+        },
+        {
+          "anchorType": "Capability",
+          "anchorId": "cap_checkout"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 9
+      },
+      "rationale": "High cart abandonment (45% current vs 30% target) is driven by legacy checkout system causing performance failures and payment errors. Customers abandon at the payment step rather than from purchase intent change.",
+      "evidence": [
+        {
+          "sourceType": "discovery_signal",
+          "ref": "fo_001",
+          "excerpt": "Cart Abandonment Rate 45% vs 30% target (Objectives_Key_Results). Pain point: 'Legacy checkout system causing performance and payment failures' (High urgency, Immediate)."
+        }
+      ],
+      "observedAt": "2026-03-07T00:00:00Z"
+    },
+    {
+      "observationId": "fo_002",
+      "category": "DataSignalFriction",
+      "evidenceBasis": "EVIDENCED",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_mcj_02"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Capability",
+          "anchorId": "cap_crm"
+        },
+        {
+          "anchorType": "Control",
+          "anchorId": "ctrl_gdpr"
+        },
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_cfa_04"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 8
+      },
+      "rationale": "CRM data is fragmented across online and in-store systems following a failed GDPR implementation. Customer profiles are incomplete (75% vs 95% target), preventing personalised recommendations and cross-channel continuity.",
+      "evidence": [
+        {
+          "sourceType": "discovery_signal",
+          "ref": "fo_002",
+          "excerpt": "Customer profile completeness 75% vs 95% target. Pain points: 'Broken CRM data due to failed GDPR implementation' (High, Immediate) and 'Customer data fragmentation preventing personalized engagement' (High, Short-Term)."
+        }
+      ],
+      "observedAt": "2026-03-07T00:00:00Z"
+    },
+    {
+      "observationId": "fo_004",
+      "category": "ProcessHandoffFriction",
+      "evidenceBasis": "EVIDENCED",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_mcj_06"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_mcj_07"
+        },
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_iss_04"
+        },
+        {
+          "anchorType": "Control",
+          "anchorId": "ctrl_fulfillment_sla"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 9
+      },
+      "rationale": "Current delivery lead time of 5 days is significantly behind competitor next-day delivery capability. Fulfillment channel allocation is partially manual, creating routing delays particularly for high-demand SKUs.",
+      "evidence": [
+        {
+          "sourceType": "discovery_signal",
+          "ref": "fo_004",
+          "excerpt": "Delivery Lead Time 5 days vs 2 day target. Competitor pain point: 'Competitors offer next-day delivery; we take 5 days' (High, Immediate, Behind). Pain point: 'Competitors use automated order fulfillment; our process is partially manual' (High, Short-Term)."
+        }
+      ],
+      "observedAt": "2026-03-07T00:00:00Z"
+    },
+    {
+      "observationId": "fo_008",
+      "category": "DecisionAuthorityFriction",
+      "evidenceBasis": "EVIDENCED",
+      "primaryAnchor": {
+        "anchorType": "Control",
+        "anchorId": "ctrl_pricing_policy"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_mcj_05"
+        },
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_iss_03"
+        },
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_cfa_02"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 8
+      },
+      "rationale": "Discount and promotional pricing decisions are made independently across in-store, online, and B2B channels with no unified pricing authority. This creates inconsistent customer experiences and margin leakage when customers cross channels to exploit pricing differences.",
+      "evidence": [
+        {
+          "sourceType": "discovery_signal",
+          "ref": "fo_008",
+          "excerpt": "Pricing Policy governs three separate activities across two VS without unified governance. Pain point: 'Competitor pricing algorithms personalize discounts dynamically; we use static pricing' (High, Short-Term, Behind). Gross Margin target 45% vs 40% current."
+        }
+      ],
+      "observedAt": "2026-03-07T00:00:00Z"
+    },
+    {
+      "observationId": "fo_009",
+      "category": "GovernanceRiskFriction",
+      "evidenceBasis": "EVIDENCED",
+      "primaryAnchor": {
+        "anchorType": "Control",
+        "anchorId": "ctrl_gdpr"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_mcj_05"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 5
+      },
+      "rationale": "New sustainability regulations are creating compliance obligations across product selection, supplier onboarding, and order documentation. Compliance gatekeeping has not been integrated into existing operational flows, creating ad-hoc review overhead.",
+      "evidence": [
+        {
+          "sourceType": "discovery_signal",
+          "ref": "fo_009",
+          "excerpt": "Pain point: 'New sustainability regulations increasing compliance complexity' (Medium, Long-Term, High resolution complexity). Business Outcome: 'Order Documents Display Circular Products for Transparency' (Positioning theme)."
+        }
+      ],
+      "observedAt": "2026-03-07T00:00:00Z"
+    }
+  ],
+  "bindingConstraint": {
+    "findingId": "bc_001",
+    "bindingAnchor": {
+      "anchorType": "Control",
+      "anchorId": "ctrl_pricing_policy"
+    },
+    "bindingAnchorObservationId": "fo_008",
+    "justification": "Fragmented pricing authority is the single governing constraint that spans all three value streams simultaneously. It creates inconsistent customer experiences across channels (fo_003), prevents dynamic discount capability that competitors use to drive conversion (fo_001), and slows B2B agreement execution where non-standard pricing requires multi-step approval (fo_007). Unlike execution friction (checkout system, delivery lead time) which can be fixed independently per stream, pricing authority fragmentation requires a structural governance change affecting all three streams at once \u2014 making it the binding constraint on enterprise-wide conversion improvement.",
+    "confidence": 0.82
+  }
+}

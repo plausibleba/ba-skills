@@ -44,101 +44,233 @@ export type ProgressCallback = (progress: PipelineProgress) => void;
 // ── Pass A prompts (carried over from original DiscoveryIntake.tsx) ───────────
 
 function buildPass1Prompt(transcript: string): string {
-  return `You are a business architect defining Value Streams for a governance diagnostic.
+  return `You are a business architect conducting a discovery diagnostic for a governance engagement.
+Your task is to identify the ValueStreams and their Lifecycle Stages from the source material below.
 
-Extract value streams and lifecycle stages from the source below.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FOUNDATIONAL DEFINITIONS (apply these strictly)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## Output Format
-Return ONLY valid JSON, no markdown fences:
+A ValueStream is the end-to-end flow of activities that delivers measurable stakeholder value,
+triggered by a defined stakeholder need. It must have:
+  - A named beneficiary (who receives the value)
+  - A trigger (the observable event that starts the stream)
+  - A terminal outcome (the state that represents completion)
+  - Board-level visibility (a senior executive would recognise this as a meaningful unit of value delivery)
+
+A ValueStream Stage is a major governance-visible phase of progression — where decision authority
+is exercised, handoffs occur, and approvals gate progress. Not a task. A phase.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHAT IS NOT A VALUESTREAM — exclude these entirely
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✗ IT integration projects ("Integrate NetSuite and Salesforce" is a project — record as pain point)
+✗ System implementations or infrastructure initiatives
+✗ Technology platforms or data management functions
+✗ Function-driven groupings ("Sales Activities", "Operations", "Finance")
+✗ Business units or departments
+✗ Anything without a named external or internal beneficiary receiving value
+
+If you encounter technology integration problems, record them as pain points — NOT value streams.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXTRACTION RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Extract only ValueStreams evidenced or plausibly inferable from the source. Do not invent.
+2. zone: "ecosystem" = value to external parties (customers, partners, distributors, members)
+         "knowledge" = value to internal governance (risk, compliance, reporting)
+3. 3-7 stages per ValueStream. Name stages Verb-Noun: "Qualify Partner", "Process Order".
+4. Name ValueStreams at board level — concise, outcome-oriented.
+   CORRECT: "Channel Partner Distribution"   INCORRECT: "Manage the Channel"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STAGE STRUCTURE — specify all five properties per stage
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Each stage must include:
+  entryCriteria  — objective observable state that must be true to begin (not an action)
+  exitCriteria   — objective observable state that signals completion
+                   CRITICAL: exit of stage N must logically connect to entry of stage N+1
+  stakeholders   — named roles who participate: execution roles AND governance/approval roles
+  valueItem      — the concrete output or artefact this stage produces (noun phrase)
+  metrics        — performance indicators for this stage; extract from source if mentioned,
+                   otherwise include the most plausible indicator and set evidenced: false
+
+Governance lens — actively look for:
+  - Decision bottlenecks: where is authority concentrated in few roles?
+  - Approval gates: what must be signed off before the stage exits?
+  - Handoff points: where does work transfer between teams or roles?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT — return ONLY valid JSON, no markdown fences
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 {
   "org": {
     "name": "Organisation name",
     "industry": "Industry sector",
-    "size": "SME|Mid-Market|Enterprise",
-    "stakeholder": "Primary accountable stakeholder"
+    "size": "SME | Mid-Market | Enterprise",
+    "stakeholder": "Primary accountable executive (title, not name)"
   },
   "valueStreams": [
     {
-      "name": "Value Stream Name",
-      "description": "What value this delivers and for whom",
-      "zone": "ecosystem",
-      "trigger": "What initiates this value stream",
-      "terminalOutcome": "Final outcome when value is delivered",
-      "stakeholder": "Accountable stakeholder",
+      "name": "ValueStream name — concise, outcome-oriented",
+      "description": "1-2 sentences: what value this delivers, to whom, why it matters",
+      "zone": "ecosystem | knowledge",
+      "trigger": "Observable event that initiates this stream",
+      "terminalOutcome": "State representing completion — what the beneficiary now has",
+      "stakeholder": "Named beneficiary (role or segment)",
       "stages": [
-        { "name": "Stage Name" }
+        {
+          "name": "Verb-Noun stage name",
+          "entryCriteria": "Objective state that must be true to begin this stage",
+          "exitCriteria": "Objective state signalling this stage is complete",
+          "stakeholders": ["Role name (execution)", "Role name (approval if applicable)"],
+          "valueItem": "Concrete output or artefact this stage produces",
+          "metrics": [
+            { "name": "Metric name", "current": "value or null", "target": "value or null", "evidenced": true }
+          ]
+        }
       ]
     }
   ]
 }
 
-## Rules
-- zone: "ecosystem" = externally-facing (customer, member, partner, market); "knowledge" = internally-facing (operations, reporting, governance)
-- 3-7 stages per value stream
-- Stage names should be verb-noun (e.g. "Assess Application", "Onboard Member")
-- Extract only what is present in the source — do not invent value streams
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SOURCE MATERIAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## Source
 ${transcript}`;
 }
 
 function buildPass2Prompt(transcript: string, confirmedVS: any[]): string {
   const vsRef = JSON.stringify(
-    confirmedVS.map((vs: any) => ({ name: vs.name, stages: (vs.stages ?? []).map((s: any) => s.name ?? s) })),
+    confirmedVS.map((vs: any) => ({
+      name: vs.name,
+      stages: (vs.stages ?? []).map((s: any) => s.name ?? s),
+    })),
     null, 2
   );
 
-  return `You are extracting Roles and Capabilities for a business architecture diagnostic.
+  return `You are extracting organisational Roles, building a scoped Capability Map, and capturing
+discovery signals for a business architecture diagnostic.
 
-## Confirmed Value Streams and Stages (anchor to these exactly):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONFIRMED VALUE STREAMS AND STAGES — anchor all outputs to these exactly
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ${vsRef}
 
-## Extract the following:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CAPABILITY DEFINITIONS — apply these strictly
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-### Roles (who participates)
-Named roles from the source — job titles, team names, system actors. Do not invent.
+A Business Capability is the stable, enduring ability of the organisation to perform
+a business function, grounded in a core business object, independent of structure.
 
-### Capabilities (what the organisation must be able to do)
-Per value stream. Verb-noun convention (e.g. "Manage Member Credentials", not "Credential Management Execution").
-- If no explicit capabilities exist in the source, derive from VS/stage content using Verb-Noun convention
-- 1-4 capabilities per value stream
+Rules:
+  - Named Verb-Noun: "Manage Trade Partner Agreements" not "Partner Agreement Management"
+  - Object-grounded: identify the core business object (Orders, Agreements, Products, etc.)
+  - Enduring: persists across projects and restructures — not a task or project
+  - NOT a technology: "NetSuite" is a system. "Manage Order Fulfilment" is a capability.
+  - NOT an activity: "Manage Orders" is a capability. "Create order in NetSuite" is a task.
 
-### Tech (systems and tools mentioned)
-Named systems only — do not invent.
+Taxonomy — build at three levels:
+  L1 = Business Area (broad accountability domain — e.g. "Channel & Partner Management")
+  L2 = Business Domain (logical grouping — e.g. "Order Management")
+  L3 = Business Capability (operational ability — THIS is the level mapped to VS stages)
 
-### Pain Points (diagnostic signals)
-Explicit problems, failures, delays, or risks mentioned. These are discovery signals for Phase E friction analysis.
+All stage assignments must reference L3 capabilities only.
+Never mix L1, L2, L3 within a single value stream's assignments.
+A capability may appear in multiple stages and multiple value streams — that is expected.
 
-### Metrics (performance indicators)
-Named KPIs, targets, or measures. Include baseline/current and target if mentioned.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+YOUR TASKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-### Gaps (what we couldn't extract)
-Required fields we couldn't find — flag as required or recommended.
+1. ROLES — execution and governance roles from the source. Do not invent.
 
-Return ONLY valid JSON, no markdown fences:
+2. CAPABILITY MAP — scoped L1→L2→L3 taxonomy covering only what is evidenced or inferable.
+   For each L3 capability, identify the core business object it is grounded in.
+   Flag uncertain or potentially overlapping capabilities with a stabilisationNote.
+
+3. STAGE CAPABILITIES — for each VS stage, list the L3 capability names from your map.
+   Reference capability names exactly as defined in capabilityMap. Do not invent new ones here.
+
+4. TECH — named systems only. Do not invent.
+
+5. PAIN POINTS — problems, delays, failures, risks from the source.
+   Technology integration problems are pain points here, NOT value streams.
+
+6. METRICS — named KPIs, targets, measures from the source.
+
+7. GAPS — what we couldn't extract; flag as required or recommended.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT — return ONLY valid JSON, no markdown fences
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 {
-  "roles": [{ "name": "Role Name", "description": "brief" }],
-  "capabilitiesByVS": [
+  "roles": [
+    { "name": "Role Title", "description": "brief responsibility" }
+  ],
+  "capabilityMap": {
+    "l1Areas": [
+      {
+        "name": "L1 Business Area",
+        "domains": [
+          {
+            "name": "L2 Business Domain",
+            "capabilities": [
+              {
+                "name": "Verb-Noun L3 Capability",
+                "businessObject": "Core business object",
+                "description": "What this enables the organisation to do",
+                "stabilisationNote": "optional — flag if uncertain or potentially overlapping"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "stageCapabilities": [
     {
-      "vsName": "Value Stream Name",
-      "capabilities": [{ "name": "Verb Noun Capability", "description": "brief" }]
+      "vsName": "ValueStream name (must match confirmed VS exactly)",
+      "stages": [
+        {
+          "stageName": "Stage name (must match confirmed stages exactly)",
+          "capabilityNames": ["Verb-Noun L3 Capability"]
+        }
+      ]
     }
   ],
-  "tech": [{ "name": "System Name", "type": "CRM|ERP|Platform|Other" }],
+  "tech": [
+    { "name": "System Name", "type": "CRM | ERP | Platform | Field | Analytics | Custom | Other" }
+  ],
   "painPoints": [
     {
       "description": "Specific pain point",
-      "category": "process|data|technology|governance|capacity",
+      "category": "process | data | technology | governance | capacity",
       "intensity": 7,
-      "affectedStage": "Stage name if known",
+      "affectedStage": "Stage name or null",
       "binding": false
     }
   ],
-  "metrics": [{ "name": "Metric Name", "current": "current value", "target": "target value" }],
-  "gaps": [{ "severity": "required|recommended", "prompt": "Specific question to fill this gap" }]
+  "metrics": [
+    { "name": "Metric name", "current": "value or null", "target": "value or null" }
+  ],
+  "gaps": [
+    { "severity": "required | recommended", "prompt": "Specific question to fill this gap" }
+  ]
 }
 
-## Source
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SOURCE MATERIAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ${transcript}`;
 }
 

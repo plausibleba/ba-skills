@@ -17,6 +17,26 @@ export interface FormaliseResult {
 }
 
 function buildVsContext(ir: DiscoveryIR) {
+  // Build flat L3 capability lookup from capability map
+  const capMap: Record<string, { id: string; name: string; businessObject: string; description: string }> = {};
+  for (const l1 of (ir.capabilityMap?.l1Areas ?? [])) {
+    for (const l2 of (l1.domains ?? [])) {
+      for (const cap of (l2.capabilities ?? [])) {
+        const id = makeId("cap", cap.name);
+        capMap[cap.name] = { id, name: cap.name, businessObject: cap.businessObject ?? "", description: cap.description ?? "" };
+      }
+    }
+  }
+
+  // Build stage-to-capability lookup
+  const stageCaps: Record<string, Record<string, string[]>> = {};
+  for (const sc of (ir.stageCapabilities ?? [])) {
+    stageCaps[sc.vsName] = {};
+    for (const s of (sc.stages ?? [])) {
+      stageCaps[sc.vsName][s.stageName] = s.capabilityNames ?? [];
+    }
+  }
+
   return ir.valueStreams.filter((vs) => vs.name).map((vs) => ({
     vsName: vs.name,
     vsId: vs.vsId,
@@ -25,8 +45,19 @@ function buildVsContext(ir: DiscoveryIR) {
     trigger: vs.trigger ?? "",
     terminalOutcome: vs.terminalOutcome ?? "",
     stakeholder: vs.stakeholder ?? ir.org.stakeholder ?? "",
-    stages: vs.stages,
-    capabilities: vs.extractedCapabilities,
+    stages: vs.stages.map((s: any) => {
+      const capNames = stageCaps[vs.name]?.[s.name] ?? [];
+      const caps = capNames.map((n) => capMap[n]).filter(Boolean);
+      return {
+        name: s.name,
+        entryCriteria: s.entryCriteria ?? `${s.name} initiated`,
+        exitCriteria: s.exitCriteria ?? `${s.name} complete`,
+        stakeholders: s.stakeholders ?? [],
+        valueItem: s.valueItem ?? "",
+        stageMetrics: s.metrics ?? [],
+        capabilities: caps,
+      };
+    }),
   }));
 }
 
@@ -55,44 +86,42 @@ function buildScaffoldPrompt(ir: DiscoveryIR): string {
   return `You are a business architect formalising a value stream model into a VCC ScaffoldModel.
 
 ## Determinism Requirement
-This is a structural formalisation step — a pure function. Given these inputs, produce the same output every time. IDs are derived mechanically from element names (snake_case with type prefix). No creative variation.
+Pure function — same inputs, same output every time. IDs derived mechanically from element names
+(snake_case with type prefix). No creative variation. No invented elements.
 
 ## ID Convention
-- vs_<snake_case_name>     e.g. vs_member_certification_lifecycle
-- outcome_<snake_case>     e.g. outcome_application_received
-- act_<snake_case_name>    e.g. act_process_certification_application
-- cap_<snake_case_name>    e.g. cap_member_onboarding
-- role_<snake_case_name>   e.g. role_credit_analyst
-- ctrl_<snake_case_name>   e.g. ctrl_data_quality_gate
-- metric_<snake_case_name>
+vs_<snake>  outcome_<snake>  act_<snake>  cap_<snake>  role_<snake>  ctrl_<snake>  metric_<snake>
 
-## FSM Chain Rules (CRITICAL — violations fail validation)
-Each Value Stream is a single linear activity chain:
-1. Each activity has preOutcomeId !== postOutcomeId (no no-ops)
+## FSM Chain Rules (CRITICAL — violations fail Gate 1)
+1. preOutcomeId !== postOutcomeId on every Activity (no no-ops)
 2. activity[i].postOutcomeId === activity[i+1].preOutcomeId (adjacent consistency)
-3. nextActivityId chain has no breaks, no cycles — last activity has nextActivityId: null
+3. nextActivityId chain: no breaks, no cycles, last activity has nextActivityId: null
 4. All activities reachable from chain head
-5. One activity per stage. Chain length = number of stages.
+5. One Activity per stage — chain length equals number of stages
 6. performedByRoleIds: at least one role per activity
 
-## Your Task
-Given the confirmed VS definitions, stages, roles, and capabilities below, produce a complete ScaffoldModel.json.
+## Outcome Naming — USE THE PROVIDED ENTRY/EXIT CRITERIA
+Each stage has entryCriteria and exitCriteria. Use these to name Outcomes precisely:
+  - preOutcome of stage 1 = trigger state (from VS trigger field)
+  - postOutcome of stage N = derived from exitCriteria of stage N
+  - preOutcome of stage N+1 = SAME outcome as postOutcome of stage N (shared boundary)
+  - postOutcome of final stage = VS terminalOutcome
+This produces semantically meaningful Outcome names rather than generic placeholders.
 
-For each VS:
-- Create one Outcome per stage boundary (n stages → n+1 outcomes)
-- Create one Activity per stage (pre/post outcomes, roles, capabilities from the lists provided)
-- Assign capabilities to activities based on stage semantics — use the provided capabilities, do not invent new ones
-- Distribute roles across activities sensibly based on stage content
-- Add controls where governance gates are evident from stage names or domain context
-- capabilityPPIT: for each requiresCapabilityId, include { roleIds, activities: [brief description], informationObjectIds: [], technologyAppIds: [] }
+## Capability Assignment — USE PROVIDED CAPABILITIES ONLY
+Each stage specifies which L3 capabilities it requires. Use exactly these in requiresCapabilityIds.
+Do not invent new capabilities.
+For capabilityPPIT: for each requiresCapabilityId include
+  { roleIds: [...], activities: ["brief description"], informationObjectIds: [], technologyAppIds: [] }
 
-Confirmed inputs:
-${JSON.stringify({ valueStreams: vsContext, roles: roleContext }, null, 2)}
+## Controls
+Add controls where approval gates or governance checkpoints are evident from stage stakeholder lists.
+If a stage has an approval role, create a corresponding control linked to that activity.
 
-Metrics to include:
-${JSON.stringify(metricContext, null, 2)}
+## Inputs
+\${JSON.stringify({ valueStreams: vsContext, roles: roleContext, metrics: metricContext }, null, 2)}
 
-Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
+## Output — return ONLY valid JSON, no markdown fences:
 {
   "schemaVersion": "1.0",
   "scaffoldId": "scaffold_<org_name_snake>",
@@ -112,8 +141,11 @@ Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
   }
 }
 
-CRITICAL: activities must use field names: name, preOutcomeId, postOutcomeId, requiresCapabilityIds, performedByRoleIds, metricIds, controlIds, capabilityPPIT, nextActivityId.
-valueStreams must use field names: name, description, activityIds, layoutZone, accountableStakeholder.`;
+CRITICAL field names on activities:
+  name, preOutcomeId, postOutcomeId, requiresCapabilityIds, performedByRoleIds,
+  metricIds, controlIds, capabilityPPIT, nextActivityId
+CRITICAL field names on valueStreams:
+  name, description, activityIds, layoutZone, accountableStakeholder`;
 }
 
 function buildRepairPrompt(originalPrompt: string, scaffoldJson: string, gateErrors: string[]): string {

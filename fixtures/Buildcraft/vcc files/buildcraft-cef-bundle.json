@@ -1,0 +1,1292 @@
+{
+  "bundleVersion": "1.0",
+  "createdAt": "2026-03-07T00:00:00Z",
+  "scaffold": {
+    "scaffoldId": "buildcraft-cef-001",
+    "schemaVersion": "2.0.0",
+    "description": "Value stream scaffold for Buildcraft, a home improvement and building materials retailer. Covers the Customer Engagement and Fulfillment cluster: Multi-Channel Journeys (B2C omnichannel), In-Store Sales (expert-led retail), and Creating Frame Agreements (B2B contractor).",
+    "createdAt": "2026-03-07T00:00:00Z",
+    "industry": "Retail \u2014 Home Improvement and Building Materials",
+    "elements": {
+      "valueStreams": {
+        "vs_multi_channel": {
+          "name": "Multi-Channel Journeys",
+          "description": "Delivers a seamless shopping experience across online, mobile, and in-store channels \u2014 from initial product discovery through to order fulfillment.",
+          "activityIds": [
+            "act_mcj_01",
+            "act_mcj_02",
+            "act_mcj_03",
+            "act_mcj_04",
+            "act_mcj_05",
+            "act_mcj_06",
+            "act_mcj_07"
+          ],
+          "layoutZone": "primary",
+          "accountableStakeholder": "B2C Consumer"
+        },
+        "vs_in_store_sales": {
+          "name": "In-Store Sales",
+          "description": "Delivers expert-assisted sales and design advisory within the physical store environment, from customer greeting through to transaction and fulfillment arrangement.",
+          "activityIds": [
+            "act_iss_01",
+            "act_iss_02",
+            "act_iss_03",
+            "act_iss_04"
+          ],
+          "layoutZone": "primary",
+          "accountableStakeholder": "B2C In-Store Consumer"
+        },
+        "vs_frame_agreements": {
+          "name": "Creating Frame Agreements",
+          "description": "Establishes structured commercial agreements with contractor and construction company accounts, enabling volume purchasing, preferred pricing, and long-term retention.",
+          "activityIds": [
+            "act_cfa_01",
+            "act_cfa_02",
+            "act_cfa_03",
+            "act_cfa_04"
+          ],
+          "layoutZone": "primary",
+          "accountableStakeholder": "B2B Contractor"
+        }
+      },
+      "activities": {
+        "act_mcj_01": {
+          "name": "Initiate Channel Session",
+          "description": "Customer enters a shopping channel \u2014 website, app, or store \u2014 and a session is established. Channel identity is captured for continuity.",
+          "preOutcomeId": null,
+          "postOutcomeId": "o_session_initiated",
+          "requiresCapabilityIds": [
+            "cap_omnichannel",
+            "cap_crm"
+          ],
+          "performedByRoleIds": [
+            "r_digital_customer"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl_gdpr"
+          ],
+          "capabilityPPIT": {
+            "cap_omnichannel": {
+              "roleIds": [
+                "r_digital_customer"
+              ],
+              "activities": [
+                "Initiate Channel Session"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            },
+            "cap_crm": {
+              "roleIds": [
+                "r_digital_customer"
+              ],
+              "activities": [
+                "Initiate Channel Session"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_mcj_02",
+          "valueStreamId": "vs_multi_channel",
+          "stageLabel": "Engage"
+        },
+        "act_mcj_02": {
+          "name": "Discover and Browse Products",
+          "description": "Customer browses catalogue, uses search, or receives AI-driven recommendations. Personalisation engine surfaces relevant products based on profile and behaviour.",
+          "preOutcomeId": "o_session_initiated",
+          "postOutcomeId": "o_product_discovered",
+          "requiresCapabilityIds": [
+            "cap_omnichannel",
+            "cap_personalisation"
+          ],
+          "performedByRoleIds": [
+            "r_digital_customer"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_omnichannel": {
+              "roleIds": [
+                "r_digital_customer"
+              ],
+              "activities": [
+                "Discover and Browse Products"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            },
+            "cap_personalisation": {
+              "roleIds": [
+                "r_digital_customer"
+              ],
+              "activities": [
+                "Discover and Browse Products"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_mcj_03",
+          "valueStreamId": "vs_multi_channel",
+          "stageLabel": "Engage"
+        },
+        "act_mcj_03": {
+          "name": "Add to Cart",
+          "description": "Customer selects product(s) and adds to cart. Stock availability is checked in real-time. Cart persists across channels via unified customer profile.",
+          "preOutcomeId": "o_product_discovered",
+          "postOutcomeId": "o_cart_populated",
+          "requiresCapabilityIds": [
+            "cap_omnichannel",
+            "cap_crm"
+          ],
+          "performedByRoleIds": [
+            "r_digital_customer"
+          ],
+          "metricIds": [
+            "m_cart_abandonment"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_omnichannel": {
+              "roleIds": [
+                "r_digital_customer"
+              ],
+              "activities": [
+                "Add to Cart"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            },
+            "cap_crm": {
+              "roleIds": [
+                "r_digital_customer"
+              ],
+              "activities": [
+                "Add to Cart"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_mcj_04",
+          "valueStreamId": "vs_multi_channel",
+          "stageLabel": "Select"
+        },
+        "act_mcj_04": {
+          "name": "Initiate Checkout",
+          "description": "Customer proceeds to checkout. Identity is confirmed, delivery/collection preference is captured, and payment method is selected.",
+          "preOutcomeId": "o_cart_populated",
+          "postOutcomeId": "o_checkout_initiated",
+          "requiresCapabilityIds": [
+            "cap_checkout",
+            "cap_crm"
+          ],
+          "performedByRoleIds": [
+            "r_digital_customer",
+            "r_checkout_system"
+          ],
+          "metricIds": [
+            "m_checkout_completion",
+            "m_cart_abandonment"
+          ],
+          "controlIds": [
+            "ctrl_gdpr"
+          ],
+          "capabilityPPIT": {
+            "cap_checkout": {
+              "roleIds": [
+                "r_digital_customer",
+                "r_checkout_system"
+              ],
+              "activities": [
+                "Initiate Checkout"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            },
+            "cap_crm": {
+              "roleIds": [
+                "r_digital_customer",
+                "r_checkout_system"
+              ],
+              "activities": [
+                "Initiate Checkout"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_mcj_05",
+          "valueStreamId": "vs_multi_channel",
+          "stageLabel": "Transact"
+        },
+        "act_mcj_05": {
+          "name": "Process Payment and Confirm Order",
+          "description": "Payment is processed via POS or online gateway. Order record is created, confirmation is issued to customer, and downstream fulfillment is triggered.",
+          "preOutcomeId": "o_checkout_initiated",
+          "postOutcomeId": "o_order_confirmed",
+          "requiresCapabilityIds": [
+            "cap_checkout"
+          ],
+          "performedByRoleIds": [
+            "r_checkout_system"
+          ],
+          "metricIds": [
+            "m_checkout_completion"
+          ],
+          "controlIds": [
+            "ctrl_pricing_policy"
+          ],
+          "capabilityPPIT": {
+            "cap_checkout": {
+              "roleIds": [
+                "r_checkout_system"
+              ],
+              "activities": [
+                "Process Payment and Confirm Order"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_mcj_06",
+          "valueStreamId": "vs_multi_channel",
+          "stageLabel": "Transact"
+        },
+        "act_mcj_06": {
+          "name": "Allocate Fulfillment Channel",
+          "description": "Order is routed to appropriate fulfillment method: home delivery, click-and-collect, or in-store pickup. SLA commitment is set based on product category and location.",
+          "preOutcomeId": "o_order_confirmed",
+          "postOutcomeId": "o_fulfillment_allocated",
+          "requiresCapabilityIds": [
+            "cap_fulfillment"
+          ],
+          "performedByRoleIds": [
+            "r_fulfillment_coordinator"
+          ],
+          "metricIds": [
+            "m_click_collect",
+            "m_delivery_lead_time"
+          ],
+          "controlIds": [
+            "ctrl_fulfillment_sla"
+          ],
+          "capabilityPPIT": {
+            "cap_fulfillment": {
+              "roleIds": [
+                "r_fulfillment_coordinator"
+              ],
+              "activities": [
+                "Allocate Fulfillment Channel"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_mcj_07",
+          "valueStreamId": "vs_multi_channel",
+          "stageLabel": "Fulfill"
+        },
+        "act_mcj_07": {
+          "name": "Deliver or Make Available for Collection",
+          "description": "Order is physically delivered to customer or made ready for collection. Tracking information is provided. Completion is confirmed via customer acknowledgement.",
+          "preOutcomeId": "o_fulfillment_allocated",
+          "postOutcomeId": "o_order_fulfilled",
+          "requiresCapabilityIds": [
+            "cap_fulfillment"
+          ],
+          "performedByRoleIds": [
+            "r_fulfillment_coordinator"
+          ],
+          "metricIds": [
+            "m_delivery_lead_time",
+            "m_omnichannel_nps"
+          ],
+          "controlIds": [
+            "ctrl_fulfillment_sla"
+          ],
+          "capabilityPPIT": {
+            "cap_fulfillment": {
+              "roleIds": [
+                "r_fulfillment_coordinator"
+              ],
+              "activities": [
+                "Deliver or Make Available for Collection"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": null,
+          "valueStreamId": "vs_multi_channel",
+          "stageLabel": "Fulfill"
+        },
+        "act_iss_01": {
+          "name": "Welcome and Assess Customer Need",
+          "description": "Store associate greets customer and determines the nature of purchase \u2014 simple product selection vs. complex project requiring advisory.",
+          "preOutcomeId": null,
+          "postOutcomeId": "o_customer_greeted",
+          "requiresCapabilityIds": [
+            "cap_design_advisory"
+          ],
+          "performedByRoleIds": [
+            "r_store_associate",
+            "r_in_store_customer"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_design_advisory": {
+              "roleIds": [
+                "r_store_associate",
+                "r_in_store_customer"
+              ],
+              "activities": [
+                "Welcome and Assess Customer Need"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_iss_02",
+          "valueStreamId": "vs_in_store_sales",
+          "stageLabel": "Engage"
+        },
+        "act_iss_02": {
+          "name": "Guide Product Selection or Design",
+          "description": "For simple purchases, associate guides to product location. For complex projects (e.g. kitchen fit-out), design consultant engages to scope a solution using planning tools.",
+          "preOutcomeId": "o_customer_greeted",
+          "postOutcomeId": "o_solution_designed",
+          "requiresCapabilityIds": [
+            "cap_design_advisory",
+            "cap_personalisation"
+          ],
+          "performedByRoleIds": [
+            "r_store_associate",
+            "r_design_consultant"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_design_advisory": {
+              "roleIds": [
+                "r_store_associate",
+                "r_design_consultant"
+              ],
+              "activities": [
+                "Guide Product Selection or Design"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            },
+            "cap_personalisation": {
+              "roleIds": [
+                "r_store_associate",
+                "r_design_consultant"
+              ],
+              "activities": [
+                "Guide Product Selection or Design"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_iss_03",
+          "valueStreamId": "vs_in_store_sales",
+          "stageLabel": "Select"
+        },
+        "act_iss_03": {
+          "name": "Process In-Store Transaction",
+          "description": "Customer proceeds to POS. Transaction is processed. Loyalty program is applied if applicable. Receipt and any warranty documentation is issued.",
+          "preOutcomeId": "o_solution_designed",
+          "postOutcomeId": "o_sale_completed",
+          "requiresCapabilityIds": [
+            "cap_checkout"
+          ],
+          "performedByRoleIds": [
+            "r_store_associate",
+            "r_checkout_system"
+          ],
+          "metricIds": [
+            "m_omnichannel_nps"
+          ],
+          "controlIds": [
+            "ctrl_pricing_policy",
+            "ctrl_gdpr"
+          ],
+          "capabilityPPIT": {
+            "cap_checkout": {
+              "roleIds": [
+                "r_store_associate",
+                "r_checkout_system"
+              ],
+              "activities": [
+                "Process In-Store Transaction"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_iss_04",
+          "valueStreamId": "vs_in_store_sales",
+          "stageLabel": "Transact"
+        },
+        "act_iss_04": {
+          "name": "Arrange Fulfillment for Store Sale",
+          "description": "For items not carried in store or requiring delivery, order is passed to fulfillment coordinator. Click-and-collect or delivery SLA is committed.",
+          "preOutcomeId": "o_sale_completed",
+          "postOutcomeId": "o_order_fulfilled",
+          "requiresCapabilityIds": [
+            "cap_fulfillment"
+          ],
+          "performedByRoleIds": [
+            "r_fulfillment_coordinator"
+          ],
+          "metricIds": [
+            "m_delivery_lead_time",
+            "m_click_collect"
+          ],
+          "controlIds": [
+            "ctrl_fulfillment_sla"
+          ],
+          "capabilityPPIT": {
+            "cap_fulfillment": {
+              "roleIds": [
+                "r_fulfillment_coordinator"
+              ],
+              "activities": [
+                "Arrange Fulfillment for Store Sale"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": null,
+          "valueStreamId": "vs_in_store_sales",
+          "stageLabel": "Fulfill"
+        },
+        "act_cfa_01": {
+          "name": "Identify and Qualify Contractor Account",
+          "description": "Account manager identifies prospective contractor or construction company. Account is qualified against volume potential, creditworthiness, and strategic fit.",
+          "preOutcomeId": null,
+          "postOutcomeId": "o_contractor_identified",
+          "requiresCapabilityIds": [
+            "cap_b2b_commercial",
+            "cap_crm"
+          ],
+          "performedByRoleIds": [
+            "r_account_manager"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl_credit_policy"
+          ],
+          "capabilityPPIT": {
+            "cap_b2b_commercial": {
+              "roleIds": [
+                "r_account_manager"
+              ],
+              "activities": [
+                "Identify and Qualify Contractor Account"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            },
+            "cap_crm": {
+              "roleIds": [
+                "r_account_manager"
+              ],
+              "activities": [
+                "Identify and Qualify Contractor Account"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_cfa_02",
+          "valueStreamId": "vs_frame_agreements",
+          "stageLabel": "Qualify"
+        },
+        "act_cfa_02": {
+          "name": "Negotiate Pricing and Volume Terms",
+          "description": "Account manager and contractor negotiate bulk pricing tiers, volume commitments, product categories, and agreement duration. Pricing policy approval is obtained for non-standard terms.",
+          "preOutcomeId": "o_contractor_identified",
+          "postOutcomeId": "o_agreement_negotiated",
+          "requiresCapabilityIds": [
+            "cap_b2b_commercial"
+          ],
+          "performedByRoleIds": [
+            "r_account_manager",
+            "r_contractor_customer"
+          ],
+          "metricIds": [
+            "m_bulk_order_growth"
+          ],
+          "controlIds": [
+            "ctrl_pricing_policy"
+          ],
+          "capabilityPPIT": {
+            "cap_b2b_commercial": {
+              "roleIds": [
+                "r_account_manager",
+                "r_contractor_customer"
+              ],
+              "activities": [
+                "Negotiate Pricing and Volume Terms"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_cfa_03",
+          "valueStreamId": "vs_frame_agreements",
+          "stageLabel": "Negotiate"
+        },
+        "act_cfa_03": {
+          "name": "Execute Frame Agreement",
+          "description": "Agreement is formalised, signed by both parties, and entered into the commercial system. Credit limit is set. Account is flagged for contractor pricing.",
+          "preOutcomeId": "o_agreement_negotiated",
+          "postOutcomeId": "o_agreement_executed",
+          "requiresCapabilityIds": [
+            "cap_b2b_commercial"
+          ],
+          "performedByRoleIds": [
+            "r_account_manager",
+            "r_credit_controller"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl_credit_policy",
+            "ctrl_pricing_policy"
+          ],
+          "capabilityPPIT": {
+            "cap_b2b_commercial": {
+              "roleIds": [
+                "r_account_manager",
+                "r_credit_controller"
+              ],
+              "activities": [
+                "Execute Frame Agreement"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_cfa_04",
+          "valueStreamId": "vs_frame_agreements",
+          "stageLabel": "Execute"
+        },
+        "act_cfa_04": {
+          "name": "Onboard Contractor Account",
+          "description": "Contractor account is set up in CRM and ordering systems. Dedicated account portal access is provisioned. Bulk order process is communicated and confirmed.",
+          "preOutcomeId": "o_agreement_executed",
+          "postOutcomeId": "o_account_onboarded",
+          "requiresCapabilityIds": [
+            "cap_b2b_commercial",
+            "cap_crm"
+          ],
+          "performedByRoleIds": [
+            "r_account_manager",
+            "r_contractor_customer"
+          ],
+          "metricIds": [
+            "m_contractor_repeat"
+          ],
+          "controlIds": [
+            "ctrl_gdpr"
+          ],
+          "capabilityPPIT": {
+            "cap_b2b_commercial": {
+              "roleIds": [
+                "r_account_manager",
+                "r_contractor_customer"
+              ],
+              "activities": [
+                "Onboard Contractor Account"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            },
+            "cap_crm": {
+              "roleIds": [
+                "r_account_manager",
+                "r_contractor_customer"
+              ],
+              "activities": [
+                "Onboard Contractor Account"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": null,
+          "valueStreamId": "vs_frame_agreements",
+          "stageLabel": "Onboard"
+        }
+      },
+      "outcomes": {
+        "o_session_initiated": {
+          "name": "Session Initiated",
+          "description": "Customer has entered a channel (online, in-store, mobile) and a shopping session is underway",
+          "status": "active"
+        },
+        "o_product_discovered": {
+          "name": "Product Discovered",
+          "description": "Customer has found relevant product(s) matching their intent",
+          "status": "active"
+        },
+        "o_cart_populated": {
+          "name": "Cart Populated",
+          "description": "Customer has added items to cart and intends to proceed",
+          "status": "active"
+        },
+        "o_checkout_initiated": {
+          "name": "Checkout Initiated",
+          "description": "Customer has entered the checkout flow",
+          "status": "active"
+        },
+        "o_order_confirmed": {
+          "name": "Order Confirmed",
+          "description": "Transaction completed and order recorded in system",
+          "status": "active"
+        },
+        "o_fulfillment_allocated": {
+          "name": "Fulfillment Allocated",
+          "description": "Order has been routed to appropriate fulfillment channel (delivery, click-collect, in-store)",
+          "status": "active"
+        },
+        "o_order_fulfilled": {
+          "name": "Order Fulfilled",
+          "description": "Customer has received their goods via chosen fulfillment method",
+          "status": "active"
+        },
+        "o_customer_greeted": {
+          "name": "Customer Greeted",
+          "description": "Customer has been welcomed and initial needs assessed by store associate",
+          "status": "active"
+        },
+        "o_solution_designed": {
+          "name": "Solution Designed",
+          "description": "For complex purchases, a tailored solution has been scoped and priced",
+          "status": "active"
+        },
+        "o_sale_completed": {
+          "name": "Sale Completed",
+          "description": "In-store transaction completed at POS",
+          "status": "active"
+        },
+        "o_contractor_identified": {
+          "name": "Contractor Identified",
+          "description": "Potential B2B contractor account has been qualified",
+          "status": "active"
+        },
+        "o_agreement_negotiated": {
+          "name": "Agreement Negotiated",
+          "description": "Pricing, volume commitments, and terms have been agreed in principle",
+          "status": "active"
+        },
+        "o_agreement_executed": {
+          "name": "Agreement Executed",
+          "description": "Frame agreement is signed and active in the system",
+          "status": "active"
+        },
+        "o_account_onboarded": {
+          "name": "Account Onboarded",
+          "description": "Contractor account is live, credit approved, and ready to transact",
+          "status": "active"
+        }
+      },
+      "roles": {
+        "r_digital_customer": {
+          "name": "Digital Customer",
+          "description": "B2C customer engaging via online or mobile channel"
+        },
+        "r_in_store_customer": {
+          "name": "In-Store Customer",
+          "description": "B2C customer engaging via physical store"
+        },
+        "r_store_associate": {
+          "name": "Store Associate",
+          "description": "Frontline retail staff assisting customers in-store"
+        },
+        "r_design_consultant": {
+          "name": "Design Consultant",
+          "description": "Specialist advisor for complex planning purchases (kitchens, bathrooms)"
+        },
+        "r_checkout_system": {
+          "name": "Checkout System",
+          "description": "POS / online checkout platform processing transactions"
+        },
+        "r_fulfillment_coordinator": {
+          "name": "Fulfillment Coordinator",
+          "description": "Operations role allocating and tracking order fulfillment"
+        },
+        "r_contractor_customer": {
+          "name": "Contractor Customer",
+          "description": "B2B customer \u2014 builder, construction company, or trade reseller"
+        },
+        "r_account_manager": {
+          "name": "Account Manager",
+          "description": "B2B sales role managing contractor and reseller relationships"
+        },
+        "r_credit_controller": {
+          "name": "Credit Controller",
+          "description": "Finance role approving commercial credit for B2B accounts"
+        }
+      },
+      "capabilities": {
+        "cap_omnichannel": {
+          "name": "Omni-Channel Commerce",
+          "description": "Ability to provide a seamless shopping experience across online, mobile, and in-store channels"
+        },
+        "cap_personalisation": {
+          "name": "Customer Personalisation",
+          "description": "Ability to tailor product recommendations, pricing, and experiences based on customer data"
+        },
+        "cap_checkout": {
+          "name": "Checkout and Payment Processing",
+          "description": "Ability to process transactions reliably across payment methods and channels"
+        },
+        "cap_fulfillment": {
+          "name": "Order Fulfillment",
+          "description": "Ability to allocate, pick, pack, and deliver orders via multiple channels"
+        },
+        "cap_design_advisory": {
+          "name": "Design Advisory",
+          "description": "Ability to provide expert planning assistance for complex projects (kitchens, bathrooms, renovations)"
+        },
+        "cap_b2b_commercial": {
+          "name": "B2B Commercial Management",
+          "description": "Ability to negotiate, execute, and manage frame agreements with contractor and reseller accounts"
+        },
+        "cap_crm": {
+          "name": "Customer Relationship Management",
+          "description": "Ability to capture, maintain, and leverage unified customer profiles across segments"
+        }
+      },
+      "controls": {
+        "ctrl_gdpr": {
+          "name": "GDPR Data Compliance",
+          "description": "Regulatory requirement governing collection, storage, and use of customer personal data"
+        },
+        "ctrl_pricing_policy": {
+          "name": "Pricing and Discount Policy",
+          "description": "Internal policy governing permissible discounting, promotional pricing, and bulk rate structures"
+        },
+        "ctrl_credit_policy": {
+          "name": "Commercial Credit Policy",
+          "description": "Policy governing credit limits, terms, and approval thresholds for B2B accounts"
+        },
+        "ctrl_fulfillment_sla": {
+          "name": "Fulfillment SLA",
+          "description": "Service level commitment governing delivery lead times by channel and product category"
+        }
+      },
+      "metrics": {
+        "m_cart_abandonment": {
+          "name": "Cart Abandonment Rate",
+          "description": "Percentage of sessions where cart is populated but checkout is not completed",
+          "measures": [
+            {
+              "id": "ms_cart_baseline",
+              "label": "Current",
+              "value": 45,
+              "unit": "%",
+              "type": "current"
+            },
+            {
+              "id": "ms_cart_target",
+              "label": "Target",
+              "value": 30,
+              "unit": "%",
+              "type": "target"
+            }
+          ]
+        },
+        "m_checkout_completion": {
+          "name": "Checkout Completion Rate",
+          "description": "Percentage of checkout initiations that result in confirmed orders",
+          "measures": [
+            {
+              "id": "ms_checkout_baseline",
+              "label": "Current",
+              "value": 65,
+              "unit": "%",
+              "type": "current"
+            },
+            {
+              "id": "ms_checkout_target",
+              "label": "Target",
+              "value": 80,
+              "unit": "%",
+              "type": "target"
+            }
+          ]
+        },
+        "m_delivery_lead_time": {
+          "name": "Delivery Lead Time",
+          "description": "Average days from order confirmation to customer receipt",
+          "measures": [
+            {
+              "id": "ms_dlt_baseline",
+              "label": "Current",
+              "value": 5,
+              "unit": "days",
+              "type": "current"
+            },
+            {
+              "id": "ms_dlt_target",
+              "label": "Target",
+              "value": 2,
+              "unit": "days",
+              "type": "target"
+            }
+          ]
+        },
+        "m_click_collect": {
+          "name": "Click-and-Collect Usage",
+          "description": "Percentage of orders fulfilled via click-and-collect",
+          "measures": [
+            {
+              "id": "ms_cc_baseline",
+              "label": "Current",
+              "value": 20,
+              "unit": "%",
+              "type": "current"
+            },
+            {
+              "id": "ms_cc_target",
+              "label": "Target",
+              "value": 50,
+              "unit": "%",
+              "type": "target"
+            }
+          ]
+        },
+        "m_omnichannel_nps": {
+          "name": "Omnichannel NPS",
+          "description": "Net Promoter Score across all channels combined",
+          "measures": [
+            {
+              "id": "ms_nps_baseline",
+              "label": "Current",
+              "value": 45,
+              "unit": "score",
+              "type": "current"
+            },
+            {
+              "id": "ms_nps_target",
+              "label": "Target",
+              "value": 60,
+              "unit": "score",
+              "type": "target"
+            }
+          ]
+        },
+        "m_contractor_repeat": {
+          "name": "Contractor Repeat Purchase Rate",
+          "description": "Percentage of contractor accounts placing repeat orders within 90 days",
+          "measures": [
+            {
+              "id": "ms_rep_baseline",
+              "label": "Current",
+              "value": 40,
+              "unit": "%",
+              "type": "current"
+            },
+            {
+              "id": "ms_rep_target",
+              "label": "Target",
+              "value": 55,
+              "unit": "%",
+              "type": "target"
+            }
+          ]
+        },
+        "m_bulk_order_growth": {
+          "name": "Bulk Order Volume Growth",
+          "description": "Year-on-year growth in bulk order volume from contractor accounts",
+          "measures": [
+            {
+              "id": "ms_bog_baseline",
+              "label": "Current",
+              "value": 0,
+              "unit": "% YoY",
+              "type": "current"
+            },
+            {
+              "id": "ms_bog_target",
+              "label": "Target",
+              "value": 20,
+              "unit": "% YoY",
+              "type": "target"
+            }
+          ]
+        }
+      }
+    },
+    "name": "Buildcraft \u2014 Customer Engagement and Fulfillment",
+    "crossStreamOutcomes": [],
+    "scaffoldIntegrityHash": "buildcraft-cef-001-v1"
+  },
+  "heatmaps": [
+    {
+      "schemaVersion": "1.0",
+      "heatmapId": "buildcraft-heatmap-vs_multi_channel",
+      "scaffoldId": "buildcraft-cef-001",
+      "scaffoldIntegrityHash": "buildcraft-cef-001-v1",
+      "valueStreamId": "vs_multi_channel",
+      "createdAt": "2026-03-07T00:00:00Z",
+      "observations": [
+        {
+          "observationId": "fo_001",
+          "category": "TechnologyIntegrationFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act_mcj_04"
+          },
+          "contributingAnchors": [
+            {
+              "anchorType": "Activity",
+              "anchorId": "act_mcj_05"
+            },
+            {
+              "anchorType": "Capability",
+              "anchorId": "cap_checkout"
+            }
+          ],
+          "intensity": {
+            "scale": "0-10",
+            "score": 9
+          },
+          "rationale": "High cart abandonment (45% current vs 30% target) is driven by legacy checkout system causing performance failures and payment errors. Customers abandon at the payment step rather than from purchase intent change.",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "fo_001",
+              "excerpt": "Cart Abandonment Rate 45% vs 30% target (Objectives_Key_Results). Pain point: 'Legacy checkout system causing performance and payment failures' (High urgency, Immediate)."
+            }
+          ],
+          "observedAt": "2026-03-07T00:00:00Z"
+        },
+        {
+          "observationId": "fo_002",
+          "category": "DataSignalFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act_mcj_02"
+          },
+          "contributingAnchors": [
+            {
+              "anchorType": "Capability",
+              "anchorId": "cap_crm"
+            },
+            {
+              "anchorType": "Control",
+              "anchorId": "ctrl_gdpr"
+            },
+            {
+              "anchorType": "Activity",
+              "anchorId": "act_cfa_04"
+            }
+          ],
+          "intensity": {
+            "scale": "0-10",
+            "score": 8
+          },
+          "rationale": "CRM data is fragmented across online and in-store systems following a failed GDPR implementation. Customer profiles are incomplete (75% vs 95% target), preventing personalised recommendations and cross-channel continuity.",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "fo_002",
+              "excerpt": "Customer profile completeness 75% vs 95% target. Pain points: 'Broken CRM data due to failed GDPR implementation' (High, Immediate) and 'Customer data fragmentation preventing personalized engagement' (High, Short-Term)."
+            }
+          ],
+          "observedAt": "2026-03-07T00:00:00Z"
+        },
+        {
+          "observationId": "fo_004",
+          "category": "ProcessHandoffFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act_mcj_06"
+          },
+          "contributingAnchors": [
+            {
+              "anchorType": "Activity",
+              "anchorId": "act_mcj_07"
+            },
+            {
+              "anchorType": "Activity",
+              "anchorId": "act_iss_04"
+            },
+            {
+              "anchorType": "Control",
+              "anchorId": "ctrl_fulfillment_sla"
+            }
+          ],
+          "intensity": {
+            "scale": "0-10",
+            "score": 9
+          },
+          "rationale": "Current delivery lead time of 5 days is significantly behind competitor next-day delivery capability. Fulfillment channel allocation is partially manual, creating routing delays particularly for high-demand SKUs.",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "fo_004",
+              "excerpt": "Delivery Lead Time 5 days vs 2 day target. Competitor pain point: 'Competitors offer next-day delivery; we take 5 days' (High, Immediate, Behind). Pain point: 'Competitors use automated order fulfillment; our process is partially manual' (High, Short-Term)."
+            }
+          ],
+          "observedAt": "2026-03-07T00:00:00Z"
+        },
+        {
+          "observationId": "fo_008",
+          "category": "DecisionAuthorityFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Control",
+            "anchorId": "ctrl_pricing_policy"
+          },
+          "contributingAnchors": [
+            {
+              "anchorType": "Activity",
+              "anchorId": "act_mcj_05"
+            },
+            {
+              "anchorType": "Activity",
+              "anchorId": "act_iss_03"
+            },
+            {
+              "anchorType": "Activity",
+              "anchorId": "act_cfa_02"
+            }
+          ],
+          "intensity": {
+            "scale": "0-10",
+            "score": 8
+          },
+          "rationale": "Discount and promotional pricing decisions are made independently across in-store, online, and B2B channels with no unified pricing authority. This creates inconsistent customer experiences and margin leakage when customers cross channels to exploit pricing differences.",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "fo_008",
+              "excerpt": "Pricing Policy governs three separate activities across two VS without unified governance. Pain point: 'Competitor pricing algorithms personalize discounts dynamically; we use static pricing' (High, Short-Term, Behind). Gross Margin target 45% vs 40% current."
+            }
+          ],
+          "observedAt": "2026-03-07T00:00:00Z"
+        },
+        {
+          "observationId": "fo_009",
+          "category": "GovernanceRiskFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Control",
+            "anchorId": "ctrl_gdpr"
+          },
+          "contributingAnchors": [
+            {
+              "anchorType": "Activity",
+              "anchorId": "act_mcj_05"
+            }
+          ],
+          "intensity": {
+            "scale": "0-10",
+            "score": 5
+          },
+          "rationale": "New sustainability regulations are creating compliance obligations across product selection, supplier onboarding, and order documentation. Compliance gatekeeping has not been integrated into existing operational flows, creating ad-hoc review overhead.",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "fo_009",
+              "excerpt": "Pain point: 'New sustainability regulations increasing compliance complexity' (Medium, Long-Term, High resolution complexity). Business Outcome: 'Order Documents Display Circular Products for Transparency' (Positioning theme)."
+            }
+          ],
+          "observedAt": "2026-03-07T00:00:00Z"
+        }
+      ],
+      "bindingConstraint": {
+        "findingId": "bc_001",
+        "bindingAnchor": {
+          "anchorType": "Control",
+          "anchorId": "ctrl_pricing_policy"
+        },
+        "bindingAnchorObservationId": "fo_008",
+        "justification": "Fragmented pricing authority is the single governing constraint that spans all three value streams simultaneously. It creates inconsistent customer experiences across channels (fo_003), prevents dynamic discount capability that competitors use to drive conversion (fo_001), and slows B2B agreement execution where non-standard pricing requires multi-step approval (fo_007). Unlike execution friction (checkout system, delivery lead time) which can be fixed independently per stream, pricing authority fragmentation requires a structural governance change affecting all three streams at once \u2014 making it the binding constraint on enterprise-wide conversion improvement.",
+        "confidence": 0.82
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "heatmapId": "buildcraft-heatmap-vs_in_store_sales",
+      "scaffoldId": "buildcraft-cef-001",
+      "scaffoldIntegrityHash": "buildcraft-cef-001-v1",
+      "valueStreamId": "vs_in_store_sales",
+      "createdAt": "2026-03-07T00:00:00Z",
+      "observations": [
+        {
+          "observationId": "fo_003",
+          "category": "TechnologyIntegrationFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act_iss_03"
+          },
+          "contributingAnchors": [
+            {
+              "anchorType": "Capability",
+              "anchorId": "cap_omnichannel"
+            },
+            {
+              "anchorType": "Activity",
+              "anchorId": "act_mcj_03"
+            }
+          ],
+          "intensity": {
+            "scale": "0-10",
+            "score": 7
+          },
+          "rationale": "Cart contents, customer history, and recommendations do not carry across channels. Customers who browse online and purchase in-store (or vice versa) encounter a broken experience, reducing conversion and NPS.",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "fo_003",
+              "excerpt": "Omnichannel NPS 45 vs 60 target. Pain point: 'No integration between online and in-store experiences' (Medium, Short-Term). Competitor pain point: 'Competitors provide an integrated omnichannel shopping experience; our online and in-store experience is disconnected' (High, Behind)."
+            }
+          ],
+          "observedAt": "2026-03-07T00:00:00Z"
+        },
+        {
+          "observationId": "fo_005",
+          "category": "ProcessHandoffFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act_iss_02"
+          },
+          "contributingAnchors": [
+            {
+              "anchorType": "Capability",
+              "anchorId": "cap_design_advisory"
+            },
+            {
+              "anchorType": "Activity",
+              "anchorId": "act_mcj_02"
+            }
+          ],
+          "intensity": {
+            "scale": "0-10",
+            "score": 7
+          },
+          "rationale": "Customers planning complex projects (kitchens, bathrooms, renovations) cannot complete planning digitally \u2014 they must attend store. Design advisory capability is not available online, creating a channel bottleneck at in-store design consultation.",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "fo_005",
+              "excerpt": "Pain point: 'Customers struggle with complex purchases (e.g., kitchens)' (High, Short-Term). Customer Journey: 'Planning and Building a Kitchen' \u2014 NPS High, Lead Time Long. Strategy: 'Own the DIY Planning Journey' (2025)."
+            }
+          ],
+          "observedAt": "2026-03-07T00:00:00Z"
+        }
+      ],
+      "bindingConstraint": {
+        "findingId": "bc_vs_in_store_sales",
+        "bindingAnchor": {
+          "anchorType": "Activity",
+          "anchorId": "act_iss_03"
+        },
+        "bindingAnchorObservationId": "fo_003",
+        "justification": "Primary constraint identified within vs_in_store_sales value stream.",
+        "confidence": 0.7
+      }
+    },
+    {
+      "schemaVersion": "1.0",
+      "heatmapId": "buildcraft-heatmap-vs_frame_agreements",
+      "scaffoldId": "buildcraft-cef-001",
+      "scaffoldIntegrityHash": "buildcraft-cef-001-v1",
+      "valueStreamId": "vs_frame_agreements",
+      "createdAt": "2026-03-07T00:00:00Z",
+      "observations": [
+        {
+          "observationId": "fo_006",
+          "category": "ProcessHandoffFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act_cfa_04"
+          },
+          "contributingAnchors": [
+            {
+              "anchorType": "Activity",
+              "anchorId": "act_cfa_02"
+            },
+            {
+              "anchorType": "Role",
+              "anchorId": "r_account_manager"
+            }
+          ],
+          "intensity": {
+            "scale": "0-10",
+            "score": 6
+          },
+          "rationale": "Frame agreement onboarding and ordering process is manual and slow. Contractor accounts lack a self-service portal. B2B bulk ordering relies on account manager coordination rather than system-enabled automation.",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "fo_006",
+              "excerpt": "Pain point: 'B2B bulk ordering process is inefficient for contractors' (Medium, Short-Term). Bulk Order Volume Growth currently 0% vs 20% YoY target. Strategy: 'Strengthen B2B Engagement and Retention' (2025, High complexity)."
+            }
+          ],
+          "observedAt": "2026-03-07T00:00:00Z"
+        },
+        {
+          "observationId": "fo_007",
+          "category": "DecisionAuthorityFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Role",
+            "anchorId": "r_credit_controller"
+          },
+          "contributingAnchors": [
+            {
+              "anchorType": "Activity",
+              "anchorId": "act_cfa_03"
+            },
+            {
+              "anchorType": "Control",
+              "anchorId": "ctrl_credit_policy"
+            }
+          ],
+          "intensity": {
+            "scale": "0-10",
+            "score": 7
+          },
+          "rationale": "Commercial credit approval for frame agreements is concentrated in a single Credit Controller role. Non-standard pricing terms and credit limit exceptions require sequential approval, extending agreement execution time and creating a decision bottleneck.",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "fo_007",
+              "excerpt": "Commercial Credit Policy requires single-role approval for all B2B credit. Frame agreement execution involves both pricing and credit approval with no parallel processing. Contractor repeat purchase rate 40% vs 55% target \u2014 onboarding friction contributes to early churn."
+            }
+          ],
+          "observedAt": "2026-03-07T00:00:00Z"
+        }
+      ],
+      "bindingConstraint": {
+        "findingId": "bc_vs_frame_agreements",
+        "bindingAnchor": {
+          "anchorType": "Activity",
+          "anchorId": "act_cfa_04"
+        },
+        "bindingAnchorObservationId": "fo_006",
+        "justification": "Primary constraint identified within vs_frame_agreements value stream.",
+        "confidence": 0.7
+      }
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "1.0",
+  "heatmapId": "buildcraft-heatmap-vs_frame_agreements",
+  "scaffoldId": "buildcraft-cef-001",
+  "scaffoldIntegrityHash": "buildcraft-cef-001-v1",
+  "valueStreamId": "vs_frame_agreements",
+  "createdAt": "2026-03-07T00:00:00Z",
+  "observations": [
+    {
+      "observationId": "fo_006",
+      "category": "ProcessHandoffFriction",
+      "evidenceBasis": "EVIDENCED",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_cfa_04"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_cfa_02"
+        },
+        {
+          "anchorType": "Role",
+          "anchorId": "r_account_manager"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 6
+      },
+      "rationale": "Frame agreement onboarding and ordering process is manual and slow. Contractor accounts lack a self-service portal. B2B bulk ordering relies on account manager coordination rather than system-enabled automation.",
+      "evidence": [
+        {
+          "sourceType": "discovery_signal",
+          "ref": "fo_006",
+          "excerpt": "Pain point: 'B2B bulk ordering process is inefficient for contractors' (Medium, Short-Term). Bulk Order Volume Growth currently 0% vs 20% YoY target. Strategy: 'Strengthen B2B Engagement and Retention' (2025, High complexity)."
+        }
+      ],
+      "observedAt": "2026-03-07T00:00:00Z"
+    },
+    {
+      "observationId": "fo_007",
+      "category": "DecisionAuthorityFriction",
+      "evidenceBasis": "EVIDENCED",
+      "primaryAnchor": {
+        "anchorType": "Role",
+        "anchorId": "r_credit_controller"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_cfa_03"
+        },
+        {
+          "anchorType": "Control",
+          "anchorId": "ctrl_credit_policy"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 7
+      },
+      "rationale": "Commercial credit approval for frame agreements is concentrated in a single Credit Controller role. Non-standard pricing terms and credit limit exceptions require sequential approval, extending agreement execution time and creating a decision bottleneck.",
+      "evidence": [
+        {
+          "sourceType": "discovery_signal",
+          "ref": "fo_007",
+          "excerpt": "Commercial Credit Policy requires single-role approval for all B2B credit. Frame agreement execution involves both pricing and credit approval with no parallel processing. Contractor repeat purchase rate 40% vs 55% target \u2014 onboarding friction contributes to early churn."
+        }
+      ],
+      "observedAt": "2026-03-07T00:00:00Z"
+    }
+  ],
+  "bindingConstraint": {
+    "findingId": "bc_vs_frame_agreements",
+    "bindingAnchor": {
+      "anchorType": "Activity",
+      "anchorId": "act_cfa_04"
+    },
+    "bindingAnchorObservationId": "fo_006",
+    "justification": "Primary constraint identified within vs_frame_agreements value stream.",
+    "confidence": 0.7
+  }
+}

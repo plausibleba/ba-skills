@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "1.0",
+  "heatmapId": "buildcraft-heatmap-vs_in_store_sales",
+  "scaffoldId": "buildcraft-cef-001",
+  "scaffoldIntegrityHash": "buildcraft-cef-001-v1",
+  "valueStreamId": "vs_in_store_sales",
+  "createdAt": "2026-03-07T00:00:00Z",
+  "observations": [
+    {
+      "observationId": "fo_003",
+      "category": "TechnologyIntegrationFriction",
+      "evidenceBasis": "EVIDENCED",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_iss_03"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Capability",
+          "anchorId": "cap_omnichannel"
+        },
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_mcj_03"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 7
+      },
+      "rationale": "Cart contents, customer history, and recommendations do not carry across channels. Customers who browse online and purchase in-store (or vice versa) encounter a broken experience, reducing conversion and NPS.",
+      "evidence": [
+        {
+          "sourceType": "discovery_signal",
+          "ref": "fo_003",
+          "excerpt": "Omnichannel NPS 45 vs 60 target. Pain point: 'No integration between online and in-store experiences' (Medium, Short-Term). Competitor pain point: 'Competitors provide an integrated omnichannel shopping experience; our online and in-store experience is disconnected' (High, Behind)."
+        }
+      ],
+      "observedAt": "2026-03-07T00:00:00Z"
+    },
+    {
+      "observationId": "fo_005",
+      "category": "ProcessHandoffFriction",
+      "evidenceBasis": "EVIDENCED",
+      "primaryAnchor": {
+        "anchorType": "Activity",
+        "anchorId": "act_iss_02"
+      },
+      "contributingAnchors": [
+        {
+          "anchorType": "Capability",
+          "anchorId": "cap_design_advisory"
+        },
+        {
+          "anchorType": "Activity",
+          "anchorId": "act_mcj_02"
+        }
+      ],
+      "intensity": {
+        "scale": "0-10",
+        "score": 7
+      },
+      "rationale": "Customers planning complex projects (kitchens, bathrooms, renovations) cannot complete planning digitally \u2014 they must attend store. Design advisory capability is not available online, creating a channel bottleneck at in-store design consultation.",
+      "evidence": [
+        {
+          "sourceType": "discovery_signal",
+          "ref": "fo_005",
+          "excerpt": "Pain point: 'Customers struggle with complex purchases (e.g., kitchens)' (High, Short-Term). Customer Journey: 'Planning and Building a Kitchen' \u2014 NPS High, Lead Time Long. Strategy: 'Own the DIY Planning Journey' (2025)."
+        }
+      ],
+      "observedAt": "2026-03-07T00:00:00Z"
+    }
+  ],
+  "bindingConstraint": {
+    "findingId": "bc_vs_in_store_sales",
+    "bindingAnchor": {
+      "anchorType": "Activity",
+      "anchorId": "act_iss_03"
+    },
+    "bindingAnchorObservationId": "fo_003",
+    "justification": "Primary constraint identified within vs_in_store_sales value stream.",
+    "confidence": 0.7
+  }
+}

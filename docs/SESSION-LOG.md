@@ -4,6 +4,30 @@ Chronological record of what was built, decided, and learned.
 
 ---
 
+## Session 12 — Wiring and Testing
+**Date:** 2026-03-06
+**Status:** In progress
+
+### Completed
+1. `types.ts` refactor — derivation functions removed, redirect comment added. 716 → 473 lines.
+2. `network-derivation.ts` — `migrateHeatmap()`, `deriveCapabilityInstances()`, `deriveTopologyView()` moved in from types.ts. Updated imports.
+3. `canvas-store.ts` — `capabilityInstanceView` and `topologyView` state fields added. `loadScaffold` wires derivation chain. `reset()` clears both.
+4. `NetworkView.tsx` — reads `topologyView` from store, computes `couplingByVs` per node, surfaces coupling counts on node cards and tooltip.
+5. `validator-session11.test.ts` → `packages/shared/src/` (co-located with validator.ts, not in __tests__)
+6. Stale artefacts identified for deletion: `/schema/` directory + `ScaffoldModel_schema.json.bak`
+
+### Decisions
+- D-060: canvas-store derives CapabilityInstances + TopologyView on load
+- D-061: NetworkView surfaces topology coupling counts
+
+### In Progress
+- Deploy and smoke test
+
+### Commit Message
+`Session 12: derivation wiring — canvas-store, NetworkView coupling counts, types.ts refactor D-060–D-061`
+
+---
+
 ## Session 11 — Schema Delta Implementation
 **Date:** 2026-03-06
 **Duration:** ~45 minutes
@@ -391,3 +415,57 @@ Chronological record of what was built, decided, and learned.
 20. Story expansion UX: replace summaryOnly=false global with proper expand/collapse trigger
 21. Multi-vendor support beyond Salesforce
 22. RecordClass and ApplicationFunction fixture population across all demo scaffolds
+
+---
+
+## Session 13 — Buildcraft Fixture Validation and Bug Fix
+**Date:** 2026-03-07
+**Status:** Complete
+
+### Completed
+1. **Buildcraft bundle field name correction** — translated all non-canonical fields to schema-compliant names: `label→name`, `capabilityIds→requiresCapabilityIds`, `capabilityPPIT` structure added, heatmap observation format corrected (`observationId`, camelCase category enum, `primaryAnchor`+`contributingAnchors`, `intensity: {scale,score}`). D-062.
+2. **Heatmap split per VS** — single multi-VS heatmap with `valueStreamId: null` replaced with three per-VS standalone heatmap files. `valueStreamId` is required by schema — FileLoader was correctly rejecting the null value. D-063. Files: `buildcraft-heatmap-vs_multi_channel.json` (5 obs), `buildcraft-heatmap-vs_in_store_sales.json` (2 obs), `buildcraft-heatmap-vs_frame_agreements.json` (2 obs).
+3. **FrictionPanel stale state bug fixed** — panel not refreshing when navigating between friction points with panel open. Fix: `key={selectedActivityId}` on `<FrictionPanel>` in `CanvasView.tsx`. D-064.
+4. **Buildcraft canvas smoke test** — Multi-Channel Journeys rendering correctly: entry/exit states, capability blocks with roles (R/A badges), metrics, controls, PPIT. Binding constraint (pricing authority fragmentation) highlighted on "Process Payment and Confirm Order". Friction overlay: 5 observations, Decision Authority / Governing friction visible. Network View: 3 VS with coupling counts.
+
+### Decisions
+- D-062: Bundle field names must match canonical schema — no aliases
+- D-063: Heatmaps are per-VS — `valueStreamId` required
+- D-064: FrictionPanel stale state — fix via `key={selectedActivityId}`
+
+### Fixtures Produced
+- `buildcraft-cef-bundle.json` — 3 VS, 15 activities, 9 friction observations (split across 3 per-VS heatmaps)
+- `buildcraft-heatmap-vs_multi_channel.json`
+- `buildcraft-heatmap-vs_in_store_sales.json`
+- `buildcraft-heatmap-vs_frame_agreements.json`
+
+### Commit Message
+`Session 13: Buildcraft fixture — field name corrections, per-VS heatmaps, FrictionPanel key fix D-062–D-064`
+
+---
+
+## Session 13 — GPT Design Spar (addendum)
+**Date:** 2026-03-07
+
+### Spar Outcome
+GPT design spar completed on pipeline architecture. Full response received and recorded.
+
+**Architecture locked (D-065):** Three-pass runtime — Pass A (DiscoveryIR) → Pass B (ValidatedScaffold, with internal B1/B2 gate) → Pass C (HeatmapVNext).
+
+**Additional decisions locked:**
+- D-066: Gate 1 failure → one bounded auto-repair retry, then surface errors
+- D-067: Null binding constraint is valid distinct output state (three states: not assessed / no constraint / constraint identified)
+- D-068: DiscoveryIR surfaced as light review panel before formalisation
+- D-069: temperature: 0 enforced at proxy level, not prompt-only
+- D-070: Five named tensions recorded
+- D-071: Scope exclusions locked — no backend orchestrator, no scaffold editor, no scenario modelling, no friction-scaffold merge
+
+### Next Session
+Pipeline rewrite implementation. Start with domain/pipeline/ module structure as specified by GPT:
+- discovery-ir.ts
+- scaffold-formaliser.ts
+- scaffold-gates.ts
+- heatmap-analyser.ts
+- pipeline-orchestrator.ts
+- discovery-session-store.ts (in store/)
+- DiscoveryIntake.tsx refactored to thin interaction shell

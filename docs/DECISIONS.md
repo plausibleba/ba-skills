@@ -242,3 +242,99 @@ Stage card hierarchy, component extraction, network view topology, edge encoding
 **Context:** Found `/schema` directory alongside `/schemas` containing `ScaffoldModel_schema_v3.json` — a pre-Session-11 version of the scaffold schema. Also found `ScaffoldModel_schema.json.bak` in `/schemas`.
 **Decision:** Delete `/schema` directory and `ScaffoldModel_schema.json.bak`. Both are superseded noise with no referencing consumers.
 **Rationale:** Stale schema files create ambiguity about which version is canonical. `/schemas` is the canonical location.
+
+## D-060: canvas-store Derives CapabilityInstances and TopologyView on Load
+**Date:** 2026-03-06
+**Context:** Derivation functions existed in network-derivation.ts but were not wired into the store.
+**Decision:** `loadScaffold` now derives `CapabilityInstanceView` and `TopologyView` immediately after network nodes are built. Both stored as nullable state fields, cleared on `reset()`. Seal uses `modelIntegrityHash ?? scaffoldId`.
+**Rationale:** Derivation is a pure function of the scaffold — correct place to trigger is on scaffold load, not lazily on demand.
+
+## D-061: NetworkView Surfaces Topology Coupling Counts
+**Date:** 2026-03-06
+**Context:** TopologyView now available in store. NetworkView needed a lightweight way to expose coupling signal without overwhelming the node card visual hierarchy.
+**Decision:** Node cards show `N coupled` in indigo text alongside stage count. Tooltip shows `N coupled value streams`. Count is distinct partner VS count derived from topology edge traversal. Gracefully absent when topology is unavailable or count is zero.
+**Rationale:** Coupling is a diagnostic signal, not a primary label. Indigo (distinct from amber/red friction palette) keeps it visually subordinate. Zero-count nodes are uncluttered.
+
+## D-062: VCC Bundle Field Names Must Match Canonical Schema
+**Date:** 2026-03-07
+**Context:** Buildcraft fixture was authored with non-canonical field names throughout (label, capabilityIds, observation anchors as array, etc). Canvas rendered empty entry/exit states, no roles, no capabilities, no PPIT.
+**Decision:** Canonical field names are authoritative — no aliases permitted in bundle JSON. Translation table:
+- `label` → `name` (on VS, Activity, Outcome, Role, Capability, Control, Metric)
+- `capabilityIds` → `requiresCapabilityIds` (on Activity)
+- `capabilityPPIT` must be present and keyed by capabilityId with `{ roleIds, activities, informationObjectIds, technologyAppIds }`
+- Heatmap observation: `id` → `observationId`, category must be camelCase enum (e.g. `TechnologyIntegrationFriction`), anchors split into `primaryAnchor` + `contributingAnchors` (not a flat `anchors[]` array), `intensity` must be `{ scale, score }` object
+- `valueStreamId` is required (not nullable) on standalone heatmap files
+**Rationale:** The schema is the contract. Fixture authors must use it — the canvas has no tolerance mode for field name variants.
+
+## D-063: Heatmaps Are Per-VS, Not Multi-VS
+**Date:** 2026-03-07
+**Context:** Buildcraft fixture initially had a single heatmap with `valueStreamId: null` spanning all three value streams. FileLoader "Load previous" rejected it — `valueStreamId` is required by schema.
+**Decision:** Each heatmap file is scoped to one value stream. Multi-VS friction is modelled by creating one heatmap per VS and distributing observations by their primary anchor's activity `valueStreamId`. The binding constraint sits on whichever VS hosts the binding observation's primary anchor.
+**Rationale:** Schema contract. The FileLoader validates against FrictionHeatmap schema which requires `valueStreamId`. Per-VS scoping also aligns with the Stage Wizard flow — you assess friction one VS at a time.
+
+## D-064: FrictionPanel Stale State Bug — Fix via key Prop
+**Date:** 2026-03-07
+**Context:** Keeping the friction panel open and clicking a different friction point left the panel showing stale observations from the previously selected activity. Required close + reclick to repaint.
+**Decision:** Add `key={selectedActivityId}` to `<FrictionPanel>` in `CanvasView.tsx`. React tears down and remounts the component on activity change, resetting all `useState` cleanly.
+**Rationale:** `useState(initialObservations)` only consumes the initialiser on first mount — prop changes do not reset state on a mounted component. `key` is the canonical React pattern for this. Alternative (useEffect reset) is more code for identical behaviour.
+
+## D-065: Three-Pass Pipeline Architecture (GPT Design Spar — 2026-03-07)
+**Date:** 2026-03-07
+**Context:** Current four-pass pipeline collapses wrong epistemic boundaries — Pass 3 compresses Steps 05–10 into one LLM call, bypasses the post-Activities validation gate (Gate 1), and allows broken FSM semantics to contaminate downstream artefacts. GPT design spar called to resolve rewrite architecture.
+**Decision:** Adopt three-pass runtime with internal B1/B2 sub-passes:
+- **Pass A — Discovery IR:** Two internal LLM calls (1a: VS+stages, 1b: roles+capabilities+diagnostic signals). Persisted as one explicit DiscoveryIR artefact. Discovery is generative — determinism not required here.
+- **Pass B — Formalised Scaffold:**
+  - B1: Outcomes + Activities only (Steps 05–06). Gate 1 invoked immediately. One bounded auto-repair retry. Stop and surface errors if still invalid.
+  - B2: Controls + Metrics + Conditions + Assembly (Steps 07–10). Full scaffold validation. Persisted as sealed ScaffoldModel.
+- **Pass C — Friction Heatmap:** Steps 11–13. Consumes sealed scaffold only. Null binding constraint explicitly allowed. Full scaffold+heatmap validation. Persisted as HeatmapVNext.
+**Three runtime artefacts:** DiscoveryIR, ScaffoldModel (sealed), HeatmapVNext — each recoverable if next pass fails.
+**Rationale:** Minimum runtime shape that respects the prompt pack's structural-before-interpretive rule and the mandatory Gate 1 checkpoint. "Two-pass" only works by hiding a gate inside a pass — architecturally dishonest.
+
+## D-066: Formalisation Gate — Surface with One Bounded Retry (GPT Design Spar — 2026-03-07)
+**Date:** 2026-03-07
+**Context:** Q2 from briefing — what happens when Gate 1 fails after Pass B1?
+**Decision:** One automatic bounded repair attempt: feed validator output back into a repair prompt, rerun B1 once. If still fails → surface "Scaffold formalisation failed validation" with recoverable artefact view and explicit issues list. Do not silently retry forever. Do not dump raw validator noise on first failure.
+**Rationale:** Preserves usability while respecting Gate 1 as architecturally terminal for the current attempt. More than one auto-repair retry becomes hidden improvisation and erodes trust.
+
+## D-067: Null Binding Constraint is a Valid Diagnostic Output (GPT Design Spar — 2026-03-07)
+**Date:** 2026-03-07
+**Context:** Q3 — how to handle cases where no candidate meets eligibility (Downstream Dependency ≥ 2). Tension identified between MVP docs (lean toward exactly one binding constraint) and prompt pack (explicit null allowed).
+**Decision:** Null binding constraint is a valid and distinct output state. Three states must be distinguishable in the UI:
+1. "Not yet assessed" — Pass C has not run
+2. "No binding constraint identified" — Pass C ran, candidates scored, none met eligibility
+3. "Binding constraint: [X]" — eligible candidate identified
+UI treatment for null: no gold banner, no binding badge. Neutral executive callout: "No eligible binding constraint identified in this assessment. No candidate met structural blocking threshold."
+**Rationale:** A diagnostic that says "no constraint found, here's why" is more credible than forcing a selection. Prompt pack explicitly allows null. MVP docs amended by this decision.
+
+## D-068: DiscoveryIR Surfaced as Light Review Panel (GPT Design Spar — 2026-03-07)
+**Date:** 2026-03-07
+**Context:** Q4 — should DiscoveryIR be surfaced to user before formalisation? Currently hidden state between passes.
+**Decision:** Yes, surface DiscoveryIR — but lightly. A Review Discovery panel (expandable, not a full editor) shown before Pass B begins, displaying: org summary, value streams + stages, roles, capabilities, top gaps/low-confidence items. Allow minimal edits only: rename VS, rename/remove stage, remove spurious role/capability, add missing obvious item. No editing of formal scaffold semantics at this layer.
+**Rationale:** Hallucination-reduction benefit without opening the full modelling problem. Consistent with design guardrail: no inline model editing, diagnostic surface not modelling workstation.
+
+## D-069: Determinism Enforced at Proxy Level for Formalisation (GPT Design Spar — 2026-03-07)
+**Date:** 2026-03-07
+**Context:** Q5 — where to enforce temperature: 0 for Steps 05–10. D-040 locked temperature 0 but enforcement is currently prompt-only and not deployed.
+**Decision:** temperature: 0 enforced at the API proxy level (api/claude.ts) for all formalisation and heatmap calls, not just in prompt wording. Logged into generation metadata. Client code and prompt text can drift — proxy is the only dependable enforcement boundary.
+**Failure mode if not enforced:** IDs change between runs, outcome chains vary, scaffold hashes become unstable, friction comparisons across sessions become meaningless. Fatal to a governed reasoning instrument.
+**Rationale:** D-040 is already locked. This decision specifies the enforcement mechanism.
+
+## D-070: Five Named Tensions — Pipeline Rewrite (GPT Design Spar — 2026-03-07)
+**Date:** 2026-03-07
+**Context:** GPT identified five tensions to record before building. Recorded here as named tradeoffs, not decisions — each constrains implementation choices.
+**Tensions:**
+1. **User simplicity vs ontological correctness** — single "Generate" button is good UX but the system must enforce internal gates and preserve intermediate artefacts. UI simplicity must not flatten architectural truth.
+2. **Visible recovery vs black-box resilience** — one bounded auto-repair retry is good; more becomes hidden improvisation and erodes trust. Hard cap at one retry per gate.
+3. **Discovery review vs workflow friction** — surfacing DiscoveryIR improves accuracy but slows presales flow. Limit editable surface to low-confidence/high-impact fields only.
+4. **Deterministic scaffolding vs rich generative detail** — if discovery is thin, correct response is fewer elements + surfaced gaps, not invented completeness. Do not infer missing ontology elements.
+5. **Exact-one binding constraint (MVP docs) vs valid null (prompt pack)** — resolved by D-067 in favour of prompt pack. MVP docs superseded on this point.
+
+## D-071: What Not to Build in Pipeline Rewrite (GPT Design Spar — 2026-03-07)
+**Date:** 2026-03-07
+**Context:** GPT explicitly scoped out the following to prevent scope creep in the pipeline rewrite.
+**Deferred/excluded:**
+- No persistent backend orchestrator — browser-first, serverless-proxy architecture stands
+- No full scaffold editor — violates diagnostic-surface design intent
+- No scenario modelling — PDS places this later, not needed to fix pipeline integrity
+- Do not merge friction generation back into scaffold generation for efficiency — directly violates structural-before-interpretive
+- Do not make binding constraint selection manual in intake pipeline — manual override belongs in canvas interpretation workflows, not initial heatmap generation

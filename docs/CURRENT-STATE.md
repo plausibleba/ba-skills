@@ -2,7 +2,7 @@
 
 **Read this first. Every session. One page.**
 
-Last updated: 2026-03-06 (Session 11)
+Last updated: 2026-03-07 (Session 13 — post GPT spar)
 
 ---
 
@@ -57,7 +57,7 @@ The following decisions are now locked and will shape the next implementation ph
 - **User Guide Panel**: Fixed bottom-left, contextually aware, six states
 - **Pass 1–4**: VS definition → stage extraction → friction assessment → vendor enrichment
 - **TransformationPane**: SBR cards + user story generation via AI, Zustand state
-- **Fixtures**: Puretec (presales demo), IIBA (pipeline reference), Enterprise Banking, Ofluv (SAP transformation), Banking Regulation
+- **Fixtures**: Puretec (presales demo), IIBA (pipeline reference), Enterprise Banking, Ofluv (SAP transformation), Banking Regulation, Buildcraft (retail/home improvement, Henrik)
 
 ---
 
@@ -98,10 +98,39 @@ Validator extended — **implemented**:
 - V-COMPOSITE-02–06: mereological parthood semantics
 - V-HEATMAP-02–04: three-layer cross-reference integrity
 
-**Pending wiring:**
-- Move derivation functions from `types.ts` → `network-derivation.ts`
-- Wire into `canvas-store.ts` and `NetworkView.tsx`
-- Unit tests for new validator rules
+**Wired (Session 12):**
+- Derivation functions moved from `types.ts` → `network-derivation.ts` ✓
+- `canvas-store.ts` derives CapabilityInstanceView + TopologyView on `loadScaffold` ✓
+- `NetworkView.tsx` surfaces coupling counts from TopologyView ✓
+- `validator-session11.test.ts` in `packages/shared/src/` ✓
+
+**Session 13 fixes:**
+- Buildcraft fixture: all field names corrected to canonical schema (D-062) ✓
+- Buildcraft heatmaps split per-VS — `valueStreamId` required (D-063) ✓
+- `CanvasView.tsx`: `key={selectedActivityId}` on FrictionPanel — stale state fix (D-064) ✓
+
+---
+
+## Pipeline Architecture — Locked (Session 13 GPT Spar)
+
+Three-pass runtime. D-065–D-071 are the governing decisions.
+
+| Pass | Name | Steps | Gate |
+|------|------|-------|------|
+| A | Discovery IR | 01–04 (two internal calls: VS+stages, roles+caps) | None — generative |
+| B1 | Outcomes + Activities | 05–06 | **Gate 1** — mandatory. One bounded auto-repair retry. |
+| B2 | Controls + Metrics + Conditions + Assembly | 07–10 | Full scaffold validation |
+| C | Friction Heatmap | 11–13 | Full scaffold+heatmap validation |
+
+**Three persisted artefacts:** DiscoveryIR · ScaffoldModel (sealed) · HeatmapVNext — each recoverable if next pass fails.
+
+**Non-negotiable implementation rules (D-065):**
+- temperature: 0 at proxy level for B and C passes (D-069)
+- Validator invoked between subpasses, not just at end
+- Null binding constraint handled as distinct valid state (D-067)
+- DiscoveryIR surfaced as light review panel before B (D-068)
+- Open in Canvas enabled after valid scaffold, consistent with D-033
+- Friction remains on-demand from Stage Wizard, consistent with D-035
 
 ---
 
@@ -109,16 +138,13 @@ Validator extended — **implemented**:
 
 | Priority | Item |
 |----------|------|
-| 1 | DiscoveryIntake.tsx fix — bundleSaved gate removal, temperature: 0, Pass 4 scaffold strip |
-| 2 | Move derivation functions (`deriveCapabilityInstances`, `deriveTopologyView`) → `network-derivation.ts` |
-| 3 | Wire CapabilityInstance + TopologyView into canvas-store and NetworkView |
-| 4 | Unit tests for new validator rules (V-ACTIVITY-04–10, V-COMPOSITE-02–06, V-HEATMAP-02–04) |
-| 5 | Delete stale artefacts: `/schema/` directory + `ScaffoldModel_schema.json.bak` (D-059) |
-| 6 | PDS update — reflect three phases, pipeline, ontological foundations |
-| 7 | Enhance Ofluv scaffold — populate applicationFunctionIds, recordClassIds on key activities |
-| 8 | Jira export button — getAllUserStories() ready, needs CSV download trigger |
-| 9 | Customer story filtering by industry/size |
-| 10 | Dummy discovery datasets — 2-3 fictitious non-Salesforce demos for Daniel |
+| 1 | **Pipeline rewrite** — implement three-pass architecture (D-065). Module structure: `domain/pipeline/{discovery-ir, scaffold-formaliser, scaffold-gates, heatmap-analyser, pipeline-orchestrator}.ts` + `store/discovery-session-store.ts`. Refactor DiscoveryIntake.tsx to thin shell. |
+| 2 | Deploy `CanvasView.tsx` FrictionPanel key fix (D-064) |
+| 3 | Delete stale artefacts: `/schema/` directory + `ScaffoldModel_schema.json.bak` (D-059) |
+| 4 | Add Buildcraft fixtures to `/fixtures` directory in repo |
+| 5 | Enhance Ofluv scaffold — populate applicationFunctionIds, recordClassIds on key activities |
+| 6 | Jira export button — getAllUserStories() ready, needs CSV download trigger |
+| 7 | Customer story filtering by industry/size |
 
 ---
 

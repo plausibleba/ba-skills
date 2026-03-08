@@ -3,6 +3,54 @@
 // This is the committed discovery basis for formalisation.
 // Discovery is generative — determinism is NOT required here.
 
+// Full VSS structure — all five properties per stage (VCC_PROMPT_DEFINITIONS.md §2)
+export interface DiscoveryStageMetric {
+  name: string;
+  current?: string;
+  target?: string;
+  evidenced: boolean; // false = inferred/plausible, not from source
+}
+
+export interface DiscoveryStage {
+  name: string;
+  entryCriteria?: string;
+  exitCriteria?: string;
+  stakeholders?: string[];
+  valueItem?: string;         // concrete output produced by this stage
+  metrics?: DiscoveryStageMetric[];
+}
+
+// Scoped Capability Map — L1 → L2 → L3 taxonomy (VCC_PROMPT_DEFINITIONS.md §3)
+export interface DiscoveryCapabilityL3 {
+  name: string;               // Verb-Noun, e.g. "Manage Trade Partner Orders"
+  businessObject: string;     // core object e.g. "Orders"
+  description?: string;
+  stabilisationNote?: string; // ⚑ flagged inconsistencies for architect review
+}
+
+export interface DiscoveryCapabilityL2 {
+  name: string;               // Business Domain e.g. "Order Management"
+  capabilities: DiscoveryCapabilityL3[];
+}
+
+export interface DiscoveryCapabilityL1 {
+  name: string;               // Business Area e.g. "Channel & Partner Management"
+  domains: DiscoveryCapabilityL2[];
+}
+
+export interface DiscoveryCapabilityMap {
+  l1Areas: DiscoveryCapabilityL1[];
+}
+
+// Stage-to-capability assignments — references L3 names from the map
+export interface DiscoveryStageCapabilities {
+  vsName: string;
+  stages: Array<{
+    stageName: string;
+    capabilityNames: string[];  // must match L3 names in capabilityMap
+  }>;
+}
+
 export interface DiscoveryVS {
   vsId: string;
   name: string;
@@ -11,8 +59,7 @@ export interface DiscoveryVS {
   trigger?: string;
   terminalOutcome?: string;
   stakeholder?: string;
-  stages: string[];
-  extractedCapabilities: Array<{ id: string; name: string; description: string }>;
+  stages: DiscoveryStage[];   // enriched — was string[]
 }
 
 export interface DiscoveryRole {
@@ -65,6 +112,8 @@ export interface DiscoveryIR {
   painPoints: DiscoveryPainPoint[];
   metrics: DiscoveryMetric[];
   gaps: DiscoveryGap[];
+  capabilityMap: DiscoveryCapabilityMap;           // scoped L1/L2/L3 taxonomy
+  stageCapabilities: DiscoveryStageCapabilities[]; // stage → L3 capability assignments
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -73,8 +122,9 @@ export function makeId(prefix: string, name: string): string {
   return `${prefix}_${name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")}`;
 }
 
-// Build the DiscoveryIR from raw extraction form state
-// (used by the orchestrator to persist after Pass A2 completes)
+// Build the DiscoveryIR from raw extraction results
+// pass1Result: A1 output (VS + stages with full VSS structure)
+// pass2Result: A2 output (roles, capabilityMap, stageCapabilities, tech, painPoints, metrics, gaps)
 export function buildDiscoveryIR(
   pass1Result: any,
   pass2Result: any,
@@ -82,26 +132,54 @@ export function buildDiscoveryIR(
 ): DiscoveryIR {
   const now = new Date().toISOString();
 
-  const valueStreams: DiscoveryVS[] = confirmedVS.map((vs1: any, i: number) => {
-    const capEntry =
-      (pass2Result.capabilitiesByVS ?? []).find((c: any) => c.vsName === vs1.name) ??
-      (pass2Result.capabilitiesByVS ?? [])[i];
-    return {
-      vsId: makeId("vs", vs1.name),
-      name: vs1.name,
-      description: vs1.description ?? "",
-      zone: vs1.zone ?? "ecosystem",
-      trigger: vs1.trigger,
-      terminalOutcome: vs1.terminalOutcome,
-      stakeholder: vs1.stakeholder ?? pass1Result.org?.stakeholder ?? "",
-      stages: (vs1.stages ?? []).map((s: any) => s.name ?? s),
-      extractedCapabilities: (capEntry?.capabilities ?? []).map((c: any) => ({
-        id: c.id ?? makeId("cap", c.name),
-        name: c.name,
-        description: c.description ?? `Ability to ${c.name.toLowerCase()}`,
-      })),
-    };
-  });
+  const valueStreams: DiscoveryVS[] = confirmedVS.map((vs1: any) => ({
+    vsId: makeId("vs", vs1.name),
+    name: vs1.name,
+    description: vs1.description ?? "",
+    zone: vs1.zone ?? "ecosystem",
+    trigger: vs1.trigger,
+    terminalOutcome: vs1.terminalOutcome,
+    stakeholder: vs1.stakeholder ?? pass1Result.org?.stakeholder ?? "",
+    // Preserve full VSS structure from A1
+    stages: (vs1.stages ?? []).map((s: any) => {
+      // A1 now returns objects with all five VSS properties
+      // Graceful fallback: if A1 returned plain strings (old format), wrap them
+      if (typeof s === "string") return { name: s };
+      return {
+        name: s.name ?? s,
+        entryCriteria: s.entryCriteria,
+        exitCriteria: s.exitCriteria,
+        stakeholders: s.stakeholders ?? [],
+        valueItem: s.valueItem,
+        metrics: (s.metrics ?? []).map((m: any) => ({
+          name: m.name,
+          current: m.current ?? null,
+          target: m.target ?? null,
+          evidenced: m.evidenced ?? false,
+        })),
+      };
+    }),
+  }));
+
+  // Capability map — new L1/L2/L3 structure from A2
+  // Graceful fallback: if A2 returned old capabilitiesByVS format, build minimal map
+  const capabilityMap: DiscoveryCapabilityMap = pass2Result.capabilityMap ?? {
+    l1Areas: (pass2Result.capabilitiesByVS ?? []).map((entry: any) => ({
+      name: "Extracted Capabilities",
+      domains: [{
+        name: entry.vsName ?? "General",
+        capabilities: (entry.capabilities ?? []).map((c: any) => ({
+          name: c.name,
+          businessObject: "",
+          description: c.description ?? "",
+        })),
+      }],
+    })),
+  };
+
+  // Stage capability assignments — new structure from A2
+  const stageCapabilities: DiscoveryStageCapabilities[] =
+    pass2Result.stageCapabilities ?? [];
 
   return {
     extractedAt: now,
@@ -132,5 +210,7 @@ export function buildDiscoveryIR(
       target: m.target,
     })),
     gaps: pass2Result.gaps ?? [],
+    capabilityMap,
+    stageCapabilities,
   };
 }

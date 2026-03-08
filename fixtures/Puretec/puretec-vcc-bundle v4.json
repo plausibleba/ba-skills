@@ -1,0 +1,837 @@
+{
+  "bundleVersion": "1.0",
+  "createdAt": "2026-03-07T22:58:22.465Z",
+  "scaffold": {
+    "schemaVersion": "1.0",
+    "scaffoldId": "scaffold_puretec_water_systems",
+    "name": "PureTec Water Systems",
+    "description": "Water filtration systems manufacturer with trade partner distribution model",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "crossStreamOutcomes": [],
+    "scaffoldIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "elements": {
+      "valueStreams": {
+        "vs_distribute_through_trade_partners": {
+          "name": "Distribute Through Trade Partners",
+          "description": "Delivers water filtration products to end customers through plumbers and distributors who value easy installation, high quality, and excellent support",
+          "activityIds": [
+            "act_plan_routes",
+            "act_brief_account",
+            "act_visit_partner",
+            "act_take_orders",
+            "act_process_orders",
+            "act_deliver_products",
+            "act_support_installation"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "Sales Team"
+        },
+        "vs_maintain_customer_systems": {
+          "name": "Maintain Customer Systems",
+          "description": "Delivers ongoing maintenance value through cartridge replacement and system support for existing customers",
+          "activityIds": [
+            "act_identify_maintenance",
+            "act_schedule_replacement",
+            "act_process_order",
+            "act_deliver_cartridges",
+            "act_support_replacement"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "Customer Care"
+        },
+        "vs_integrate_business_systems": {
+          "name": "Integrate Business Systems",
+          "description": "Delivers integrated data foundation connecting NetSuite ERP with Salesforce CRM to enable streamlined operations",
+          "activityIds": [
+            "act_assess_integration",
+            "act_configure_systems",
+            "act_implement_integration",
+            "act_test_data_flow",
+            "act_deploy_integration"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "Head of Tech"
+        }
+      },
+      "activities": {
+        "act_plan_routes": {
+          "name": "Plan Routes",
+          "preOutcomeId": "outcome_customer_filtration_needs_identified",
+          "postOutcomeId": "outcome_routes_planned",
+          "requiresCapabilityIds": [
+            "cap_plan_sales_routes"
+          ],
+          "performedByRoleIds": [
+            "1772924110876"
+          ],
+          "metricIds": [
+            "metric_selling_time_lost"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_plan_sales_routes": {
+              "roleIds": [
+                "1772924110876"
+              ],
+              "activities": [
+                "Geographic territory planning and route optimization"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_brief_account"
+        },
+        "act_brief_account": {
+          "name": "Brief Account",
+          "preOutcomeId": "outcome_routes_planned",
+          "postOutcomeId": "outcome_account_briefed",
+          "requiresCapabilityIds": [
+            "cap_generate_account_intelligence"
+          ],
+          "performedByRoleIds": [
+            "1772924110876",
+            "1772924110878"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_generate_account_intelligence": {
+              "roleIds": [
+                "1772924110876",
+                "1772924110878"
+              ],
+              "activities": [
+                "Compile customer history and opportunities"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_visit_partner"
+        },
+        "act_visit_partner": {
+          "name": "Visit Partner",
+          "preOutcomeId": "outcome_account_briefed",
+          "postOutcomeId": "outcome_partner_visited",
+          "requiresCapabilityIds": [],
+          "performedByRoleIds": [
+            "1772924110876"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {},
+          "nextActivityId": "act_take_orders"
+        },
+        "act_take_orders": {
+          "name": "Take Orders",
+          "preOutcomeId": "outcome_partner_visited",
+          "postOutcomeId": "outcome_orders_taken",
+          "requiresCapabilityIds": [
+            "cap_process_partner_orders"
+          ],
+          "performedByRoleIds": [
+            "1772924110876"
+          ],
+          "metricIds": [
+            "metric_product_skus"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_process_partner_orders": {
+              "roleIds": [
+                "1772924110876"
+              ],
+              "activities": [
+                "Handle order taking from trade partners"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_process_orders"
+        },
+        "act_process_orders": {
+          "name": "Process Orders",
+          "preOutcomeId": "outcome_orders_taken",
+          "postOutcomeId": "outcome_orders_processed",
+          "requiresCapabilityIds": [
+            "cap_process_partner_orders"
+          ],
+          "performedByRoleIds": [
+            "1772924110878"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl_order_validation"
+          ],
+          "capabilityPPIT": {
+            "cap_process_partner_orders": {
+              "roleIds": [
+                "1772924110878"
+              ],
+              "activities": [
+                "Process and validate partner orders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_deliver_products"
+        },
+        "act_deliver_products": {
+          "name": "Deliver Products",
+          "preOutcomeId": "outcome_orders_processed",
+          "postOutcomeId": "outcome_products_delivered",
+          "requiresCapabilityIds": [],
+          "performedByRoleIds": [
+            "1772924110876"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {},
+          "nextActivityId": "act_support_installation"
+        },
+        "act_support_installation": {
+          "name": "Support Installation",
+          "preOutcomeId": "outcome_products_delivered",
+          "postOutcomeId": "outcome_system_installed_operational",
+          "requiresCapabilityIds": [
+            "cap_support_product_installation"
+          ],
+          "performedByRoleIds": [
+            "1772924110876",
+            "1772924110878"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_support_product_installation": {
+              "roleIds": [
+                "1772924110876",
+                "1772924110878"
+              ],
+              "activities": [
+                "Provide installation guidance to trade partners"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": null
+        },
+        "act_identify_maintenance": {
+          "name": "Identify Maintenance",
+          "preOutcomeId": "outcome_maintenance_cycle_due",
+          "postOutcomeId": "outcome_maintenance_identified",
+          "requiresCapabilityIds": [
+            "cap_track_maintenance_schedules"
+          ],
+          "performedByRoleIds": [
+            "1772924110878"
+          ],
+          "metricIds": [
+            "metric_cartridge_replacement_cycle"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_track_maintenance_schedules": {
+              "roleIds": [
+                "1772924110878"
+              ],
+              "activities": [
+                "Monitor cartridge replacement cycles"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_schedule_replacement"
+        },
+        "act_schedule_replacement": {
+          "name": "Schedule Replacement",
+          "preOutcomeId": "outcome_maintenance_identified",
+          "postOutcomeId": "outcome_replacement_scheduled",
+          "requiresCapabilityIds": [],
+          "performedByRoleIds": [
+            "1772924110878"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {},
+          "nextActivityId": "act_process_order"
+        },
+        "act_process_order": {
+          "name": "Process Order",
+          "preOutcomeId": "outcome_replacement_scheduled",
+          "postOutcomeId": "outcome_order_processed",
+          "requiresCapabilityIds": [
+            "cap_process_replacement_orders"
+          ],
+          "performedByRoleIds": [
+            "1772924110878"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_process_replacement_orders": {
+              "roleIds": [
+                "1772924110878"
+              ],
+              "activities": [
+                "Handle recurring cartridge orders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_deliver_cartridges"
+        },
+        "act_deliver_cartridges": {
+          "name": "Deliver Cartridges",
+          "preOutcomeId": "outcome_order_processed",
+          "postOutcomeId": "outcome_cartridges_delivered",
+          "requiresCapabilityIds": [],
+          "performedByRoleIds": [
+            "1772924110876"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {},
+          "nextActivityId": "act_support_replacement"
+        },
+        "act_support_replacement": {
+          "name": "Support Replacement",
+          "preOutcomeId": "outcome_cartridges_delivered",
+          "postOutcomeId": "outcome_system_maintained_optimal",
+          "requiresCapabilityIds": [],
+          "performedByRoleIds": [
+            "1772924110878"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {},
+          "nextActivityId": null
+        },
+        "act_assess_integration": {
+          "name": "Assess Integration",
+          "preOutcomeId": "outcome_integration_need_identified",
+          "postOutcomeId": "outcome_integration_assessed",
+          "requiresCapabilityIds": [
+            "cap_integrate_erp_systems"
+          ],
+          "performedByRoleIds": [
+            "1772924110877",
+            "1772924110879"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl_integration_requirements"
+          ],
+          "capabilityPPIT": {
+            "cap_integrate_erp_systems": {
+              "roleIds": [
+                "1772924110877",
+                "1772924110879"
+              ],
+              "activities": [
+                "Assess NetSuite and Salesforce integration requirements"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_configure_systems"
+        },
+        "act_configure_systems": {
+          "name": "Configure Systems",
+          "preOutcomeId": "outcome_integration_assessed",
+          "postOutcomeId": "outcome_systems_configured",
+          "requiresCapabilityIds": [
+            "cap_synchronize_product_data"
+          ],
+          "performedByRoleIds": [
+            "1772924110877",
+            "1772924110879"
+          ],
+          "metricIds": [
+            "metric_product_skus"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_synchronize_product_data": {
+              "roleIds": [
+                "1772924110877",
+                "1772924110879"
+              ],
+              "activities": [
+                "Configure product data synchronization"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_implement_integration"
+        },
+        "act_implement_integration": {
+          "name": "Implement Integration",
+          "preOutcomeId": "outcome_systems_configured",
+          "postOutcomeId": "outcome_integration_implemented",
+          "requiresCapabilityIds": [
+            "cap_automate_data_flow"
+          ],
+          "performedByRoleIds": [
+            "1772924110877",
+            "1772924110879"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_automate_data_flow": {
+              "roleIds": [
+                "1772924110877",
+                "1772924110879"
+              ],
+              "activities": [
+                "Implement automated data flow between systems"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": []
+            }
+          },
+          "nextActivityId": "act_test_data_flow"
+        },
+        "act_test_data_flow": {
+          "name": "Test Data Flow",
+          "preOutcomeId": "outcome_integration_implemented",
+          "postOutcomeId": "outcome_data_flow_tested",
+          "requiresCapabilityIds": [],
+          "performedByRoleIds": [
+            "1772924110877",
+            "1772924110879"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl_data_quality_gate"
+          ],
+          "capabilityPPIT": {},
+          "nextActivityId": "act_deploy_integration"
+        },
+        "act_deploy_integration": {
+          "name": "Deploy Integration",
+          "preOutcomeId": "outcome_data_flow_tested",
+          "postOutcomeId": "outcome_systems_fully_integrated",
+          "requiresCapabilityIds": [],
+          "performedByRoleIds": [
+            "1772924110877"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl_deployment_approval"
+          ],
+          "capabilityPPIT": {},
+          "nextActivityId": null
+        }
+      },
+      "outcomes": {
+        "outcome_customer_filtration_needs_identified": {
+          "name": "Customer filtration needs identified by trade partners"
+        },
+        "outcome_routes_planned": {
+          "name": "Sales routes planned"
+        },
+        "outcome_account_briefed": {
+          "name": "Account intelligence briefed"
+        },
+        "outcome_partner_visited": {
+          "name": "Trade partner visited"
+        },
+        "outcome_orders_taken": {
+          "name": "Orders taken from partners"
+        },
+        "outcome_orders_processed": {
+          "name": "Orders processed"
+        },
+        "outcome_products_delivered": {
+          "name": "Products delivered to partners"
+        },
+        "outcome_system_installed_operational": {
+          "name": "Water filtration system installed and operational at customer site"
+        },
+        "outcome_maintenance_cycle_due": {
+          "name": "12-month cartridge replacement cycle or maintenance need"
+        },
+        "outcome_maintenance_identified": {
+          "name": "Maintenance requirements identified"
+        },
+        "outcome_replacement_scheduled": {
+          "name": "Cartridge replacement scheduled"
+        },
+        "outcome_order_processed": {
+          "name": "Replacement order processed"
+        },
+        "outcome_cartridges_delivered": {
+          "name": "Cartridges delivered"
+        },
+        "outcome_system_maintained_optimal": {
+          "name": "Customer system maintained with replaced cartridges and optimal performance"
+        },
+        "outcome_integration_need_identified": {
+          "name": "Need for integrated business system data"
+        },
+        "outcome_integration_assessed": {
+          "name": "Integration requirements assessed"
+        },
+        "outcome_systems_configured": {
+          "name": "Systems configured for integration"
+        },
+        "outcome_integration_implemented": {
+          "name": "Integration implemented"
+        },
+        "outcome_data_flow_tested": {
+          "name": "Data flow tested and validated"
+        },
+        "outcome_systems_fully_integrated": {
+          "name": "NetSuite and Salesforce fully integrated with reliable data flow"
+        }
+      },
+      "roles": {
+        "1772924110876": {
+          "name": "Sales Team",
+          "description": "Geographic territory-based teams responsible for visiting trade partners and taking orders"
+        },
+        "1772924110877": {
+          "name": "Head of Tech",
+          "description": "Recently hired IT leadership role, hired 10 months ago"
+        },
+        "1772924110878": {
+          "name": "Customer Care",
+          "description": "Provides manual customer information and support to sales teams"
+        },
+        "1772924110879": {
+          "name": "Implementation Partners",
+          "description": "External Salesforce implementation consultants"
+        },
+        "1772924110880": {
+          "name": "Trade Partners",
+          "description": "Plumbers and distributors who sell PureTec products"
+        },
+        "1772924110881": {
+          "name": "Board",
+          "description": "Two brothers serving as co-CEOs making strategic decisions"
+        }
+      },
+      "capabilities": {
+        "cap_plan_sales_routes": {
+          "name": "Plan Sales Routes",
+          "description": "Geographic territory planning and route optimization for sales visits"
+        },
+        "cap_generate_account_intelligence": {
+          "name": "Generate Account Intelligence",
+          "description": "Compile customer history, orders, and opportunities before visits"
+        },
+        "cap_process_partner_orders": {
+          "name": "Process Partner Orders",
+          "description": "Handle order taking from plumbers and distributors"
+        },
+        "cap_support_product_installation": {
+          "name": "Support Product Installation",
+          "description": "Provide installation guidance and support to trade partners"
+        },
+        "cap_track_maintenance_schedules": {
+          "name": "Track Maintenance Schedules",
+          "description": "Monitor 12-month cartridge replacement cycles"
+        },
+        "cap_process_replacement_orders": {
+          "name": "Process Replacement Orders",
+          "description": "Handle recurring cartridge and parts orders"
+        },
+        "cap_integrate_erp_systems": {
+          "name": "Integrate ERP Systems",
+          "description": "Connect NetSuite ERP with Salesforce CRM"
+        },
+        "cap_synchronize_product_data": {
+          "name": "Synchronize Product Data",
+          "description": "Manage 4000+ product SKUs across systems"
+        },
+        "cap_automate_data_flow": {
+          "name": "Automate Data Flow",
+          "description": "Eliminate manual processes through system integration"
+        }
+      },
+      "controls": {
+        "ctrl_order_validation": {
+          "name": "Order Validation",
+          "description": "Validate partner orders before processing"
+        },
+        "ctrl_integration_requirements": {
+          "name": "Integration Requirements Gate",
+          "description": "Validate integration requirements before proceeding"
+        },
+        "ctrl_data_quality_gate": {
+          "name": "Data Quality Gate",
+          "description": "Ensure data quality before deployment"
+        },
+        "ctrl_deployment_approval": {
+          "name": "Deployment Approval",
+          "description": "Final approval gate for system deployment"
+        }
+      },
+      "metrics": {
+        "metric_annual_growth_rate": {
+          "name": "Annual Growth Rate",
+          "current": "15%",
+          "target": "not specified"
+        },
+        "metric_product_skus": {
+          "name": "Product SKUs",
+          "current": "4000+",
+          "target": "not specified"
+        },
+        "metric_selling_time_lost": {
+          "name": "Selling Time Lost",
+          "current": "3 days per week",
+          "target": "not specified"
+        },
+        "metric_cartridge_replacement_cycle": {
+          "name": "Cartridge Replacement Cycle",
+          "current": "12 months",
+          "target": "12 months"
+        }
+      }
+    }
+  },
+  "heatmaps": [
+    {
+      "heatmapId": "heatmap-vs_distribute_through_trade_partners-1772924302465",
+      "scaffoldId": "scaffold_puretec_water_systems",
+      "valueStreamId": "vs_distribute_through_trade_partners",
+      "observations": [
+        {
+          "observationId": "fr_001_salesforce_customer_intelligence_gap",
+          "category": "DataSignalFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act_brief_account"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 7
+          },
+          "rationale": "Salesforce lacks customer intelligence requiring manual information retrieval from customer care, creating information fragmentation and decision latency during account briefing",
+          "evidence": [
+            "Salesforce lacks customer intelligence requiring manual information from customer care"
+          ],
+          "observedAt": "2026-03-07T22:57:58.888Z"
+        },
+        {
+          "observationId": "fr_002_sales_admin_overhead",
+          "category": "ProcessHandoffFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act_brief_account"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 7
+          },
+          "rationale": "Sales teams waste 3 days per week on admin and meetings instead of selling, indicating process inefficiencies that stall productive work",
+          "evidence": [
+            "Sales teams waste 3 days per week on admin and meetings instead of selling"
+          ],
+          "observedAt": "2026-03-07T22:57:58.888Z"
+        },
+        {
+          "observationId": "fr_003_disparate_systems_usage",
+          "category": "TechnologyIntegrationFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act_process_orders"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 6
+          },
+          "rationale": "Staff forced to use multiple disparate systems due to missing processes, creating systems interoperability gaps and automation friction",
+          "evidence": [
+            "Staff forced to use multiple disparate systems due to missing processes"
+          ],
+          "observedAt": "2026-03-07T22:57:58.888Z"
+        },
+        {
+          "observationId": "fr_004_partner_proactivity_decline",
+          "category": "IncentiveCapacityFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act_visit_partner"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 6
+          },
+          "rationale": "Trade partners becoming order takers rather than proactive sellers, indicating performance measures or capacity constraints distorting desired behavior",
+          "evidence": [
+            "Trade partners becoming order takers rather than proactive sellers"
+          ],
+          "observedAt": "2026-03-07T22:57:58.888Z"
+        }
+      ],
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-07T22:57:58.888Z"
+    },
+    {
+      "heatmapId": "heatmap-vs_maintain_customer_systems-1772924302465",
+      "scaffoldId": "scaffold_puretec_water_systems",
+      "valueStreamId": "vs_maintain_customer_systems",
+      "observations": [],
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-07T22:57:58.888Z"
+    },
+    {
+      "heatmapId": "heatmap-vs_integrate_business_systems-1772924302465",
+      "scaffoldId": "scaffold_puretec_water_systems",
+      "valueStreamId": "vs_integrate_business_systems",
+      "observations": [
+        {
+          "observationId": "fr_005_salesforce_customization_complexity",
+          "category": "TechnologyIntegrationFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act_configure_systems"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 8
+          },
+          "rationale": "90+ Salesforce customizations making standard implementations difficult, creating significant systems interoperability barriers and automation gaps",
+          "evidence": [
+            "90+ Salesforce customizations making standard implementations difficult"
+          ],
+          "observedAt": "2026-03-07T22:57:58.888Z"
+        },
+        {
+          "observationId": "fr_006_netsuites_integration_delays",
+          "category": "TechnologyIntegrationFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act_implement_integration"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 9
+          },
+          "rationale": "NetSuite integration project extended from 3 months to over 9 months, indicating severe systems integration friction and implementation barriers",
+          "evidence": [
+            "NetSuite integration project extended from 3 months to over 9 months"
+          ],
+          "observedAt": "2026-03-07T22:57:58.888Z"
+        },
+        {
+          "observationId": "fr_007_implementation_partner_failures",
+          "category": "GovernanceRiskFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act_implement_integration"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 8
+          },
+          "rationale": "Multiple implementation partner failures causing delivery instability, indicating control layering issues and governance friction in vendor management",
+          "evidence": [
+            "Multiple implementation partner failures causing delivery instability"
+          ],
+          "observedAt": "2026-03-07T22:57:58.888Z"
+        },
+        {
+          "observationId": "fr_008_mulesoft_integration_failure",
+          "category": "TechnologyIntegrationFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act_test_data_flow"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 8
+          },
+          "rationale": "Unable to integrate NetSuite with MuleSoft despite investment, indicating fundamental systems interoperability failure and technology integration barriers",
+          "evidence": [
+            "Unable to integrate NetSuite with MuleSoft despite investment"
+          ],
+          "observedAt": "2026-03-07T22:57:58.888Z"
+        }
+      ],
+      "bindingConstraint": {
+        "findingId": "bc_001",
+        "bindingAnchor": {
+          "anchorType": "Activity",
+          "anchorId": "act_implement_integration"
+        },
+        "bindingAnchorObservationId": "fr_006_netsuites_integration_delays",
+        "justification": "Implementation Integration activity shows highest constraint characteristics with 9-month delay (3x planned duration), multiple partner failures, and downstream impact on all subsequent integration activities. This bottleneck prevents system-wide integration completion.",
+        "constraintScoring": {
+          "candidates": [
+            {
+              "anchorId": "act_configure_systems",
+              "eligible": false,
+              "scores": {
+                "observationFrequency": 1,
+                "authorityCentralisation": 2,
+                "downstreamDependency": 1,
+                "controlLayering": 2,
+                "capacityConstraint": 2
+              },
+              "totalScore": 8
+            },
+            {
+              "anchorId": "act_implement_integration",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 2,
+                "authorityCentralisation": 2,
+                "downstreamDependency": 3,
+                "controlLayering": 2,
+                "capacityConstraint": 3
+              },
+              "totalScore": 12
+            },
+            {
+              "anchorId": "act_test_data_flow",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 1,
+                "authorityCentralisation": 1,
+                "downstreamDependency": 2,
+                "controlLayering": 1,
+                "capacityConstraint": 2
+              },
+              "totalScore": 7
+            }
+          ],
+          "selectedAnchorId": "act_implement_integration",
+          "selectionRationale": "Highest total score (12) among eligible candidates with maximum downstream dependency and capacity constraint scores"
+        },
+        "confidence": 0.8,
+        "observedAt": "2026-03-07T22:57:58.888Z"
+      },
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-07T22:57:58.888Z"
+    }
+  ]
+}
