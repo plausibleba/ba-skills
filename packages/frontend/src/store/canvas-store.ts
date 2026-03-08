@@ -8,8 +8,6 @@ import type {
   NetworkNode,
   NetworkEdge,
   TransformationUserStory,
-  CapabilityInstanceView,
-  TopologyView,
 } from "../types.ts";
 import { resolveScaffoldMeasures } from "./scaffold-resolver.ts";
 import { validateThroughputRules } from "./throughput-validator.ts";
@@ -17,8 +15,6 @@ import {
   deriveNetworkEdges,
   computeNodePositions,
   buildNetworkNodes,
-  deriveCapabilityInstances,
-  deriveTopologyView,
 } from "./network-derivation.ts";
 
 type ViewMode = "network" | "stage" | "intake";
@@ -41,10 +37,6 @@ interface CanvasState {
   networkNodes: NetworkNode[];
   networkForwardEdges: NetworkEdge[];
   networkFeedbackEdges: NetworkEdge[];
-
-  // D-051/D-052: Derived artefacts (Session 11)
-  capabilityInstanceView: CapabilityInstanceView | null;
-  topologyView: TopologyView | null;
 
   // Transformation layer
   userStoriesByActivity: Record<string, TransformationUserStory[]>;
@@ -77,12 +69,25 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   networkNodes: [],
   networkForwardEdges: [],
   networkFeedbackEdges: [],
-  capabilityInstanceView: null,
-  topologyView: null,
   userStoriesByActivity: {},
 
   loadScaffold: async (json: ScaffoldData) => {
-    const resolved = resolveScaffoldMeasures(json);
+    // Normalise pipeline-generated scaffolds: ensure every metric has a measures block
+    // and elements.measures exists, so downstream validators don't crash on undefined.
+    const normalised = {
+      ...json,
+      elements: {
+        ...json.elements,
+        measures: json.elements.measures ?? {},
+        metrics: Object.fromEntries(
+          Object.entries(json.elements.metrics ?? {}).map(([id, m]: [string, any]) => [
+            id,
+            m.measures ? m : { ...m, measures: {} },
+          ])
+        ),
+      },
+    } as ScaffoldData;
+    const resolved = resolveScaffoldMeasures(normalised);
     set({ scaffoldData: resolved, error: null, loading: true });
 
     // Derive network topology immediately (before validation)
@@ -91,17 +96,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const positions = computeNodePositions(vsIds, forwardEdges, resolved);
     const nodes = buildNetworkNodes(resolved, get().heatmapsByVs, positions);
 
-    // D-051/D-052: Derive capability instances and topology view
-    const scaffoldHash = resolved.modelIntegrityHash ?? resolved.scaffoldId;
-    const ciView = deriveCapabilityInstances(resolved, scaffoldHash);
-    const topology = deriveTopologyView(resolved, ciView, scaffoldHash);
-
     set({
       networkNodes: nodes,
       networkForwardEdges: forwardEdges,
       networkFeedbackEdges: feedbackEdges,
-      capabilityInstanceView: ciView,
-      topologyView: topology,
     });
 
     // Multi-VS → stay in network view; single-VS → generate canvas
@@ -341,8 +339,6 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       networkNodes: [],
       networkForwardEdges: [],
       networkFeedbackEdges: [],
-      capabilityInstanceView: null,
-      topologyView: null,
       userStoriesByActivity: {},
     });
   },
