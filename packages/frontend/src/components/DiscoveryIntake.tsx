@@ -459,20 +459,12 @@ ${transcript}`;
 
       // Merge: Pass 1 is authoritative for VS structure; Pass 2 adds capabilities per VS
       const mergedVS = confirmedVS.map((vs1: any, i: number) => {
-        // A2 now returns capabilityMap (L1/L2/L3) + stageCapabilities instead of capabilitiesByVS.
-        // For form display, flatten L3 capabilities as a fallback list.
-        const legacyCaps = pass2Result.capabilitiesByVS ?? [];
-        const capEntry = legacyCaps.find((c: any) => c.vsName === vs1.name) ?? legacyCaps[i];
+        const capEntry = (pass2Result.capabilitiesByVS ?? []).find((c: any) => c.vsName === vs1.name)
+          ?? (pass2Result.capabilitiesByVS ?? [])[i];
         return {
           ...vs1,
           id: vs1.id ?? Date.now() + i,
-          // A1 now returns enriched stage objects { name, entryCriteria, exitCriteria, ... }
-          // Normalise to { name, confidence } for StageTagInput display.
-          stages: (vs1.stages ?? []).map((s: any) =>
-            typeof s === "string"
-              ? { name: s, confidence: "extracted" }
-              : { name: s.name ?? String(s), confidence: "extracted" }
-          ),
+          stages: vs1.stages ?? [],
           extractedCapabilities: capEntry?.capabilities ?? [],
         };
       });
@@ -645,7 +637,7 @@ CRITICAL: All 15 element maps must be present, even if empty. Include elementTyp
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
-          max_tokens: 8000,
+          max_tokens: 16000,
           temperature: 0,
           messages: [{ role: "user", content: pass3Prompt }]
         })
