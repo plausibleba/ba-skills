@@ -6,6 +6,7 @@ import type {
   TransformationUserStory,
 } from "../../types.ts";
 import { humanizeId } from "../../lib/humanize-id.ts";
+import { callLLM } from "../../domain/pipeline/llm-client";
 
 /* ── Category label map ─────────────────────────────────────────────── */
 const CATEGORY_LABELS: Record<string, { label: string; colour: string }> = {
@@ -403,19 +404,13 @@ SBR rationale: ${obs.rationale}
 Generate the user story.`;
 
   try {
-    const res = await fetch("/api/claude", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        system,
-        messages: [{ role: "user", content: user }],
-      }),
+    const llmRes = await callLLM({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      temperature: 0,
+      messages: [{ role: "user", content: `${system}\n\n${user}` }],
     });
-    const data = await res.json();
-    const raw = data.content?.find((b: { type: string }) => b.type === "text")?.text ?? "";
-    const parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
+    const parsed = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
 
     return {
       storyId: `US-${obs.observationId.slice(-8)}-${Date.now().toString(36)}`,

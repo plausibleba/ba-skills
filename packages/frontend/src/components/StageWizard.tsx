@@ -4,6 +4,7 @@ import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforc
 import SAP_LIB from "../fixtures/vendor-libraries/sap-s4hana.json";
 import type { VendorFeatureLibrary, Solution, FrictionObservation, HeatmapData } from "../types.ts";
 import { humanizeId } from "../lib/humanize-id.ts";
+import { callLLM } from "../domain/pipeline/llm-client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -58,20 +59,13 @@ Return ONLY valid JSON:
   }]
 }`;
 
-  const apiUrl = import.meta.env.DEV ? "/api/anthropic/v1/messages" : "/api/claude";
-  const res = await fetch(apiUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 6000,
-      temperature: 0,
-      messages: [{ role: "user", content: prompt }],
-    }),
+  const llmRes = await callLLM({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 6000,
+    temperature: 0,
+    messages: [{ role: "user", content: prompt }],
   });
-  const data = await res.json();
-  const text = data.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-  const result = JSON.parse(text.replace(/```json|```/g, "").trim());
+  const result = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
   const hm = result.heatmaps?.[0];
   if (!hm) throw new Error("No heatmap in Pass 3 response");
 
@@ -156,20 +150,13 @@ Return ONLY valid JSON:
   }]
 }`;
 
-  const apiUrl = import.meta.env.DEV ? "/api/anthropic/v1/messages" : "/api/claude";
-  const res = await fetch(apiUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4000,
-      temperature: 0,
-      messages: [{ role: "user", content: prompt }],
-    }),
+  const llmRes = await callLLM({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 4000,
+    temperature: 0,
+    messages: [{ role: "user", content: prompt }],
   });
-  const data = await res.json();
-  const text = data.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-  const result = JSON.parse(text.replace(/```json|```/g, "").trim());
+  const result = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
 
   const solutionsByObs: Record<string, Solution[]> = {};
   (result.enriched ?? []).forEach((e: any) => {
