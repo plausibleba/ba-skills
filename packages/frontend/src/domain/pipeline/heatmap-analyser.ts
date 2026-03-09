@@ -146,7 +146,7 @@ export async function runPassC(
     });
     const data = await res.json();
     const text = data.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-    const result = JSON.parse(text.replace(/```json|```/g, "").trim());
+    const result = JSON.parse(text.replace(/`{3}json|`{3}/g, "").trim());
 
     const heatmaps = (result.heatmaps ?? []).map((h: any) => ({
       heatmapId: `heatmap-${h.valueStreamId}-${Date.now()}`,

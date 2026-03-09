@@ -53,7 +53,7 @@ export const useDiscoverySessionStore = create<DiscoverySessionState>((set, get)
       ...(progress.scaffold !== undefined && { scaffold: progress.scaffold }),
       ...(progress.gate1 !== undefined && { gate1: progress.gate1 }),
       ...(progress.gate2 !== undefined && { gate2: progress.gate2 }),
-      ...(progress.heatmaps !== undefined && { heatmaps: progress.heatmaps }),
+      // heatmaps removed from PipelineProgress — generated separately now
       ...(progress.bundle !== undefined && { bundle: progress.bundle }),
     });
   },

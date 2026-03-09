@@ -1,7 +1,7 @@
 // ─── Scaffold Formaliser — Pass B ───────────────────────────────────────────
-// B1: Outcomes + Activities (Steps 05-06) → Gate 1 → one bounded repair retry
-// B2: Controls + Metrics + Conditions + Assembly (Steps 07-10) → Gate 2
-// temperature: 0 enforced in prompt — proxy enforcement is a separate task (D-069)
+// SINGLE SOURCE OF TRUTH for scaffold generation prompt.
+// B1+B2 combined: one LLM call → Gate 1 → one bounded repair retry → Gate 2
+// temperature: 0 enforced — proxy enforcement is a separate task (D-069)
 
 import type { DiscoveryIR } from "./discovery-ir";
 import { makeId } from "./discovery-ir";
@@ -78,90 +78,125 @@ function buildMetricContext(ir: DiscoveryIR) {
   }));
 }
 
+function buildTechContext(ir: DiscoveryIR) {
+  return ir.tech.filter((t) => t.name).map((t) => ({
+    id: t.id,
+    name: t.name,
+    type: t.type,
+  }));
+}
+
 function buildScaffoldPrompt(ir: DiscoveryIR): string {
   const vsContext = buildVsContext(ir);
   const roleContext = buildRoleContext(ir);
   const metricContext = buildMetricContext(ir);
+  const techContext = buildTechContext(ir);
 
   return `You are a business architect formalising a value stream model into a VCC ScaffoldModel.
 
 ## Determinism Requirement
-Pure function — same inputs, same output every time. IDs derived mechanically from element names
-(snake_case with type prefix). No creative variation. No invented elements.
+This is a structural formalisation step — a pure function. Given these inputs, produce the same output every time. IDs are derived mechanically from element names (snake_case with type prefix). No creative variation.
 
 ## ID Convention
-vs_<snake>  outcome_<snake>  act_<snake>  cap_<snake>  role_<snake>  ctrl_<snake>  metric_<snake>
-
-## FSM Chain Rules (CRITICAL — violations fail Gate 1)
-1. preOutcomeId !== postOutcomeId on every Activity (no no-ops)
-2. activity[i].postOutcomeId === activity[i+1].preOutcomeId (adjacent consistency)
-3. nextActivityId chain: no breaks, no cycles, last activity has nextActivityId: null
-4. All activities reachable from chain head
-5. One Activity per stage — chain length equals number of stages
-6. performedByRoleIds: at least one role per activity
-
-## Outcome Naming — USE THE PROVIDED ENTRY/EXIT CRITERIA
-Each stage has entryCriteria and exitCriteria. Use these to name Outcomes precisely:
-  - preOutcome of stage 1 = trigger state (from VS trigger field)
-  - postOutcome of stage N = derived from exitCriteria of stage N
-  - preOutcome of stage N+1 = SAME outcome as postOutcome of stage N (shared boundary)
-  - postOutcome of final stage = VS terminalOutcome
-This produces semantically meaningful Outcome names rather than generic placeholders.
+- vs_<snake_case_name>     e.g. vs_lead_to_customer
+- outcome_<snake_case>     e.g. outcome_lead_qualified
+- act_<snake_case_name>    e.g. act_qualify_lead  (SHORT — 2-4 words max)
+- cap_<snake_case_name>    e.g. cap_lead_qualification
+- role_<snake_case_name>   e.g. role_credit_analyst
+- metric_<snake_case_name>
+- io_<snake_case_name>     e.g. io_customer_order
 
 ## Naming Rules (CRITICAL)
-- Activity names: SHORT verb phrases, 2-5 words max. E.g. "Qualify lead", "Conduct discovery call".
+- Activity names: SHORT verb phrases, 2-5 words max. E.g. "Qualify lead", "Conduct discovery call", "Prepare proposal". Do NOT repeat the full stage description. Activity names must be DIFFERENT from capability names — activities are actions, capabilities are abilities.
 - VS names: Use EXACTLY the names provided in the inputs. Do not embellish or reword them.
-- Outcome names: Short noun phrases. E.g. "Lead Qualified", "Requirements Understood".
+- Outcome names: Short noun phrases derived from stage entry/exit criteria. E.g. "Lead Qualified", "Requirements Understood".
 
-## Capability Assignment — USE PROVIDED CAPABILITIES ONLY
-Each stage specifies which L3 capabilities it requires. Use exactly these in requiresCapabilityIds.
-Do not invent new capabilities.
-For capabilityPPIT: for each requiresCapabilityId include
-  { roleIds: [...], activities: ["brief description"], informationObjectIds: [], technologyAppIds: [] }
+## FSM Chain Rules (CRITICAL — violations fail validation)
+Each Value Stream is a single linear activity chain:
+1. Each activity has preOutcomeId !== postOutcomeId (no no-ops)
+2. activity[i].postOutcomeId === activity[i+1].preOutcomeId (adjacent consistency)
+3. nextActivityId chain has no breaks, no cycles — last activity has nextActivityId: null
+4. All activities reachable from chain head
+5. One activity per stage. Chain length = number of stages.
+6. performedByRoleIds: at least one role per activity
 
-## Registry Population (CRITICAL — empty registries fail Gate 2)
+## Registry Population (CRITICAL — empty registries fail validation)
 You MUST populate the elements registries for EVERY ID referenced in activities:
-- For each role ID in performedByRoleIds → create entry in elements.roles with { name, description, elementType: "Role" }
-- For each capability ID in requiresCapabilityIds → create entry in elements.capabilities with { name, description, elementType: "Capability" }
-- For each control ID in controlIds → create entry in elements.controls with { name, description, elementType: "Control" }
-DO NOT leave capabilities, roles, or controls as empty objects.
+- For each unique role ID in any activity's performedByRoleIds → create an entry in elements.roles with { name, description, elementType: "Role" }
+- For each unique capability ID in any activity's requiresCapabilityIds → create an entry in elements.capabilities with { name, description, elementType: "Capability" }
+- For each unique control ID in any activity's controlIds → create an entry in elements.controls with { name, description, elementType: "Control" }
+- For each metric → create an entry in elements.metrics with { name, elementType: "Metric" }
+- For each outcome → create an entry in elements.outcomes with { name, elementType: "Outcome" }
+- For each information object → create an entry in elements.informationObjects with { name, elementType: "InformationObject" }
+DO NOT leave capabilities, roles, or controls as empty objects. Every referenced ID must have a registry entry.
 
-## Controls
-Add controls where approval gates or governance checkpoints are evident from stage stakeholder lists.
-If a stage has an approval role, create a corresponding control linked to that activity.
+## Value Stream Fields (CRITICAL)
+Each VS must include: name, description, activityIds, layoutZone (use the zone from inputs), accountableStakeholder (from inputs).
 
-## Inputs
-\${JSON.stringify({ valueStreams: vsContext, roles: roleContext, metrics: metricContext }, null, 2)}
+## Capability Assignment (CRITICAL — capabilities must be SHARED across activities)
+Each activity MUST have 2-4 capabilities in requiresCapabilityIds. Capabilities are business abilities
+(e.g. "Customer Relationship Management", "Order Fulfilment", "Data Management") that are SHARED across
+multiple activities and value streams. Do NOT create 1:1 capability-to-activity mappings.
+Use the provided capabilities as a starting point. If fewer than 2 caps are available per activity,
+derive additional shared capabilities from the domain context (e.g. "Data Management", "Compliance Management",
+"Stakeholder Communication", "Performance Monitoring").
+Capabilities that appear in multiple activities create structural coupling — this is essential for the model.
 
-## Output — return ONLY valid JSON, no markdown fences:
+## Information Objects (CRITICAL)
+For each activity, create 2-3 informationObjects (business documents, data records, reports) that the
+activity produces or consumes. E.g. "Customer Order", "Installation Record", "Service Schedule",
+"Territory Plan", "Sales Report". Put entries in elements.informationObjects with { name, elementType: "InformationObject" }.
+Reference them in the activity via informationObjectIds: [...].
+
+## Metrics (CRITICAL — wire to activities)
+Each activity should reference 0-2 relevant metricIds. Metrics from the discovery inputs MUST appear
+in elements.metrics AND be referenced by at least one activity's metricIds array.
+
+## Your Task
+Given the confirmed VS definitions, stages, roles, and capabilities below, produce a complete ScaffoldModel.json.
+
+For each VS:
+- Create one Outcome per stage boundary (n stages → n+1 outcomes)
+- Create one Activity per stage with pre/post outcomes, 2-4 capabilities, 1-2 roles, 2-3 information objects
+- Ensure capabilities are SHARED — the same capability should appear in multiple activities across VS
+- Distribute roles across activities sensibly based on stage content
+- Wire metrics to the activities they measure
+
+Confirmed inputs:
+${JSON.stringify({ valueStreams: vsContext, roles: roleContext, tech: techContext, metrics: metricContext }, null, 2)}
+
+Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.0.0",
   "scaffoldId": "scaffold_<org_name_snake>",
-  "name": "<Org Name>",
+  "name": "<Org Name> — Operating Model",
   "description": "<brief>",
   "createdAt": "<ISO timestamp>",
-  "crossStreamOutcomes": [],
-  "scaffoldIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
   "elements": {
     "valueStreams": { "<vs_id>": { "name": "...", "description": "...", "activityIds": [], "layoutZone": "ecosystem|knowledge", "accountableStakeholder": "role_...", "elementType": "ValueStream" } },
-    "activities": {},
+    "activities": { "<act_id>": { "name": "...", "preOutcomeId": "...", "postOutcomeId": "...", "nextActivityId": "...|null", "requiresCapabilityIds": ["cap_a", "cap_b"], "performedByRoleIds": ["role_x"], "informationObjectIds": ["io_a", "io_b"], "metricIds": [], "controlIds": [], "elementType": "Activity" } },
     "outcomes": { "<outcome_id>": { "name": "...", "elementType": "Outcome" } },
     "roles": { "<role_id>": { "name": "...", "description": "...", "elementType": "Role" } },
     "capabilities": { "<cap_id>": { "name": "...", "description": "...", "elementType": "Capability" } },
+    "informationObjects": { "<io_id>": { "name": "...", "elementType": "InformationObject" } },
     "controls": {},
-    "metrics": {}
+    "constraints": {},
+    "directives": {},
+    "deonticLogic": {},
+    "flowLogic": {},
+    "concepts": {},
+    "properties": {},
+    "metrics": {},
+    "measures": {},
+    "conditions": {}
   }
 }
 
-CRITICAL field names on activities:
-  name, preOutcomeId, postOutcomeId, requiresCapabilityIds, performedByRoleIds,
-  metricIds, controlIds, capabilityPPIT, nextActivityId
-CRITICAL field names on valueStreams:
-  name, description, activityIds, layoutZone, accountableStakeholder
-CRITICAL: Every ID referenced in activities MUST have a corresponding registry entry.`;
+CRITICAL: All element maps must be present, even if empty. Every ID referenced in activities MUST have a corresponding registry entry.`;
 }
 
-function buildRepairPrompt(originalPrompt: string, scaffoldJson: string, gateErrors: string[]): string {
+function buildRepairPrompt(originalPrompt: string, _scaffoldJson: string, gateErrors: string[]): string {
   return `${originalPrompt}
 
 ## REPAIR REQUIRED
@@ -173,15 +208,9 @@ Fix the errors and return the corrected complete ScaffoldModel JSON. No markdown
 
 export async function runPassB(
   ir: DiscoveryIR,
-  apiUrl: string
 ): Promise<FormaliseResult> {
-  const now = new Date().toISOString();
+  const apiUrl = import.meta.env.DEV ? "/api/anthropic/v1/messages" : "/api/claude";
   const scaffoldPrompt = buildScaffoldPrompt(ir);
-
-  // ── B1+B2 combined call ──────────────────────────────────────────────────
-  // We use one LLM call for the full scaffold (B1+B2 combined is still faster
-  // and cheaper than two calls at this stage). Gate 1 is enforced on the result.
-  // If Gate 1 fails, one bounded repair attempt is made.
 
   let scaffold: any = null;
   let repairAttempted = false;
@@ -193,14 +222,14 @@ export async function runPassB(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 8000,
+        max_tokens: 16000,
         temperature: 0,
         messages: [{ role: "user", content: scaffoldPrompt }],
       }),
     });
     const data = await res.json();
     const text = data.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-    scaffold = JSON.parse(text.replace(/```json|```/g, "").trim());
+    scaffold = JSON.parse(text.replace(/`{3}json|`{3}/g, "").trim());
   } catch (e) {
     return {
       scaffold: null,
@@ -228,17 +257,16 @@ export async function runPassB(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
-          max_tokens: 8000,
+          max_tokens: 16000,
           temperature: 0,
           messages: [{ role: "user", content: repairPrompt }],
         }),
       });
       const data = await res.json();
       const text = data.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-      scaffold = JSON.parse(text.replace(/```json|```/g, "").trim());
+      scaffold = JSON.parse(text.replace(/`{3}json|`{3}/g, "").trim());
       gate1 = runGate1(scaffold);
     } catch (e) {
-      // Repair call failed — return with original scaffold and failed gate
       return {
         scaffold,
         gate1,

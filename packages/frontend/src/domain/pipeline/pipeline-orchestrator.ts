@@ -1,9 +1,11 @@
 // ─── Pipeline Orchestrator ───────────────────────────────────────────────────
 // Three-pass runtime (D-065). DiscoveryIntake.tsx calls this as a thin shell.
 //
-// Pass A — Discovery IR  (two internal LLM calls: A1 VS+stages, A2 roles+caps)
+// Pass A — Discovery IR  (two LLM calls: A1 VS+stages, A2 roles+caps+signals)
 // Pass B — Scaffold      (one LLM call, Gate 1 with one repair retry, Gate 2)
-// Pass C — Heatmap       (one LLM call, null bindingConstraint valid)
+//
+// Heatmaps (former Pass C) are generated separately via "Assess Friction" on
+// the Network/Stage views. This halves initial generation time.
 //
 // Each artefact is persisted via onProgress callbacks so UI can recover
 // if a later pass fails.
@@ -11,7 +13,6 @@
 import { buildDiscoveryIR } from "./discovery-ir";
 import type { DiscoveryIR } from "./discovery-ir";
 import { runPassB } from "./scaffold-formaliser";
-import { runPassC } from "./heatmap-analyser";
 import type { GateResult } from "./scaffold-gates";
 
 // ── Progress state fed back to the UI ────────────────────────────────────────
@@ -24,7 +25,6 @@ export type PipelineStatus =
   | "pass-b"           // formalising scaffold
   | "pass-b-repairing" // Gate 1 failed, attempting repair
   | "pass-b-failed"    // Gate 1 still failed after repair — surface to user
-  | "pass-c"           // generating heatmap
   | "done"
   | "error";
 
@@ -34,247 +34,131 @@ export interface PipelineProgress {
   scaffold?: any;                      // available after pass-b
   gate1?: GateResult;
   gate2?: GateResult;
-  heatmaps?: any[];                    // available after pass-c
   bundle?: any;                        // available after done
   errorMessage?: string;
 }
 
 export type ProgressCallback = (progress: PipelineProgress) => void;
 
-// ── Pass A prompts (carried over from original DiscoveryIntake.tsx) ───────────
+// ── Pass A1 prompt — VS Definition + Lifecycle Stages ────────────────────────
+// SINGLE SOURCE OF TRUTH — all VS extraction logic lives here.
 
 function buildPass1Prompt(transcript: string): string {
-  return `You are a business architect conducting a discovery diagnostic for a governance engagement.
-Your task is to identify the ValueStreams and their Lifecycle Stages from the source material below.
+  return `You are a business architect defining Value Streams for a governance diagnostic.
+A ValueStream is the end-to-end flow that delivers measurable stakeholder value — triggered by a defined need, ending at a verifiable outcome. Work at board level: structural flow of value, not process detail.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-FOUNDATIONAL DEFINITIONS (apply these strictly)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## Your Task
+From the source material below, identify ALL Value Streams present. Do not cap the number — extract every distinct end-to-end flow the source describes.
 
-A ValueStream is the end-to-end flow of activities that delivers measurable stakeholder value,
-triggered by a defined stakeholder need. It must have:
-  - A named beneficiary (who receives the value)
-  - A trigger (the observable event that starts the stream)
-  - A terminal outcome (the state that represents completion)
-  - Board-level visibility (a senior executive would recognise this as a meaningful unit of value delivery)
+## Rules
+- Each VS is a RECURRING operational flow that delivers value repeatedly — not a one-time project or strategic initiative. "Lead to Customer" and "Order to Delivery" are VS. "Technology Integration" and "Digital Transformation" are projects/initiatives — do NOT include them as VS.
+- Each VS is outcome-driven, not function-driven ("Member Certification Lifecycle" not "Certification Team Activities")
+- Each VS has a clear trigger event and a clear terminal outcome
+- VS names are concise, 2-5 words, title case. Use "<Trigger> to <Outcome>" pattern where natural (e.g. "Lead to Customer", "Order to Delivery", "Issue to Resolution", "Hire to Productive").
+- zone: "ecosystem" = externally-facing (customer, member, partner, market); "knowledge" = internally-facing (operations, reporting, governance)
+- Stages: 4-8 per VS. Each stage = a governance phase or progression milestone, not a task. MECE — no gaps, no overlaps.
+- If the source contains tab names, sheet names, section headings, or column groupings that map to distinct end-to-end flows — each one is likely a separate VS. Extract them all.
 
-A ValueStream Stage is a major governance-visible phase of progression — where decision authority
-is exercised, handoffs occur, and approvals gate progress. Not a task. A phase.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-WHAT IS NOT A VALUESTREAM — exclude these entirely
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✗ IT integration projects ("Integrate NetSuite and Salesforce" is a project — record as pain point)
-✗ System implementations or infrastructure initiatives
-✗ Technology platforms or data management functions
-✗ Function-driven groupings ("Sales Activities", "Operations", "Finance")
-✗ Business units or departments
-✗ Anything without a named external or internal beneficiary receiving value
-
-If you encounter technology integration problems, record them as pain points — NOT value streams.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EXTRACTION RULES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. Extract only ValueStreams evidenced or plausibly inferable from the source. Do not invent.
-2. zone: "ecosystem" = value to external parties (customers, partners, distributors, members)
-         "knowledge" = value to internal governance (risk, compliance, reporting)
-3. 3-7 stages per ValueStream. Name stages Verb-Noun: "Qualify Partner", "Process Order".
-4. Name ValueStreams at board level — concise, outcome-oriented.
-   CORRECT: "Channel Partner Distribution"   INCORRECT: "Manage the Channel"
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-STAGE STRUCTURE — specify all five properties per stage
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Each stage must include:
-  entryCriteria  — objective observable state that must be true to begin (not an action)
-  exitCriteria   — objective observable state that signals completion
-                   CRITICAL: exit of stage N must logically connect to entry of stage N+1
-  stakeholders   — named roles who participate: execution roles AND governance/approval roles
-  valueItem      — the concrete output or artefact this stage produces (noun phrase)
-  metrics        — performance indicators for this stage; extract from source if mentioned,
-                   otherwise include the most plausible indicator and set evidenced: false
-
-Governance lens — actively look for:
-  - Decision bottlenecks: where is authority concentrated in few roles?
-  - Approval gates: what must be signed off before the stage exits?
-  - Handoff points: where does work transfer between teams or roles?
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-OUTPUT — return ONLY valid JSON, no markdown fences
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+Return ONLY valid JSON, no markdown fences:
 {
   "org": {
-    "name": "Organisation name",
-    "industry": "Industry sector",
-    "size": "SME | Mid-Market | Enterprise",
-    "stakeholder": "Primary accountable executive (title, not name)"
+    "name": "",
+    "industry": "",
+    "companySize": "",
+    "description": "",
+    "stakeholder": "",
+    "confidence": "high|medium|low"
   },
   "valueStreams": [
     {
-      "name": "ValueStream name — concise, outcome-oriented",
-      "description": "1-2 sentences: what value this delivers, to whom, why it matters",
-      "zone": "ecosystem | knowledge",
-      "trigger": "Observable event that initiates this stream",
-      "terminalOutcome": "State representing completion — what the beneficiary now has",
-      "stakeholder": "Named beneficiary (role or segment)",
+      "id": 1,
+      "name": "Member Certification Lifecycle",
+      "description": "End-to-end flow from application through credential maintenance",
+      "zone": "ecosystem",
+      "trigger": "Candidate submits certification application",
+      "terminalOutcome": "Credential issued and maintained in good standing",
+      "stakeholder": "Candidate, Employer",
+      "confidence": "high|medium|low",
       "stages": [
-        {
-          "name": "Verb-Noun stage name",
-          "entryCriteria": "Objective state that must be true to begin this stage",
-          "exitCriteria": "Objective state signalling this stage is complete",
-          "stakeholders": ["Role name (execution)", "Role name (approval if applicable)"],
-          "valueItem": "Concrete output or artefact this stage produces",
-          "metrics": [
-            { "name": "Metric name", "current": "value or null", "target": "value or null", "evidenced": true }
-          ]
-        }
+        { "name": "Application Processing", "confidence": "high" },
+        { "name": "Exam Preparation", "confidence": "high" }
       ]
     }
   ]
 }
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SOURCE MATERIAL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+Source material:
 ${transcript}`;
 }
 
+// ── Pass A2 prompt — Roles + Capabilities + Signals ──────────────────────────
+// SINGLE SOURCE OF TRUTH — all role/capability extraction lives here.
+
 function buildPass2Prompt(transcript: string, confirmedVS: any[]): string {
-  const vsRef = JSON.stringify(
-    confirmedVS.map((vs: any) => ({
-      name: vs.name,
-      stages: (vs.stages ?? []).map((s: any) => s.name ?? s),
-    })),
-    null, 2
-  );
+  const vsStageRef = confirmedVS.map((vs: any) =>
+    `VS: "${vs.name}"\n  Stages: ${(vs.stages ?? []).map((s: any) => `"${s.name}"`).join(", ")}`
+  ).join("\n\n");
 
-  return `You are extracting organisational Roles, building a scoped Capability Map, and capturing
-discovery signals for a business architecture diagnostic.
+  return `You are extracting Roles and Capabilities for a business architecture diagnostic.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CONFIRMED VALUE STREAMS AND STAGES — anchor all outputs to these exactly
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The following Value Streams and their stages are CONFIRMED. Do not rename, add, or remove them:
+${vsStageRef}
 
-${vsRef}
+## Roles (Step 03)
+Identify all roles that participate in these value streams. Roles are responsibility-bearing positions, not people or departments.
+- Include both execution roles (doing work) and governing roles (approving, overseeing)
+- 4-10 roles total across all value streams
+- Names are title-case position names
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CAPABILITY DEFINITIONS — apply these strictly
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## Capabilities (Step 04)
+Identify the Capabilities required. Capabilities are enduring organisational abilities — persistent, deployable, investment-relevant.
+- CRITICAL: If the source material contains a capability map, capability register, named capabilities, or column headers that describe organisational abilities — extract those names VERBATIM. Do not rename, generalise, or replace them with generic alternatives.
+- If no explicit capabilities exist in the source, derive them from the VS/stage content using Verb-Noun convention (e.g. "Manage Member Credentials", not "Credential Management Execution")
+- Assign capabilities to the VS they primarily support
+- 3-8 capabilities per VS
+- IMPORTANT: Capabilities are SHARED across activities and value streams. The same capability should appear in multiple VS where relevant. Do not create one capability per activity.
 
-A Business Capability is the stable, enduring ability of the organisation to perform
-a business function, grounded in a core business object, independent of structure.
-
-Rules:
-  - Named Verb-Noun: "Manage Trade Partner Agreements" not "Partner Agreement Management"
-  - Object-grounded: identify the core business object (Orders, Agreements, Products, etc.)
-  - Enduring: persists across projects and restructures — not a task or project
-  - NOT a technology: "NetSuite" is a system. "Manage Order Fulfilment" is a capability.
-  - NOT an activity: "Manage Orders" is a capability. "Create order in NetSuite" is a task.
-
-Taxonomy — build at three levels:
-  L1 = Business Area (broad accountability domain — e.g. "Channel & Partner Management")
-  L2 = Business Domain (logical grouping — e.g. "Order Management")
-  L3 = Business Capability (operational ability — THIS is the level mapped to VS stages)
-
-All stage assignments must reference L3 capabilities only.
-Never mix L1, L2, L3 within a single value stream's assignments.
-A capability may appear in multiple stages and multiple value streams — that is expected.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-YOUR TASKS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. ROLES — execution and governance roles from the source. Do not invent.
-
-2. CAPABILITY MAP — scoped L1→L2→L3 taxonomy covering only what is evidenced or inferable.
-   For each L3 capability, identify the core business object it is grounded in.
-   Flag uncertain or potentially overlapping capabilities with a stabilisationNote.
-
-3. STAGE CAPABILITIES — for each VS stage, list the L3 capability names from your map.
-   Reference capability names exactly as defined in capabilityMap. Do not invent new ones here.
-
-4. TECH — named systems only. Do not invent.
-
-5. PAIN POINTS — problems, delays, failures, risks from the source.
-   Technology integration problems are pain points here, NOT value streams.
-
-6. METRICS — named KPIs, targets, measures from the source.
-
-7. GAPS — what we couldn't extract; flag as required or recommended.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-OUTPUT — return ONLY valid JSON, no markdown fences
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+Return ONLY valid JSON, no markdown fences:
 {
   "roles": [
-    { "name": "Role Title", "description": "brief responsibility" }
+    { "id": "role_credit_analyst", "name": "Credit Analyst", "type": "Internal", "description": "Responsible for quantitative credit assessment" }
   ],
-  "capabilityMap": {
-    "l1Areas": [
-      {
-        "name": "L1 Business Area",
-        "domains": [
-          {
-            "name": "L2 Business Domain",
-            "capabilities": [
-              {
-                "name": "Verb-Noun L3 Capability",
-                "businessObject": "Core business object",
-                "description": "What this enables the organisation to do",
-                "stabilisationNote": "optional — flag if uncertain or potentially overlapping"
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  "stageCapabilities": [
+  "capabilitiesByVS": [
     {
-      "vsName": "ValueStream name (must match confirmed VS exactly)",
-      "stages": [
-        {
-          "stageName": "Stage name (must match confirmed stages exactly)",
-          "capabilityNames": ["Verb-Noun L3 Capability"]
-        }
+      "vsName": "MUST MATCH confirmed VS name exactly",
+      "capabilities": [
+        { "id": "cap_member_onboarding", "name": "Member Onboarding", "description": "Ability to onboard and orient new members" }
       ]
     }
   ],
   "tech": [
-    { "name": "System Name", "type": "CRM | ERP | Platform | Field | Analytics | Custom | Other" }
+    { "id": 1, "name": "", "type": "CRM|ERP|Comms|Analytics|Custom|Other", "friction": true, "notes": "" }
   ],
   "painPoints": [
     {
-      "description": "Specific pain point",
-      "category": "process | data | technology | governance | capacity",
+      "id": 1,
+      "description": "",
+      "category": "DataSignalFriction|ProcessHandoffFriction|GovernanceRiskFriction|IncentiveCapacityFriction|TechnologyIntegrationFriction",
       "intensity": 7,
-      "affectedStage": "Stage name or null",
-      "binding": false
+      "affectedVsName": "MUST be one of the confirmed VS names above",
+      "affectedStage": "Stage name only",
+      "binding": false,
+      "confidence": "high|medium|low"
     }
   ],
   "metrics": [
-    { "name": "Metric name", "current": "value or null", "target": "value or null" }
+    { "id": 1, "name": "", "current": "", "target": "", "affectedVsName": "confirmed VS name", "stage": "stage name only" }
   ],
   "gaps": [
-    { "severity": "required | recommended", "prompt": "Specific question to fill this gap" }
+    { "severity": "required|recommended", "prompt": "Specific question to fill this gap" }
   ]
 }
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SOURCE MATERIAL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+Source material:
 ${transcript}`;
 }
 
-// ── Main orchestrator ─────────────────────────────────────────────────────────
+// ── Main orchestrator — Pass A ──────────────────────────────────────────────
 
 export async function runPipeline(
   transcript: string,
@@ -299,7 +183,7 @@ export async function runPipeline(
     });
     const data = await res.json();
     const text = data.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-    pass1Result = JSON.parse(text.replace(/```json|```/g, "").trim());
+    pass1Result = JSON.parse(text.replace(/`{3}json|`{3}/g, "").trim());
   } catch (e) {
     onProgress({ status: "error", errorMessage: `Pass A1 failed: ${String(e)}` });
     return;
@@ -324,7 +208,7 @@ export async function runPipeline(
     });
     const data = await res.json();
     const text = data.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-    pass2Result = JSON.parse(text.replace(/```json|```/g, "").trim());
+    pass2Result = JSON.parse(text.replace(/`{3}json|`{3}/g, "").trim());
   } catch (e) {
     onProgress({ status: "error", errorMessage: `Pass A2 failed: ${String(e)}` });
     return;
@@ -333,63 +217,59 @@ export async function runPipeline(
   // ── Build DiscoveryIR ─────────────────────────────────────────────────────
   const discoveryIR = buildDiscoveryIR(pass1Result, pass2Result, confirmedVS);
 
-  // Surface DiscoveryIR — optional review point (D-068, D-072)
-  // UI can pause here and allow light editing before proceeding to Pass B
+  // Return Pass A results — DiscoveryIntake merges these into the form
   onProgress({ status: "pass-a-done", discoveryIR });
 
   // Note: the orchestrator returns here. The UI decides whether to proceed
-  // immediately to Pass B or show the optional review panel.
+  // immediately to Pass B or show the form for editing.
   // Call continuePipeline(discoveryIR, onProgress) to proceed.
 }
 
-// Called by UI after Pass A — either immediately (skip review) or after review
+// ── Pass B: Called by UI after form is ready ─────────────────────────────────
+
 export async function continuePipeline(
   discoveryIR: DiscoveryIR,
   onProgress: ProgressCallback
 ): Promise<void> {
-  const apiUrl = import.meta.env.DEV ? "/api/anthropic/v1/messages" : "/api/claude";
-
-  // ── Pass B: Scaffold Formalisation ───────────────────────────────────────
+  // ── Pass B: Scaffold Formalisation (with Gate 1 + repair + Gate 2) ────────
   onProgress({ status: "pass-b", discoveryIR });
 
-  const formaliseResult = await runPassB(discoveryIR, apiUrl);
+  const formaliseResult = await runPassB(discoveryIR);
 
   if (formaliseResult.repairAttempted) {
     onProgress({ status: "pass-b-repairing", discoveryIR });
   }
 
   if (!formaliseResult.gate1.passed) {
-    // Gate 1 still failed after repair — surface to user
     onProgress({
       status: "pass-b-failed",
       discoveryIR,
       scaffold: formaliseResult.scaffold,
       gate1: formaliseResult.gate1,
-      errorMessage: `Scaffold formalisation failed validation after repair attempt.\n${formaliseResult.gate1.errors.join("\n")}`,
+      errorMessage: `Scaffold validation failed after repair attempt.\n${formaliseResult.gate1.errors.join("\n")}`,
     });
     return;
   }
 
   const scaffold = formaliseResult.scaffold;
-  onProgress({
-    status: "pass-b",
-    discoveryIR,
-    scaffold,
-    gate1: formaliseResult.gate1,
-    gate2: formaliseResult.gate2,
-  });
 
-  // ── Pass C: Heatmap Analysis ──────────────────────────────────────────────
-  onProgress({ status: "pass-c", discoveryIR, scaffold });
+  // Store pain points on the scaffold for later friction assessment
+  const ppSummary = discoveryIR.painPoints
+    .filter((p) => p.description)
+    .map((p, i) =>
+      `${i + 1}. [${p.category || "unclassified"}] ${p.description} (intensity ${p.intensity ?? 7}/10, stage: ${p.affectedStage || "unknown"})${p.binding ? " ← flagged as binding" : ""}`
+    ).join("\n");
 
-  const heatmapResult = await runPassC(discoveryIR, scaffold, apiUrl);
+  if (ppSummary) {
+    scaffold._discoveryPainPoints = ppSummary;
+  }
 
   const now = new Date().toISOString();
   const bundle = {
     bundleVersion: "1.0",
     createdAt: now,
     scaffold,
-    heatmaps: heatmapResult.heatmaps,
+    heatmaps: [] as any[],
   };
 
   onProgress({
@@ -398,7 +278,6 @@ export async function continuePipeline(
     scaffold,
     gate1: formaliseResult.gate1,
     gate2: formaliseResult.gate2,
-    heatmaps: heatmapResult.heatmaps,
     bundle,
   });
 }
