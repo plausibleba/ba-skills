@@ -128,8 +128,8 @@ export default function App() {
           </div>
         )}
 
-        {/* Views */}
-        {isIntake && (
+        {/* Views — DiscoveryIntake stays mounted (hidden) to preserve form state */}
+        <div style={{ display: isIntake ? undefined : "none" }}>
           <DiscoveryIntake
             onComplete={(bundle) => {
               const { scaffold, heatmaps = [] } = bundle;
@@ -138,7 +138,7 @@ export default function App() {
               backToNetwork();
             }}
           />
-        )}
+        </div>
 
         {!isIntake && !isLoaded && (
           <div className="flex h-full flex-col items-center justify-center gap-8 p-6">

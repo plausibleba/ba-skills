@@ -747,6 +747,10 @@ CRITICAL: All element maps must be present, even if empty. Every ID referenced i
             )}
           </div>
           <div className="flex gap-3 justify-center">
+            <button onClick={() => setGenerated(false)}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+              ← Edit &amp; Regenerate
+            </button>
             <button onClick={async () => { setGenerated(false); setForm(EMPTY_FORM); setTranscript(""); setExtractDone(false); }}
               className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 transition-colors">
               New discovery
