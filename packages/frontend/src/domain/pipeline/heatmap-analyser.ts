@@ -3,6 +3,7 @@
 // This file handles: LLM call, response parsing, heatmap assembly.
 
 import type { DiscoveryIR } from "./discovery-ir";
+import { callLLM } from "./llm-client";
 import { buildHeatmapPrompt } from "./prompts/pass-c-friction-analysis";
 
 export interface HeatmapResult {
@@ -13,26 +14,19 @@ export interface HeatmapResult {
 export async function runPassC(
   ir: DiscoveryIR,
   scaffold: any,
-  apiUrl: string
 ): Promise<HeatmapResult> {
   const now = new Date().toISOString();
   const scaffoldId = scaffold.scaffoldId ?? `scaffold-unknown`;
   const heatmapPrompt = buildHeatmapPrompt(ir, scaffold, now);
 
   try {
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 8000,
-        temperature: 0,
-        messages: [{ role: "user", content: heatmapPrompt }],
-      }),
+    const llmRes = await callLLM({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 8000,
+      temperature: 0,
+      messages: [{ role: "user", content: heatmapPrompt }],
     });
-    const data = await res.json();
-    const text = data.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-    const result = JSON.parse(text.replace(/`{3}json|`{3}/g, "").trim());
+    const result = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
 
     const heatmaps = (result.heatmaps ?? []).map((h: any) => ({
       heatmapId: `heatmap-${h.valueStreamId}-${Date.now()}`,

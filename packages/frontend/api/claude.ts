@@ -1,26 +1,23 @@
-// Edge Runtime — 30s wall-clock on all Vercel plans (Hobby included).
-// Serverless functions cap at 10s on Hobby, which is not enough for
-// capabilityPPIT scaffold generation (typically 20-40s).
-export const config = { runtime: "edge" };
+// ─── Anthropic Streaming Proxy ────────────────────────────────────────────────
+// Forces stream: true on all requests so data flows immediately and Vercel's
+// 10s serverless timeout is never hit (bytes arrive within ~1s).
+// The client collects the SSE stream and reconstructs the full message.
 
-export default async function handler(req: Request): Promise<Response> {
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { "Content-Type": "application/json" },
-    });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: "API key not configured" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return res.status(500).json({ error: "API key not configured" });
   }
 
   try {
-    const body = await req.json();
+    const body = { ...req.body, stream: true };
+
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -31,19 +28,35 @@ export default async function handler(req: Request): Promise<Response> {
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
-    if (data.stop_reason && data.stop_reason !== "end_turn") {
-      console.error("Anthropic stop_reason:", data.stop_reason, "usage:", data.usage);
+    // If Anthropic returns an error, forward it as JSON
+    if (!response.ok) {
+      const errBody = await response.text();
+      return res.status(response.status).end(errBody);
     }
-    return new Response(JSON.stringify(data), {
-      status: response.status,
-      headers: { "Content-Type": "application/json" },
-    });
+
+    // Stream the SSE response to the client
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      return res.status(500).json({ error: "No response body from upstream" });
+    }
+
+    // Pipe chunks directly to the client
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      res.write(value);
+    }
+
+    res.end();
   } catch (err) {
     console.error("Anthropic proxy error:", err);
-    return new Response(JSON.stringify({ error: "Upstream request failed" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    if (!res.headersSent) {
+      return res.status(500).json({ error: "Upstream request failed" });
+    }
+    res.end();
   }
 }

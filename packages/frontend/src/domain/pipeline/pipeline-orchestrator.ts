@@ -11,6 +11,7 @@ import { buildDiscoveryIR } from "./discovery-ir";
 import type { DiscoveryIR } from "./discovery-ir";
 import { runPassB } from "./scaffold-formaliser";
 import type { GateResult } from "./scaffold-gates";
+import { callLLM } from "./llm-client";
 import { buildPass1Prompt } from "./prompts/pass-a1-value-streams";
 import { buildPass2Prompt } from "./prompts/pass-a2-capability-mapping";
 
@@ -45,28 +46,20 @@ export async function runPipeline(
   transcript: string,
   onProgress: ProgressCallback
 ): Promise<void> {
-  const apiUrl = import.meta.env.DEV ? "/api/anthropic/v1/messages" : "/api/claude";
-
   // ── Pass A1: VS + Stages ──────────────────────────────────────────────────
   onProgress({ status: "pass-a1" });
   let pass1Result: any = null;
 
   try {
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 4000,
-        temperature: 0,
-        messages: [{ role: "user", content: buildPass1Prompt(transcript) }],
-      }),
+    const llmRes = await callLLM({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 4000,
+      temperature: 0,
+      messages: [{ role: "user", content: buildPass1Prompt(transcript) }],
     });
-    const data = await res.json();
-    const text = data.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-    pass1Result = JSON.parse(text.replace(/`{3}json|`{3}/g, "").trim());
+    pass1Result = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
   } catch (e) {
-    onProgress({ status: "error", errorMessage: `Pass A1 failed: ${String(e)}` });
+    onProgress({ status: "error", errorMessage: `Pass A1 failed: ${e instanceof Error ? e.message : String(e)}` });
     return;
   }
 
@@ -77,21 +70,15 @@ export async function runPipeline(
   let pass2Result: any = null;
 
   try {
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 6000,
-        temperature: 0,
-        messages: [{ role: "user", content: buildPass2Prompt(transcript, confirmedVS) }],
-      }),
+    const llmRes = await callLLM({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 6000,
+      temperature: 0,
+      messages: [{ role: "user", content: buildPass2Prompt(transcript, confirmedVS) }],
     });
-    const data = await res.json();
-    const text = data.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-    pass2Result = JSON.parse(text.replace(/`{3}json|`{3}/g, "").trim());
+    pass2Result = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
   } catch (e) {
-    onProgress({ status: "error", errorMessage: `Pass A2 failed: ${String(e)}` });
+    onProgress({ status: "error", errorMessage: `Pass A2 failed: ${e instanceof Error ? e.message : String(e)}` });
     return;
   }
 
