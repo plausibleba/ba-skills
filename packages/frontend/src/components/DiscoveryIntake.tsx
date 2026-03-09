@@ -315,9 +315,10 @@ A ValueStream is the end-to-end flow that delivers measurable stakeholder value 
 From the source material below, identify ALL Value Streams present. Do not cap the number — extract every distinct end-to-end flow the source describes.
 
 ## Rules
+- Each VS is a RECURRING operational flow that delivers value repeatedly — not a one-time project or strategic initiative. "Lead to Customer" and "Order to Delivery" are VS. "Technology Integration" and "Digital Transformation" are projects/initiatives — do NOT include them as VS.
 - Each VS is outcome-driven, not function-driven ("Member Certification Lifecycle" not "Certification Team Activities")
 - Each VS has a clear trigger event and a clear terminal outcome
-- VS names are concise, 2-6 words, title case
+- VS names are concise, 2-5 words, title case. Use "<Trigger> to <Outcome>" pattern where natural (e.g. "Lead to Customer", "Order to Delivery", "Issue to Resolution", "Hire to Productive").
 - zone: "ecosystem" = externally-facing (customer, member, partner, market); "knowledge" = internally-facing (operations, reporting, governance)
 - Stages: 4-8 per VS. Each stage = a governance phase or progression milestone, not a task. MECE — no gaps, no overlaps.
 - If the source contains tab names, sheet names, section headings, or column groupings that map to distinct end-to-end flows — each one is likely a separate VS. Extract them all.
@@ -600,13 +601,28 @@ DO NOT leave capabilities, roles, or controls as empty objects. Every referenced
 ## Value Stream Fields (CRITICAL)
 Each VS must include: name, description, activityIds, layoutZone (use the zone from inputs), accountableStakeholder (from inputs).
 
+## Capability Assignment (CRITICAL — capabilities must be SHARED across activities)
+Each activity MUST have 2-4 capabilities in requiresCapabilityIds. Capabilities are business abilities
+(e.g. "Customer Relationship Management", "Order Fulfilment", "Data Management") that are SHARED across
+multiple activities and value streams. Do NOT create 1:1 capability-to-activity mappings.
+Use the provided capabilities as a starting point. If fewer than 2 caps are available per activity,
+derive additional shared capabilities from the domain context (e.g. "Data Management", "Compliance Management",
+"Stakeholder Communication", "Performance Monitoring").
+Capabilities that appear in multiple activities create structural coupling — this is essential for the model.
+
+## Information Objects (CRITICAL)
+For each activity, create 2-3 informationObjects (business documents, data records, reports) that the
+activity produces or consumes. E.g. "Customer Order", "Installation Record", "Service Schedule",
+"Territory Plan", "Sales Report". Put entries in elements.informationObjects with { name, elementType: "InformationObject" }.
+Reference them in the activity via informationObjectIds: [...].
+
 ## Your Task
 Given the confirmed VS definitions, stages, roles, and capabilities below, produce a complete ScaffoldModel.json.
 
 For each VS:
 - Create one Outcome per stage boundary (n stages → n+1 outcomes)
-- Create one Activity per stage (pre/post outcomes, roles, capabilities from the lists provided)
-- Assign capabilities to activities based on stage semantics — use the provided capabilities, do not invent new ones
+- Create one Activity per stage with pre/post outcomes, 2-4 capabilities, 1-2 roles, 2-3 information objects
+- Ensure capabilities are SHARED — the same capability should appear in multiple activities across VS
 - Distribute roles across activities sensibly based on stage content
 
 Confirmed inputs:
@@ -625,10 +641,11 @@ Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
   "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
   "elements": {
     "valueStreams": { "<vs_id>": { "name": "...", "description": "...", "activityIds": [], "layoutZone": "ecosystem|knowledge", "accountableStakeholder": "role_...", "elementType": "ValueStream" } },
-    "activities": {},
+    "activities": { "<act_id>": { "name": "...", "preOutcomeId": "...", "postOutcomeId": "...", "nextActivityId": "...|null", "requiresCapabilityIds": ["cap_a", "cap_b"], "performedByRoleIds": ["role_x"], "informationObjectIds": ["io_a", "io_b"], "metricIds": [], "controlIds": [], "elementType": "Activity" } },
     "outcomes": { "<outcome_id>": { "name": "...", "elementType": "Outcome" } },
     "roles": { "<role_id>": { "name": "...", "description": "...", "elementType": "Role" } },
     "capabilities": { "<cap_id>": { "name": "...", "description": "...", "elementType": "Capability" } },
+    "informationObjects": { "<io_id>": { "name": "...", "elementType": "InformationObject" } },
     "controls": {},
     "constraints": {},
     "directives": {},
@@ -638,8 +655,7 @@ Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
     "properties": {},
     "metrics": {},
     "measures": {},
-    "conditions": {},
-    "informationObjects": {}
+    "conditions": {}
   }
 }
 
