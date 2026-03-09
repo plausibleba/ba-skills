@@ -28,7 +28,7 @@ export async function runPassB(
   try {
     const llmRes = await callLLM({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 16000,
+      max_tokens: 32000,
       temperature: 0,
       messages: [{ role: "user", content: scaffoldPrompt }],
     });
@@ -58,7 +58,7 @@ export async function runPassB(
     try {
       const llmRes = await callLLM({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 16000,
+        max_tokens: 32000,
         temperature: 0,
         messages: [{ role: "user", content: repairPrompt }],
       });
