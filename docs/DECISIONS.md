@@ -407,3 +407,40 @@ UI treatment for null: no gold banner, no binding badge. Neutral executive callo
 **Date:** 2026-03-09
 **Decision:** Created `src/lib/humanize-id.ts` with `humanizeId()` function. Strips type prefix (`cap_`, `role_`, `act_`, etc.) and converts snake_case/kebab-case to Title Case. Applied as fallback display in 9 components.
 **Rationale:** LLM-generated scaffolds don't always populate element registries fully. Raw IDs like `cap_lead_qualification` are unreadable. Fallback now shows "Lead Qualification".
+
+---
+
+## D-085: Single Source of Truth for Pipeline Prompts
+**Date:** 2026-03-09
+**Decision:** All LLM prompts extracted from inline TypeScript into dedicated files in `domain/pipeline/prompts/` — one file per pipeline pass (pass-a1, pass-a2, pass-b, pass-c). Pipeline runtime files (pipeline-orchestrator, scaffold-formaliser, heatmap-analyser) are pure plumbing that import prompt builders.
+**Rationale:** Dual code path problem — inline prompts in DiscoveryIntake.tsx vs orphaned modular pipeline caused repeated regressions across sessions 15-17. Fixes to one weren't reflected in the other. Single source of truth eliminates this class of bug entirely.
+
+## D-086: capabilityPPIT in Pass B Prompt
+**Date:** 2026-03-09
+**Decision:** Pass B scaffold prompt now requires capabilityPPIT decomposition for every capability on every activity: roleIds, exactly 3 stage-specific sub-activities, informationObjectIds, technologyAppIds. Includes worked example in prompt.
+**Rationale:** Bundle v2 (gold standard) had rich PPIT mappings; bundle v9 had zero. The capabilityPPIT structure is what makes the model actionable — it shows HOW each capability is exercised at each stage. Requires `max_tokens: 32000` and `anthropic-beta: output-128k-2025-02-19`.
+
+## D-087: Prompt Determinism Requirement
+**Date:** 2026-03-09
+**Decision:** Pass B prompt explicitly declares: "This is a structural formalisation step — a pure function. Given these inputs, produce the same output every time." IDs derived mechanically from names. No creative variation.
+**Rationale:** User requirement — "This is a Deterministic practice and they will want that consistency." Each run of the same inputs should produce structurally identical output.
+
+## D-088: Edge Runtime + Streaming for Vercel Proxy
+**Date:** 2026-03-09
+**Decision:** `/api/claude.ts` runs as Vercel Edge Runtime (`export const config = { runtime: "edge" }`) and forces `stream: true` on all Anthropic requests. Response body is a pass-through `ReadableStream`.
+**Rationale:** Vercel Hobby caps serverless functions at 10s (non-negotiable). Edge Runtime gets 30s wall-clock. Streaming ensures first bytes arrive in ~1s, keeping the connection alive. Three progressive failures (timeout → Edge without streaming → streaming without Edge) proved both are needed together.
+
+## D-089: Shared callLLM Client
+**Date:** 2026-03-09
+**Decision:** All LLM API calls go through `domain/pipeline/llm-client.ts` `callLLM()`. No raw `fetch` to `/api/claude` anywhere in the codebase. Client auto-detects SSE stream vs plain JSON (dev mode).
+**Rationale:** Streaming proxy returns SSE events, not JSON. Every raw `fetch` + `res.json()` call broke with "Unexpected token 'e'" (trying to parse SSE text as JSON). Centralising in one client prevents this class of error.
+
+## D-090: Extended Output for Scaffold Generation
+**Date:** 2026-03-09
+**Decision:** API proxy sends `anthropic-beta: output-128k-2025-02-19` header. Pass B uses `max_tokens: 32000` (up from 16000).
+**Rationale:** capabilityPPIT scaffold generates 61K+ characters (~16K+ tokens). Was truncated at 16K limit, producing unparseable JSON. Extended output beta unlocks up to 128K tokens.
+
+## D-091: Assess Friction Uses Pass C Pipeline (Not Inline Prompt)
+**Date:** 2026-03-09
+**Decision:** StageWizard "Run new" friction button calls `runPassC()` from heatmap-analyser.ts, not an inline prompt. Generates observations for ALL value streams in one call.
+**Rationale:** Inline runPass3 had a simplified prompt that didn't match scaffold activity IDs, hardcoded first VS only, and lacked proper binding constraint scoring. The Pass C pipeline uses scaffold skeleton with exact IDs, proper taxonomy, and eligibility-based binding selection.

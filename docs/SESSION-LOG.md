@@ -548,20 +548,97 @@ D-084
 
 ---
 
+## Session 17 — Prompt Extraction & Single Source of Truth
+**Date:** 2026-03-09
+**Status:** Complete
+
+### Theme: Eliminate Dual Code Path + Restore capabilityPPIT Quality
+
+**Problem:** Two parallel implementations of the pipeline existed — inline prompts in DiscoveryIntake.tsx (1,156 lines, active) vs modular pipeline in domain/pipeline/ (orphaned). Fixes to one weren't reflected in the other, causing regressions across sessions 15-17. Additionally, bundle v9 had zero capabilityPPIT entries compared to bundle v2 (the gold standard).
+
+**Refactoring (commit 0f8d609):**
+- Stripped inline prompts from DiscoveryIntake.tsx (1,156 → 925 lines)
+- Wired DiscoveryIntake to call `runPipeline()` and `continuePipeline()` from pipeline-orchestrator
+- Fixed heatmap-analyser backtick regex, discovery-session-store heatmaps reference
+
+**Prompt extraction (commit dce2fbc):**
+- Created `domain/pipeline/prompts/` — one file per pipeline pass:
+  - `pass-a1-value-streams.ts` — VS extraction with initiative exclusion, Trigger→Outcome naming
+  - `pass-a2-capability-mapping.ts` — role/capability extraction with shared capability rules
+  - `pass-b-scaffold-formalisation.ts` — scaffold with capabilityPPIT (CRITICAL), Gate 1/2, context builders
+  - `pass-c-friction-analysis.ts` — friction taxonomy, binding constraint scoring, scaffold skeleton
+- Pipeline files (pipeline-orchestrator, scaffold-formaliser, heatmap-analyser) now pure plumbing — import prompts
+- capabilityPPIT added to Pass B: roleIds, 3 sub-activities, informationObjectIds, technologyAppIds per capability per activity
+- Net: 383 insertions, 753 deletions — eliminated 370 lines of duplicated prompt logic
+
+### Decisions
+D-085, D-086, D-087
+
+### Commits
+- `0f8d609` — Session 17: refactor — single source of truth for pipeline prompts
+- `dce2fbc` — Session 17: extract prompts to dedicated files + add capabilityPPIT
+
+---
+
+## Session 18 — Streaming Infrastructure & Vercel Timeout Resolution
+**Date:** 2026-03-09
+**Status:** Complete
+
+### Theme: Fix Vercel Hobby 10s Timeout + Wire All LLM Calls Through Streaming
+
+**Problem chain (progressive debugging):**
+1. Pass B failed with `FUNCTION_INVOCATION_TIMEOUT` — Vercel Hobby caps serverless functions at 10s, `maxDuration: 60` ignored
+2. Edge Runtime alone (non-streaming) failed — 504 still, Edge config not supported for Vite projects as serverless
+3. Streaming serverless function worked initially but died mid-stream (`ERR_NETWORK_CHANGED`) — function killed at 10s
+4. Pass B response truncated at `max_tokens: 16000` — capabilityPPIT scaffold generates 61K+ characters
+
+**Solution — Edge Runtime + Streaming + Extended Output (commits 314d54b → 3efa0d7):**
+- `/api/claude.ts` rewritten as Edge Runtime function (`export const config = { runtime: "edge" }`)
+- Forces `stream: true` on all Anthropic requests — SSE chunks flow through as `ReadableStream`
+- Added `anthropic-beta: output-128k-2025-02-19` header for extended output
+- Pass B `max_tokens` bumped from 16,000 to 32,000
+
+**Shared LLM client (commit 314d54b):**
+- Created `domain/pipeline/llm-client.ts` — `callLLM()` function used by all pipeline passes
+- Auto-detects SSE stream vs plain JSON response (dev mode compatibility)
+- Collects `content_block_delta` events, extracts `stop_reason` from `message_delta`
+- Replaced raw `fetch` in ALL 7 callers: pipeline-orchestrator, scaffold-formaliser, heatmap-analyser, StageWizard (runPass3, runPass4), ContentSelectors, TransformationPane
+
+**Assess Friction — wired to proper Pass C pipeline (commit 6d6ffcf):**
+- Replaced 65-line inline `runPass3` in StageWizard with call to `runPassC` from heatmap-analyser
+- Now generates friction observations for ALL value streams (not just first)
+- Uses full Pass C prompt with scaffold skeleton, exact activity IDs, binding constraint scoring
+- Pulls pain points from discoveryIR session store when available
+
+### Decisions
+D-088, D-089, D-090, D-091
+
+### Commits
+- `c86275e` — fix: improve Pass B error reporting + set Vercel maxDuration
+- `34c11e4` — fix: convert /api/claude to Edge Runtime (30s timeout)
+- `314d54b` — fix: streaming API proxy to eliminate Vercel 10s timeout
+- `e229fa8` — fix: enable extended output (128K) + bump Pass B to 32K tokens
+- `a50ffab` — fix: convert all remaining LLM calls to streaming callLLM
+- `6d6ffcf` — fix: wire Assess Friction to proper Pass C pipeline for all VS
+- `3efa0d7` — fix: Edge Runtime + streaming to survive Vercel Hobby limits
+
+---
+
 ## Pending Work (updated 9 Mar 2026)
 
 ### Immediate
-1. Verify Vercel deployment with humanizeId fix — re-run PureTec to confirm clean labels
-2. Pipeline rewrite implementation (D-065 architecture: Pass A/B/C with Gate 1)
-3. PDS update — reflect Sessions 12–16 progress
+1. Test Enrich Solutions after streaming wiring — confirm vendor feature suggestions
+2. Verify Assess Friction binding constraint highlighting on Stage View
+3. PDS update — reflect Sessions 12–18 progress
 
 ### Near Term
-4. DiscoveryIR review panel before formalisation (D-068)
-5. Proxy-level temperature enforcement (D-069)
-6. Jira export button for user stories
-7. Dummy discovery datasets for Daniel demos
+4. Customer Story filtering by company size/revenue/industry (user request)
+5. DiscoveryIR review panel before formalisation (D-068)
+6. Proxy-level temperature enforcement (D-069)
+7. Jira export button for user stories
+8. Prompt logic review session (user requested)
 
 ### Future
-8. F-001 phase 2: delete observations, reassign binding constraint
-9. Multi-vendor support beyond Salesforce
-10. Eric Broda MVC demo — Governance Kernel overlay on StageCard
+9. F-001 phase 2: delete observations, reassign binding constraint
+10. Multi-vendor support beyond Salesforce
+11. Eric Broda MVC demo — Governance Kernel overlay on StageCard
