@@ -367,7 +367,7 @@ ${transcript}`;
       });
       const data1 = await res1.json();
       const text1 = data1.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-      pass1Result = JSON.parse(text1.replace(/```json|```/g, "").trim());
+      pass1Result = JSON.parse(text1.replace(/`{3}json|`{3}/g, "").trim());
     } catch (e) {
       console.error("Pass 1 extraction failed", e);
       setExtracting(false);
@@ -455,7 +455,7 @@ ${transcript}`;
       });
       const data2 = await res2.json();
       const text2 = data2.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-      const pass2Result = JSON.parse(text2.replace(/```json|```/g, "").trim());
+      const pass2Result = JSON.parse(text2.replace(/`{3}json|`{3}/g, "").trim());
 
       // Merge: Pass 1 is authoritative for VS structure; Pass 2 adds capabilities per VS
       const mergedVS = confirmedVS.map((vs1: any, i: number) => {
@@ -661,7 +661,7 @@ CRITICAL: All element maps must be present, even if empty. Every ID referenced i
       });
       const data3 = await res3.json();
       const text3 = data3.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-      scaffold = JSON.parse(text3.replace(/```json|```/g, "").trim());
+      scaffold = JSON.parse(text3.replace(/`{3}json|`{3}/g, "").trim());
     } catch (e) {
       console.error("Pass 3 scaffold formalisation failed", e);
       setGenerating(false);
