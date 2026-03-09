@@ -36,16 +36,30 @@ export async function runPassB(
         messages: [{ role: "user", content: scaffoldPrompt }],
       }),
     });
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error("Pass B API error:", res.status, errBody);
+      throw new Error(`API ${res.status}: ${errBody.slice(0, 300)}`);
+    }
     const data = await res.json();
+    if (data.error) {
+      console.error("Pass B API returned error:", data.error);
+      throw new Error(`API error: ${JSON.stringify(data.error).slice(0, 300)}`);
+    }
+    if (data.stop_reason === "max_tokens") {
+      console.warn("Pass B response truncated at max_tokens — output may be incomplete");
+    }
     const text = data.content?.find((b: any) => b.type === "text")?.text ?? "{}";
     scaffold = JSON.parse(text.replace(/`{3}json|`{3}/g, "").trim());
   } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("Pass B failed:", msg);
     return {
       scaffold: null,
-      gate1: { passed: false, errors: ["Pass B LLM call failed"], warnings: [] },
-      gate2: { passed: false, errors: ["Pass B LLM call failed"], warnings: [] },
+      gate1: { passed: false, errors: [`Pass B LLM call failed: ${msg}`], warnings: [] },
+      gate2: { passed: false, errors: [`Pass B LLM call failed: ${msg}`], warnings: [] },
       repairAttempted: false,
-      error: String(e),
+      error: msg,
     };
   }
 
