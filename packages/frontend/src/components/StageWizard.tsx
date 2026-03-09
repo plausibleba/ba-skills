@@ -1,10 +1,12 @@
 import { useCallback, useRef, useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
+import { useDiscoverySessionStore } from "../store/discovery-session-store.ts";
 import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforce.json";
 import SAP_LIB from "../fixtures/vendor-libraries/sap-s4hana.json";
 import type { VendorFeatureLibrary, Solution, FrictionObservation, HeatmapData } from "../types.ts";
 import { humanizeId } from "../lib/humanize-id.ts";
 import { callLLM } from "../domain/pipeline/llm-client";
+import { runPassC } from "../domain/pipeline/heatmap-analyser";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -13,70 +15,26 @@ const VENDOR_LIBRARIES: (VendorFeatureLibrary & { logoColour: string })[] = [
   { ...(SAP_LIB as VendorFeatureLibrary), logoColour: "bg-amber-600" },
 ];
 
-// ─── Pass 3: Run friction assessment ─────────────────────────────────────────
+// ─── Pass C: Run friction assessment via proper pipeline ─────────────────────
+// Uses the full Pass C prompt (scaffold skeleton + pain points + binding
+// constraint scoring) for ALL value streams in the scaffold.
 
-async function runPass3(scaffold: any): Promise<HeatmapData> {
-  const vsIds = Object.keys(scaffold.elements.valueStreams);
-  const firstVsId = vsIds[0];
-
-  const prompt = `You are a VCC Friction Assessment specialist. Analyse this scaffold and identify friction points.
-
-## Scaffold
-${JSON.stringify(scaffold, null, 2)}
-
-## Your Task
-Identify 3-6 friction observations across the value stream activities. For each:
-- Assign a friction category: ProcessHandoffFriction, DataSignalFriction, TechnologyIntegrationFriction, DecisionAuthorityFriction, GovernanceRiskFriction, or IncentiveCapacityFriction
-- Anchor to a specific activity ID from the scaffold
-- Score intensity 1-10
-- Classify evidence basis: EVIDENCED, INFERRED, or ASSUMED
-- Write a specific rationale (1-2 sentences)
-
-Also identify the single binding constraint — the highest-leverage friction point that cascades through the most downstream activities.
-
-Return ONLY valid JSON:
-{
-  "heatmaps": [{
-    "valueStreamId": "${firstVsId}",
-    "observations": [
-      {
-        "observationId": "fr_001_snake_case_description",
-        "category": "ProcessHandoffFriction",
-        "primaryAnchor": { "anchorType": "Activity", "anchorId": "act-id-from-scaffold" },
-        "intensity": { "scale": "0-10", "score": 8.0 },
-        "confidence": 0.75,
-        "evidenceBasis": "EVIDENCED",
-        "rationale": "Specific rationale here"
-      }
-    ],
-    "bindingConstraint": {
-      "findingId": "bc_001",
-      "bindingAnchor": { "anchorType": "Activity", "anchorId": "act-id-from-scaffold" },
-      "bindingAnchorObservationId": "fr_001_snake_case_description",
-      "justification": "Why this is the binding constraint",
-      "confidence": 0.72
-    }
-  }]
-}`;
-
-  const llmRes = await callLLM({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 6000,
-    temperature: 0,
-    messages: [{ role: "user", content: prompt }],
-  });
-  const result = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
-  const hm = result.heatmaps?.[0];
-  if (!hm) throw new Error("No heatmap in Pass 3 response");
-
+function getMinimalIR() {
+  // Pull DiscoveryIR from the session store if available (has pain points)
+  const ir = useDiscoverySessionStore.getState().discoveryIR;
+  if (ir) return ir;
+  // Fallback: minimal IR with empty pain points (scaffold-only mode)
   return {
-    schemaVersion: "1.0",
-    heatmapId: `heatmap-vs-${firstVsId}-${Date.now()}`,
-    scaffoldId: scaffold.scaffoldId,
-    valueStreamId: firstVsId,
-    createdAt: new Date().toISOString(),
-    observations: hm.observations ?? [],
-    bindingConstraint: hm.bindingConstraint ?? null,
+    extractedAt: new Date().toISOString(),
+    org: { name: "", industry: "", size: "" },
+    valueStreams: [],
+    roles: [],
+    tech: [],
+    painPoints: [],
+    metrics: [],
+    gaps: [],
+    capabilityMap: { l1Areas: [] },
+    stageCapabilities: [],
   };
 }
 
@@ -252,14 +210,19 @@ export function StageWizard() {
     }
   }, [loadHeatmap]);
 
-  // ── Step 2: Run Pass 3 ──
+  // ── Step 2: Run Pass C for all VS ──
   async function handleRunAssessment() {
     if (!scaffoldData) return;
     setAssessing(true);
     setAssessError(null);
     try {
-      const heatmap = await runPass3(scaffoldData);
-      await loadHeatmap(heatmap);
+      const ir = getMinimalIR();
+      const result = await runPassC(ir as any, scaffoldData);
+      if (result.error) throw new Error(result.error);
+      if (result.heatmaps.length === 0) throw new Error("No friction observations generated");
+      for (const hm of result.heatmaps) {
+        await loadHeatmap(hm as HeatmapData);
+      }
       if (currentVsId) selectVs(currentVsId);
     } catch (e: any) {
       setAssessError(e?.message ?? "Assessment failed");
