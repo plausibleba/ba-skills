@@ -1,22 +1,32 @@
-// ─── Anthropic Streaming Proxy ────────────────────────────────────────────────
-// Forces stream: true on all requests so data flows immediately and Vercel's
-// 10s serverless timeout is never hit (bytes arrive within ~1s).
-// The client collects the SSE stream and reconstructs the full message.
+// ─── Anthropic Streaming Proxy (Edge Runtime) ────────────────────────────────
+// Edge Runtime + streaming solves the Vercel Hobby timeout:
+// - Serverless functions die at 10s even when streaming (ERR_NETWORK_CHANGED)
+// - Edge functions support native Web Streams and 30s wall-clock
+// - With streaming, first bytes arrive in ~1s — connection stays alive
+//
+// The client (llm-client.ts) collects SSE events and reconstructs the message.
 
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+export const config = { runtime: "edge" };
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: Request): Promise<Response> {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: "API key not configured" });
+    return new Response(JSON.stringify({ error: "API key not configured" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {
-    const body = { ...req.body, stream: true };
+    const body = await req.json();
+    body.stream = true;
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -29,35 +39,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: JSON.stringify(body),
     });
 
-    // If Anthropic returns an error, forward it as JSON
+    // If Anthropic returns an error, forward it
     if (!response.ok) {
       const errBody = await response.text();
-      return res.status(response.status).end(errBody);
+      return new Response(errBody, {
+        status: response.status,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    // Stream the SSE response to the client
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-
-    const reader = response.body?.getReader();
-    if (!reader) {
-      return res.status(500).json({ error: "No response body from upstream" });
-    }
-
-    // Pipe chunks directly to the client
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      res.write(value);
-    }
-
-    res.end();
+    // Proxy the SSE stream directly — Edge Runtime supports Web Streams natively
+    return new Response(response.body, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+      },
+    });
   } catch (err) {
     console.error("Anthropic proxy error:", err);
-    if (!res.headersSent) {
-      return res.status(500).json({ error: "Upstream request failed" });
-    }
-    res.end();
+    return new Response(JSON.stringify({ error: "Upstream request failed" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
