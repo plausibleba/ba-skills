@@ -108,11 +108,23 @@ Each stage has entryCriteria and exitCriteria. Use these to name Outcomes precis
   - postOutcome of final stage = VS terminalOutcome
 This produces semantically meaningful Outcome names rather than generic placeholders.
 
+## Naming Rules (CRITICAL)
+- Activity names: SHORT verb phrases, 2-5 words max. E.g. "Qualify lead", "Conduct discovery call".
+- VS names: Use EXACTLY the names provided in the inputs. Do not embellish or reword them.
+- Outcome names: Short noun phrases. E.g. "Lead Qualified", "Requirements Understood".
+
 ## Capability Assignment — USE PROVIDED CAPABILITIES ONLY
 Each stage specifies which L3 capabilities it requires. Use exactly these in requiresCapabilityIds.
 Do not invent new capabilities.
 For capabilityPPIT: for each requiresCapabilityId include
   { roleIds: [...], activities: ["brief description"], informationObjectIds: [], technologyAppIds: [] }
+
+## Registry Population (CRITICAL — empty registries fail Gate 2)
+You MUST populate the elements registries for EVERY ID referenced in activities:
+- For each role ID in performedByRoleIds → create entry in elements.roles with { name, description, elementType: "Role" }
+- For each capability ID in requiresCapabilityIds → create entry in elements.capabilities with { name, description, elementType: "Capability" }
+- For each control ID in controlIds → create entry in elements.controls with { name, description, elementType: "Control" }
+DO NOT leave capabilities, roles, or controls as empty objects.
 
 ## Controls
 Add controls where approval gates or governance checkpoints are evident from stage stakeholder lists.
@@ -131,11 +143,11 @@ If a stage has an approval role, create a corresponding control linked to that a
   "crossStreamOutcomes": [],
   "scaffoldIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
   "elements": {
-    "valueStreams": {},
+    "valueStreams": { "<vs_id>": { "name": "...", "description": "...", "activityIds": [], "layoutZone": "ecosystem|knowledge", "accountableStakeholder": "role_...", "elementType": "ValueStream" } },
     "activities": {},
-    "outcomes": {},
-    "roles": {},
-    "capabilities": {},
+    "outcomes": { "<outcome_id>": { "name": "...", "elementType": "Outcome" } },
+    "roles": { "<role_id>": { "name": "...", "description": "...", "elementType": "Role" } },
+    "capabilities": { "<cap_id>": { "name": "...", "description": "...", "elementType": "Capability" } },
     "controls": {},
     "metrics": {}
   }
@@ -145,7 +157,8 @@ CRITICAL field names on activities:
   name, preOutcomeId, postOutcomeId, requiresCapabilityIds, performedByRoleIds,
   metricIds, controlIds, capabilityPPIT, nextActivityId
 CRITICAL field names on valueStreams:
-  name, description, activityIds, layoutZone, accountableStakeholder`;
+  name, description, activityIds, layoutZone, accountableStakeholder
+CRITICAL: Every ID referenced in activities MUST have a corresponding registry entry.`;
 }
 
 function buildRepairPrompt(originalPrompt: string, scaffoldJson: string, gateErrors: string[]): string {

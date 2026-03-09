@@ -252,7 +252,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
   const [extractPass, setExtractPass] = useState(0); // 1 = VS & stages, 2 = roles & capabilities
   const [extractDone, setExtractDone] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [generateStep, setGenerateStep] = useState(""); // "scaffold" | "friction" | ""
+  const [, setGenerateStep] = useState(""); // kept for future multi-step UI
   const [generated, setGenerated] = useState(false);
   const [generatedBundle, setGeneratedBundle] = useState<any>(null);
   // bundleSaved gate removed (D-033) — Open in Canvas available immediately on generation
@@ -567,12 +567,17 @@ ${transcript}`;
 This is a structural formalisation step — a pure function. Given these inputs, produce the same output every time. IDs are derived mechanically from element names (snake_case with type prefix). No creative variation.
 
 ## ID Convention
-- vs_<snake_case_name>     e.g. vs_member_certification_lifecycle
-- outcome_<snake_case>     e.g. outcome_application_received
-- act_<snake_case_name>    e.g. act_process_certification_application
-- cap_<snake_case_name>    e.g. cap_member_onboarding
+- vs_<snake_case_name>     e.g. vs_lead_to_customer
+- outcome_<snake_case>     e.g. outcome_lead_qualified
+- act_<snake_case_name>    e.g. act_qualify_lead  (SHORT — 2-4 words max)
+- cap_<snake_case_name>    e.g. cap_lead_qualification
 - role_<snake_case_name>   e.g. role_credit_analyst
 - metric_<snake_case_name>
+
+## Naming Rules (CRITICAL)
+- Activity names: SHORT verb phrases, 2-5 words max. E.g. "Qualify lead", "Conduct discovery call", "Prepare proposal". Do NOT repeat the full stage description.
+- VS names: Use EXACTLY the names provided in the inputs. Do not embellish or reword them.
+- Outcome names: Short noun phrases derived from stage entry/exit criteria. E.g. "Lead Qualified", "Requirements Understood".
 
 ## FSM Chain Rules (CRITICAL — violations fail validation)
 Each Value Stream is a single linear activity chain:
@@ -583,11 +588,23 @@ Each Value Stream is a single linear activity chain:
 5. One activity per stage. Chain length = number of stages.
 6. performedByRoleIds: at least one role per activity
 
+## Registry Population (CRITICAL — empty registries fail validation)
+You MUST populate the elements registries for EVERY ID referenced in activities:
+- For each unique role ID in any activity's performedByRoleIds → create an entry in elements.roles with { name, description, elementType: "Role" }
+- For each unique capability ID in any activity's requiresCapabilityIds → create an entry in elements.capabilities with { name, description, elementType: "Capability" }
+- For each unique control ID in any activity's controlIds → create an entry in elements.controls with { name, description, elementType: "Control" }
+- For each metric → create an entry in elements.metrics with { name, elementType: "Metric" }
+- For each outcome → create an entry in elements.outcomes with { name, elementType: "Outcome" }
+DO NOT leave capabilities, roles, or controls as empty objects. Every referenced ID must have a registry entry.
+
+## Value Stream Fields (CRITICAL)
+Each VS must include: name, description, activityIds, layoutZone (use the zone from inputs), accountableStakeholder (from inputs).
+
 ## Your Task
 Given the confirmed VS definitions, stages, roles, and capabilities below, produce a complete ScaffoldModel.json.
 
 For each VS:
-- Create one Outcome per stage boundary (n stages → n+1 outcomes)  
+- Create one Outcome per stage boundary (n stages → n+1 outcomes)
 - Create one Activity per stage (pre/post outcomes, roles, capabilities from the lists provided)
 - Assign capabilities to activities based on stage semantics — use the provided capabilities, do not invent new ones
 - Distribute roles across activities sensibly based on stage content
@@ -607,11 +624,11 @@ Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
   "createdAt": "<ISO timestamp>",
   "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
   "elements": {
-    "valueStreams": {},
+    "valueStreams": { "<vs_id>": { "name": "...", "description": "...", "activityIds": [], "layoutZone": "ecosystem|knowledge", "accountableStakeholder": "role_...", "elementType": "ValueStream" } },
     "activities": {},
-    "outcomes": {},
-    "roles": {},
-    "capabilities": {},
+    "outcomes": { "<outcome_id>": { "name": "...", "elementType": "Outcome" } },
+    "roles": { "<role_id>": { "name": "...", "description": "...", "elementType": "Role" } },
+    "capabilities": { "<cap_id>": { "name": "...", "description": "...", "elementType": "Capability" } },
     "controls": {},
     "constraints": {},
     "directives": {},
@@ -621,15 +638,15 @@ Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
     "properties": {},
     "metrics": {},
     "measures": {},
-    "conditions": {}
+    "conditions": {},
+    "informationObjects": {}
   }
 }
 
-CRITICAL: All 15 element maps must be present, even if empty. Include elementType on every element.`;
+CRITICAL: All element maps must be present, even if empty. Every ID referenced in activities MUST have a corresponding registry entry.`;
 
     let scaffold: any = null;
     const now = new Date().toISOString();
-    const orgSlug = form.org.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "discovery";
 
     try {
       const res3 = await fetch(apiUrl, {
@@ -652,155 +669,26 @@ CRITICAL: All 15 element maps must be present, even if empty. Include elementTyp
       return;
     }
 
-    // ── Pass 4: Friction Assessment (Steps 11-13) ────────────────────────────
-    setGenerateStep("friction");
-    const scaffoldId = scaffold.scaffoldId ?? `scaffold-${orgSlug}`;
-    const scaffoldVsIds = Object.keys(scaffold.elements?.valueStreams ?? {});
+    // ── Pass 4 (Friction Assessment) removed ──────────────────────────────────
+    // Friction heatmaps are now loaded separately via "Assess Friction" on the
+    // Network/Stage views. This halves generation time.
 
+    // Store pain points on the scaffold for later friction assessment
     const ppSummary = form.painPoints
       .filter((p: any) => p.description)
       .map((p: any, i: number) =>
         `${i + 1}. [${p.category || "unclassified"}] ${p.description} (intensity ${p.intensity ?? 7}/10, stage: ${p.affectedStage || "unknown"})${p.binding ? " ← flagged as binding" : ""}`
       ).join("\n");
 
-    // Strip scaffold to activity skeleton for Pass 4 (D-040)
-    // Keep only VS IDs, VS names, activity IDs, activity names, preOutcome, postOutcome
-    // Removes capabilities, metrics, conditions, PPIT — reduces token load significantly
-    const scaffoldForPrompt = {
-      scaffoldId: scaffold.scaffoldId,
-      orgName: scaffold.orgName,
-      elements: {
-        valueStreams: Object.fromEntries(
-          Object.entries(scaffold.elements?.valueStreams ?? {}).map(([vsId, vs]: [string, any]) => [
-            vsId,
-            {
-              valueStreamId: vs.valueStreamId,
-              name: vs.name,
-              activityIds: vs.activityIds ?? []
-            }
-          ])
-        ),
-        activities: Object.fromEntries(
-          Object.entries(scaffold.elements?.activities ?? {}).map(([actId, act]: [string, any]) => [
-            actId,
-            {
-              activityId: act.activityId,
-              name: act.name,
-              preOutcome: act.preOutcome,
-              postOutcome: act.postOutcome,
-              nextActivityId: act.nextActivityId
-            }
-          ])
-        )
-      }
-    };
-
-    const pass4Prompt = `You are generating friction observations and a binding constraint assessment for a VCC governance diagnostic.
-
-The scaffold below represents a validated structural model. Every anchorId you reference MUST exist in the scaffold JSON.
-
-## Friction Taxonomy
-- ProcessHandoffFriction — work stalls between stages, handoff rework
-- TechnologyIntegrationFriction — systems don't interoperate, automation gaps
-- DataSignalFriction — information fragmented, decision latency
-- DecisionAuthorityFriction — decision rights ambiguous, approval concentration
-- GovernanceRiskFriction — control layering, compliance gates multiply
-- IncentiveCapacityFriction — performance measures distort behaviour, capacity limits
-
-## Evidence Basis Rules
-- EVIDENCED: directly stated in source material
-- INFERRED: derived from scaffold structure — requires structuralPattern
-- ASSUMED: domain heuristic only — intensity MUST NOT exceed 5
-
-## Binding Constraint Scoring
-Score each candidate on: observationFrequency (0-3), authorityCentralisation (0-3), downstreamDependency (0-3), controlLayering (0-3), capacityConstraint (0-3). Total 0-15.
-Eligibility: downstreamDependency must score ≥ 2. If no candidate qualifies, return null bindingConstraint.
-confidence = totalScore / 15.
-
-Return ONLY valid JSON, no markdown fences:
-{
-  "heatmaps": [
-    {
-      "valueStreamId": "vs-id-from-scaffold",
-      "observations": [
-        {
-          "observationId": "fr_001_snake_case_description",
-          "category": "DataSignalFriction",
-          "evidenceBasis": "EVIDENCED|INFERRED|ASSUMED",
-          "primaryAnchor": { "anchorType": "Activity", "anchorId": "act-id-from-scaffold" },
-          "contributingAnchors": [],
-          "intensity": { "scale": "0-10", "score": 8.0 },
-          "rationale": "Specific rationale citing scaffold elements or source evidence",
-          "evidence": [],
-          "observedAt": "${now}"
-        }
-      ],
-      "bindingConstraint": {
-        "findingId": "bc_001",
-        "bindingAnchor": { "anchorType": "Activity", "anchorId": "act-id-from-scaffold" },
-        "bindingAnchorObservationId": "fr_001_snake_case_description",
-        "justification": "Structural reasoning for binding constraint selection",
-        "constraintScoring": {
-          "candidates": [
-            {
-              "anchorId": "act-id",
-              "eligible": true,
-              "scores": { "observationFrequency": 2, "authorityCentralisation": 2, "downstreamDependency": 2, "controlLayering": 1, "capacityConstraint": 1 },
-              "totalScore": 8
-            }
-          ],
-          "selectedAnchorId": "act-id",
-          "selectionRationale": "Highest score among eligible candidates"
-        },
-        "confidence": 0.53,
-        "observedAt": "${now}"
-      }
-    }
-  ]
-}
-
-## Discovery Signal (pain points from extraction)
-${ppSummary || "No pain points recorded — derive observations from scaffold structure and domain heuristics (INFERRED or ASSUMED basis, intensity ≤ 5 for ASSUMED)."}
-
-## Scaffold JSON
-${JSON.stringify(scaffoldForPrompt, null, 2)}`;
-
-    let heatmaps: any[] = [];
-
-    try {
-      const res4 = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 8000,
-          temperature: 0,
-          messages: [{ role: "user", content: pass4Prompt }]
-        })
-      });
-      const data4 = await res4.json();
-      const text4 = data4.content?.find((b: any) => b.type === "text")?.text ?? "{}";
-      const pass4Result = JSON.parse(text4.replace(/```json|```/g, "").trim());
-
-      heatmaps = (pass4Result.heatmaps ?? []).map((h: any) => ({
-        heatmapId: `heatmap-${h.valueStreamId}-${Date.now()}`,
-        scaffoldId,
-        valueStreamId: h.valueStreamId,
-        observations: h.observations ?? [],
-        ...(h.bindingConstraint && { bindingConstraint: h.bindingConstraint }),
-        schemaVersion: "1.0.0",
-        createdAt: now,
-      }));
-    } catch (e) {
-      console.error("Pass 4 friction assessment failed — bundle saved without heatmaps", e);
-      // No fallback fabrication — an empty heatmap is better than a wrong one
+    if (ppSummary) {
+      scaffold._discoveryPainPoints = ppSummary;
     }
 
     const bundle = {
       bundleVersion: "1.0",
       createdAt: now,
       scaffold,
-      heatmaps,
+      heatmaps: [] as any[],
     };
 
     setGeneratedBundle(bundle);
@@ -927,7 +815,7 @@ ${JSON.stringify(scaffoldForPrompt, null, 2)}`;
               disabled={readiness < 41 || generating}
               className="rounded-lg bg-slate-800 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
-              {generating ? (generateStep === "friction" ? "Pass 4 — assessing friction…" : "Pass 3 — formalising scaffold…") : "Generate →"}
+              {generating ? "Generating scaffold…" : "Generate →"}
             </button>
           </div>
         </div>
@@ -1235,7 +1123,7 @@ Example: 'We met with the head of tech at Puretec. They have 4000+ SKUs and 12-m
                   disabled={readiness < 41 || generating}
                   className="rounded-lg bg-slate-800 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all whitespace-nowrap"
                 >
-                  {generating ? (generateStep === "friction" ? "Pass 4 — assessing friction…" : "Pass 3 — formalising scaffold…") : `Generate scaffold →`}
+                  {generating ? "Generating scaffold…" : `Generate scaffold →`}
                 </button>
               </div>
             </div>

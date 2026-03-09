@@ -118,16 +118,16 @@ export function runGate2(scaffold: any): GateResult {
     }
   }
 
-  // Referential integrity for activity fields
+  // Referential integrity for activity fields — missing registries are errors, not warnings
   for (const [actId, act] of Object.entries(activities) as [string, any][]) {
     for (const roleId of act.performedByRoleIds ?? []) {
-      if (!roles[roleId]) warnings.push(`Activity ${actId}: role ${roleId} not in roles registry`);
+      if (!roles[roleId]) errors.push(`Activity ${actId}: role ${roleId} not in roles registry`);
     }
     for (const capId of act.requiresCapabilityIds ?? []) {
-      if (!capabilities[capId]) warnings.push(`Activity ${actId}: capability ${capId} not in capabilities registry`);
+      if (!capabilities[capId]) errors.push(`Activity ${actId}: capability ${capId} not in capabilities registry`);
     }
     for (const ctrlId of act.controlIds ?? []) {
-      if (!controls[ctrlId]) warnings.push(`Activity ${actId}: control ${ctrlId} not in controls registry`);
+      if (!controls[ctrlId]) errors.push(`Activity ${actId}: control ${ctrlId} not in controls registry`);
     }
     for (const metricId of act.metricIds ?? []) {
       if (!metrics[metricId]) warnings.push(`Activity ${actId}: metric ${metricId} not in metrics registry`);

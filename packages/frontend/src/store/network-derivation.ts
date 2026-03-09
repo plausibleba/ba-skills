@@ -291,6 +291,17 @@ function _dagDepthLayout(
   nodeIds: string[],
   forwardEdges: NetworkEdge[],
 ): Map<string, { layer: number; row: number }> {
+  const positions = new Map<string, { layer: number; row: number }>();
+
+  // No edges → grid layout (3 columns max) instead of single tall column
+  if (forwardEdges.length === 0) {
+    const COLS = Math.min(3, nodeIds.length);
+    nodeIds.forEach((id, idx) => {
+      positions.set(id, { layer: idx % COLS, row: Math.floor(idx / COLS) });
+    });
+    return positions;
+  }
+
   // Build adjacency from forward edges only
   const adj = new Map<string, string[]>();
   const inDegree = new Map<string, number>();
@@ -331,7 +342,6 @@ function _dagDepthLayout(
     layers.set(layer, group);
   }
 
-  const positions = new Map<string, { layer: number; row: number }>();
   for (const [layer, ids] of layers) {
     ids.forEach((id, row) => {
       positions.set(id, { layer, row });
@@ -362,7 +372,7 @@ export function buildNetworkNodes(
       vsId,
       name: vsTyped.name ?? vsId,
       description: vsTyped.description,
-      sstageCount: resolveActivityIds(vsTyped, scaffold.elements.activities as any).length,
+      stageCount: resolveActivityIds(vsTyped, scaffold.elements.activities as any).length,
       frictionCount: heatmap?.observations.length ?? 0,
       hasBindingConstraint: !!heatmap?.bindingConstraint,
       bindingStageName: heatmap?.bindingConstraint?.bindingAnchor
