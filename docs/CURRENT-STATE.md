@@ -1,6 +1,6 @@
 # Current State — VCC Frontend
 
-_Last updated: 2026-03-08 — Session 14_
+_Last updated: 2026-03-09 — Session 16_
 
 ---
 
@@ -17,84 +17,68 @@ _Last updated: 2026-03-08 — Session 14_
 
 ### End-to-end v5 bundle loading ✅
 
-All five Water Filtration Company value streams load and render correctly in both Network View and Stage View:
+All five Water Filtration Company value streams load and render correctly in both Network View and Stage View (D-072–D-078).
 
-| Value Stream | Stages | Friction | Binding Constraint |
-|---|---|---|---|
-| Partner Channel Development | 5 | 1 obs | — |
-| Product Sales Lifecycle | 6 | 3 obs | — |
-| Technology Integration Delivery | 6 | 2 obs | Develop Integrations (87%) |
-| Maintenance Revenue Lifecycle | 5 | none loaded | — |
-| Sales Performance Management | 5 | 1 obs | — |
+### Scaffold Generation (PureTec presales scenario) ✅
+
+Four-pass pipeline (Passes 1–3 + friction stashed) generating quality scaffolds:
+- 6 VS preserved from extraction (RULE 1, D-082)
+- Short stage labels (2–4 words, D-081)
+- Initiatives excluded from VS (D-081)
+- v4 format output (D-080)
+- PPIT rendering confirmed: Activities, Roles, Info, capabilityPPIT populated
+
+### ID-vs-Label Display ✅
+
+`humanizeId()` utility (D-084) converts raw IDs to readable display names across 9 components. `cap_lead_qualification` → "Lead Qualification".
 
 ### Stage View
 - Chain walk (`activityChainHead` + `nextActivityId`) resolves correctly for v5 bundles
-- Capability blocks render in all stages
-- Entry/exit states render correctly
-- Friction observations display with scores and Generate User Story buttons
-- Binding constraint highlighted in red with correct stage identification
-- PPIT layer toggles working: **Roles** and **Activities** populate from v5 activity fields
-- Info / Tech tabs correctly empty (v5 Water Filtration fixture has no `informationObjectIds` / `technologyAppIds`)
+- Capability blocks render with humanized fallback labels
+- Entry/exit states, friction observations, binding constraint all working
+- PPIT layer toggles: Roles and Activities populate from both v4 capabilityPPIT and v5 activity-level fallback
+- User story generation via TransformationPane
 
 ### Network View
-- All 5 VS nodes render with friction badges and constrained indicator
+- All VS nodes render with friction badges and constrained indicator
+- Topology coupling counts from derived TopologyView
 - Click-through to Stage View works for all nodes
-
-### User Guide
-- Contextually aware across all steps (Welcome → Network → Friction → Solutions)
 
 ---
 
 ## Schema Compatibility
 
-VCC frontend now handles both v4 and v5 scaffold formats:
+VCC frontend handles both v4 and v5 scaffold formats:
 
 | Field | v4 | v5 |
 |-------|----|----|
 | VS activity list | `activityIds[]` | `activityChainHead` + `nextActivityId` on activity |
 | VS layout zone | `layoutZone` | `zone` |
 | Capability refs on activity | `requiresCapabilityIds` | `enabledByCapabilityIds` |
-| PPIT breakdown | `activity.capabilityPPIT[capId]` | flat `performedByRoleIds` on activity (no per-cap PPIT) |
+| PPIT breakdown | `activity.capabilityPPIT[capId]` | flat `performedByRoleIds` on activity |
 
 ---
 
-## Files Changed This Session
+## Decision Log State
 
-| File | Change |
-|------|--------|
-| `src/store/canvas-store.ts` | v5 chain walk in `generateCanvasForVs`; dual capability field (`enabledByCapabilityIds ?? requiresCapabilityIds`) |
-| `src/components/CanvasView.tsx` | Guard `bindingConstraint?.bindingAnchor` against undefined |
-| `src/components/canvas/StageCard.tsx` | `enabledByCapabilityIds ?? requiresCapabilityIds` for capability block rendering |
-| `src/components/canvas/CapabilityBlock.tsx` | v5 PPIT fallback: reads `performedByRoleIds` for Roles layer, activity name for Activities layer |
+Decisions numbered D-001 through D-084. Single source of truth: `docs/DECISIONS.md`.
 
 ---
 
 ## Known Gaps / Next Steps
 
-### Step 2 — UX flow decoupling (next)
-- Decouple friction from intake: scaffold generation → immediate canvas; friction on-demand from Stage Wizard Step 2
-- Pipeline rewrite: Passes A + B with Gate 1, IR surfacing, determinism enforced at proxy level
-- Aligns with D-035 and GPT architecture recommendation
+### Immediate
+1. Verify Vercel deployment — re-run PureTec to confirm clean labels on canvas
+2. Pipeline rewrite to 3-pass architecture (D-065): Pass A (DiscoveryIR) → Pass B (Scaffold with Gate 1) → Pass C (Heatmap)
+3. PDS update — document Sessions 12–16 progress
 
-### Step 3 — Two-pass extraction rewrite
-- Replace single-pass extraction with properly sequenced multi-agent pipeline
-- Passes A + B with intermediate IR surfacing
-- Reference: `VCC_Scaffold_Generation_Prompt_Pack_v3_2`
+### Near Term
+4. DiscoveryIR review panel (D-068)
+5. Proxy-level temperature enforcement (D-069)
+6. Jira export for user stories
+7. Dummy discovery datasets for Daniel
 
-### Pause — Eric Broda spar
-- Question: Does Governance Kernel + GSM wire in as overlay (additive) or requires scaffold structural changes (breaking)?
-- Determine before building MVC demo
-
-### Step 4 — MVC demo for Eric
-- Architecture diagram: VCC + MVC + Governance Kernel mapped onto Agentic Mesh Trust Framework
-- `StageCard` identified as natural host for Governance Kernel overlay (PPIT layer system is the hook)
-
-### Minor cosmetic
-- Network View VS cards show `stages` label with no count (stageCount not derived for v5 chain format)
-
----
-
-## Design Notes
-
-- `StageCard` ↔ Eric Broda's Concept Card: structural alignment noted, no action yet
-- PPIT layer system (`ppitToggles`) is the natural extension point for Governance Kernel overlay
+### Future
+8. Eric Broda MVC demo — Governance Kernel overlay on StageCard
+9. Multi-vendor support beyond Salesforce
+10. F-001 phase 2: delete observations, reassign binding constraint

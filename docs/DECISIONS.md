@@ -339,6 +339,71 @@ UI treatment for null: no gold banner, no binding badge. Neutral executive callo
 - Do not merge friction generation back into scaffold generation for efficiency — directly violates structural-before-interpretive
 - Do not make binding constraint selection manual in intake pipeline — manual override belongs in canvas interpretation workflows, not initial heatmap generation
 
-D-072 FileLoader.tsx — catch block now logs real error and surfaces err.message in UI instead of always showing "Failed to parse JSON file"
-D-073 network-derivation.ts — added resolveActivityIds() helper that handles both legacy activityIds[] format (v4) and pipeline activityChainHead + nextActivityId chain format (v5). Patched two call sites: deriveNetworkEdges and buildNetworkNodes
-D-074 network-derivation.ts — layoutZone vs zone field name mismatch. v5 bundles use zone, code expected layoutZone. Patched 3 locations to accept both via ?? fallback
+## D-072: FileLoader Error Surfacing
+**Date:** 2026-03-08
+**Decision:** FileLoader catch block logs real error and surfaces `err.message` in UI instead of always showing "Failed to parse JSON file".
+**Rationale:** Generic error messages make debugging impossible. Surface the actual parse failure.
+
+## D-073: resolveActivityIds() — v4/v5 Dual Format Support
+**Date:** 2026-03-08
+**Decision:** Added `resolveActivityIds()` helper in `network-derivation.ts` that handles both legacy `activityIds[]` format (v4) and `activityChainHead` + `nextActivityId` chain format (v5). Patched two call sites: `deriveNetworkEdges` and `buildNetworkNodes`.
+**Rationale:** v5 pipeline bundles eliminated `activityIds[]`. Network View must work with both formats.
+
+## D-074: layoutZone vs zone Field Fallback
+**Date:** 2026-03-08
+**Decision:** `network-derivation.ts` accepts both `layoutZone` (v4) and `zone` (v5) via `??` fallback at 3 locations.
+**Rationale:** v5 bundles renamed the field. Frontend must tolerate both without migration.
+
+---
+
+## D-075: v5 Chain Walk in generateCanvasForVs
+**Date:** 2026-03-08
+**Context:** v5 bundles removed `activityIds[]` from value stream objects, replacing with `activityChainHead` + `nextActivityId` chain. `generateCanvasForVs` crashed on v5 bundles.
+**Decision:** Added `resolveOrderedActivityIds()` helper inside `generateCanvasForVs` that detects format by presence of `activityIds` array (v4) or falls back to walking the chain (v5). Both paths produce identical ordered array.
+**Rationale:** Normalise at load time within the function. Rejected load-time schema migration to preserve bundle provenance.
+
+## D-076: Dual Capability Field Read
+**Date:** 2026-03-08
+**Decision:** All capability field reads use `enabledByCapabilityIds ?? requiresCapabilityIds ?? []`. Applied in `canvas-store.ts`, `StageCard.tsx`, `CapabilityBlock.tsx`.
+**Rationale:** v5 renamed `requiresCapabilityIds` to `enabledByCapabilityIds`. Both must work.
+
+## D-077: CapabilityBlock v5 PPIT Fallback
+**Date:** 2026-03-08
+**Decision:** When `capabilityPPIT` is absent (v5), PPIT layers fall back to activity-level arrays: `performedByRoleIds` for Roles, `[activity.name]` for Activities, `informationObjectIds`/`technologyAppIds` for Info/Tech.
+**Rationale:** v5 bundles have no per-capability PPIT. Fallback is additive; v4 path unchanged.
+
+## D-078: CanvasView bindingAnchor Guard
+**Date:** 2026-03-08
+**Decision:** Changed to optional chaining `heatmapData.bindingConstraint?.bindingAnchor` in `CanvasView.tsx`.
+**Rationale:** v5 heatmaps with `bindingConstraint` present but `bindingAnchor` undefined caused blank white screen crash.
+
+## D-079: StageCard ↔ Concept Card Alignment (Noted, Deferred)
+**Date:** 2026-03-08
+**Decision:** Noted structural alignment between `StageCard` and Eric Broda's Concept Card. No action. When MVC demo begins, `StageCard` is the candidate host for Governance Kernel overlay via `ppitToggles` layer system.
+
+---
+
+## D-080: Pass 3 Generates v4 Format Exclusively
+**Date:** 2026-03-08
+**Decision:** Pass 3 prompt generates v4 format only: `activityIds[]`, `requiresCapabilityIds`, `capabilityPPIT`. Not the v5 chain format.
+**Rationale:** Deployed canvas-store reads v4 fields. Generating v5 from Pass 3 while canvas expects v4 causes silent render failures. (Previously D-044 in session log.)
+
+## D-081: Pass 1 Excludes Initiatives; Stage Names 2–4 Words
+**Date:** 2026-03-08
+**Decision:** Pass 1 prompt explicitly excludes time-bounded initiatives/projects. Stage naming rule: "2–4 words, title case — short labels not sentences."
+**Rationale:** LLM was surfacing initiatives (e.g. "Technology Integration Foundation") as value streams and generating verbose stage names. (Previously D-045 in session log.)
+
+## D-082: Pass 3 RULE 1 — Preserve All Value Streams
+**Date:** 2026-03-08
+**Decision:** Pass 3 must produce exactly one `valueStream` entry for every VS in confirmed inputs. No silent drops, renames, or merges.
+**Rationale:** Model was silently dropping VS based on its own judgement. "6 in = 6 out." (Previously D-046 in session log.)
+
+## D-083: Template Literal Backtick Safety
+**Date:** 2026-03-08
+**Decision:** Closing backtick of template literals must be unescaped. Regexes containing backticks use `[backtick]` character class form to prevent template literal breakage.
+**Rationale:** Python script wrote escaped backtick as closing delimiter, breaking the Vite build. (Previously D-047 in session log.)
+
+## D-084: humanizeId Utility for Display Fallback
+**Date:** 2026-03-09
+**Decision:** Created `src/lib/humanize-id.ts` with `humanizeId()` function. Strips type prefix (`cap_`, `role_`, `act_`, etc.) and converts snake_case/kebab-case to Title Case. Applied as fallback display in 9 components.
+**Rationale:** LLM-generated scaffolds don't always populate element registries fully. Raw IDs like `cap_lead_qualification` are unreadable. Fallback now shows "Lead Qualification".

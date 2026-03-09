@@ -470,9 +470,98 @@ Pipeline rewrite implementation. Start with domain/pipeline/ module structure as
 - discovery-session-store.ts (in store/)
 - DiscoveryIntake.tsx refactored to thin interaction shell
 
-SESSION 14 — v5 Bundle Loading Fixed
-D-066 FileLoader.tsx — catch block now logs real error and surfaces err.message in UI instead of always showing "Failed to parse JSON file"
-D-067 network-derivation.ts — added resolveActivityIds() helper that handles both legacy activityIds[] format (v4) and pipeline activityChainHead + nextActivityId chain format (v5). Patched two call sites: deriveNetworkEdges and buildNetworkNodes
-D-068 network-derivation.ts — layoutZone vs zone field name mismatch. v5 bundles use zone, code expected layoutZone. Patched 3 locations to accept both via ?? fallback
-Result: v5 bundle loads cleanly — all 5 VS render in network view with correct two-row layout (3 ecosystem / 2 knowledge), friction badges, and constrained indicator
-Remaining: Stage view click-through not yet wired for v5 chain format — generateCanvasForVs expects lifecycleStages[] which v5 doesn't have. Next session item.
+## Session 14 — 8 Mar 2026
+
+### Theme: v5 Bundle Loading + Compatibility Fixes
+
+**v5 bundle loading (Network View):**
+- D-072: FileLoader error surfacing — real error messages instead of generic "Failed to parse JSON"
+- D-073: `resolveActivityIds()` helper for v4 `activityIds[]` / v5 chain walk dual support
+- D-074: `layoutZone` vs `zone` field fallback in network-derivation.ts
+- Result: v5 Water Filtration bundle loads cleanly — 5 VS, two-row layout, friction badges, constrained indicator
+
+**v5 bundle loading (Stage View):**
+- D-075: Chain walk in `generateCanvasForVs` — `resolveOrderedActivityIds()` detects v4/v5 format
+- D-076: Dual capability field read (`enabledByCapabilityIds ?? requiresCapabilityIds`)
+- D-077: CapabilityBlock v5 PPIT fallback to activity-level arrays
+- D-078: CanvasView `bindingAnchor` optional chaining guard
+- D-079: StageCard ↔ Concept Card alignment noted, deferred
+
+**Prompt updates:**
+- Multiple prompt refinement commits for Pass 3 formalisation quality
+
+### Decisions
+D-072 through D-079
+
+---
+
+## Session 15 — 8 Mar 2026
+
+### Theme: Scaffold Generation Quality + Build Fix
+
+**Context:** PureTec presales scenario. PPIT rendering confirmed working, but generation quality issues remained.
+
+**Build fix:**
+- D-083: Template literal closing backtick was escaped by Python script, breaking Vite build. Fixed backtick + regex patterns.
+
+**Generation quality fixes:**
+- D-081: Pass 1 now excludes time-bounded initiatives/projects; stage names constrained to 2–4 words title case
+- D-082: Pass 3 RULE 1 — preserve all VS from confirmed inputs, no silent drops
+- D-080: Pass 3 generates v4 format exclusively (`activityIds[]`, `requiresCapabilityIds`, `capabilityPPIT`)
+- Pass 4 (friction) removed from auto-run — pain points stashed on `scaffold._discoveryPainPoints`
+
+**What's working after this session:**
+- PPIT rendering (Activities, Roles, Info) confirmed
+- Capability names: operational, specific
+- Activity names: 5-10 word verb+object
+- Metrics & Roles painting on canvas
+- `capabilityPPIT` populated with micro-level work statements
+
+### Decisions
+D-080 through D-083
+
+### Deployment
+- Last good: `frontend-9vh29gem2` (PPIT working, v9 bundle generated)
+- Production alias: `frontend-five-eta-l0j2mk66gi.vercel.app`
+
+---
+
+## Session 16 — 9 Mar 2026
+
+### Theme: ID-vs-Label Bug Fix + Docs Cleanup
+
+**humanizeId utility (D-084):**
+- Created `src/lib/humanize-id.ts` — strips type prefix, converts snake_case/kebab-case to Title Case
+- Applied as display fallback in 9 components: CapabilityBlock, TransformationPane, AnalyticsPane, StructurePane, FrictionPanel, ThroughputPanel, CanvasView, StageWizard, ContentSelectors
+- e.g. `cap_lead_qualification` → "Lead Qualification"
+
+**Docs cleanup:**
+- Deleted duplicate `Session 11 Implementation Brief.md` (kept `SESSION11_BRIEF.md`)
+- Archived `SCHEMA_DELTA_Session10.md` → `docs/archive/`
+- Merged `DECISIONS_session14.md` into `DECISIONS.md` with correct numbering (D-075–D-079)
+- Fixed Session 14 decision number collision in SESSION-LOG.md (was using D-066–D-068, now D-072–D-074)
+- Renumbered Session 15 decisions (D-044–D-047 → D-080–D-083) for global uniqueness
+- Updated CURRENT-STATE.md, SESSION-LOG.md, ARCHITECTURE.md
+
+### Decisions
+D-084
+
+---
+
+## Pending Work (updated 9 Mar 2026)
+
+### Immediate
+1. Verify Vercel deployment with humanizeId fix — re-run PureTec to confirm clean labels
+2. Pipeline rewrite implementation (D-065 architecture: Pass A/B/C with Gate 1)
+3. PDS update — reflect Sessions 12–16 progress
+
+### Near Term
+4. DiscoveryIR review panel before formalisation (D-068)
+5. Proxy-level temperature enforcement (D-069)
+6. Jira export button for user stories
+7. Dummy discovery datasets for Daniel demos
+
+### Future
+8. F-001 phase 2: delete observations, reassign binding constraint
+9. Multi-vendor support beyond Salesforce
+10. Eric Broda MVC demo — Governance Kernel overlay on StageCard
