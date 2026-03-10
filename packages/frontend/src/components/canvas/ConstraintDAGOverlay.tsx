@@ -395,17 +395,24 @@ export function ConstraintDAGOverlay({
     return set;
   }, [visibleEdges]);
 
-  // ── Positions — reset when view mode or node count changes ──
-  const [positions, setPositions] = useState(() => radialPositions(nodeIds.length));
-  const prevNodeCountRef = useRef(nodeIds.length);
-  const prevViewModeRef = useRef(viewMode);
-  useEffect(() => {
-    if (nodeIds.length !== prevNodeCountRef.current || viewMode !== prevViewModeRef.current) {
-      setPositions(radialPositions(nodeIds.length));
-      prevNodeCountRef.current = nodeIds.length;
-      prevViewModeRef.current = viewMode;
-    }
-  }, [nodeIds.length, viewMode]);
+  // ── Positions — keyed by viewMode so switching resets layout synchronously ──
+  const [stagePositions, setStagePositions] = useState(() => radialPositions(activityIds.length));
+  const [capPositions, setCapPositions] = useState(() => radialPositions(capGraph.nodeIds.length));
+
+  // Reset positions when node count changes (e.g. different scaffold)
+  const prevStageCount = useRef(activityIds.length);
+  const prevCapCount = useRef(capGraph.nodeIds.length);
+  if (activityIds.length !== prevStageCount.current) {
+    prevStageCount.current = activityIds.length;
+    setStagePositions(radialPositions(activityIds.length));
+  }
+  if (capGraph.nodeIds.length !== prevCapCount.current) {
+    prevCapCount.current = capGraph.nodeIds.length;
+    setCapPositions(radialPositions(capGraph.nodeIds.length));
+  }
+
+  const positions = isStageView ? stagePositions : capPositions;
+  const setPositions = isStageView ? setStagePositions : setCapPositions;
 
   // ── Drag state ──
   const dragRef = useRef<{

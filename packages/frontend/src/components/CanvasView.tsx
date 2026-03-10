@@ -111,7 +111,7 @@ export function CanvasView() {
       <div className="flex h-full flex-1 flex-col gap-4 overflow-hidden pl-6 pt-4">
         {/* Stub banner */}
         {isStub && (
-          <div className="flex items-center gap-2 rounded-lg border border-vcc-100 bg-vcc-50/50 px-4 py-2">
+          <div className="flex flex-shrink-0 items-center gap-2 rounded-lg border border-vcc-100 bg-vcc-50/50 px-4 py-2">
             <svg className="h-4 w-4 flex-shrink-0 text-vcc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -122,7 +122,7 @@ export function CanvasView() {
         )}
 
         {/* ── Narrative header ── */}
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-shrink-0 flex-wrap items-start justify-between gap-4">
           <div className="min-w-[280px] flex-1 space-y-2">
             <h2 className="text-lg font-semibold text-vcc-900">
               <InlineEdit
@@ -244,7 +244,7 @@ export function CanvasView() {
 
         {/* ── Validation findings ── */}
         {validationReport && validationReport.findings.length > 0 && (
-          <details className="rounded-lg border border-yellow-100 bg-yellow-50/40 p-3">
+          <details className="flex-shrink-0 rounded-lg border border-yellow-100 bg-yellow-50/40 p-3">
             <summary className="cursor-pointer text-sm font-medium text-yellow-600">
               {validationReport.findings.length} validation finding
               {validationReport.findings.length !== 1 ? "s" : ""}
