@@ -65,10 +65,10 @@ export function StageColumn({
     : "";
 
   return (
-    <div className="flex h-full w-[300px] flex-shrink-0 flex-col">
-      {/* Dark header — flat fill, strong contrast — sticky so it stays visible on scroll */}
+    <div className="flex w-[300px] flex-shrink-0 flex-col">
+      {/* Dark header — flat fill, strong contrast */}
       <div
-        className={`sticky top-0 z-10 rounded-t-lg border border-b-0 ${
+        className={`rounded-t-lg border border-b-0 ${
           hasBinding
             ? "border-status-binding bg-status-binding"
             : "border-[#2D4A6B] bg-[#2D4A6B]"
@@ -133,7 +133,7 @@ export function StageColumn({
 
       {/* Card body */}
       <div
-        className={`flex min-h-[160px] flex-1 flex-col gap-2 rounded-b-lg border border-t-0 p-2.5 ${
+        className={`flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto rounded-b-lg border border-t-0 p-2.5 ${
           hasBinding
             ? "border-status-binding/40 bg-status-bindingLight/30"
             : "border-vcc-200 bg-white"

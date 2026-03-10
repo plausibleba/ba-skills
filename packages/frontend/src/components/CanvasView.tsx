@@ -19,7 +19,7 @@ import { useCanvasControls } from "./canvas/useCanvasControls.ts";
 /* ── Canvas View — orchestrator ────────────────────────────────────── */
 
 export function CanvasView() {
-  const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories, updateVsName, updateVsDescription, addActivity, removeActivity, cardRegistry, topologyView } =
+  const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories, updateVsName, updateVsDescription, addActivity, removeActivity, cardRegistry, topologyView, capabilityInstanceView } =
     useCanvasStore();
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
     null,
@@ -107,8 +107,8 @@ export function CanvasView() {
   const isStub = isEnterpriseScaffold && vsActivities.length <= 5 && totalMetrics <= 2;
 
   return (
-    <div className="flex min-h-full gap-0">
-      <div className="flex flex-1 flex-col gap-4 pl-6 pt-4">
+    <div className="flex h-full gap-0">
+      <div className="flex h-full flex-1 flex-col gap-4 overflow-hidden pl-6 pt-4">
         {/* Stub banner */}
         {isStub && (
           <div className="flex items-center gap-2 rounded-lg border border-vcc-100 bg-vcc-50/50 px-4 py-2">
@@ -190,12 +190,13 @@ export function CanvasView() {
             topologyView={topologyView}
             bindingActivityIds={bindingActivityIds}
             scaffoldData={scaffoldData}
+            capabilityInstanceView={capabilityInstanceView}
             onClose={toggleConstraintDAG}
           />
         )}
 
         {/* ── Stage columns ── */}
-        <div className="flex items-stretch pb-4">
+        <div className="flex flex-1 min-h-0 items-stretch overflow-x-auto pb-4">
           {canvasViewModel.columns.map((col, i) => (
             <div key={col.columnId} className="flex items-stretch">
               <StageColumn

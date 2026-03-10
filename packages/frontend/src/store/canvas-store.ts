@@ -154,6 +154,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       networkForwardEdges: forwardEdges,
       networkFeedbackEdges: feedbackEdges,
       topologyView,
+      capabilityInstanceView,
     });
 
     // Multi-VS → stay in network view; single-VS → generate canvas
