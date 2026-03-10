@@ -1,5 +1,8 @@
 import type { ScaffoldData, FrictionObservation } from "../../types.ts";
 import type { PPITLayer } from "./ppit.ts";
+import type { CardToggleLayer } from "./useCanvasControls.ts";
+import type { CardRegistry } from "../../types/cards.ts";
+import { getCardsForActivity } from "../../types/cards.ts";
 import { CapabilityBlock } from "./CapabilityBlock.tsx";
 import { TransformationPane } from "./TransformationPane.tsx";
 import { useCanvasStore } from "../../store/canvas-store.ts";
@@ -15,8 +18,11 @@ export function StageCard({
   isSelected,
   hasHeatmap,
   ppitToggles,
+  cardToggles,
+  cardRegistry,
   analyticsOpen,
   onFrictionClick,
+  onCardClick,
 }: {
   activityId: string;
   scaffold: ScaffoldData;
@@ -25,16 +31,27 @@ export function StageCard({
   isSelected: boolean;
   hasHeatmap: boolean;
   ppitToggles: Record<PPITLayer, boolean>;
+  cardToggles?: Record<CardToggleLayer, boolean>;
+  cardRegistry?: CardRegistry | null;
   analyticsOpen: boolean;
   onFrictionClick: (activityId: string) => void;
+  onCardClick?: (activityId: string) => void;
 }) {
   const activity = scaffold.elements.activities[activityId];
   if (!activity) return null;
 
   const { userStoriesByActivity, setActivityStories, addCapabilityToActivity, removeCapabilityFromActivity } = useCanvasStore();
 
-  const caps = (activity as any).enabledByCapabilityIds ?? (activity as any).requiresCapabilityIds ?? [];
+  const caps: string[] = (activity as any).enabledByCapabilityIds ?? (activity as any).requiresCapabilityIds ?? [];
   const showSummary = false;
+
+  // MVC card counts for this activity
+  const anyCardToggle = cardToggles && (cardToggles.concepts || cardToggles.policies);
+  const cardCounts = anyCardToggle && cardRegistry
+    ? getCardsForActivity(activityId, cardRegistry, scaffold)
+    : null;
+  const showConceptBadge = cardToggles?.concepts && cardCounts && cardCounts.concepts.length > 0;
+  const showPolicyBadge = cardToggles?.policies && cardCounts && cardCounts.policies.length > 0;
 
   return (
     <div
@@ -65,6 +82,36 @@ export function StageCard({
           <span className="text-[9px] font-semibold uppercase tracking-wider text-red-600">
             Binding Constraint
           </span>
+        </div>
+      )}
+
+      {/* MVC Card badges — shown when card toggles are active */}
+      {(showConceptBadge || showPolicyBadge) && (
+        <div className="flex items-center gap-1.5 px-2.5 pt-2">
+          {showConceptBadge && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onCardClick?.(activityId); }}
+              className="flex items-center gap-1 rounded border border-sky-200 bg-sky-50 px-1.5 py-0.5 text-[9px] font-medium text-sky-700 hover:bg-sky-100 transition-colors"
+              title={`${cardCounts!.concepts.length} Concept Card${cardCounts!.concepts.length !== 1 ? "s" : ""}`}
+            >
+              <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+              </svg>
+              {cardCounts!.concepts.length}C
+            </button>
+          )}
+          {showPolicyBadge && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onCardClick?.(activityId); }}
+              className="flex items-center gap-1 rounded border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[9px] font-medium text-rose-700 hover:bg-rose-100 transition-colors"
+              title={`${cardCounts!.policies.length} Policy Card${cardCounts!.policies.length !== 1 ? "s" : ""}`}
+            >
+              <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" clipRule="evenodd" />
+              </svg>
+              {cardCounts!.policies.length}P
+            </button>
+          )}
         </div>
       )}
 

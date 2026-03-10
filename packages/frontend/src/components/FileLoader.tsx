@@ -1,6 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import type { ScaffoldData, HeatmapData } from "../types.ts";
+import type { CardRegistry } from "../types/cards.ts";
+import PURETEC_CARDS from "../../fixtures/cards/puretec-cards.json";
 
 export function FileLoader() {
   const { loadScaffold, loadHeatmap, loading, error, scaffoldData } =
@@ -30,8 +32,16 @@ export function FileLoader() {
               useCanvasStore.getState().setActivityStories(actId, stories as any[]);
             }
           }
+          // Load MVC cards — from bundle if present, else demo fixture (D-099)
+          if (bundle.cardRegistry) {
+            useCanvasStore.getState().loadCards(bundle.cardRegistry as CardRegistry);
+          } else {
+            useCanvasStore.getState().loadCards(PURETEC_CARDS as unknown as CardRegistry);
+          }
         } else if ("scaffoldId" in json && "elements" in json) {
           await loadScaffold(json as unknown as ScaffoldData);
+          // Auto-load demo card fixture for standalone scaffolds
+          useCanvasStore.getState().loadCards(PURETEC_CARDS as unknown as CardRegistry);
         } else if ("heatmapId" in json) {
           void loadHeatmap(json as unknown as HeatmapData);
         } else {

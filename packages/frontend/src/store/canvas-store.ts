@@ -9,6 +9,7 @@ import type {
   NetworkEdge,
   TransformationUserStory,
 } from "../types.ts";
+import type { CardRegistry } from "../types/cards.ts";
 import { resolveScaffoldMeasures } from "./scaffold-resolver.ts";
 import { validateThroughputRules } from "./throughput-validator.ts";
 import {
@@ -40,6 +41,9 @@ interface CanvasState {
 
   // Transformation layer
   userStoriesByActivity: Record<string, TransformationUserStory[]>;
+
+  // MVC Card Registry (D-099: Eric Broda integration)
+  cardRegistry: CardRegistry | null;
 
   // Dirty flag — set when scaffold is mutated locally (D-092)
   scaffoldDirty: boolean;
@@ -88,6 +92,9 @@ interface CanvasState {
   addRoleToCapability: (activityId: string, capabilityId: string, roleId: string) => void;
   removeRoleFromCapability: (activityId: string, capabilityId: string, roleId: string) => void;
 
+  // MVC Card Registry (D-099)
+  loadCards: (cards: CardRegistry) => void;
+
   // Bundle save/load (D-092)
   saveFullBundle: () => Promise<void>;
 }
@@ -106,6 +113,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   networkForwardEdges: [],
   networkFeedbackEdges: [],
   userStoriesByActivity: {},
+  cardRegistry: null,
   scaffoldDirty: false,
 
   loadScaffold: async (json: ScaffoldData) => {
@@ -406,6 +414,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       networkForwardEdges: [],
       networkFeedbackEdges: [],
       userStoriesByActivity: {},
+      cardRegistry: null,
       scaffoldDirty: false,
     });
   },
@@ -1042,6 +1051,12 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     };
     set({ scaffoldData: updated, scaffoldDirty: true });
     if (selectedVsId) get().generateCanvasForVs(selectedVsId);
+  },
+
+  // ── MVC Card Registry (D-099) ──────────────────────────────────────────────
+
+  loadCards: (cards: CardRegistry) => {
+    set({ cardRegistry: cards });
   },
 
   // ── Bundle save (D-092) ─────────────────────────────────────────────────────

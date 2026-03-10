@@ -1,0 +1,388 @@
+{
+  "conceptCards": {
+    "cc_prospect": {
+      "cardId": "cc_prospect",
+      "canonicalName": "Prospect",
+      "description": "A potential customer who has been identified but not yet qualified or converted. Represents the earliest stage of the customer acquisition lifecycle.",
+      "owner": "Sales Operations",
+      "senses": [
+        {
+          "senseName": "CRM Lead",
+          "description": "An unqualified contact record in the CRM system, sourced from marketing campaigns, referrals, or territory prospecting.",
+          "systemOfRecord": "Salesforce CRM",
+          "disambiguationCues": ["lead generation", "prospecting", "territory management"]
+        },
+        {
+          "senseName": "Market Opportunity",
+          "description": "A business entity within a target market segment that matches the ideal customer profile for water filtration solutions.",
+          "systemOfRecord": "Market Intelligence Platform",
+          "disambiguationCues": ["market analysis", "territory planning", "opportunity assessment"]
+        }
+      ],
+      "relationships": [
+        { "type": "produces", "targetCardId": "cc_customer", "label": "converts to" },
+        { "type": "governs", "targetCardId": "cc_territory", "label": "scoped by" }
+      ],
+      "anchors": {
+        "activityIds": ["act_identify_prospects", "act_gather_intelligence", "act_engage_customer"],
+        "capabilityIds": ["cap_customer_relationship_management", "cap_market_intelligence"],
+        "roleIds": ["role_sales_representative"],
+        "informationObjectIds": ["io_prospect_list", "io_intelligence_brief", "io_market_data"]
+      },
+      "provenance": "Extracted from PureTec VCC scaffold — Lead-to-Customer value stream, stages 1-3",
+      "dataAcquisitionPlan": "Query Salesforce Lead object WHERE Status IN ('New', 'Working') AND Territory = {agent.territory}",
+      "tokenBudget": 380
+    },
+
+    "cc_customer": {
+      "cardId": "cc_customer",
+      "canonicalName": "Customer",
+      "description": "An entity that has contracted with PureTec for water filtration products and services. A customer exists across multiple value streams with different operational meanings.",
+      "owner": "Customer Operations",
+      "senses": [
+        {
+          "senseName": "CRM Account",
+          "description": "A converted account record in Salesforce CRM with active opportunity or closed-won deal.",
+          "systemOfRecord": "Salesforce CRM",
+          "disambiguationCues": ["sales context", "account management", "opportunity pipeline"]
+        },
+        {
+          "senseName": "Service Recipient",
+          "description": "An entity with installed equipment requiring scheduled maintenance, cartridge replacement, and technical support.",
+          "systemOfRecord": "Salesforce Field Service",
+          "disambiguationCues": ["maintenance context", "service delivery", "installation"]
+        },
+        {
+          "senseName": "Order Account",
+          "description": "A billing entity with active purchase orders, delivery addresses, and payment terms.",
+          "systemOfRecord": "NetSuite ERP",
+          "disambiguationCues": ["order processing", "delivery", "billing"]
+        }
+      ],
+      "relationships": [
+        { "type": "has-a", "targetCardId": "cc_territory", "label": "assigned to" },
+        { "type": "consumes", "targetCardId": "cc_cartridge", "label": "requires" },
+        { "type": "has-a", "targetCardId": "cc_water_quality_report", "label": "receives" },
+        { "type": "has-a", "targetCardId": "cc_maintenance_schedule", "label": "governed by" }
+      ],
+      "anchors": {
+        "activityIds": ["act_engage_customer", "act_develop_proposal", "act_convert_order"],
+        "capabilityIds": ["cap_customer_relationship_management", "cap_order_management"],
+        "roleIds": ["role_sales_representative", "role_customer_care_representative", "role_service_technician"],
+        "informationObjectIds": ["io_customer_profile", "io_customer_requirements", "io_customer_interactions"]
+      },
+      "provenance": "Extracted from PureTec VCC scaffold — spans Lead-to-Customer, Order-to-Delivery, and Install-to-Maintenance value streams",
+      "dataAcquisitionPlan": "Query Salesforce Account WHERE Type = 'Customer' AND Id = {case.accountId}; UNION NetSuite Customer WHERE ExternalId = {case.accountId}",
+      "tokenBudget": 520
+    },
+
+    "cc_territory": {
+      "cardId": "cc_territory",
+      "canonicalName": "Territory",
+      "description": "A geographic or account-based boundary that governs sales representative assignment, prospect ownership, and performance accountability.",
+      "owner": "Sales Management",
+      "senses": [
+        {
+          "senseName": "Sales Territory",
+          "description": "A defined geographic region with assigned sales representative, quota targets, and prospect pool.",
+          "systemOfRecord": "Salesforce Territory Management",
+          "disambiguationCues": ["territory assignment", "quota", "sales performance"]
+        },
+        {
+          "senseName": "Service Territory",
+          "description": "A geographic zone determining which service technicians are dispatched for installations and maintenance.",
+          "systemOfRecord": "Salesforce Field Service",
+          "disambiguationCues": ["service dispatch", "technician routing", "installation scheduling"]
+        }
+      ],
+      "relationships": [
+        { "type": "governs", "targetCardId": "cc_prospect", "label": "constrains" },
+        { "type": "governs", "targetCardId": "cc_customer", "label": "assigns" }
+      ],
+      "anchors": {
+        "activityIds": ["act_identify_prospects"],
+        "capabilityIds": ["cap_territory_management"],
+        "roleIds": ["role_sales_manager", "role_sales_representative"],
+        "informationObjectIds": ["io_territory_plan", "io_sales_targets"]
+      },
+      "provenance": "Extracted from PureTec VCC scaffold — Territory-to-Performance value stream",
+      "dataAcquisitionPlan": "Query Territory2 WHERE AssignedUserId = {agent.userId}",
+      "tokenBudget": 310
+    },
+
+    "cc_cartridge": {
+      "cardId": "cc_cartridge",
+      "canonicalName": "Filtration Cartridge",
+      "description": "A consumable component in PureTec water filtration systems that requires periodic replacement according to manufacturer specifications and water quality conditions.",
+      "owner": "Product Management",
+      "senses": [
+        {
+          "senseName": "Product SKU",
+          "description": "An inventory item with part number, compatibility matrix, and warehouse stock levels.",
+          "systemOfRecord": "NetSuite ERP",
+          "disambiguationCues": ["inventory", "ordering", "stock management"]
+        },
+        {
+          "senseName": "Maintenance Item",
+          "description": "A service-triggering component whose replacement schedule drives preventive maintenance workflows.",
+          "systemOfRecord": "Salesforce Field Service",
+          "disambiguationCues": ["maintenance scheduling", "replacement cycle", "service visit"]
+        }
+      ],
+      "relationships": [
+        { "type": "part-of", "targetCardId": "cc_maintenance_schedule", "label": "triggers" },
+        { "type": "relates-to", "targetCardId": "cc_water_quality_report", "label": "influences replacement timing" }
+      ],
+      "anchors": {
+        "capabilityIds": ["cap_inventory_management", "cap_service_scheduling"],
+        "roleIds": ["role_service_technician", "role_distribution_coordinator"],
+        "informationObjectIds": ["io_replacement_parts", "io_replacement_notice", "io_product_catalog"]
+      },
+      "provenance": "Extracted from PureTec VCC scaffold — Install-to-Maintenance and Order-to-Delivery value streams",
+      "tokenBudget": 350
+    },
+
+    "cc_water_quality_report": {
+      "cardId": "cc_water_quality_report",
+      "canonicalName": "Water Quality Report",
+      "description": "A diagnostic assessment of water quality metrics at a customer installation site, used to determine filtration requirements and maintenance scheduling.",
+      "owner": "Technical Services",
+      "senses": [
+        {
+          "senseName": "Site Assessment",
+          "description": "Pre-installation water analysis determining system configuration and cartridge type.",
+          "systemOfRecord": "Lab Information System",
+          "disambiguationCues": ["pre-installation", "system design", "site survey"]
+        },
+        {
+          "senseName": "Maintenance Diagnostic",
+          "description": "Periodic water quality check validating cartridge effectiveness and identifying replacement timing.",
+          "systemOfRecord": "IoT Monitoring Platform",
+          "disambiguationCues": ["ongoing monitoring", "cartridge life", "quality threshold"]
+        }
+      ],
+      "relationships": [
+        { "type": "governs", "targetCardId": "cc_cartridge", "label": "determines replacement timing" },
+        { "type": "relates-to", "targetCardId": "cc_maintenance_schedule", "label": "informs" }
+      ],
+      "anchors": {
+        "capabilityIds": ["cap_technical_support", "cap_performance_monitoring"],
+        "roleIds": ["role_service_technician"],
+        "informationObjectIds": ["io_service_report", "io_service_record"]
+      },
+      "provenance": "Extracted from PureTec VCC scaffold — Install-to-Maintenance value stream",
+      "tokenBudget": 290
+    },
+
+    "cc_maintenance_schedule": {
+      "cardId": "cc_maintenance_schedule",
+      "canonicalName": "Maintenance Schedule",
+      "description": "A governed timetable of preventive maintenance activities for installed water filtration systems, including cartridge replacements, site inspections, and system calibrations.",
+      "owner": "Service Operations",
+      "senses": [
+        {
+          "senseName": "Service Calendar",
+          "description": "A time-bound schedule of upcoming service visits, technician assignments, and required parts.",
+          "systemOfRecord": "Salesforce Field Service",
+          "disambiguationCues": ["scheduling", "dispatch", "service planning"]
+        },
+        {
+          "senseName": "SLA Compliance Record",
+          "description": "A tracked record of maintenance commitments vs actuals, used for SLA reporting and customer satisfaction.",
+          "systemOfRecord": "Salesforce Service Cloud",
+          "disambiguationCues": ["SLA tracking", "compliance", "customer satisfaction"]
+        }
+      ],
+      "relationships": [
+        { "type": "governs", "targetCardId": "cc_cartridge", "label": "schedules replacement" },
+        { "type": "relates-to", "targetCardId": "cc_customer", "label": "serves" }
+      ],
+      "anchors": {
+        "capabilityIds": ["cap_service_scheduling"],
+        "roleIds": ["role_service_technician", "role_customer_care_representative"],
+        "informationObjectIds": ["io_maintenance_schedule", "io_service_calendar", "io_service_reminder"]
+      },
+      "provenance": "Extracted from PureTec VCC scaffold — Install-to-Maintenance value stream",
+      "tokenBudget": 340
+    }
+  },
+
+  "policyCards": {
+    "pc_territory_compliance": {
+      "cardId": "pc_territory_compliance",
+      "name": "Territory Assignment Compliance",
+      "description": "All prospect engagement must occur within the sales representative's assigned territory boundaries. Cross-territory engagement requires explicit management approval.",
+      "authorityTier": "policy",
+      "scope": {
+        "lifecycleStages": ["act_identify_prospects", "act_gather_intelligence", "act_engage_customer"],
+        "roles": ["role_sales_representative"],
+        "channel": "direct"
+      },
+      "conditions": [
+        {
+          "expression": "prospect.territory == agent.assignedTerritory",
+          "referencedSenses": ["cc_prospect:CRM Lead", "cc_territory:Sales Territory"]
+        },
+        {
+          "expression": "prospect.status NOT IN ('Disqualified', 'Converted')",
+          "referencedSenses": ["cc_prospect:CRM Lead"]
+        }
+      ],
+      "outcomes": [
+        { "obligationType": "obligate", "description": "Verify territory assignment before initiating prospect engagement" },
+        { "obligationType": "prohibit", "description": "Engage prospects outside assigned territory without Sales Manager approval" },
+        { "obligationType": "obligate", "description": "Log all prospect interactions in CRM within 24 hours" }
+      ],
+      "exceptions": ["VP-level override for strategic accounts exceeding $500K ARR potential", "Cross-territory referral with originating rep's consent"],
+      "provenance": "PureTec Sales Operations Policy Manual, Section 3.2 — Territory Governance",
+      "ownership": "Sales Operations Director",
+      "actionBindings": [
+        {
+          "system": "Salesforce CRM",
+          "action": "territory_validation_check",
+          "failureBehavior": "escalate"
+        }
+      ],
+      "effectiveDates": { "from": "2025-01-01" },
+      "anchors": {
+        "activityIds": ["act_identify_prospects", "act_gather_intelligence", "act_engage_customer"],
+        "capabilityIds": ["cap_territory_management", "cap_customer_relationship_management"],
+        "roleIds": ["role_sales_representative", "role_sales_manager"]
+      }
+    },
+
+    "pc_data_privacy": {
+      "cardId": "pc_data_privacy",
+      "name": "Customer Data Privacy and Consent",
+      "description": "Customer personal and operational data must be handled in accordance with privacy regulations. Sharing with third parties requires explicit documented consent.",
+      "authorityTier": "policy",
+      "scope": {
+        "roles": ["role_sales_representative", "role_customer_care_representative", "role_service_technician"],
+        "jurisdiction": "global"
+      },
+      "conditions": [
+        {
+          "expression": "data.classification IN ('PII', 'Sensitive') AND recipient.type == 'external'",
+          "referencedSenses": ["cc_customer:CRM Account", "cc_customer:Service Recipient"]
+        }
+      ],
+      "outcomes": [
+        { "obligationType": "prohibit", "description": "Share customer PII with external parties without documented consent" },
+        { "obligationType": "obligate", "description": "Record consent evidence in customer record before data transfer" },
+        { "obligationType": "obligate", "description": "Apply data minimisation — share only fields required for stated purpose" }
+      ],
+      "exceptions": ["Regulatory disclosure mandated by law enforcement with valid warrant", "Anonymised/aggregated data for industry benchmarking"],
+      "provenance": "PureTec Data Governance Policy, Section 7.1 — Privacy Obligations",
+      "ownership": "Chief Privacy Officer",
+      "actionBindings": [
+        {
+          "system": "Salesforce CRM",
+          "action": "consent_verification",
+          "failureBehavior": "block"
+        }
+      ],
+      "effectiveDates": { "from": "2024-03-01" },
+      "anchors": {
+        "capabilityIds": ["cap_data_management", "cap_compliance_management"],
+        "roleIds": ["role_sales_representative", "role_customer_care_representative", "role_service_technician"],
+        "informationObjectIds": ["io_customer_profile", "io_customer_interactions", "io_customer_requirements"]
+      }
+    },
+
+    "pc_maintenance_sla": {
+      "cardId": "pc_maintenance_sla",
+      "name": "Maintenance SLA Compliance",
+      "description": "Preventive maintenance visits must be scheduled and executed within contracted SLA windows. Customers must receive advance notification before scheduled maintenance.",
+      "authorityTier": "procedure",
+      "scope": {
+        "roles": ["role_service_technician", "role_customer_care_representative"],
+        "product": "water-filtration-systems"
+      },
+      "conditions": [
+        {
+          "expression": "daysUntilScheduledService <= 14 AND notification.sent == false",
+          "referencedSenses": ["cc_maintenance_schedule:Service Calendar", "cc_customer:Service Recipient"]
+        },
+        {
+          "expression": "daysOverdue > 0 AND serviceVisit.completed == false",
+          "referencedSenses": ["cc_maintenance_schedule:SLA Compliance Record"]
+        }
+      ],
+      "outcomes": [
+        { "obligationType": "obligate", "description": "Send customer notification 14 days before scheduled cartridge replacement" },
+        { "obligationType": "obligate", "description": "Confirm parts availability before scheduling service visit" },
+        { "obligationType": "obligate", "description": "Escalate overdue maintenance to Service Manager within 48 hours" }
+      ],
+      "exceptions": ["Customer-requested postponement with written confirmation", "Force majeure events (documented)"],
+      "provenance": "PureTec Service Level Agreement Template, Clause 4.3 — Preventive Maintenance",
+      "ownership": "Service Operations Manager",
+      "actionBindings": [
+        {
+          "system": "Salesforce Field Service",
+          "action": "schedule_maintenance_visit",
+          "failureBehavior": "escalate"
+        },
+        {
+          "system": "Salesforce Service Cloud",
+          "action": "send_notification",
+          "parameters": { "template": "maintenance_reminder_14day" },
+          "failureBehavior": "log"
+        }
+      ],
+      "effectiveDates": { "from": "2024-06-01" },
+      "anchors": {
+        "capabilityIds": ["cap_service_scheduling", "cap_technical_support"],
+        "roleIds": ["role_service_technician", "role_customer_care_representative"],
+        "informationObjectIds": ["io_maintenance_schedule", "io_service_reminder", "io_replacement_notice"]
+      }
+    },
+
+    "pc_escalation_policy": {
+      "cardId": "pc_escalation_policy",
+      "name": "Agent Escalation Protocol",
+      "description": "When an agent cannot resolve a customer interaction within defined boundaries, mandatory escalation to a human operator must occur. This policy implements the 'human above the loop' governance pattern.",
+      "authorityTier": "policy",
+      "scope": {
+        "roles": ["role_customer_care_representative", "role_sales_representative"],
+        "channel": "all"
+      },
+      "conditions": [
+        {
+          "expression": "interaction.resolutionAttempts >= 2 AND interaction.resolved == false",
+          "referencedSenses": ["cc_customer:CRM Account"]
+        },
+        {
+          "expression": "interaction.sentiment == 'negative' AND interaction.escalated == false",
+          "referencedSenses": ["cc_customer:CRM Account"]
+        },
+        {
+          "expression": "proposedAction.value > agent.authorityLimit",
+          "referencedSenses": ["cc_customer:CRM Account", "cc_prospect:CRM Lead"]
+        }
+      ],
+      "outcomes": [
+        { "obligationType": "obligate", "description": "Escalate to human operator after 2 unsuccessful resolution attempts" },
+        { "obligationType": "obligate", "description": "Transfer full interaction context including MVC working set to human operator" },
+        { "obligationType": "prohibit", "description": "Offer discounts, credits, or contract modifications exceeding agent authority limit" },
+        { "obligationType": "obligate", "description": "Log escalation reason, context state, and proposed action in decision trace" }
+      ],
+      "exceptions": ["Pre-approved automated responses for known FAQ patterns", "Scheduled callback where customer explicitly accepts delay"],
+      "provenance": "PureTec Customer Operations Governance Manual, Section 9.1 — Agent Autonomy Boundaries",
+      "ownership": "Head of Customer Operations",
+      "actionBindings": [
+        {
+          "system": "Salesforce Service Cloud",
+          "action": "escalate_to_human",
+          "parameters": { "priority": "high", "includeContext": "true" },
+          "failureBehavior": "block"
+        }
+      ],
+      "effectiveDates": { "from": "2025-06-01" },
+      "anchors": {
+        "capabilityIds": ["cap_customer_relationship_management", "cap_stakeholder_communication"],
+        "roleIds": ["role_customer_care_representative", "role_sales_representative"],
+        "informationObjectIds": ["io_customer_interactions", "io_support_record"]
+      }
+    }
+  }
+}

@@ -5,6 +5,8 @@ import type {
   ScaffoldData,
 } from "../../types.ts";
 import type { PPITLayer } from "./ppit.ts";
+import type { CardToggleLayer } from "./useCanvasControls.ts";
+import type { CardRegistry } from "../../types/cards.ts";
 import { StructurePane } from "./StructurePane.tsx";
 import { StageCard } from "./StageCard.tsx";
 import { InlineEdit } from "./InlineEdit.tsx";
@@ -22,9 +24,12 @@ export function StageColumn({
   selectedActivityId,
   hasHeatmap,
   ppitToggles,
+  cardToggles,
+  cardRegistry,
   structureOpen,
   analyticsOpen,
   onFrictionClick,
+  onCardClick,
   maxMetricRows,
   onRemoveActivity,
 }: {
@@ -37,9 +42,12 @@ export function StageColumn({
   selectedActivityId: string | null;
   hasHeatmap: boolean;
   ppitToggles: Record<PPITLayer, boolean>;
+  cardToggles?: Record<CardToggleLayer, boolean>;
+  cardRegistry?: CardRegistry | null;
   structureOpen: boolean;
   analyticsOpen: boolean;
   onFrictionClick: (activityId: string) => void;
+  onCardClick?: (activityId: string) => void;
   maxMetricRows: number;
   onRemoveActivity?: () => void;
 }) {
@@ -141,8 +149,11 @@ export function StageColumn({
             isSelected={selectedActivityId === actId}
             hasHeatmap={hasHeatmap}
             ppitToggles={ppitToggles}
+            cardToggles={cardToggles}
+            cardRegistry={cardRegistry}
             analyticsOpen={analyticsOpen}
             onFrictionClick={onFrictionClick}
+            onCardClick={onCardClick}
           />
         ))}
       </div>

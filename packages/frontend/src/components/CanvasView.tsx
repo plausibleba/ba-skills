@@ -9,6 +9,7 @@ import {
   resolveBindingActivityIds,
 } from "./FrictionOverlay.tsx";
 import { FrictionPanel } from "./FrictionPanel.tsx";
+import { CardPanel } from "./CardPanel.tsx";
 import { StageColumn } from "./canvas/StageColumn.tsx";
 import { FlowChevron } from "./canvas/FlowChevron.tsx";
 import { CanvasToolbar } from "./canvas/CanvasToolbar.tsx";
@@ -17,18 +18,21 @@ import { useCanvasControls } from "./canvas/useCanvasControls.ts";
 /* ── Canvas View — orchestrator ────────────────────────────────────── */
 
 export function CanvasView() {
-  const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories, updateVsName, updateVsDescription, addActivity, removeActivity } =
+  const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories, updateVsName, updateVsDescription, addActivity, removeActivity, cardRegistry } =
     useCanvasStore();
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
     null,
   );
+  const [selectedCardActivityId, setSelectedCardActivityId] = useState<string | null>(null);
   const {
     structureOpen,
     analyticsOpen,
     ppitToggles,
+    cardToggles,
     toggleStructure,
     toggleAnalytics,
     togglePPIT,
+    toggleCard,
   } = useCanvasControls();
 
   const frictionMap = useMemo(() => {
@@ -150,9 +154,11 @@ export function CanvasView() {
               structureOpen={structureOpen}
               analyticsOpen={analyticsOpen}
               ppitToggles={ppitToggles}
+              cardToggles={cardToggles}
               onToggleStructure={toggleStructure}
               onToggleAnalytics={toggleAnalytics}
               onTogglePPIT={togglePPIT}
+              onToggleCard={toggleCard}
               heatmapData={heatmapData}
               validationReport={validationReport}
             />
@@ -186,9 +192,12 @@ export function CanvasView() {
                 selectedActivityId={selectedActivityId}
                 hasHeatmap={!!heatmapData}
                 ppitToggles={ppitToggles}
+                cardToggles={cardToggles}
+                cardRegistry={cardRegistry}
                 structureOpen={structureOpen}
                 analyticsOpen={analyticsOpen}
                 onFrictionClick={setSelectedActivityId}
+                onCardClick={setSelectedCardActivityId}
                 maxMetricRows={maxMetricRows}
                 onRemoveActivity={canvasViewModel.columns.length > 1
                   ? () => removeActivity(canvasViewModel.valueStreamId, col.activityIds[0])
@@ -245,6 +254,19 @@ export function CanvasView() {
             heatmap={heatmapData}
             scaffold={scaffoldData}
             onClose={() => setSelectedActivityId(null)}
+          />
+        </div>
+      )}
+
+      {/* ── MVC Card panel ── */}
+      {selectedCardActivityId && cardRegistry && (
+        <div className="w-[480px] flex-shrink-0">
+          <CardPanel
+            key={selectedCardActivityId}
+            activityId={selectedCardActivityId}
+            registry={cardRegistry}
+            scaffold={scaffoldData}
+            onClose={() => setSelectedCardActivityId(null)}
           />
         </div>
       )}

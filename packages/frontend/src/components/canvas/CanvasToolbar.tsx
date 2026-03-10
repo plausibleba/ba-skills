@@ -1,5 +1,6 @@
 import type { HeatmapData, ValidationReport } from "../../types.ts";
 import type { PPITLayer } from "./ppit.ts";
+import type { CardToggleLayer } from "./useCanvasControls.ts";
 import { PPIT_LABELS, PPIT_LAYERS } from "./ppit.ts";
 import { ChevronIcon } from "./ChevronIcon.tsx";
 
@@ -47,18 +48,22 @@ export function CanvasToolbar({
   structureOpen,
   analyticsOpen,
   ppitToggles,
+  cardToggles,
   onToggleStructure,
   onToggleAnalytics,
   onTogglePPIT,
+  onToggleCard,
   heatmapData,
   validationReport,
 }: {
   structureOpen: boolean;
   analyticsOpen: boolean;
   ppitToggles: Record<PPITLayer, boolean>;
+  cardToggles: Record<CardToggleLayer, boolean>;
   onToggleStructure: () => void;
   onToggleAnalytics: () => void;
   onTogglePPIT: (layer: PPITLayer) => void;
+  onToggleCard: (layer: CardToggleLayer) => void;
   heatmapData: HeatmapData | null;
   validationReport: ValidationReport | null;
 }) {
@@ -96,6 +101,35 @@ export function CanvasToolbar({
             {PPIT_LABELS[layer].short}
           </button>
         ))}
+      </div>
+
+      {/* MVC Card toggles */}
+      <div className="flex items-center gap-0.5 rounded-lg border border-gray-100 bg-white px-1.5 py-1 shadow-sm">
+        <span className="px-1 text-[9px] font-medium uppercase tracking-wider text-gray-300">
+          Cards
+        </span>
+        <button
+          onClick={() => onToggleCard("concepts")}
+          className={`rounded px-2 py-0.5 text-[10px] font-medium transition-all ${
+            cardToggles.concepts
+              ? "bg-sky-100 text-sky-700"
+              : "text-gray-400 hover:bg-gray-50 hover:text-gray-500"
+          }`}
+          title="Concept Cards (MVC)"
+        >
+          C
+        </button>
+        <button
+          onClick={() => onToggleCard("policies")}
+          className={`rounded px-2 py-0.5 text-[10px] font-medium transition-all ${
+            cardToggles.policies
+              ? "bg-rose-100 text-rose-700"
+              : "text-gray-400 hover:bg-gray-50 hover:text-gray-500"
+          }`}
+          title="Policy Cards (MVC)"
+        >
+          P
+        </button>
       </div>
 
       {/* State indicators */}
