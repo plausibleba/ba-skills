@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback, useEffect, type ReactNode } from "react";
-import type { CanvasViewModel, TopologyView, TopologyBasis, TopologyEdge, ScaffoldData } from "../../types.ts";
+import { useState, useRef, useCallback, useEffect } from "react";
+import type { CanvasViewModel, TopologyView, TopologyBasis, TopologyEdge, ScaffoldData, ScaffoldActivity } from "../../types.ts";
 
 // ─── Geometry ────────────────────────────────────────────────────────────────
 
@@ -31,6 +31,56 @@ const BASIS_STYLES: Record<TopologyBasis, BasisStyle> = {
 function primaryBasis(bases: TopologyBasis[]): TopologyBasis {
   const nonAdj = bases.find(b => b !== "outcomeAdjacency");
   return nonAdj ?? bases[0];
+}
+
+// ─── Shared instance resolution ─────────────────────────────────────────────
+
+/** For a given basis, find the specific shared instance names between two activities */
+function resolveSharedInstances(
+  basis: TopologyBasis,
+  srcId: string,
+  tgtId: string,
+  scaffold: ScaffoldData,
+): string[] {
+  const acts = scaffold.elements.activities;
+  const src = acts[srcId] as ScaffoldActivity | undefined;
+  const tgt = acts[tgtId] as ScaffoldActivity | undefined;
+  if (!src || !tgt) return [];
+
+  const lookup = (ids: string[], registry: Record<string, unknown> | undefined): string[] =>
+    ids.map(id => (registry?.[id] as { name?: string; prefLabel?: string })?.name
+      ?? (registry?.[id] as { prefLabel?: string })?.prefLabel
+      ?? id);
+
+  const intersect = (a: string[] | undefined, b: string[] | undefined): string[] => {
+    if (!a?.length || !b?.length) return [];
+    const setB = new Set(b);
+    return a.filter(id => setB.has(id));
+  };
+
+  switch (basis) {
+    case "sharedRole":
+      return lookup(intersect(src.performedByRoleIds, tgt.performedByRoleIds), scaffold.elements.roles);
+    case "sharedCapability":
+      return lookup(intersect(src.requiresCapabilityIds, tgt.requiresCapabilityIds), scaffold.elements.capabilities);
+    case "sharedControl":
+      return lookup(intersect(src.controlIds, tgt.controlIds), scaffold.elements.controls);
+    case "sharedApplicationFunction":
+      return lookup(
+        intersect(src.applicationFunctionIds, tgt.applicationFunctionIds),
+        scaffold.elements.applicationFunctions as Record<string, unknown> | undefined,
+      );
+    case "sharedPrimaryRecord": {
+      if (src.primaryRecordClassId && src.primaryRecordClassId === tgt.primaryRecordClassId) {
+        const rc = scaffold.elements.recordClasses?.[src.primaryRecordClassId] as { prefLabel?: string } | undefined;
+        return [rc?.prefLabel ?? src.primaryRecordClassId];
+      }
+      return [];
+    }
+    case "outcomeAdjacency":
+    default:
+      return [];
+  }
 }
 
 // ─── Radial initial positions ────────────────────────────────────────────────
@@ -379,13 +429,28 @@ export function ConstraintDAGOverlay({
               <div className="text-[10px] font-semibold text-gray-700 mb-1">
                 {activityName(tooltip.edge.sourceActivityId)} → {activityName(tooltip.edge.targetActivityId)}
               </div>
-              <div className="flex flex-col gap-0.5">
+              <div className="flex flex-col gap-1">
                 {tooltip.edge.basis.map(b => {
                   const s = BASIS_STYLES[b];
+                  const instances = resolveSharedInstances(
+                    b,
+                    tooltip.edge.sourceActivityId,
+                    tooltip.edge.targetActivityId,
+                    scaffoldData,
+                  );
                   return (
-                    <div key={b} className="flex items-center gap-1.5">
-                      <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
-                      <span className="text-[10px] text-gray-500">{s.label}</span>
+                    <div key={b}>
+                      <div className="flex items-center gap-1.5">
+                        <span className="inline-block h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
+                        <span className="text-[10px] font-medium text-gray-600">{s.label}</span>
+                      </div>
+                      {instances.length > 0 && (
+                        <div className="ml-3.5 mt-0.5 flex flex-col gap-0">
+                          {instances.map((name, ni) => (
+                            <span key={ni} className="text-[9px] text-gray-400 leading-tight">{name}</span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
