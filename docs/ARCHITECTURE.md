@@ -1,6 +1,6 @@
 # VCC Architecture
 
-Last updated: 2026-03-10 (Session 20)
+Last updated: 2026-03-10 (Session 21)
 
 ---
 
@@ -279,10 +279,93 @@ The JSON bundle is the portable unit of work. Every evolution of the data archit
 
 ---
 
+## Multi-Lens Canvas Architecture (D-100)
+
+The VCC canvas serves multiple distinct use cases that share a common data substrate but require different views, controls, and cognitive focus. Rather than overloading a single canvas with every concern, the architecture separates the foundational scaffold from use-case-specific projections (lenses).
+
+### Foundational Layer
+
+```
+┌─────────────────────────────────────────────┐
+│                Network View                  │
+│        (enterprise value stream topology)    │
+│              ── home page ──                 │
+└──────────────────┬──────────────────────────┘
+                   │ drill into VS
+┌──────────────────▼──────────────────────────┐
+│                Stage View                    │
+│     (interactive canvas per value stream)    │
+│                                              │
+│   ┌─────────────────────────────────────┐   │
+│   │         Lens Selector               │   │
+│   │  [Ops] [Sales] [Transform] [Gov] …  │   │
+│   └─────────────────────────────────────┘   │
+│                                              │
+│   Scaffold + PPIT + lens-specific panels    │
+└─────────────────────────────────────────────┘
+```
+
+Network View and Stage View are the scaffold building surface. All structural editing (D-092, D-093, D-094) happens here regardless of active lens.
+
+### Use-Case Lenses
+
+Each lens is a projection of the CAPSICUM 3×3 matrix, emphasising different rows and columns:
+
+| Lens | Primary Focus | Matrix Emphasis | Key Components |
+|------|--------------|-----------------|----------------|
+| **Operational Productivity** | Friction, bottlenecks, binding constraints | Process row, Governance column | FrictionPanel, heatmap overlay, binding indicators |
+| **Sales Discovery** | Solutions, customer evidence, pain points | People row (as customers), Information row | Customer stories, solution panels, story filtering |
+| **Transformation** | Strategic requirements, user stories, initiatives | Full matrix at Plan level | Requirements, user story generation, initiative tracking |
+| **Authority Governance** | Entitlements, deontic evaluation, GSM kernel | Governance column (all rows) | 3×3 grid, decision table, kernel status, escalation |
+| **Agentic Mesh MVC** | Concept cards, policy cards, context compilation | Information row, Governance column | CardPanel, C/P toggles, card badges |
+
+Each lens defines its own toolbar surface, panel components, and simulation semantics. The store is shared; the view layer filters what's visible.
+
+### Simulation Layer
+
+Simulations cut across all lenses but mean different things in each context:
+- **Ops Productivity**: walk the activity chain, show bottleneck accumulation
+- **Authority Governance**: full GSM kernel evaluation with decision tables and escalation triggers
+- **Sales Discovery**: trace customer journey through stages, map pain points to evidence
+
+The simulation engine is the State Transition Quartet (Responsibility → Interaction → Activity → Outcome). The presentation varies per lens.
+
+---
+
+## Class Inspector Pattern (D-101)
+
+Every scaffold element is an instance of a typed Class. Clicking any element opens a **Class Inspector** — a typed overlay panel whose layout and content are determined by the element's Class.
+
+### Pattern
+
+```
+User clicks element → resolve Class → load metamodel → assemble contextual view
+                                                              │
+                                              ┌───────────────┤
+                                              │ Where used    │
+                                              │ Linked data   │
+                                              │ Diagnostics   │
+                                              │ Measures      │
+                                              │ Charts/widgets│
+                                              └───────────────┘
+```
+
+Each Class has a metamodel defining which properties, relationships, and measures are relevant. Content is progressively enriched as data sources mature:
+
+- **Capability** — where-used, performing roles, maturity, friction, requirements, user stories, card anchors
+- **Role** — entitlements, activities performed, qualification conditions, interaction patterns
+- **Activity** — pre/post conditions, decision table rows, participating roles, capabilities, friction
+- **Outcome** — defining properties (Terms), reachability, lifecycle position
+- **Control** — authority source, condition logic, linked activities, policy card reference
+
+Existing panels (FrictionPanel, CardPanel) become specialised Class Inspector instances.
+
+---
+
 ## Key Design Principles
 
 1. **Board-appropriate** — Every visual choice must work at executive level
-2. **Progressive disclosure** — Structure/Transformation panes, PPIT layer toggles
+2. **Progressive disclosure** — Structure/Transformation panes, PPIT layer toggles, lens selection
 3. **Ontological clarity** — Capability ≠ Activity ≠ Process. Separate layers, separate semantics
 4. **Governance is constitutive** — Not overlay. No state transition without Entitlements, Conditions, and Terms
 5. **Structural before interpretive** — Scaffold must validate before friction assessment runs
@@ -290,3 +373,5 @@ The JSON bundle is the portable unit of work. Every evolution of the data archit
 7. **IR is transient** — Only reconciled elements become canonical
 8. **Friction is diagnostic** — Not a first-class ontological object; an observation about alignment health (D-048)
 9. **Ontology without repository** — Enforce the metamodel without requiring a persistent backend. The JSON bundle is the portable unit of work (D-095)
+10. **Lenses, not overload** — Each use case gets the minimum interface it needs. The scaffold is the shared substrate; projections are independent (D-100)
+11. **Typed inspection** — Every element Class has a metamodel. Clicking an element shows its complete contextual perspective, typed to its Class (D-101)

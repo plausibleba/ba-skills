@@ -695,30 +695,76 @@ The `activity.id` bug was a textbook example of TypeScript types diverging from 
 
 ---
 
-## Pending Work (updated 10 Mar 2026 — Session 20)
+## Session 20b — MVC Demo, Customer Story Filtering
+**Date:** 2026-03-10
+**Status:** Complete
+
+### Completed
+1. **Customer Story filtering** — FrictionPanel sidebar filtering by industry, company size, and status with filter chips and counts. Committed as `a892798` (D-098).
+2. **MVC Integration — Concept Cards & Policy Cards** — Full card system: `types/cards.ts`, `fixtures/cards/puretec-cards.json` (6 concept + 4 policy cards), `CardPanel.tsx` (480px sidebar), C/P toolbar toggles, card count badges on StageCard, `cardRegistry` in Zustand store. Committed as `07e0a41` (D-099).
+3. **Architecture diagram** — `ArchitectureDiagram.html`: three-column Trust Framework × VCC × MVC mapping with value proposition cards.
+4. **Slide deck** — `VCC-MVC-Three-Layers-of-Value.pptx`: 6-slide deck for Eric Broda conversation (built with python-pptx after npm registry blocked pptxgenjs).
+
+### Decisions
+- D-098: Customer Story Filtering
+- D-099: MVC Integration — Concept Cards & Policy Cards
+
+### Commits
+- `a892798` — feat: customer story filtering (D-098)
+- `07e0a41` — feat: MVC integration — Concept Cards & Policy Cards in VCC canvas (D-099)
+- `396cb04` — docs: update architecture, decisions, session log for Session 20
+
+---
+
+## Session 21 — Kernel PoC Analysis, Multi-Lens Architecture
+**Date:** 2026-03-10
+**Status:** Complete
+
+### Completed
+1. **Kernel PoC exploration** — Read and analysed kernel-poc.zip (Governance Evaluation Kernel built with Sonnet, deployed at tinyurl.com/capsicum-kernel). 535-line React app with 5 scenarios, 3×3 grid, 15-row decision table, step-by-step narrative with animated arrows. Mapped PoC architecture to VCC data model.
+2. **Logical Model of Endeavour paper review** — Read full 27-page paper. Grounded VCC adaptation in the formal GSM specification: nine-tuple (S, Σ, map, δ, u, s₀, F, E, T, ε), tri-valued validity function V → {Fire, Reject, Escalate(εᵢ)}, four escalation triggers, State Transition Quartet, Governance as constitutive not overlay.
+3. **Multi-Lens Canvas Architecture** — Defined foundational scaffold layer (Network View + Stage View) with use-case lenses: Operational Productivity, Sales Discovery, Transformation, Authority Governance, Agentic Mesh MVC. Each lens projects different rows/columns of the CAPSICUM 3×3 matrix.
+4. **Class Inspector Pattern** — Generalised FrictionPanel/CardPanel into a formal UX pattern: every scaffold element Class has a typed metamodel determining its inspection surface. Progressively enriched as data sources mature.
+5. **GSM on current architecture decision** — Build evaluation engine in TypeScript with types isomorphic to formal tuple. Policy Cards → E (entitlement function), Concept Card senses → T (terms). Defer SHACL to D-097 graph evolution. Clean seam for future swap.
+
+### Decisions
+- D-100: Multi-Lens Canvas Architecture
+- D-101: Class Inspector Pattern
+- D-102: GSM Simulation on Current Architecture
+
+### Key Learning
+Reading the paper changed the adaptation analysis materially. The kernel PoC implements the State Transition Quartet, not just a UI grid. Governance is constitutive (Section 5.3) — it's not an optional panel but a condition of execution. The Entitlement function E returns a norm *set* (4-tuples with provenance), not a single value. Terms T provide the typing and constraint system that makes pre/postcondition evaluation precise. Building without this understanding would have produced a simulation that looked right but missed the formal semantics.
+
+The multi-lens decision resolves a growing tension: the canvas was accumulating overlapping concerns with no principle for what to show when. The CAPSICUM orthogonality principle provides that principle — each lens is a projection of the same matrix, emphasising different dimensions.
+
+---
+
+## Pending Work (updated 10 Mar 2026 — Session 21)
 
 ### Immediate
-1. Test Enrich Solutions after streaming wiring — confirm vendor feature suggestions
-2. Verify Assess Friction binding constraint highlighting on Stage View
-3. PDS update — reflect Sessions 12–20 progress
+1. **UX session: lens selector prototype** — design the lens selection UI for Stage View (D-100)
+2. **GSM type definitions** — `gsm.ts` with types isomorphic to the formal nine-tuple (D-102)
+3. Test Enrich Solutions after streaming wiring — confirm vendor feature suggestions
+4. PDS update — reflect Sessions 12–21 progress
 
 ### Near Term
-4. **Capability selector** — dropdown showing existing capabilities before "create new" (D-097 Step 1 lite)
-5. **Client-side graph index** — in-memory adjacency map on bundle load (D-097 Step 1)
-6. **TypeScript type drift cleanup** — align types with runtime data shapes (D-096)
-7. Customer Story filtering by company size/revenue/industry (user request)
-8. DiscoveryIR review panel before formalisation (D-068)
-9. Proxy-level temperature enforcement (D-069)
-10. Jira export button for user stories
-11. Prompt logic review session (user requested)
-12. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
+5. **Class Inspector framework** — generalise FrictionPanel/CardPanel into typed inspector pattern (D-101)
+6. **GSM evaluation engine** — decision table evaluator, Eff(), Conflicts(), V() as pure functions (D-102)
+7. **Kernel simulation panel** — Authority Governance lens with 3×3 grid and step-by-step narrative (D-100, D-102)
+8. **Capability selector** — dropdown showing existing capabilities before "create new" (D-097 Step 1 lite)
+9. **Client-side graph index** — in-memory adjacency map on bundle load (D-097 Step 1)
+10. **TypeScript type drift cleanup** — align types with runtime data shapes (D-096)
+11. DiscoveryIR review panel before formalisation (D-068)
+12. Proxy-level temperature enforcement (D-069)
+13. Jira export button for user stories
+14. Prompt logic review session (user requested)
 
 ### Future
-13. **Graph visualisation** — D3-force/vis.js scaffold network view (D-097 Step 3)
-14. **Ontology-as-schema validation** — formal metamodel definitions (D-097 Step 2)
-15. **GPT design spar: Data Architecture Trajectory** — review D-095/D-097 decisions
-16. F-001 phase 2: delete observations, reassign binding constraint
-17. Multi-vendor support beyond Salesforce
-18. Eric Broda MVC demo — Governance Kernel overlay on StageCard
-19. Slack MCP integration
-20. Multi-user modelling backend (D-097 upgrade trigger)
+15. **Graph visualisation** — D3-force/vis.js scaffold network view (D-097 Step 3)
+16. **Ontology-as-schema validation + SHACL Terms** — formal metamodel definitions, replaces TypeScript conditionals in GSM (D-097 Step 2, D-102 seam)
+17. **GPT design spar: Data Architecture Trajectory** — review D-095/D-097 decisions
+18. F-001 phase 2: delete observations, reassign binding constraint
+19. Multi-vendor support beyond Salesforce
+20. Slack MCP integration
+21. Multi-user modelling backend (D-097 upgrade trigger)
+22. **Translation Integrity pipeline** — natural language policy → signed entitlement tables (paper §7.3)

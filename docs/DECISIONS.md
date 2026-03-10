@@ -491,3 +491,78 @@ UI treatment for null: no gold banner, no binding badge. Neutral executive callo
 **Upgrade trigger:** Multi-user modelling. When a customer needs concurrent editing, introduce a thin backend (document store or graph DB). The ontology schema from Step 2 becomes the API contract. Bundle format unchanged — just persisted centrally.
 **Architectural invariant:** The JSON bundle is the portable unit of work. Every evolution must preserve bundle portability.
 **Rationale:** Maintains the product advantage of no-backend simplicity while providing a clear path to richer capabilities. Each step is a valuable product increment, not just infrastructure preparation. Candidate for GPT design spar review.
+
+## D-098: Customer Story Filtering in FrictionPanel
+**Date:** 2026-03-10
+**Decision:** FrictionPanel gains sidebar filtering for customer stories: by industry, company size, and status. Filter chips with counts, toggleable, applied as intersection. Committed as `a892798`.
+**Rationale:** Sales discovery users need to narrow customer stories to relevant examples when presenting to prospects.
+
+## D-099: MVC Integration — Concept Cards & Policy Cards
+**Date:** 2026-03-10
+**Decision:** Full Minimum Viable Context (MVC) integration: `types/cards.ts` (CardRegistry, ConceptCard, PolicyCard types + `getCardsForActivity` query), `fixtures/cards/puretec-cards.json` (6 concept + 4 policy demo cards), `CardPanel.tsx` (480px sidebar with typed card rendering), C/P toolbar toggles, card count badges on StageCard, `cardRegistry` in Zustand store with `loadCards` action. Cards auto-load from bundle or demo fixture. Committed as `07e0a41`.
+**Rationale:** Preparation for Eric Broda meeting. Demonstrates three layers of VCC+MVC value: content extraction (VCC bootstraps card library), governance at consumption (policy cards provide decision boundaries), orchestration scaffold (activity chain tells context compiler when to load which cards).
+
+---
+
+## D-100: Multi-Lens Canvas Architecture
+**Date:** 2026-03-10
+**Context:** VCC canvas has accumulated overlapping concerns — scaffold exploration, friction analysis, MVC cards, customer stories — with a growing toolbar. Governance simulation (GSM kernel) is next. Cognitive overload risk is real. The canvas started as a scaffold visualiser and is being asked to serve fundamentally different use cases.
+**Decision:** Adopt a multi-lens architecture where the scaffold is the foundational substrate and use cases are independent projections (lenses) of that substrate.
+
+**Foundational layer:**
+- **Network View** — enterprise-level value stream topology (home page)
+- **Stage View** — interactive canvas for a single value stream slice
+
+These two views are the scaffold building and exploration surface. All data loads here. All structural editing happens here.
+
+**Use-case lenses** (selected at Stage View level, each brings its own toolbar, panels, and simulation semantics):
+- **Operational Productivity** — friction points, binding constraints, diagnostic heatmap. Current FrictionPanel + TransformationPane.
+- **Sales Discovery** — solutions, customer stories, customer story filtering. Current StageWizard Step 3 + story panels.
+- **Transformation** — strategic requirements, user stories, initiative tracking. Future capability.
+- **Authority Governance** — entitlements, interactions, deontic evaluation, GSM kernel simulation. The CAPSICUM Execution Layer made operational.
+- **Agentic Mesh MVC** — concept cards, policy cards, context compiler alignment. Third-party framework overlay demonstrating MVC integration.
+
+Additional lenses can be defined without modifying the foundation. Simulations cut across all lenses but present differently per use case.
+
+**Data model:** Single Zustand store, single scaffold, single bundle. Each lens reads from the same store but surfaces different relationships and panels. Lens selection filters the toolbar to show only relevant controls. Lens-specific data (cards, friction, stories) lives in the store but is only rendered when its lens is active.
+
+**Bundle impact:** None. The lens is a UI concern, not a data format concern. Bundle portability preserved.
+**Rationale:** Prevents cognitive overload by showing users only what's relevant to their current task. Aligns with the CAPSICUM orthogonality principle — each lens is a different projection of the same underlying 3×3 matrix, emphasising different rows and columns. Scales indefinitely without growing the toolbar.
+
+## D-101: Class Inspector Pattern
+**Date:** 2026-03-10
+**Context:** FrictionPanel and CardPanel are both element-specific overlay panels triggered by clicking a scaffold element. They share the same UX pattern (side panel, contextual detail) but each was built ad-hoc. As lenses multiply, every Class of scaffold element needs a typed inspection surface.
+**Decision:** Establish the Class Inspector as a formal UX pattern: clicking any scaffold element opens a typed overlay panel whose layout, properties, and linked data are determined by the element's Class (its position in the CAPSICUM 3×3 matrix).
+
+**Pattern definition:**
+- Each Class (Capability, Role, Activity, Outcome, Control, Information Object, Technology App, Concept, Term) has a metamodel of relevant properties and measures.
+- The inspector for a given Class assembles a complete contextual perspective for that instance: where it's used, what it's linked to, relevant diagnostics, relevant measures.
+- Content is progressively enriched as data sources become available (e.g., a Capability inspector initially shows name + where-used; later gains maturity score, friction points, requirements, in-train user stories, card anchors).
+
+**Example metamodels:**
+- **Capability** — description, where-used (activities × value streams), performing roles, PPIT decomposition, maturity assessment, known pain points, friction observations, requirements, user stories, concept card anchors.
+- **Role** — description, entitlements held, activities performed, interaction history, qualification conditions.
+- **Activity** — pre/post conditions, decision table rows (when GSM active), participating roles, required capabilities, friction observations.
+- **Outcome** — defining properties (Terms), reachability (which states lead here), lifecycle position.
+- **Control** — authority source, condition logic, linked activities, policy card reference.
+
+**Existing implementations that become Class Inspectors:**
+- FrictionPanel → observation-level inspector (subset of Activity/Capability inspector)
+- CardPanel → card-level inspector (subset of Concept/Policy inspector)
+
+**Future evolution:** Inspectors gain charts, widgets, and cross-reference visualisations as the data model matures. The Class Inspector is the primary surface for the client-side graph index (D-097 Step 1) — "where is this element used?" is an inspector query.
+**Rationale:** Generalises the ad-hoc panel pattern into a systematic, extensible architecture. Every element type gets the same quality of contextual insight. The metamodel per Class is the bridge between the ontology (what relationships exist) and the user experience (what's shown when you click something).
+
+## D-102: GSM Simulation on Current Architecture
+**Date:** 2026-03-10
+**Context:** The Governance Evaluation Kernel from the Logical Model of Endeavour paper (Roach, 2026) specifies a typed nine-tuple GSM = (S, Σ, map, δ, u, s₀, F, E, T, ε) with SHACL-based Terms validation over a JSON-LD state graph. Full implementation requires graph infrastructure. Immediate simulation value doesn't.
+**Decision:** Implement GSM evaluation engine on the current TypeScript/Zustand architecture. Design types isomorphic to the formal tuple. Implement decision table evaluation as a pure function. Use Policy Cards for E (entitlement function) and Concept Card senses for T (terms). Defer SHACL validation to the D-097 graph evolution path.
+
+**What this enables:** Faithful simulation of V(ρ, σ, s, κ, T) → {Fire, Reject, Escalate(εᵢ)} for any scenario expressible in the current data model. Four escalation triggers (ε₁ semantic subsumption, ε₂ deontic conflict, ε₃ missing entitlement, ε₄ evaluator indeterminacy) fire correctly. Decision table row matching is deterministic. Role Gate orthogonality is demonstrable.
+
+**What this defers:** Declarative SHACL Terms validation (TypeScript conditionals instead), structural provenance chains (string references instead of queryable triples), formal Translation Integrity pipeline.
+
+**Seam design:** The interface between the evaluation engine and Terms validation is a clean boundary. When D-097 Step 2 delivers ontology-as-schema validation, the Terms evaluator can be swapped from imperative TypeScript to declarative SHACL without changing the kernel's interface.
+
+**Lens assignment:** GSM simulation is the core of the Authority Governance lens (D-100). The 3×3 grid, decision table, kernel status panel, and step-by-step narrative are Authority Governance lens components.
+**Rationale:** The decision table evaluation is pure logic that doesn't require a graph store. Building it now delivers immediate demonstration value (Eric Broda conversation, paper PoC evolution) while the type design ensures clean migration when graph infrastructure arrives.
