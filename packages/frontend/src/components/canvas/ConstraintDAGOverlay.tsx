@@ -1,15 +1,15 @@
+import { useState, useRef, useCallback, useEffect } from "react";
 import type { CanvasViewModel, TopologyView, TopologyBasis, ScaffoldData } from "../../types.ts";
 
 // ─── Geometry ────────────────────────────────────────────────────────────────
 
-const NODE_W    = 140;
-const NODE_H    = 36;
-const NODE_GAP  = 60;
-const CELL      = NODE_W + NODE_GAP;
-const BASE_ARC  = 50;
-const ARC_PER_SPAN = 18;
-const SVG_PAD_X = 40;
-const SVG_PAD_TOP = 20;
+const NODE_W = 150;
+const NODE_H = 40;
+const CANVAS_W = 800;
+const CANVAS_H = 560;
+const CX = CANVAS_W / 2;
+const CY = CANVAS_H / 2;
+const RADIUS = 210;
 
 // ─── Basis styling ───────────────────────────────────────────────────────────
 
@@ -33,7 +33,20 @@ function primaryBasis(bases: TopologyBasis[]): TopologyBasis {
   return nonAdj ?? bases[0];
 }
 
-// ─── Modal Component ─────────────────────────────────────────────────────────
+// ─── Radial initial positions ────────────────────────────────────────────────
+
+function radialPositions(count: number): { x: number; y: number }[] {
+  // Start from top (-π/2), go clockwise
+  return Array.from({ length: count }, (_, i) => {
+    const angle = -Math.PI / 2 + (2 * Math.PI * i) / count;
+    return {
+      x: CX + RADIUS * Math.cos(angle) - NODE_W / 2,
+      y: CY + RADIUS * Math.sin(angle) - NODE_H / 2,
+    };
+  });
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export function ConstraintDAGOverlay({
   columns,
@@ -48,52 +61,80 @@ export function ConstraintDAGOverlay({
   scaffoldData: ScaffoldData;
   onClose: () => void;
 }) {
-  // Map activityId → column index
-  const activityIndex = new Map<string, number>();
-  const vsActivityIds = new Set<string>();
-  columns.forEach((col, i) => {
-    for (const aId of col.activityIds) {
-      activityIndex.set(aId, i);
-      vsActivityIds.add(aId);
-    }
-  });
+  // Activity data
+  const activityIds = columns.map(col => col.activityIds[0]).filter(Boolean);
+  const vsActivitySet = new Set(activityIds);
+  const activityIndexMap = new Map(activityIds.map((id, i) => [id, i]));
+
+  // Positions state — radial initial layout
+  const [positions, setPositions] = useState(() => radialPositions(activityIds.length));
+
+  // Drag state
+  const dragRef = useRef<{
+    idx: number;
+    startX: number;
+    startY: number;
+    origX: number;
+    origY: number;
+  } | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   // Filter edges to current VS
   const edges = topologyView.edges.filter(
-    e => vsActivityIds.has(e.sourceActivityId) && vsActivityIds.has(e.targetActivityId)
+    e => vsActivitySet.has(e.sourceActivityId) && vsActivitySet.has(e.targetActivityId)
   );
 
-  // Compute arc space
-  const maxSpan = edges.length > 0
-    ? Math.max(...edges.map(e => {
-        const si = activityIndex.get(e.sourceActivityId) ?? 0;
-        const ti = activityIndex.get(e.targetActivityId) ?? 0;
-        return Math.abs(ti - si);
-      }))
-    : 1;
-  const arcSpace = BASE_ARC + maxSpan * ARC_PER_SPAN + SVG_PAD_TOP;
-
-  // SVG dimensions
-  const svgWidth = columns.length * CELL + SVG_PAD_X * 2 - NODE_GAP;
-  const nodeRowY = arcSpace;
-  const svgHeight = nodeRowY + NODE_H + 20;
-
-  function nodeX(idx: number): number {
-    return SVG_PAD_X + idx * CELL;
-  }
-  function nodeCenterX(idx: number): number {
-    return nodeX(idx) + NODE_W / 2;
-  }
-  const anchorY = nodeRowY + 2; // top of node boxes — arcs land here
-
-  // Collect active bases for legend
+  // Collect active bases
   const activeBases = new Set<TopologyBasis>();
   edges.forEach(e => e.basis.forEach(b => activeBases.add(b)));
 
-  // Activity names
   function activityName(actId: string): string {
     return scaffoldData.elements.activities[actId]?.name ?? actId;
   }
+
+  // Node center for edge drawing
+  function nodeCenter(idx: number): { x: number; y: number } {
+    const pos = positions[idx];
+    return { x: pos.x + NODE_W / 2, y: pos.y + NODE_H / 2 };
+  }
+
+  // ── Drag handlers ──
+
+  const handlePointerDown = useCallback((e: React.PointerEvent, idx: number) => {
+    e.stopPropagation();
+    e.preventDefault();
+    (e.target as Element).setPointerCapture(e.pointerId);
+    dragRef.current = {
+      idx,
+      startX: e.clientX,
+      startY: e.clientY,
+      origX: positions[idx].x,
+      origY: positions[idx].y,
+    };
+  }, [positions]);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const dx = e.clientX - drag.startX;
+    const dy = e.clientY - drag.startY;
+    setPositions(prev => {
+      const next = [...prev];
+      next[drag.idx] = { x: drag.origX + dx, y: drag.origY + dy };
+      return next;
+    });
+  }, []);
+
+  const handlePointerUp = useCallback(() => {
+    dragRef.current = null;
+  }, []);
+
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
 
   return (
     <div
@@ -101,15 +142,18 @@ export function ConstraintDAGOverlay({
       onClick={onClose}
     >
       <div
-        className="relative max-h-[90vh] max-w-[95vw] overflow-auto rounded-xl border border-gray-200 bg-white shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+        className="relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl"
+        style={{ width: CANVAS_W + 48, maxWidth: "95vw", maxHeight: "92vh" }}
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white px-6 py-3">
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-3">
           <div>
             <h3 className="text-sm font-semibold text-gray-800">Activity Constraint Graph</h3>
             <p className="text-[10px] text-gray-400 mt-0.5">
-              {edges.length} coupling edge{edges.length !== 1 ? "s" : ""} across {columns.length} activities
+              {edges.length} coupling edge{edges.length !== 1 ? "s" : ""} across {activityIds.length} activities
+              <span className="ml-2 text-gray-300">·</span>
+              <span className="ml-2">Drag nodes to rearrange</span>
             </p>
           </div>
           <button
@@ -123,46 +167,68 @@ export function ConstraintDAGOverlay({
         </div>
 
         {/* Graph */}
-        <div className="overflow-auto p-6">
+        <div className="flex-1 overflow-auto bg-gray-50/30 p-4">
           <svg
-            width={svgWidth}
-            height={svgHeight}
-            className="block"
-            style={{ minWidth: svgWidth }}
+            ref={svgRef}
+            width={CANVAS_W}
+            height={CANVAS_H}
+            className="block mx-auto"
+            style={{ cursor: dragRef.current ? "grabbing" : "default" }}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
           >
             <defs>
               {Object.entries(BASIS_STYLES).map(([basis, style]) => (
                 <marker
                   key={basis}
                   id={`dag-arrow-${basis}`}
-                  markerWidth="7"
-                  markerHeight="5"
-                  refX="6"
-                  refY="2.5"
+                  markerWidth="8"
+                  markerHeight="6"
+                  refX="7"
+                  refY="3"
                   orient="auto"
                 >
-                  <polygon points="0 0, 7 2.5, 0 5" fill={style.color} opacity={0.8} />
+                  <polygon points="0 0, 8 3, 0 6" fill={style.color} opacity={0.8} />
                 </marker>
               ))}
             </defs>
 
-            {/* Edges — arcs above nodes */}
+            {/* Edges */}
             {edges.map((edge, i) => {
-              const si = activityIndex.get(edge.sourceActivityId) ?? 0;
-              const ti = activityIndex.get(edge.targetActivityId) ?? 0;
-              const x1 = nodeCenterX(si);
-              const x2 = nodeCenterX(ti);
-              const span = Math.abs(ti - si);
-              const arcH = BASE_ARC + span * ARC_PER_SPAN;
+              const si = activityIndexMap.get(edge.sourceActivityId);
+              const ti = activityIndexMap.get(edge.targetActivityId);
+              if (si === undefined || ti === undefined) return null;
+              const src = nodeCenter(si);
+              const tgt = nodeCenter(ti);
+
               const basis = primaryBasis(edge.basis);
               const style = BASIS_STYLES[basis];
-
-              const cpY = anchorY - arcH;
-              const path = `M ${x1} ${anchorY} C ${x1} ${cpY}, ${x2} ${cpY}, ${x2} ${anchorY}`;
-
               const isBinding =
                 bindingActivityIds.has(edge.sourceActivityId) ||
                 bindingActivityIds.has(edge.targetActivityId);
+
+              // Quadratic curve through center for some curvature
+              const midX = (src.x + tgt.x) / 2;
+              const midY = (src.y + tgt.y) / 2;
+              // Offset perpendicular to the line towards center
+              const dx = tgt.x - src.x;
+              const dy = tgt.y - src.y;
+              const len = Math.sqrt(dx * dx + dy * dy) || 1;
+              const nx = -dy / len;
+              const ny = dx / len;
+              // Pull towards center for curvature
+              const toCenterX = CX - midX;
+              const toCenterY = CY - midY;
+              const dot = nx * toCenterX + ny * toCenterY;
+              const curvature = Math.min(len * 0.2, 40) * (dot > 0 ? 1 : -1);
+              const cpx = midX + nx * curvature;
+              const cpy = midY + ny * curvature;
+
+              // Shorten line to stop at node edge
+              const angle = Math.atan2(tgt.y - cpy, tgt.x - cpx);
+              const endX = tgt.x - Math.cos(angle) * (NODE_W / 2 + 2);
+              const endY = tgt.y - Math.sin(angle) * (NODE_H / 2 + 2);
+              const path = `M ${src.x} ${src.y} Q ${cpx} ${cpy}, ${endX} ${endY}`;
 
               return (
                 <path
@@ -172,70 +238,80 @@ export function ConstraintDAGOverlay({
                   stroke={style.color}
                   strokeWidth={isBinding ? 2.5 : 1.5}
                   strokeDasharray={style.dash}
-                  opacity={isBinding ? 0.9 : 0.55}
+                  opacity={isBinding ? 0.85 : 0.5}
                   markerEnd={`url(#dag-arrow-${basis})`}
                 />
               );
             })}
 
             {/* Activity nodes */}
-            {columns.map((col, idx) => {
-              const aId = col.activityIds[0];
-              if (!aId) return null;
-              const x = nodeX(idx);
+            {activityIds.map((aId, idx) => {
+              const pos = positions[idx];
               const isBinding = bindingActivityIds.has(aId);
               const name = activityName(aId);
 
               return (
-                <g key={col.columnId}>
-                  {/* Binding highlight ring */}
+                <g
+                  key={aId}
+                  style={{ cursor: "grab" }}
+                  onPointerDown={e => handlePointerDown(e, idx)}
+                >
+                  {/* Shadow */}
+                  <rect
+                    x={pos.x + 1} y={pos.y + 2}
+                    width={NODE_W} height={NODE_H}
+                    rx={8} ry={8}
+                    fill="#0001"
+                  />
+                  {/* Binding highlight */}
                   {isBinding && (
                     <rect
-                      x={x - 3} y={nodeRowY - 3}
+                      x={pos.x - 3} y={pos.y - 3}
                       width={NODE_W + 6} height={NODE_H + 6}
-                      rx={8} ry={8}
-                      fill="none" stroke="#dc2626" strokeWidth={2} opacity={0.6}
+                      rx={10} ry={10}
+                      fill="none" stroke="#dc2626" strokeWidth={2.5} opacity={0.5}
                     />
                   )}
-                  {/* Node box */}
+                  {/* Node */}
                   <rect
-                    x={x} y={nodeRowY}
+                    x={pos.x} y={pos.y}
                     width={NODE_W} height={NODE_H}
-                    rx={6} ry={6}
-                    fill={isBinding ? "#fef2f2" : "#f8fafc"}
+                    rx={8} ry={8}
+                    fill={isBinding ? "#fef2f2" : "white"}
                     stroke={isBinding ? "#fca5a5" : "#cbd5e1"}
-                    strokeWidth={1}
+                    strokeWidth={1.5}
                   />
-                  {/* Stage number badge */}
+                  {/* Stage badge */}
                   <circle
-                    cx={x + 14} cy={nodeRowY + NODE_H / 2}
-                    r={9}
+                    cx={pos.x + 16} cy={pos.y + NODE_H / 2}
+                    r={10}
                     fill={isBinding ? "#dc2626" : "#64748b"}
-                    opacity={0.8}
                   />
                   <text
-                    x={x + 14} y={nodeRowY + NODE_H / 2 + 1}
+                    x={pos.x + 16} y={pos.y + NODE_H / 2 + 1}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    fontSize={9}
-                    fontWeight={600}
+                    fontSize={10}
+                    fontWeight={700}
                     fill="white"
                   >
                     {idx + 1}
                   </text>
-                  {/* Activity name */}
-                  <foreignObject x={x + 28} y={nodeRowY + 2} width={NODE_W - 34} height={NODE_H - 4}>
+                  {/* Name */}
+                  <foreignObject x={pos.x + 30} y={pos.y + 3} width={NODE_W - 38} height={NODE_H - 6}>
                     <div
                       style={{
-                        fontSize: "10px",
-                        lineHeight: "12px",
-                        color: isBinding ? "#991b1b" : "#334155",
+                        fontSize: "10.5px",
+                        lineHeight: "13px",
+                        color: isBinding ? "#991b1b" : "#1e293b",
                         fontWeight: isBinding ? 600 : 500,
                         overflow: "hidden",
                         display: "-webkit-box",
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: "vertical" as const,
                         padding: "3px 2px",
+                        userSelect: "none",
+                        pointerEvents: "none",
                       }}
                       title={name}
                     >
@@ -249,7 +325,7 @@ export function ConstraintDAGOverlay({
         </div>
 
         {/* Legend */}
-        <div className="sticky bottom-0 flex flex-wrap items-center gap-4 border-t border-gray-100 bg-gray-50/80 px-6 py-2.5">
+        <div className="flex flex-wrap items-center gap-4 border-t border-gray-100 bg-gray-50/80 px-6 py-2.5">
           {Array.from(activeBases).map(basis => {
             const style = BASIS_STYLES[basis];
             return (
