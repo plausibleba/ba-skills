@@ -23,6 +23,7 @@ interface CustomerStory {
   company: string;
   industry: string;
   companySize: string;
+  region?: string;
   status: string;
   useCase: string;
   challenge: string;
@@ -30,6 +31,12 @@ interface CustomerStory {
   keyMetric: string;
   productsUsed: string[];
   featureTags: string[];
+}
+
+interface StoryFilters {
+  industry: string;   // "" = all
+  companySize: string; // "" = all
+  status: string;      // "" = all
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -67,19 +74,47 @@ type FeatureWithStories = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Story filter options (extracted once from loaded data)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const STORY_INDUSTRIES = [...new Set(ALL_STORIES.map((s) => s.industry))].sort();
+const STORY_SIZES = (() => {
+  // Sort company sizes by approximate headcount order
+  const ORDER = ["0-500","500-1k","1k-5k","5k-10k","10k-50k","10k-50k+","50k-100k","100k-200k","200k-300k","300k+"];
+  const raw = [...new Set(ALL_STORIES.map((s) => s.companySize))];
+  return raw.sort((a, b) => {
+    const ia = ORDER.indexOf(a); const ib = ORDER.indexOf(b);
+    return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+  });
+})();
+const STORY_STATUSES = [...new Set(ALL_STORIES.map((s) => s.status))].sort();
+
+const EMPTY_FILTERS: StoryFilters = { industry: "", companySize: "", status: "" };
+
+function applyStoryFilters(stories: CustomerStory[], filters: StoryFilters): CustomerStory[] {
+  return stories.filter((s) => {
+    if (filters.industry && s.industry !== filters.industry) return false;
+    if (filters.companySize && s.companySize !== filters.companySize) return false;
+    if (filters.status && s.status !== filters.status) return false;
+    return true;
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-function getStoriesForFeature(vendorId: string, featureId: string): CustomerStory[] {
+function getStoriesForFeature(vendorId: string, featureId: string, filters?: StoryFilters): CustomerStory[] {
   const lib = VENDOR_LIBRARIES.find((l) => l.vendorId === vendorId);
   if (!lib) return [];
   for (const cat of lib.categories) {
     const feat = cat.features.find((f) => f.featureId === featureId) as FeatureWithStories | undefined;
     if (!feat?.customerStoryIds?.length) return [];
-    return feat.customerStoryIds
+    let matched = feat.customerStoryIds
       .map((id) => ALL_STORIES.find((s) => s.storyId === id))
-      .filter((s): s is CustomerStory => !!s)
-      .slice(0, 3);
+      .filter((s): s is CustomerStory => !!s);
+    if (filters) matched = applyStoryFilters(matched, filters);
+    return matched.slice(0, 5);
   }
   return [];
 }
@@ -184,11 +219,71 @@ function CustomerStoryCard({ story }: { story: CustomerStory }) {
 // CustomerStoriesPanel — rendered under a vendor feature block
 // ─────────────────────────────────────────────────────────────────────────────
 
-function CustomerStoriesPanel({ vendorId, featureId }: { vendorId: string; featureId: string }) {
-  const stories = getStoriesForFeature(vendorId, featureId);
+function StoryFilterBar({ filters, onChange }: { filters: StoryFilters; onChange: (f: StoryFilters) => void }) {
+  const selectClass =
+    "rounded border border-[#b3d9f5] bg-white px-1.5 py-0.5 text-[9px] text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#0070d2] appearance-none cursor-pointer";
+
+  const hasFilters = filters.industry || filters.companySize || filters.status;
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 rounded bg-[#0070d2]/5 px-2 py-1.5">
+      <span className="text-[8px] font-bold uppercase tracking-widest text-[#3a7fc1]">Filter:</span>
+
+      <select
+        value={filters.industry}
+        onChange={(e) => onChange({ ...filters, industry: e.target.value })}
+        className={selectClass}
+      >
+        <option value="">All Industries</option>
+        {STORY_INDUSTRIES.map((i) => <option key={i} value={i}>{i}</option>)}
+      </select>
+
+      <select
+        value={filters.companySize}
+        onChange={(e) => onChange({ ...filters, companySize: e.target.value })}
+        className={selectClass}
+      >
+        <option value="">All Sizes</option>
+        {STORY_SIZES.map((s) => <option key={s} value={s}>{s} employees</option>)}
+      </select>
+
+      <select
+        value={filters.status}
+        onChange={(e) => onChange({ ...filters, status: e.target.value })}
+        className={selectClass}
+      >
+        <option value="">All Statuses</option>
+        {STORY_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
+      </select>
+
+      {hasFilters && (
+        <button
+          onClick={() => onChange(EMPTY_FILTERS)}
+          className="text-[8px] font-medium text-[#0070d2] hover:text-red-500 transition-colors"
+        >
+          Clear
+        </button>
+      )}
+    </div>
+  );
+}
+
+function CustomerStoriesPanel({
+  vendorId, featureId, filters, onFiltersChange,
+}: {
+  vendorId: string;
+  featureId: string;
+  filters: StoryFilters;
+  onFiltersChange: (f: StoryFilters) => void;
+}) {
+  // Get unfiltered count for the header, filtered list for display
+  const allStories = getStoriesForFeature(vendorId, featureId);
+  const stories = getStoriesForFeature(vendorId, featureId, filters);
   const [open, setOpen] = useState(false);
 
-  if (stories.length === 0) return null;
+  if (allStories.length === 0) return null;
+
+  const filterActive = filters.industry || filters.companySize || filters.status;
 
   return (
     <div className="mt-2">
@@ -202,7 +297,7 @@ function CustomerStoriesPanel({ vendorId, featureId }: { vendorId: string; featu
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
           </svg>
-          Customer Stories ({stories.length})
+          Customer Stories ({filterActive ? `${stories.length}/${allStories.length}` : stories.length})
         </span>
         <svg
           className={`h-3 w-3 transition-transform duration-150 ${open ? "rotate-180" : ""}`}
@@ -216,9 +311,16 @@ function CustomerStoriesPanel({ vendorId, featureId }: { vendorId: string; featu
 
       {open && (
         <div className="mt-1.5 space-y-1.5">
-          {stories.map((story) => (
-            <CustomerStoryCard key={story.storyId} story={story} />
-          ))}
+          <StoryFilterBar filters={filters} onChange={onFiltersChange} />
+          {stories.length > 0 ? (
+            stories.map((story) => (
+              <CustomerStoryCard key={story.storyId} story={story} />
+            ))
+          ) : (
+            <p className="px-2 py-2 text-center text-[9px] text-gray-400 italic">
+              No stories match the current filters
+            </p>
+          )}
         </div>
       )}
     </div>
@@ -324,10 +426,14 @@ function SolutionCard({
   solution,
   editMode,
   onUpdate,
+  storyFilters,
+  onStoryFiltersChange,
 }: {
   solution: Solution;
   editMode: boolean;
   onUpdate: (patch: Partial<Solution>) => void;
+  storyFilters: StoryFilters;
+  onStoryFiltersChange: (f: StoryFilters) => void;
 }) {
   const c = SOLUTION_COLOURS[solution.type];
 
@@ -391,6 +497,8 @@ function SolutionCard({
           <CustomerStoriesPanel
             vendorId={solution.vendorFeatureRef.vendorId}
             featureId={solution.vendorFeatureRef.featureId}
+            filters={storyFilters}
+            onFiltersChange={onStoryFiltersChange}
           />
         </>
       )}
@@ -466,11 +574,15 @@ function SolutionsSection({
   editMode,
   onUpdate,
   onAdd,
+  storyFilters,
+  onStoryFiltersChange,
 }: {
   solutions: Solution[];
   editMode: boolean;
   onUpdate: (solutionId: string, patch: Partial<Solution>) => void;
   onAdd: (s: Solution) => void;
+  storyFilters: StoryFilters;
+  onStoryFiltersChange: (f: StoryFilters) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
@@ -503,6 +615,8 @@ function SolutionsSection({
               solution={sol}
               editMode={editMode}
               onUpdate={(patch) => onUpdate(sol.solutionId, patch)}
+              storyFilters={storyFilters}
+              onStoryFiltersChange={onStoryFiltersChange}
             />
           ))}
           {editMode && (
@@ -539,12 +653,16 @@ function ObservationCard({
   scaffold,
   editMode,
   onUpdate,
+  storyFilters,
+  onStoryFiltersChange,
 }: {
   obs: FrictionObservation;
   isBindingObs: boolean;
   scaffold: ScaffoldData;
   editMode: boolean;
   onUpdate: (patch: Partial<FrictionObservation>) => void;
+  storyFilters: StoryFilters;
+  onStoryFiltersChange: (f: StoryFilters) => void;
 }) {
   const group = classifyCategory(obs.category);
   const borderColor = group === "execution" ? "border-l-amber-500" : "border-l-red-500";
@@ -655,6 +773,8 @@ function ObservationCard({
           onUpdate({ solutions });
         }}
         onAdd={(sol) => onUpdate({ solutions: [...(obs.solutions ?? []), sol] })}
+        storyFilters={storyFilters}
+        onStoryFiltersChange={onStoryFiltersChange}
       />
     </div>
   );
@@ -758,6 +878,7 @@ export function FrictionPanel({
   const [observations, setObservations] = useState<FrictionObservation[]>(initialObservations);
   const [savedObservations, setSavedObservations] = useState<FrictionObservation[]>(initialObservations);
   const [showNewForm, setShowNewForm] = useState(false);
+  const [storyFilters, setStoryFilters] = useState<StoryFilters>(EMPTY_FILTERS);
 
   const bindingObsId = heatmap.bindingConstraint?.bindingAnchorObservationId ?? null;
   const sorted = [...observations].sort((a, b) => {
@@ -917,6 +1038,8 @@ export function FrictionPanel({
             scaffold={scaffold}
             editMode={editMode}
             onUpdate={(patch) => handleUpdate(obs.observationId, patch)}
+            storyFilters={storyFilters}
+            onStoryFiltersChange={setStoryFilters}
           />
         ))}
 
