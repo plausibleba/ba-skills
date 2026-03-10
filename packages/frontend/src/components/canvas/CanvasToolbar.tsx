@@ -47,10 +47,12 @@ const LAYER_COLORS: Record<PPITLayer, { on: string }> = {
 export function CanvasToolbar({
   structureOpen,
   analyticsOpen,
+  constraintDAGOpen,
   ppitToggles,
   cardToggles,
   onToggleStructure,
   onToggleAnalytics,
+  onToggleConstraintDAG,
   onTogglePPIT,
   onToggleCard,
   heatmapData,
@@ -58,10 +60,12 @@ export function CanvasToolbar({
 }: {
   structureOpen: boolean;
   analyticsOpen: boolean;
+  constraintDAGOpen: boolean;
   ppitToggles: Record<PPITLayer, boolean>;
   cardToggles: Record<CardToggleLayer, boolean>;
   onToggleStructure: () => void;
   onToggleAnalytics: () => void;
+  onToggleConstraintDAG: () => void;
   onTogglePPIT: (layer: PPITLayer) => void;
   onToggleCard: (layer: CardToggleLayer) => void;
   heatmapData: HeatmapData | null;
@@ -80,6 +84,11 @@ export function CanvasToolbar({
           label="Transformation"
           isOpen={analyticsOpen}
           onToggle={onToggleAnalytics}
+        />
+        <ToggleBtn
+          label="Constraints"
+          isOpen={constraintDAGOpen}
+          onToggle={onToggleConstraintDAG}
         />
       </div>
 

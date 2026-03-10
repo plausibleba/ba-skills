@@ -16,6 +16,8 @@ import {
   deriveNetworkEdges,
   computeNodePositions,
   buildNetworkNodes,
+  deriveCapabilityInstances,
+  deriveTopologyView,
 } from "./network-derivation.ts";
 
 type ViewMode = "network" | "stage" | "intake";
@@ -38,6 +40,7 @@ interface CanvasState {
   networkNodes: NetworkNode[];
   networkForwardEdges: NetworkEdge[];
   networkFeedbackEdges: NetworkEdge[];
+  topologyView: any;
 
   // Transformation layer
   userStoriesByActivity: Record<string, TransformationUserStory[]>;
@@ -141,10 +144,16 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const positions = computeNodePositions(vsIds, forwardEdges, resolved);
     const nodes = buildNetworkNodes(resolved, get().heatmapsByVs, positions);
 
+    // Derive topology mesh (D-052) — activity-level coupling edges
+    const scaffoldHash = `${resolved.name ?? "scaffold"}-${Date.now()}`;
+    const capabilityInstanceView = deriveCapabilityInstances(resolved, scaffoldHash);
+    const topologyView = deriveTopologyView(resolved, capabilityInstanceView, scaffoldHash);
+
     set({
       networkNodes: nodes,
       networkForwardEdges: forwardEdges,
       networkFeedbackEdges: feedbackEdges,
+      topologyView,
     });
 
     // Multi-VS → stay in network view; single-VS → generate canvas

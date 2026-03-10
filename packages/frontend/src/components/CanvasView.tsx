@@ -13,12 +13,13 @@ import { CardPanel } from "./CardPanel.tsx";
 import { StageColumn } from "./canvas/StageColumn.tsx";
 import { FlowChevron } from "./canvas/FlowChevron.tsx";
 import { CanvasToolbar } from "./canvas/CanvasToolbar.tsx";
+import { ConstraintDAGOverlay } from "./canvas/ConstraintDAGOverlay.tsx";
 import { useCanvasControls } from "./canvas/useCanvasControls.ts";
 
 /* ── Canvas View — orchestrator ────────────────────────────────────── */
 
 export function CanvasView() {
-  const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories, updateVsName, updateVsDescription, addActivity, removeActivity, cardRegistry } =
+  const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories, updateVsName, updateVsDescription, addActivity, removeActivity, cardRegistry, topologyView } =
     useCanvasStore();
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
     null,
@@ -27,10 +28,12 @@ export function CanvasView() {
   const {
     structureOpen,
     analyticsOpen,
+    constraintDAGOpen,
     ppitToggles,
     cardToggles,
     toggleStructure,
     toggleAnalytics,
+    toggleConstraintDAG,
     togglePPIT,
     toggleCard,
   } = useCanvasControls();
@@ -153,10 +156,12 @@ export function CanvasView() {
             <CanvasToolbar
               structureOpen={structureOpen}
               analyticsOpen={analyticsOpen}
+              constraintDAGOpen={constraintDAGOpen}
               ppitToggles={ppitToggles}
               cardToggles={cardToggles}
               onToggleStructure={toggleStructure}
               onToggleAnalytics={toggleAnalytics}
+              onToggleConstraintDAG={toggleConstraintDAG}
               onTogglePPIT={togglePPIT}
               onToggleCard={toggleCard}
               heatmapData={heatmapData}
@@ -175,6 +180,15 @@ export function CanvasView() {
               const a = heatmapData.bindingConstraint?.bindingAnchor;
               if (a?.anchorType === "Activity") setSelectedActivityId(a.anchorId);
             }}
+          />
+        )}
+
+        {/* ── Constraint DAG overlay ── */}
+        {constraintDAGOpen && topologyView && (
+          <ConstraintDAGOverlay
+            columns={canvasViewModel.columns}
+            topologyView={topologyView}
+            bindingActivityIds={bindingActivityIds}
           />
         )}
 
