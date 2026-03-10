@@ -41,6 +41,9 @@ interface CanvasState {
   // Transformation layer
   userStoriesByActivity: Record<string, TransformationUserStory[]>;
 
+  // Dirty flag — set when scaffold is mutated locally (D-092)
+  scaffoldDirty: boolean;
+
   // Actions
   loadScaffold: (json: ScaffoldData) => Promise<void>;
   loadHeatmap: (json: HeatmapData) => Promise<void>;
@@ -54,6 +57,17 @@ interface CanvasState {
   saveUserStory: (activityId: string, story: TransformationUserStory) => void;
   setActivityStories: (activityId: string, stories: TransformationUserStory[]) => void;
   getAllUserStories: () => TransformationUserStory[];
+
+  // Scaffold mutation actions (D-092: Editable Canvas)
+  updateActivityName: (activityId: string, name: string) => void;
+  updateCapabilityName: (capabilityId: string, name: string) => void;
+  updateRoleName: (roleId: string, name: string) => void;
+  updateVsName: (vsId: string, name: string) => void;
+  updateVsDescription: (vsId: string, description: string) => void;
+  updateOutcomeName: (outcomeId: string, name: string) => void;
+
+  // Bundle save/load (D-092)
+  saveFullBundle: () => Promise<void>;
 }
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
@@ -70,6 +84,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   networkForwardEdges: [],
   networkFeedbackEdges: [],
   userStoriesByActivity: {},
+  scaffoldDirty: false,
 
   loadScaffold: async (json: ScaffoldData) => {
     // Normalise pipeline-generated scaffolds: ensure every metric has a measures block
@@ -369,6 +384,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       networkForwardEdges: [],
       networkFeedbackEdges: [],
       userStoriesByActivity: {},
+      scaffoldDirty: false,
     });
   },
 
@@ -395,4 +411,179 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   getAllUserStories: () => {
     return Object.values(get().userStoriesByActivity).flat();
   },
+
+  // ── Scaffold mutation actions (D-092: Editable Canvas) ──────────────────────
+
+  updateActivityName: (activityId: string, name: string) => {
+    const { scaffoldData, selectedVsId } = get();
+    if (!scaffoldData) return;
+    const activity = scaffoldData.elements.activities[activityId];
+    if (!activity) return;
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        activities: {
+          ...scaffoldData.elements.activities,
+          [activityId]: { ...activity, name },
+        },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    // Re-derive canvas if viewing a VS
+    if (selectedVsId) get().generateCanvasForVs(selectedVsId);
+    _refreshNetworkNodes(get, set, updated);
+  },
+
+  updateCapabilityName: (capabilityId: string, name: string) => {
+    const { scaffoldData, selectedVsId } = get();
+    if (!scaffoldData) return;
+    const cap = scaffoldData.elements.capabilities[capabilityId];
+    if (!cap) return;
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        capabilities: {
+          ...scaffoldData.elements.capabilities,
+          [capabilityId]: { ...cap, name },
+        },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    if (selectedVsId) get().generateCanvasForVs(selectedVsId);
+  },
+
+  updateRoleName: (roleId: string, name: string) => {
+    const { scaffoldData, selectedVsId } = get();
+    if (!scaffoldData) return;
+    const role = scaffoldData.elements.roles[roleId];
+    if (!role) return;
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        roles: {
+          ...scaffoldData.elements.roles,
+          [roleId]: { ...role, name },
+        },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    if (selectedVsId) get().generateCanvasForVs(selectedVsId);
+  },
+
+  updateVsName: (vsId: string, name: string) => {
+    const { scaffoldData } = get();
+    if (!scaffoldData) return;
+    const vs = scaffoldData.elements.valueStreams[vsId];
+    if (!vs) return;
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        valueStreams: {
+          ...scaffoldData.elements.valueStreams,
+          [vsId]: { ...vs, name },
+        },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    _refreshNetworkNodes(get, set, updated);
+  },
+
+  updateVsDescription: (vsId: string, description: string) => {
+    const { scaffoldData } = get();
+    if (!scaffoldData) return;
+    const vs = scaffoldData.elements.valueStreams[vsId];
+    if (!vs) return;
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        valueStreams: {
+          ...scaffoldData.elements.valueStreams,
+          [vsId]: { ...vs, description },
+        },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+  },
+
+  updateOutcomeName: (outcomeId: string, name: string) => {
+    const { scaffoldData, selectedVsId } = get();
+    if (!scaffoldData) return;
+    const outcome = scaffoldData.elements.outcomes[outcomeId];
+    if (!outcome) return;
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        outcomes: {
+          ...scaffoldData.elements.outcomes,
+          [outcomeId]: { ...outcome, name },
+        },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    if (selectedVsId) get().generateCanvasForVs(selectedVsId);
+  },
+
+  // ── Bundle save (D-092) ─────────────────────────────────────────────────────
+
+  saveFullBundle: async () => {
+    const { scaffoldData, heatmapsByVs, userStoriesByActivity } = get();
+    if (!scaffoldData) return;
+
+    const bundle = {
+      bundleVersion: "2.0",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      scaffold: scaffoldData,
+      heatmaps: Array.from(heatmapsByVs.values()),
+      userStoriesByActivity,
+    };
+
+    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });
+    const filename = `vcc-bundle-${scaffoldData.name?.replace(/\s+/g, "-").toLowerCase() ?? "export"}-${new Date().toISOString().slice(0, 10)}.json`;
+
+    // Try modern File System Access API, fall back to download link
+    if (typeof window !== "undefined" && "showSaveFilePicker" in window) {
+      try {
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: filename,
+          types: [{ description: "JSON Bundle", accept: { "application/json": [".json"] } }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        set({ scaffoldDirty: false });
+        return;
+      } catch (e: any) {
+        // User cancelled or API not supported — fall through to blob download
+        if (e?.name === "AbortError") return;
+      }
+    }
+    // Blob fallback
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    set({ scaffoldDirty: false });
+  },
 }));
+
+// ── Helper: refresh network nodes after scaffold mutation ──────────────────
+function _refreshNetworkNodes(
+  get: () => CanvasState,
+  set: (state: Partial<CanvasState>) => void,
+  scaffold: ScaffoldData,
+) {
+  const vsIds = Object.keys(scaffold.elements.valueStreams);
+  const { forwardEdges } = deriveNetworkEdges(scaffold);
+  const positions = computeNodePositions(vsIds, forwardEdges, scaffold);
+  const nodes = buildNetworkNodes(scaffold, get().heatmapsByVs, positions);
+  set({ networkNodes: nodes, networkForwardEdges: forwardEdges });
+}

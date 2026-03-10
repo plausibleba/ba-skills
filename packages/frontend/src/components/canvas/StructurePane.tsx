@@ -1,5 +1,7 @@
 import type { ScaffoldData, ScaffoldActivity } from "../../types.ts";
 import { humanizeId } from "../../lib/humanize-id.ts";
+import { InlineEdit } from "./InlineEdit.tsx";
+import { useCanvasStore } from "../../store/canvas-store.ts";
 
 /* ── Structure Pane — entry/exit states + metrics ──────────────────── */
 
@@ -14,6 +16,8 @@ export function StructurePane({
   isOpen: boolean;
   maxMetricRows: number;
 }) {
+  const { updateOutcomeName } = useCanvasStore();
+
   if (!isOpen) return null;
 
   const preOutcome = activity.preOutcomeId
@@ -38,11 +42,13 @@ export function StructurePane({
               Entry State
             </span>
             {preOutcome && (
-              <span
-                title={preOutcome.name}
-                className="line-clamp-2 rounded-md bg-white/15 px-2 py-0.5 text-center text-[10px] leading-snug text-white/90"
-              >
-                {preOutcome.name}
+              <span className="line-clamp-2 rounded-md bg-white/15 px-2 py-0.5 text-center text-[10px] leading-snug text-white/90">
+                <InlineEdit
+                  value={preOutcome.name ?? ""}
+                  onSave={(name) => updateOutcomeName(activity.preOutcomeId, name)}
+                  className="text-[10px] text-white/90"
+                  inputClassName="text-[10px] text-gray-900 bg-white"
+                />
               </span>
             )}
           </div>
@@ -66,11 +72,13 @@ export function StructurePane({
               Exit State
             </span>
             {postOutcome && (
-              <span
-                title={postOutcome.name}
-                className="line-clamp-2 rounded-md bg-white/15 px-2 py-0.5 text-center text-[10px] leading-snug text-white/90"
-              >
-                {postOutcome.name}
+              <span className="line-clamp-2 rounded-md bg-white/15 px-2 py-0.5 text-center text-[10px] leading-snug text-white/90">
+                <InlineEdit
+                  value={postOutcome.name ?? ""}
+                  onSave={(name) => updateOutcomeName(activity.postOutcomeId, name)}
+                  className="text-[10px] text-white/90"
+                  inputClassName="text-[10px] text-gray-900 bg-white"
+                />
               </span>
             )}
           </div>

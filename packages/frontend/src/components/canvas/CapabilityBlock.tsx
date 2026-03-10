@@ -3,6 +3,8 @@ import type { ScaffoldData, ScaffoldActivity } from "../../types.ts";
 import type { PPITLayer } from "./ppit.ts";
 import { PPIT_LAYERS } from "./ppit.ts";
 import { humanizeId } from "../../lib/humanize-id.ts";
+import { InlineEdit } from "./InlineEdit.tsx";
+import { useCanvasStore } from "../../store/canvas-store.ts";
 
 /* ── PPIT data shape from capabilityPPIT ───────────────────────────── */
 interface CapPPIT {
@@ -53,6 +55,7 @@ export function CapabilityBlock({
   ppitToggles: Record<PPITLayer, boolean>;
   isFirst?: boolean;
 }) {
+  const { updateCapabilityName } = useCanvasStore();
   const cap = scaffold.elements.capabilities[capabilityId];
   const anyToggle = PPIT_LAYERS.some((l) => ppitToggles[l]);
 
@@ -112,7 +115,12 @@ export function CapabilityBlock({
       {/* Capability name + badge counts */}
       <div className="flex items-start justify-between gap-1.5">
         <p className="min-w-0 text-xs font-medium text-gray-700">
-          {cap?.name ?? humanizeId(capabilityId)}
+          <InlineEdit
+            value={cap?.name ?? humanizeId(capabilityId)}
+            onSave={(name) => updateCapabilityName(capabilityId, name)}
+            className="text-xs font-medium text-gray-700"
+            inputClassName="text-xs font-medium text-gray-900"
+          />
         </p>
         <div className="flex flex-shrink-0 items-center gap-1">
           {capDescription && (

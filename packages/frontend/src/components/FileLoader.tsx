@@ -15,12 +15,20 @@ export function FileLoader() {
         const json = JSON.parse(text) as Record<string, unknown>;
 
         // Detect file type: bundle, scaffold, or heatmap
-        if ("bundleVersion" in json && "scaffold" in json && "heatmaps" in json) {
-          // VCC Bundle — load scaffold then all heatmaps
+        if ("bundleVersion" in json && "scaffold" in json) {
+          // VCC Bundle v2.0 — load scaffold, all heatmaps, and user stories
           const bundle = json as any;
           await loadScaffold(bundle.scaffold as ScaffoldData);
-          for (const heatmap of bundle.heatmaps ?? []) {
-            void loadHeatmap(heatmap as HeatmapData);
+          // Load heatmaps from flat array or by-VS map
+          const heatmaps = bundle.heatmaps ?? Object.values(bundle.heatmapsByVs ?? {});
+          for (const heatmap of heatmaps) {
+            await loadHeatmap(heatmap as HeatmapData);
+          }
+          // Restore user stories if present (bundle v2.0)
+          if (bundle.userStoriesByActivity && typeof bundle.userStoriesByActivity === "object") {
+            for (const [actId, stories] of Object.entries(bundle.userStoriesByActivity)) {
+              useCanvasStore.getState().setActivityStories(actId, stories as any[]);
+            }
           }
         } else if ("scaffoldId" in json && "elements" in json) {
           await loadScaffold(json as unknown as ScaffoldData);
@@ -109,10 +117,10 @@ export function FileLoader() {
           />
         </svg>
         <p className="text-sm font-medium text-gray-600">
-          Drop a scaffold JSON file here, or click to browse
+          Drop a scaffold or VCC bundle here, or click to browse
         </p>
         <p className="mt-1 text-xs text-gray-400">
-          Accepts ScaffoldModel (.json)
+          Accepts Scaffold, Heatmap, or VCC Bundle (.json)
         </p>
         <input
           ref={fileInputRef}

@@ -7,6 +7,8 @@ import type {
 import type { PPITLayer } from "./ppit.ts";
 import { StructurePane } from "./StructurePane.tsx";
 import { StageCard } from "./StageCard.tsx";
+import { InlineEdit } from "./InlineEdit.tsx";
+import { useCanvasStore } from "../../store/canvas-store.ts";
 
 /* ── Stage Column ──────────────────────────────────────────────────── */
 
@@ -39,12 +41,14 @@ export function StageColumn({
   onFrictionClick: (activityId: string) => void;
   maxMetricRows: number;
 }) {
+  const { updateActivityName } = useCanvasStore();
   const fCnt = column.activityIds.reduce(
     (s, a) => s + (frictionMap.get(a)?.length ?? 0),
     0,
   );
   const hasBinding = column.activityIds.some((a) => bindingActivityIds.has(a));
-  const primary = scaffold.elements.activities[column.activityIds[0]];
+  const primaryId = column.activityIds[0];
+  const primary = scaffold.elements.activities[primaryId];
   const stageName = primary?.name ?? column.label;
   const stageDescription = primary
     ? ((primary as Record<string, unknown>).description as string | undefined) ?? ""
@@ -79,7 +83,12 @@ export function StageColumn({
         </div>
         <div className="flex items-start justify-between gap-2 px-4 pb-2.5">
           <h3 className="text-[15px] font-semibold leading-snug tracking-tight text-white">
-            {stageName}
+            <InlineEdit
+              value={stageName}
+              onSave={(name) => updateActivityName(primaryId, name)}
+              className="text-[15px] font-semibold leading-snug tracking-tight text-white"
+              inputClassName="text-[15px] font-semibold text-gray-900 bg-white"
+            />
           </h3>
           {stageDescription && (
             <div className="group relative flex-shrink-0 pt-0.5">

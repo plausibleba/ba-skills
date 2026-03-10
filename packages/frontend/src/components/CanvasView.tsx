@@ -3,6 +3,7 @@ import { useCanvasStore } from "../store/canvas-store.ts";
 import type { TransformationUserStory } from "../types.ts";
 import { toJiraExport } from "../types.ts";
 import { humanizeId } from "../lib/humanize-id.ts";
+import { InlineEdit } from "./canvas/InlineEdit.tsx";
 import {
   buildActivityFrictionMap,
   resolveBindingActivityIds,
@@ -16,7 +17,7 @@ import { useCanvasControls } from "./canvas/useCanvasControls.ts";
 /* ── Canvas View — orchestrator ────────────────────────────────────── */
 
 export function CanvasView() {
-  const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories } =
+  const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories, updateVsName, updateVsDescription } =
     useCanvasStore();
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
     null,
@@ -116,17 +117,24 @@ export function CanvasView() {
         {/* ── Narrative header ── */}
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1 space-y-2">
-            <h2 className="text-lg font-semibold text-vcc-900">{vsName}</h2>
-            {vsDescription && (
-              <div className="max-w-4xl rounded-md bg-gray-50 px-3 py-2">
-                <p
-                  title={vsDescription}
-                  className="text-xs leading-relaxed text-gray-500 line-clamp-4"
-                >
-                  {vsDescription}
-                </p>
-              </div>
-            )}
+            <h2 className="text-lg font-semibold text-vcc-900">
+              <InlineEdit
+                value={vsName}
+                onSave={(name) => updateVsName(canvasViewModel.valueStreamId, name)}
+                className="text-lg font-semibold text-vcc-900"
+                inputClassName="text-lg font-semibold text-vcc-900"
+              />
+            </h2>
+            <div className="max-w-4xl rounded-md bg-gray-50 px-3 py-2">
+              <InlineEdit
+                value={vsDescription ?? ""}
+                onSave={(desc) => updateVsDescription(canvasViewModel.valueStreamId, desc)}
+                className="text-xs leading-relaxed text-gray-500"
+                inputClassName="text-xs text-gray-600"
+                placeholder="Add a description…"
+                multiline
+              />
+            </div>
             <div className="flex items-center gap-3 pt-1 text-xs">
               <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
                 Accountable Stakeholder
