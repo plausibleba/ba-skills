@@ -444,3 +444,15 @@ UI treatment for null: no gold banner, no binding badge. Neutral executive callo
 **Date:** 2026-03-09
 **Decision:** StageWizard "Run new" friction button calls `runPassC()` from heatmap-analyser.ts, not an inline prompt. Generates observations for ALL value streams in one call.
 **Rationale:** Inline runPass3 had a simplified prompt that didn't match scaffold activity IDs, hardcoded first VS only, and lacked proper binding constraint scoring. The Pass C pipeline uses scaffold skeleton with exact IDs, proper taxonomy, and eligibility-based binding selection.
+
+---
+
+## D-092: Editable Canvas Phase 1 — Inline Editing + Bundle Save/Load
+**Date:** 2026-03-10
+**Decision:** All scaffold element labels are now editable via double-click inline editing (InlineEdit component). Scaffold mutations use immutable spread pattern in Zustand store. `scaffoldDirty` flag tracks unsaved changes. Bundle v2.0 format saves scaffold + heatmaps + userStoriesByActivity as a single JSON file via File System Access API (with blob download fallback). FileLoader detects and restores bundle v2.0.
+**Rationale:** Daniel's top priority for Salesforce demo. The canvas was read-only after scaffold generation — any correction required re-running the entire intake. Inline editing makes the canvas a living document. Bundle save/load enables session continuity across browser refreshes.
+
+## D-093: Editable Canvas Phase 2 — Add/Remove Elements
+**Date:** 2026-03-10
+**Decision:** Structural editing of scaffold elements directly on the canvas: add/remove capabilities (per activity), add/remove stages (activities in a value stream), add/remove roles (per activity, with smart name matching to reuse existing roles), add/remove information objects and technology apps (per capability, visible when PPIT toggles active). All mutations auto-regenerate canvas view and refresh network nodes. Last remaining stage cannot be removed.
+**Rationale:** Extends D-092 to cover structural changes beyond label editing. Users identified in discovery that stages were missing or capabilities were misattributed — previously required re-running the pipeline. Now correctable in-place. Combined with D-092, the intake+scaffold build is effectively a one-off bootstrap.

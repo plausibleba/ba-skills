@@ -1,6 +1,6 @@
 # Current State — VCC Frontend
 
-_Last updated: 2026-03-09 — Session 18_
+_Last updated: 2026-03-10 — Session 19_
 
 ---
 
@@ -47,6 +47,29 @@ All LLM calls stream through Edge Runtime proxy (D-088):
 ### ID-vs-Label Display ✅
 
 `humanizeId()` utility (D-084) converts raw IDs to readable display names across 9 components.
+
+### Editable Canvas ✅ (NEW — Session 19)
+
+The canvas is now a **living document**, not a read-only output:
+
+**Inline editing (double-click any label):**
+- Stage names (activity names) in dark column headers
+- Capability names in capability blocks
+- Entry/exit state names in Structure Pane
+- VS name + description in canvas header
+- Role names in Structure Pane chips
+
+**Add/remove elements:**
+- Capabilities: "+ Add Capability" per stage, × to remove on hover
+- Stages: "+ Add Stage" at end of canvas, × on column headers
+- Roles: "+ Role" in Structure Pane with smart name matching, × to remove
+- Information Objects: + button per capability (amber, when I toggle active), × to remove
+- Technology Apps: + button per capability (emerald, when T toggle active), × to remove
+
+**Bundle save/load:**
+- Save Bundle button in wizard toolbar (scaffold + heatmaps + user stories as v2.0 JSON)
+- `scaffoldDirty` flag shows asterisk on button when unsaved changes exist
+- FileLoader restores bundle v2.0 including user stories
 
 ### Stage View ✅
 
@@ -104,7 +127,7 @@ VCC frontend handles both v4 and v5 scaffold formats:
 
 ## Decision Log State
 
-Decisions numbered D-001 through D-091. Single source of truth: `docs/DECISIONS.md`.
+Decisions numbered D-001 through D-093. Single source of truth: `docs/DECISIONS.md`.
 
 ---
 
@@ -113,11 +136,11 @@ Decisions numbered D-001 through D-091. Single source of truth: `docs/DECISIONS.
 ### Immediate
 1. Test Enrich Solutions after streaming wiring — confirm vendor feature suggestions work
 2. Verify binding constraint highlighting on Stage View after Pass C wiring
-3. PDS update — reflect Sessions 12–18 progress
+3. PDS update — reflect Sessions 12–19 progress
 
 ### Near Term
 4. Customer Story filtering by company size/revenue/industry
-5. DiscoveryIR review panel before formalisation (D-068)
+5. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
 6. Prompt logic review session (user requested)
 7. Jira export button for user stories
 
@@ -125,3 +148,4 @@ Decisions numbered D-001 through D-091. Single source of truth: `docs/DECISIONS.
 8. F-001 phase 2: delete observations, reassign binding constraint
 9. Multi-vendor support beyond Salesforce
 10. Eric Broda MVC demo — Governance Kernel overlay on StageCard
+11. Slack MCP integration

@@ -624,12 +624,53 @@ D-088, D-089, D-090, D-091
 
 ---
 
-## Pending Work (updated 9 Mar 2026)
+## Session 19 — Editable Canvas
+**Date:** 2026-03-10
+**Status:** Complete
+
+### Completed
+
+**Phase 1: Inline Editing + Bundle Save/Load (D-092)**
+1. `InlineEdit` component — double-click-to-edit with Enter/Escape, pencil icon affordance on hover
+2. Scaffold mutation actions in `canvas-store.ts` — immutable spread pattern for `updateActivityName`, `updateCapabilityName`, `updateRoleName`, `updateVsName`, `updateVsDescription`, `updateOutcomeName`
+3. Editable stage names in `StageColumn` dark header (double-click to rename)
+4. Editable entry/exit state names in `StructurePane` (double-click outcome labels)
+5. Editable capability names in `CapabilityBlock` (double-click to rename)
+6. Editable VS name + description in `CanvasView` header
+7. `scaffoldDirty` flag tracks unsaved local mutations — Save Bundle button shows asterisk when dirty
+8. Save Bundle button in `StageWizard` toolbar — serialises scaffold + heatmaps + user stories as bundle v2.0 JSON
+9. `FileLoader` updated to detect and restore bundle v2.0 including `userStoriesByActivity`
+
+**Phase 2: Add/Remove Elements (D-093)**
+10. `AddItemInput` component — compact "+ Add" button that expands to inline text input
+11. Add/remove capabilities per activity — "+ Add Capability" button on each `StageCard`, hover × to remove
+12. Add/remove stages (activities) — "+ Add Stage" button at end of canvas, × on column headers (disabled on last stage)
+13. Add/remove roles in `StructurePane` — blue chips with inline edit + ×, "+ Role" with smart name matching to reuse existing roles
+14. Add/remove Information Objects per capability — amber chips with × and + button (visible when I toggle active)
+15. Add/remove Technology Apps per capability — emerald chips with × and + button (visible when T toggle active)
+16. `MiniAddButton` component — compact + chip that expands to inline input for PPIT elements
+17. All mutations auto-regenerate canvas view and refresh network nodes
+
+### Key Outcome
+The canvas is now a **living document** — Discovery Intake generates the initial scaffold, then all refinement happens directly on the canvas. The intake+scaffold build is effectively a one-off. Users can rename, add, and remove any structural element, run assessments, generate user stories, and save the complete bundle to reload later.
+
+### Decisions
+- D-092: Editable Canvas Phase 1 — inline editing + bundle save/load
+- D-093: Editable Canvas Phase 2 — add/remove capabilities, activities, roles, info objects, tech apps
+
+### Commits
+- `43f4679` — feat: editable canvas Phase 1 — inline editing + bundle save/load (D-092)
+- `7034110` — feat: editable canvas Phase 2 — add/remove capabilities, stages, roles (D-093)
+- `ddfe3ec` — feat: add/remove Information Objects and Technology Apps (D-093)
+
+---
+
+## Pending Work (updated 10 Mar 2026)
 
 ### Immediate
 1. Test Enrich Solutions after streaming wiring — confirm vendor feature suggestions
 2. Verify Assess Friction binding constraint highlighting on Stage View
-3. PDS update — reflect Sessions 12–18 progress
+3. PDS update — reflect Sessions 12–19 progress
 
 ### Near Term
 4. Customer Story filtering by company size/revenue/industry (user request)
@@ -637,8 +678,10 @@ D-088, D-089, D-090, D-091
 6. Proxy-level temperature enforcement (D-069)
 7. Jira export button for user stories
 8. Prompt logic review session (user requested)
+9. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
 
 ### Future
-9. F-001 phase 2: delete observations, reassign binding constraint
-10. Multi-vendor support beyond Salesforce
-11. Eric Broda MVC demo — Governance Kernel overlay on StageCard
+10. F-001 phase 2: delete observations, reassign binding constraint
+11. Multi-vendor support beyond Salesforce
+12. Eric Broda MVC demo — Governance Kernel overlay on StageCard
+13. Slack MCP integration
