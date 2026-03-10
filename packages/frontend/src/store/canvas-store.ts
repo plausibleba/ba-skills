@@ -746,11 +746,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   },
 
   addInfoObjectToCapability: (activityId: string, capabilityId: string, name: string): string => {
-    console.log('[PPIT] addInfoObjectToCapability called', { activityId, capabilityId, name });
     const { scaffoldData, selectedVsId } = get();
-    if (!scaffoldData) { console.warn('[PPIT] no scaffoldData'); return ""; }
+    if (!scaffoldData) return "";
     const activity = scaffoldData.elements.activities[activityId];
-    if (!activity) { console.warn('[PPIT] activity not found'); return ""; }
+    if (!activity) return "";
 
     const infoId = `io_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
     const newObj = { id: infoId, elementType: "InformationObject", name };
@@ -870,15 +869,13 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   // ── PPIT sub-activity actions (D-094) ───────────────────────────────────────
 
   updatePpitActivity: (activityId: string, capabilityId: string, index: number, newText: string) => {
-    console.log('[PPIT] updatePpitActivity called', { activityId, capabilityId, index, newText });
     const { scaffoldData, selectedVsId } = get();
-    if (!scaffoldData) { console.warn('[PPIT] no scaffoldData'); return; }
+    if (!scaffoldData) return;
     const activity = scaffoldData.elements.activities[activityId];
-    if (!activity) { console.warn('[PPIT] activity not found:', activityId); return; }
+    if (!activity) return;
 
     const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
-    console.log('[PPIT] ppitMap keys:', ppitMap ? Object.keys(ppitMap) : 'null', 'looking for:', capabilityId);
-    if (!ppitMap || !ppitMap[capabilityId]) { console.warn('[PPIT] no ppitMap entry for cap'); return; }
+    if (!ppitMap || !ppitMap[capabilityId]) return;
 
     const capPpit = ppitMap[capabilityId];
     const acts = [...(capPpit.activities ?? [])];
@@ -899,14 +896,12 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   },
 
   addPpitActivity: (activityId: string, capabilityId: string, text: string) => {
-    console.log('[PPIT] addPpitActivity called', { activityId, capabilityId, text });
     const { scaffoldData, selectedVsId } = get();
-    if (!scaffoldData) { console.warn('[PPIT] no scaffoldData'); return; }
+    if (!scaffoldData) return;
     const activity = scaffoldData.elements.activities[activityId];
-    if (!activity) { console.warn('[PPIT] activity not found:', activityId, 'available:', Object.keys(scaffoldData.elements.activities)); return; }
+    if (!activity) return;
 
     const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
-    console.log('[PPIT] ppitMap:', ppitMap ? Object.keys(ppitMap) : 'null');
     if (!ppitMap) {
       // No capabilityPPIT yet — create it with this first sub-activity
       const newPpit = { roleIds: [], activities: [text], informationObjectIds: [], technologyAppIds: [] };
@@ -941,7 +936,6 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     }
 
     const acts = [...(capPpit.activities ?? []), text];
-    console.log('[PPIT] addPpitActivity: activities before:', capPpit.activities, 'after:', acts);
     const updatedPpit = { ...capPpit, activities: acts };
     const updatedActivity = { ...activity, capabilityPPIT: { ...ppitMap, [capabilityId]: updatedPpit } };
     const updated: ScaffoldData = {
@@ -952,19 +946,17 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       },
     };
     set({ scaffoldData: updated, scaffoldDirty: true });
-    console.log('[PPIT] addPpitActivity: store updated, scaffoldDirty=true');
     if (selectedVsId) get().generateCanvasForVs(selectedVsId);
   },
 
   removePpitActivity: (activityId: string, capabilityId: string, index: number) => {
-    console.log('[PPIT] removePpitActivity called', { activityId, capabilityId, index });
     const { scaffoldData, selectedVsId } = get();
-    if (!scaffoldData) { console.warn('[PPIT] no scaffoldData'); return; }
+    if (!scaffoldData) return;
     const activity = scaffoldData.elements.activities[activityId];
-    if (!activity) { console.warn('[PPIT] activity not found'); return; }
+    if (!activity) return;
 
     const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
-    if (!ppitMap || !ppitMap[capabilityId]) { console.warn('[PPIT] no ppitMap entry'); return; }
+    if (!ppitMap || !ppitMap[capabilityId]) return;
 
     const capPpit = ppitMap[capabilityId];
     const acts = [...(capPpit.activities ?? [])];
@@ -987,11 +979,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   // ── Per-capability role actions (D-094) ────────────────────────────────────
 
   addRoleToCapability: (activityId: string, capabilityId: string, roleId: string) => {
-    console.log('[PPIT] addRoleToCapability called', { activityId, capabilityId, roleId });
     const { scaffoldData, selectedVsId } = get();
-    if (!scaffoldData) { console.warn('[PPIT] no scaffoldData'); return; }
+    if (!scaffoldData) return;
     const activity = scaffoldData.elements.activities[activityId];
-    if (!activity) { console.warn('[PPIT] activity not found'); return; }
+    if (!activity) return;
 
     const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
     if (!ppitMap) {
