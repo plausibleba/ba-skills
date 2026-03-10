@@ -25,6 +25,8 @@ function buildFeatureCatalogue(lib: VendorFeatureLibrary) {
 
 // ─── Pass 4: Enrich observations with vendor solutions ────────────────────────
 
+const BATCH_SIZE = 8; // max observations per LLM call to stay within 30s edge timeout
+
 async function runPass4(
   observations: FrictionObservation[],
   lib: VendorFeatureLibrary,
@@ -42,15 +44,19 @@ async function runPass4(
     });
   });
 
-  const obsForPrompt = observations.map(o => ({
-    observationId: o.observationId,
-    category: o.category,
-    rationale: o.rationale,
-    intensity: o.intensity.score,
-    evidenceBasis: (o as any).evidenceBasis ?? "ASSUMED",
-  }));
+  // Batch observations to avoid exceeding the 30s Edge Runtime timeout on large bundles
+  const solutionsByObs: Record<string, Solution[]> = {};
+  for (let i = 0; i < observations.length; i += BATCH_SIZE) {
+    const batch = observations.slice(i, i + BATCH_SIZE);
+    const obsForPrompt = batch.map(o => ({
+      observationId: o.observationId,
+      category: o.category,
+      rationale: o.rationale,
+      intensity: o.intensity.score,
+      evidenceBasis: (o as any).evidenceBasis ?? "ASSUMED",
+    }));
 
-  const prompt = `You are enriching a VCC governance diagnostic with solution recommendations.
+    const prompt = `You are enriching a VCC governance diagnostic with solution recommendations.
 
 Given friction observations from a discovery engagement, recommend which ${lib.vendorName} features best address each friction point.
 
@@ -99,25 +105,25 @@ Return ONLY valid JSON with no markdown fences:
   ]
 }`;
 
-  const llmRes = await callLLM({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 4000,
-    temperature: 0,
-    messages: [{ role: "user", content: prompt }],
-  });
-  const result = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
-
-  // Map solutions back, attaching customer story IDs from the fixture
-  const solutionsByObs: Record<string, Solution[]> = {};
-  (result.enriched ?? []).forEach((e: any) => {
-    solutionsByObs[e.observationId] = (e.solutions ?? []).map((s: any) => {
-      if (s.vendorFeatureRef?.featureId) {
-        const storyIds = (storyIdsByFeature[s.vendorFeatureRef.featureId] ?? []).slice(0, 3);
-        return { ...s, customerStoryIds: storyIds };
-      }
-      return s;
+    const llmRes = await callLLM({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 4000,
+      temperature: 0,
+      messages: [{ role: "user", content: prompt }],
     });
-  });
+    const result = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
+
+    // Map solutions back, attaching customer story IDs from the fixture
+    (result.enriched ?? []).forEach((e: any) => {
+      solutionsByObs[e.observationId] = (e.solutions ?? []).map((s: any) => {
+        if (s.vendorFeatureRef?.featureId) {
+          const storyIds = (storyIdsByFeature[s.vendorFeatureRef.featureId] ?? []).slice(0, 3);
+          return { ...s, customerStoryIds: storyIds };
+        }
+        return s;
+      });
+    });
+  }
 
   return observations.map(o => ({
     ...o,

@@ -48,6 +48,8 @@ function buildFeatureCatalogue(lib: VendorFeatureLibrary) {
   }));
 }
 
+const BATCH_SIZE = 8; // max observations per LLM call to stay within 30s edge timeout
+
 async function runPass4(
   observations: FrictionObservation[],
   lib: VendorFeatureLibrary,
@@ -61,14 +63,18 @@ async function runPass4(
     });
   }));
 
-  const obsForPrompt = observations.map(o => ({
-    observationId: o.observationId,
-    category: o.category,
-    rationale: o.rationale,
-    intensity: o.intensity.score,
-  }));
+  // Batch observations to avoid exceeding the 30s Edge Runtime timeout on large bundles
+  const solutionsByObs: Record<string, Solution[]> = {};
+  for (let i = 0; i < observations.length; i += BATCH_SIZE) {
+    const batch = observations.slice(i, i + BATCH_SIZE);
+    const obsForPrompt = batch.map(o => ({
+      observationId: o.observationId,
+      category: o.category,
+      rationale: o.rationale,
+      intensity: o.intensity.score,
+    }));
 
-  const prompt = `You are enriching a VCC diagnostic with solution recommendations.
+    const prompt = `You are enriching a VCC diagnostic with solution recommendations.
 
 ## Organisation Context
 ${orgContext}
@@ -108,23 +114,23 @@ Return ONLY valid JSON:
   }]
 }`;
 
-  const llmRes = await callLLM({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 4000,
-    temperature: 0,
-    messages: [{ role: "user", content: prompt }],
-  });
-  const result = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
-
-  const solutionsByObs: Record<string, Solution[]> = {};
-  (result.enriched ?? []).forEach((e: any) => {
-    solutionsByObs[e.observationId] = (e.solutions ?? []).map((s: any) => {
-      if (s.vendorFeatureRef?.featureId) {
-        return { ...s, customerStoryIds: (storyIdsByFeature[s.vendorFeatureRef.featureId] ?? []).slice(0, 3) };
-      }
-      return s;
+    const llmRes = await callLLM({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 4000,
+      temperature: 0,
+      messages: [{ role: "user", content: prompt }],
     });
-  });
+    const result = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
+
+    (result.enriched ?? []).forEach((e: any) => {
+      solutionsByObs[e.observationId] = (e.solutions ?? []).map((s: any) => {
+        if (s.vendorFeatureRef?.featureId) {
+          return { ...s, customerStoryIds: (storyIdsByFeature[s.vendorFeatureRef.featureId] ?? []).slice(0, 3) };
+        }
+        return s;
+      });
+    });
+  }
 
   return observations.map(o => ({
     ...o,

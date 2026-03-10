@@ -109,7 +109,8 @@ function getStoriesForFeature(vendorId: string, featureId: string, filters?: Sto
   if (!lib) return [];
   for (const cat of lib.categories) {
     const feat = cat.features.find((f) => f.featureId === featureId) as FeatureWithStories | undefined;
-    if (!feat?.customerStoryIds?.length) return [];
+    if (!feat) continue; // not in this category — try next
+    if (!feat.customerStoryIds?.length) return [];
     let matched = feat.customerStoryIds
       .map((id) => ALL_STORIES.find((s) => s.storyId === id))
       .filter((s): s is CustomerStory => !!s);

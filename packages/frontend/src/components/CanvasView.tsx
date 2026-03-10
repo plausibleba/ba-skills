@@ -105,7 +105,7 @@ export function CanvasView() {
 
   return (
     <div className="flex h-full gap-0">
-      <div className="flex flex-1 flex-col gap-4 overflow-hidden">
+      <div className="flex flex-1 flex-col gap-4 overflow-hidden pl-6 pt-4">
         {/* Stub banner */}
         {isStub && (
           <div className="flex items-center gap-2 rounded-lg border border-vcc-100 bg-vcc-50/50 px-4 py-2">
@@ -119,8 +119,8 @@ export function CanvasView() {
         )}
 
         {/* ── Narrative header ── */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 flex-1 space-y-2">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-[280px] flex-1 space-y-2">
             <h2 className="text-lg font-semibold text-vcc-900">
               <InlineEdit
                 value={vsName}
@@ -129,7 +129,7 @@ export function CanvasView() {
                 inputClassName="text-lg font-semibold text-vcc-900"
               />
             </h2>
-            <div className="max-w-4xl rounded-md bg-gray-50 px-3 py-2">
+            <div className="min-w-[200px] max-w-4xl rounded-md bg-gray-50 px-3 py-2">
               <InlineEdit
                 value={vsDescription ?? ""}
                 onSave={(desc) => updateVsDescription(canvasViewModel.valueStreamId, desc)}
