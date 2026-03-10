@@ -1,6 +1,6 @@
 # Current State — VCC Frontend
 
-_Last updated: 2026-03-10 — Session 19_
+_Last updated: 2026-03-10 — Session 20_
 
 ---
 
@@ -10,6 +10,12 @@ _Last updated: 2026-03-10 — Session 19_
 |-------------|-----|
 | Production alias | https://frontend-five-eta-l0j2mk66gi.vercel.app |
 | Deploy command | `cd packages/frontend && vercel --prod` |
+
+### Vercel Project — Single Link (cleaned up Session 20)
+
+Only one Vercel project is linked: **"frontend"** (`prj_I2Xc01mOmyu0FnvIQmcxPv4BVuTV`) at `packages/frontend/.vercel/`. A stale root-level "vcc" project link was removed in Session 20. The orphaned "vcc" project can optionally be deleted from the Vercel dashboard.
+
+**Rule:** Always deploy from `packages/frontend/`. Never from the repo root.
 
 ---
 
@@ -65,6 +71,11 @@ The canvas is now a **living document**, not a read-only output:
 - Roles: "+ Role" in Structure Pane with smart name matching, × to remove
 - Information Objects: + button per capability (amber, when I toggle active), × to remove
 - Technology Apps: + button per capability (emerald, when T toggle active), × to remove
+
+**PPIT sub-activities (Session 20):**
+- Purple activity items (e.g., "Research potential customer profiles") are inline-editable, addable, removable
+- Roles now edited per-capability (not per-stage), aggregated to "Participating Stakeholders" in stage header
+- Smart role reuse via case-insensitive name matching against global registry
 
 **Bundle save/load:**
 - Save Bundle button in wizard toolbar (scaffold + heatmaps + user stories as v2.0 JSON)
@@ -125,9 +136,15 @@ VCC frontend handles both v4 and v5 scaffold formats:
 
 ---
 
+## Data Architecture (D-095, D-097)
+
+VCC deliberately separates ontology (enforced) from repository (absent). The scaffold JSON is an ontology-conformant document — portable, self-contained, no backend required. Three-step evolution planned: client-side graph index → ontology-as-schema validation → client-side graph visualisation. Multi-user is the upgrade trigger for a backend. See ARCHITECTURE.md § "Data Architecture — Ontology Without Repository" for full trajectory.
+
+---
+
 ## Decision Log State
 
-Decisions numbered D-001 through D-093. Single source of truth: `docs/DECISIONS.md`.
+Decisions numbered D-001 through D-097. Single source of truth: `docs/DECISIONS.md`.
 
 ---
 
@@ -136,16 +153,23 @@ Decisions numbered D-001 through D-093. Single source of truth: `docs/DECISIONS.
 ### Immediate
 1. Test Enrich Solutions after streaming wiring — confirm vendor feature suggestions work
 2. Verify binding constraint highlighting on Stage View after Pass C wiring
-3. PDS update — reflect Sessions 12–19 progress
+3. PDS update — reflect Sessions 12–20 progress
 
 ### Near Term
-4. Customer Story filtering by company size/revenue/industry
-5. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
-6. Prompt logic review session (user requested)
-7. Jira export button for user stories
+4. **Capability selector** — pick from existing capabilities before "create new" (D-097 Step 1 lite)
+5. **Client-side graph index** — in-memory adjacency map on bundle load (D-097 Step 1)
+6. **TypeScript type drift cleanup** — align types with runtime data (D-096)
+7. Customer Story filtering by company size/revenue/industry
+8. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
+9. Prompt logic review session (user requested)
+10. Jira export button for user stories
 
 ### Future
-8. F-001 phase 2: delete observations, reassign binding constraint
-9. Multi-vendor support beyond Salesforce
-10. Eric Broda MVC demo — Governance Kernel overlay on StageCard
-11. Slack MCP integration
+11. **Graph visualisation** — D3-force/vis.js client-side scaffold network (D-097 Step 3)
+12. **Ontology-as-schema validation** — formal metamodel definitions (D-097 Step 2)
+13. **GPT design spar: Data Architecture Trajectory** — review D-095/D-097
+14. F-001 phase 2: delete observations, reassign binding constraint
+15. Multi-vendor support beyond Salesforce
+16. Eric Broda MVC demo — Governance Kernel overlay on StageCard
+17. Slack MCP integration
+18. Multi-user modelling backend (D-097 upgrade trigger)

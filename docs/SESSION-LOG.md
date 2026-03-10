@@ -665,23 +665,60 @@ The canvas is now a **living document** — Discovery Intake generates the initi
 
 ---
 
-## Pending Work (updated 10 Mar 2026)
+## Session 20 — PPIT Editing Completion, Bug Fixes, Data Architecture
+**Date:** 2026-03-10
+**Status:** Complete
+
+### Completed
+1. **PPIT sub-activities editable** — Purple activity items in CapabilityBlock now support inline edit, × remove, and + add. Five new store actions in canvas-store.ts.
+2. **Per-capability role editing** — Roles moved from stage-level to capability-level PPIT. Stage header renamed to "Participating Stakeholders" (read-only aggregation from all capabilities). Smart role reuse via case-insensitive name matching.
+3. **Critical bug fix: activityId undefined** — Many scaffold bundles don't include `id` field on activity objects (the record key IS the ID). All PPIT store actions silently failed. Fixed by passing `activityId` as explicit prop from StageCard → CapabilityBlock and StageColumn → StructurePane.
+4. **Store reactivity fix** — CapabilityBlock and StructurePane now read PPIT data from Zustand store's `scaffoldData` directly instead of prop chain, preventing stale renders.
+5. **Debug cleanup** — Diagnostic console.log statements added then removed in separate commits.
+6. **Data Architecture Trajectory documented** — New ARCHITECTURE.md section: Ontology Without Repository principle, three-step evolution (graph index → schema validation → graph visualisation), multi-user upgrade trigger. Flagged as candidate for GPT design spar.
+
+### Decisions
+- D-094: PPIT sub-activities editable + per-capability roles
+- D-095: Ontology Without Repository — architectural principle
+- D-096: TypeScript type drift — identified technical debt
+- D-097: Data Architecture Trajectory — three-step evolution
+
+### Key Learning
+The `activity.id` bug was a textbook example of TypeScript types diverging from runtime data. The type declares `id: string` but the runtime object doesn't have it — the key in the parent record serves as the ID. Console.log diagnostics pinpointed the issue in one round-trip with the user. This class of bug is exactly what D-096 (type drift cleanup) and D-097 Step 2 (ontology-as-schema validation) would prevent.
+
+### Commits
+- `5f615e0` — feat: PPIT sub-activities & per-capability roles editable, fix store reactivity (D-094)
+- `5895143` — debug: add console.log to PPIT store actions
+- `f7a4f44` — fix: pass activityId as prop to CapabilityBlock — fixes PPIT actions
+- `cefd28d` — chore: remove PPIT diagnostic console.log statements
+- `835360e` — fix: pass activityId prop to StructurePane
+
+---
+
+## Pending Work (updated 10 Mar 2026 — Session 20)
 
 ### Immediate
 1. Test Enrich Solutions after streaming wiring — confirm vendor feature suggestions
 2. Verify Assess Friction binding constraint highlighting on Stage View
-3. PDS update — reflect Sessions 12–19 progress
+3. PDS update — reflect Sessions 12–20 progress
 
 ### Near Term
-4. Customer Story filtering by company size/revenue/industry (user request)
-5. DiscoveryIR review panel before formalisation (D-068)
-6. Proxy-level temperature enforcement (D-069)
-7. Jira export button for user stories
-8. Prompt logic review session (user requested)
-9. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
+4. **Capability selector** — dropdown showing existing capabilities before "create new" (D-097 Step 1 lite)
+5. **Client-side graph index** — in-memory adjacency map on bundle load (D-097 Step 1)
+6. **TypeScript type drift cleanup** — align types with runtime data shapes (D-096)
+7. Customer Story filtering by company size/revenue/industry (user request)
+8. DiscoveryIR review panel before formalisation (D-068)
+9. Proxy-level temperature enforcement (D-069)
+10. Jira export button for user stories
+11. Prompt logic review session (user requested)
+12. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
 
 ### Future
-10. F-001 phase 2: delete observations, reassign binding constraint
-11. Multi-vendor support beyond Salesforce
-12. Eric Broda MVC demo — Governance Kernel overlay on StageCard
-13. Slack MCP integration
+13. **Graph visualisation** — D3-force/vis.js scaffold network view (D-097 Step 3)
+14. **Ontology-as-schema validation** — formal metamodel definitions (D-097 Step 2)
+15. **GPT design spar: Data Architecture Trajectory** — review D-095/D-097 decisions
+16. F-001 phase 2: delete observations, reassign binding constraint
+17. Multi-vendor support beyond Salesforce
+18. Eric Broda MVC demo — Governance Kernel overlay on StageCard
+19. Slack MCP integration
+20. Multi-user modelling backend (D-097 upgrade trigger)

@@ -456,3 +456,38 @@ UI treatment for null: no gold banner, no binding badge. Neutral executive callo
 **Date:** 2026-03-10
 **Decision:** Structural editing of scaffold elements directly on the canvas: add/remove capabilities (per activity), add/remove stages (activities in a value stream), add/remove roles (per activity, with smart name matching to reuse existing roles), add/remove information objects and technology apps (per capability, visible when PPIT toggles active). All mutations auto-regenerate canvas view and refresh network nodes. Last remaining stage cannot be removed.
 **Rationale:** Extends D-092 to cover structural changes beyond label editing. Users identified in discovery that stages were missing or capabilities were misattributed — previously required re-running the pipeline. Now correctable in-place. Combined with D-092, the intake+scaffold build is effectively a one-off bootstrap.
+
+---
+
+## D-094: PPIT Sub-Activities Editable + Per-Capability Roles
+**Date:** 2026-03-10
+**Context:** PPIT Activities (purple items) and Roles (blue chips) were visible but not editable. Roles were attached at stage level, inconsistent with the metamodel which maps roles per capability.
+**Decision:**
+- PPIT sub-activities (the granular purple text items in CapabilityBlock) are now inline-editable, addable, and removable when capabilityPPIT exists. Five new store actions: `updatePpitActivity`, `addPpitActivity`, `removePpitActivity`, `addRoleToCapability`, `removeRoleFromCapability`.
+- Roles moved from stage-level editing to per-capability PPIT editing. Stage header now shows aggregated "Participating Stakeholders" (read-only, Business Architecture Guild terminology).
+- Smart role reuse: adding a role does case-insensitive name matching against the global registry before creating a new entry.
+**Bug found during implementation:** `activity.id` is `undefined` in many scaffold bundles because the record key serves as the ID but is not duplicated on the object. All PPIT store actions silently bailed at guard clauses. Fixed by passing `activityId` as an explicit prop from StageCard → CapabilityBlock and StageColumn → StructurePane.
+**Rationale:** Completes the editable canvas — every PPIT layer is now interactive. Per-capability role assignment aligns with the metamodel (capabilities are performed by specific roles, not inherited from stages).
+
+## D-095: Ontology Without Repository — Architectural Principle
+**Date:** 2026-03-10
+**Context:** User observation that VCC has no graph backend and capabilities aren't treated as first-class objects with a registry.
+**Decision:** VCC deliberately separates ontology (the metamodel — concepts and relationships) from repository (a persistent store of instances). The ontology is enforced; the repository is absent by design. The scaffold JSON is an ontology-conformant document that lives on the user's machine. No backend is a product feature: simple deployment (just hit the URI), portable data model (JSON bundle is the API spec), no infrastructure overhead for presales engagements.
+**Rationale:** Lightweight architecture is a competitive advantage. The JSON bundle is simultaneously the working document, the save file, and the data model specification for downstream integration. Multi-user collaboration is the natural upgrade trigger — not a gap in the current product.
+
+## D-096: TypeScript Type Drift — Identified Technical Debt
+**Date:** 2026-03-10
+**Context:** The `activity.id` bug (D-094) is a symptom of a broader problem: TypeScript types declare fields that runtime data doesn't always have. `ScaffoldActivity` declares `id: string` but many bundles don't include it. Other examples: `technologyIds` vs `technologyAppIds`, varying presence of `capabilityPPIT`.
+**Decision:** Acknowledged as technical debt requiring a focused cleanup session. Current mitigations: double-cast through `unknown` for type assertions, explicit prop-passing for IDs instead of deriving from potentially-absent object fields, store-direct reads for mutable PPIT data. Full fix requires aligning TypeScript types with the union of all observed runtime data shapes, or implementing a normalisation layer on bundle load.
+**Rationale:** The `as any` casts and `@ts-nocheck` directives are pragmatic but accumulate risk. Each one is a place where the compiler can't help catch future regressions.
+
+## D-097: Data Architecture Trajectory — Three-Step Evolution
+**Date:** 2026-03-10
+**Context:** Discussion of how to bring graph capabilities into the product without losing the lightweight deployment advantage.
+**Decision:** Three evolutionary steps, each independently valuable, each preserving no-backend deployment:
+1. **Client-side graph index** — in-memory adjacency map built on bundle load. Enables capability selector (pick existing before creating new), element reuse detection, "where used?" traversal. No bundle format change.
+2. **Ontology-as-schema validation** — formal metamodel relationship definitions (TypeScript or JSON-LD). Validate bundles on load/generation. Becomes the integration spec for customers. Resolves D-096 type drift.
+3. **Client-side graph visualisation** — D3-force or vis.js rendering of the scaffold as a navigable network diagram. Visual query interface over the Step 1 index.
+**Upgrade trigger:** Multi-user modelling. When a customer needs concurrent editing, introduce a thin backend (document store or graph DB). The ontology schema from Step 2 becomes the API contract. Bundle format unchanged — just persisted centrally.
+**Architectural invariant:** The JSON bundle is the portable unit of work. Every evolution must preserve bundle portability.
+**Rationale:** Maintains the product advantage of no-backend simplicity while providing a clear path to richer capabilities. Each step is a valuable product increment, not just infrastructure preparation. Candidate for GPT design spar review.
