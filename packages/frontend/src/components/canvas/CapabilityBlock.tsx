@@ -102,55 +102,66 @@ export function CapabilityBlock({
   ppitToggles: Record<PPITLayer, boolean>;
   isFirst?: boolean;
 }) {
-  const { updateCapabilityName, addInfoObjectToCapability, removeInfoObjectFromCapability, addTechAppToCapability, removeTechAppFromCapability } = useCanvasStore();
+  const { updateCapabilityName, addInfoObjectToCapability, removeInfoObjectFromCapability, addTechAppToCapability, removeTechAppFromCapability, updatePpitActivity, addPpitActivity, removePpitActivity, addRoleToCapability, removeRoleFromCapability, addRole, scaffoldData } = useCanvasStore();
   const activityId = activity.id;
   const cap = scaffold.elements.capabilities[capabilityId];
   const anyToggle = PPIT_LAYERS.some((l) => ppitToggles[l]);
 
-  // Read per-capability PPIT — v4 stores as activity.capabilityPPIT[capabilityId]
-  // v5 has no capabilityPPIT; fall back to activity-level fields
-  const ppitMap = (activity as Record<string, unknown>).capabilityPPIT as
+  // Read per-capability PPIT directly from the STORE's scaffoldData (not the activity prop)
+  // to ensure we always have the latest data after mutations.
+  // Store mutations update scaffoldData but the prop chain may lag by one render.
+  const storeActivity = scaffoldData?.elements.activities[activityId] ?? activity;
+  const ppitMap = (storeActivity as Record<string, unknown>).capabilityPPIT as
     Record<string, CapPPIT> | undefined;
   const capPPIT = ppitMap?.[capabilityId] ?? null;
-  const activityRec = activity as Record<string, unknown>;
+  const activityRec = storeActivity as Record<string, unknown>;
 
-  // Resolve names — v4 uses capPPIT, v5 falls back to activity-level arrays
-  const roles = ppitToggles.roles
+  // Resolve role IDs — v4 uses capPPIT.roleIds, v5 falls back to activity-level
+  const roleIds: string[] = ppitToggles.roles
     ? capPPIT
-      ? (capPPIT.roleIds ?? []).map((rid) => scaffold.elements.roles[rid]?.name ?? humanizeId(rid))
+      ? (capPPIT.roleIds ?? [])
       : ((activityRec.performedByRoleIds as string[] | undefined) ?? [])
-          .map((rid) => scaffold.elements.roles[rid]?.name ?? humanizeId(rid))
     : [];
+  const resolveRoleName = (rid: string) => {
+    const roles = scaffoldData?.elements.roles ?? scaffold.elements.roles;
+    return roles[rid]?.name ?? humanizeId(rid);
+  };
+  const rolesEditable = ppitToggles.roles && !!capPPIT;
 
   const activities = ppitToggles.activities
     ? capPPIT
       ? (capPPIT.activities ?? [])
-      : [activity.name]
+      : [storeActivity.name ?? activity.name]
     : [];
 
-  // Resolve Info Objects — keep IDs for add/remove
+  // Whether sub-activities come from capabilityPPIT (editable) or fallback (not editable)
+  const activitiesEditable = ppitToggles.activities && !!capPPIT;
+
+  // Resolve Info Objects — keep IDs for add/remove (read from store for freshness)
   const infoObjIds: string[] = ppitToggles.concepts
     ? capPPIT
       ? (capPPIT.informationObjectIds ?? [])
       : ((activityRec.informationObjectIds as string[] | undefined) ?? [])
     : [];
   const resolveInfoName = (iid: string) => {
-    const el = (scaffold.elements as Record<string, Record<string, { name?: string }>>).informationObjects;
+    const src = scaffoldData?.elements ?? scaffold.elements;
+    const el = (src as Record<string, Record<string, { name?: string }>>).informationObjects;
     return el?.[iid]?.name ?? humanizeId(iid);
   };
 
-  // Resolve Tech Apps — keep IDs for add/remove
+  // Resolve Tech Apps — keep IDs for add/remove (read from store for freshness)
   const techAppIds: string[] = ppitToggles.applications
     ? capPPIT
       ? (capPPIT.technologyAppIds ?? [])
       : ((activityRec.technologyAppIds as string[] | undefined) ?? [])
     : [];
   const resolveTechName = (tid: string) => {
-    const el = (scaffold.elements as Record<string, Record<string, { name?: string }>>).technologyApps;
+    const src = scaffoldData?.elements ?? scaffold.elements;
+    const el = (src as Record<string, Record<string, { name?: string }>>).technologyApps;
     return el?.[tid]?.name ?? humanizeId(tid);
   };
 
-  const hasContent = roles.length > 0 || activities.length > 0 || infoObjIds.length > 0 || techAppIds.length > 0;
+  const hasContent = roleIds.length > 0 || activities.length > 0 || infoObjIds.length > 0 || techAppIds.length > 0;
 
   const capDescription = (cap as Record<string, unknown> | undefined)?.description as string | undefined;
 
@@ -188,26 +199,68 @@ export function CapabilityBlock({
 
       {anyToggle && hasContent && (
         <div className="mt-1.5 space-y-1.5">
-          {/* Activities — primary layer, stacked items */}
-          {activities.length > 0 && (
+          {/* Activities — primary layer, stacked items (editable when from capabilityPPIT) */}
+          {ppitToggles.activities && (
             <div className="space-y-0.5">
               {activities.map((a, i) => (
-                <div key={i} className="flex items-start gap-1.5">
+                <div key={i} className="group/act flex items-start gap-1.5">
                   <span className="mt-[3px] h-1 w-1 flex-shrink-0 rounded-full bg-violet-300" />
-                  <span className="text-[10px] leading-tight text-violet-600">{a}</span>
+                  {activitiesEditable ? (
+                    <>
+                      <InlineEdit
+                        value={a}
+                        onSave={(text) => updatePpitActivity(activityId, capabilityId, i, text)}
+                        className="text-[10px] leading-tight text-violet-600"
+                        inputClassName="text-[10px] text-violet-900"
+                      />
+                      <button
+                        onClick={(e) => { e.stopPropagation(); removePpitActivity(activityId, capabilityId, i); }}
+                        className="ml-auto hidden flex-shrink-0 text-[9px] text-violet-300 hover:text-red-500 group-hover/act:inline"
+                        title="Remove"
+                      >×</button>
+                    </>
+                  ) : (
+                    <span className="text-[10px] leading-tight text-violet-600">{a}</span>
+                  )}
                 </div>
               ))}
+              {activitiesEditable && (
+                <MiniAddButton
+                  placeholder="Activity…"
+                  chipClass="bg-violet-50 text-violet-600 border-violet-200"
+                  onAdd={(text) => addPpitActivity(activityId, capabilityId, text)}
+                />
+              )}
             </div>
           )}
 
-          {/* Roles — secondary chips */}
-          {roles.length > 0 && (
+          {/* Roles — editable chips at capability level */}
+          {ppitToggles.roles && (
             <div className="flex flex-wrap gap-1">
-              {roles.map((r) => (
-                <span key={r} className="rounded-full bg-blue-50 px-1.5 py-0.5 text-[9px] text-blue-600">
-                  {r}
+              {roleIds.map((rid) => (
+                <span key={rid} className="group/role inline-flex items-center gap-0.5 rounded-full bg-blue-50 px-1.5 py-0.5 text-[9px] text-blue-600">
+                  {resolveRoleName(rid)}
+                  {rolesEditable && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); removeRoleFromCapability(activityId, capabilityId, rid); }}
+                      className="ml-0.5 hidden text-blue-300 hover:text-red-500 group-hover/role:inline"
+                      title="Remove"
+                    >×</button>
+                  )}
                 </span>
               ))}
+              {rolesEditable && (
+                <MiniAddButton
+                  placeholder="Role…"
+                  chipClass="bg-blue-50 text-blue-600 border-blue-200"
+                  onAdd={(name) => {
+                    // Reuse existing role by name or create new
+                    const existing = scaffoldData ? Object.entries(scaffoldData.elements.roles).find(([, r]) => (r as any).name?.toLowerCase() === name.toLowerCase()) : null;
+                    const rid = existing ? existing[0] : addRole(name);
+                    if (rid) addRoleToCapability(activityId, capabilityId, rid);
+                  }}
+                />
+              )}
             </div>
           )}
 

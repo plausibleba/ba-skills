@@ -1,4 +1,3 @@
-import { useState, useRef, useEffect } from "react";
 import type { ScaffoldData, ScaffoldActivity } from "../../types.ts";
 import { humanizeId } from "../../lib/humanize-id.ts";
 import { InlineEdit } from "./InlineEdit.tsx";
@@ -17,14 +16,7 @@ export function StructurePane({
   isOpen: boolean;
   maxMetricRows: number;
 }) {
-  const { updateOutcomeName, addRole, addRoleToActivity, removeRoleFromActivity, scaffoldData } = useCanvasStore();
-  const [addingRole, setAddingRole] = useState(false);
-  const [roleInput, setRoleInput] = useState("");
-  const roleInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (addingRole && roleInputRef.current) roleInputRef.current.focus();
-  }, [addingRole]);
+  const { updateOutcomeName, scaffoldData } = useCanvasStore();
 
   if (!isOpen) return null;
 
@@ -93,76 +85,44 @@ export function StructurePane({
         </div>
       )}
 
-      {/* Roles */}
-      <div className="my-2 border-t border-dashed border-white/15" />
-      <div className="flex flex-col items-center gap-1">
-        <span className="text-[9px] font-semibold uppercase tracking-widest text-white/50">
-          Roles
-        </span>
-        <div className="flex flex-wrap justify-center gap-1">
-          {(activity.performedByRoleIds ?? []).map((rid) => (
-            <span key={rid} className="group/role inline-flex items-center gap-0.5 rounded-full bg-blue-500/20 px-2 py-0.5 text-[10px] text-blue-200">
-              <InlineEdit
-                value={scaffold.elements.roles[rid]?.name ?? humanizeId(rid)}
-                onSave={(name) => {
-                  const { updateRoleName } = useCanvasStore.getState();
-                  updateRoleName(rid, name);
-                }}
-                className="text-[10px] text-blue-200"
-                inputClassName="text-[10px] text-gray-900 bg-white"
-              />
-              <button
-                onClick={() => removeRoleFromActivity(activity.id, rid)}
-                title="Remove role"
-                className="ml-0.5 hidden text-[9px] text-blue-300/60 hover:text-red-300 group-hover/role:inline"
-              >
-                ×
-              </button>
-            </span>
-          ))}
-          {!addingRole ? (
-            <button
-              onClick={() => setAddingRole(true)}
-              className="rounded-full border border-dashed border-white/20 px-2 py-0.5 text-[9px] text-white/40 hover:border-white/40 hover:text-white/70 transition-colors"
-            >
-              + Role
-            </button>
-          ) : (
-            <input
-              ref={roleInputRef}
-              value={roleInput}
-              onChange={(e) => setRoleInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  const name = roleInput.trim();
-                  if (name) {
-                    // Check if role exists, reuse if so
-                    const existing = scaffoldData ? Object.entries(scaffoldData.elements.roles).find(([, r]) => (r as any).name?.toLowerCase() === name.toLowerCase()) : null;
-                    const rid = existing ? existing[0] : addRole(name);
-                    if (rid) addRoleToActivity(activity.id, rid);
-                  }
-                  setRoleInput("");
-                  setAddingRole(false);
-                }
-                if (e.key === "Escape") { setRoleInput(""); setAddingRole(false); }
-              }}
-              onBlur={() => {
-                const name = roleInput.trim();
-                if (name) {
-                  const existing = scaffoldData ? Object.entries(scaffoldData.elements.roles).find(([, r]) => (r as any).name?.toLowerCase() === name.toLowerCase()) : null;
-                  const rid = existing ? existing[0] : addRole(name);
-                  if (rid) addRoleToActivity(activity.id, rid);
-                }
-                setRoleInput("");
-                setAddingRole(false);
-              }}
-              placeholder="Role name…"
-              className="rounded-full border border-white/30 bg-white/10 px-2 py-0.5 text-[10px] text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-blue-300/50 w-24"
-            />
-          )}
-        </div>
-      </div>
+      {/* Participating Stakeholders — aggregated from all capabilities' PPIT roleIds */}
+      {(() => {
+        // Read from the store's scaffoldData directly for freshness after mutations
+        const storeAct = scaffoldData?.elements.activities[activity.id] ?? activity;
+        const ppitMap = (storeAct as unknown as Record<string, unknown>).capabilityPPIT as Record<string, { roleIds?: string[] }> | undefined;
+        const capIds = (storeAct as any).requiresCapabilityIds ?? (storeAct as any).enabledByCapabilityIds ?? [];
+        const aggregatedRoleIds = new Set<string>();
+        if (ppitMap) {
+          for (const capId of capIds) {
+            const capPpit = ppitMap[capId];
+            if (capPpit?.roleIds) capPpit.roleIds.forEach((rid: string) => aggregatedRoleIds.add(rid));
+          }
+        }
+        // Fallback to activity-level performedByRoleIds if no PPIT roles found
+        if (aggregatedRoleIds.size === 0) {
+          ((storeAct as any).performedByRoleIds ?? []).forEach((rid: string) => aggregatedRoleIds.add(rid));
+        }
+        const roleArr = Array.from(aggregatedRoleIds);
+        if (roleArr.length === 0) return null;
+        const roles = scaffoldData?.elements.roles ?? scaffold.elements.roles;
+        return (
+          <>
+            <div className="my-2 border-t border-dashed border-white/15" />
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-[9px] font-semibold uppercase tracking-widest text-white/50">
+                Participating Stakeholders
+              </span>
+              <div className="flex flex-wrap justify-center gap-1">
+                {roleArr.map((rid) => (
+                  <span key={rid} className="rounded-full bg-blue-500/20 px-2 py-0.5 text-[10px] text-blue-200">
+                    {roles[rid]?.name ?? humanizeId(rid)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </>
+        );
+      })()}
 
       {/* Metrics */}
       {metricsMinH > 0 && (
