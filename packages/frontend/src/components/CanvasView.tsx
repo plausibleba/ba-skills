@@ -183,12 +183,14 @@ export function CanvasView() {
           />
         )}
 
-        {/* ── Constraint DAG overlay ── */}
+        {/* ── Constraint DAG modal ── */}
         {constraintDAGOpen && topologyView && (
           <ConstraintDAGOverlay
             columns={canvasViewModel.columns}
             topologyView={topologyView}
             bindingActivityIds={bindingActivityIds}
+            scaffoldData={scaffoldData}
+            onClose={toggleConstraintDAG}
           />
         )}
 
