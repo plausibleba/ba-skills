@@ -129,14 +129,47 @@ export function ConstraintDAGOverlay({
   } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  // Filter edges to current VS
-  const edges = topologyView.edges.filter(
-    e => vsActivitySet.has(e.sourceActivityId) && vsActivitySet.has(e.targetActivityId)
-  );
+  // Filter edges to current VS, then deduplicate bidirectional pairs.
+  // Shared-resource edges (role, capability, etc.) are symmetric — merge A→B and B→A
+  // into a single undirected edge. Only outcomeAdjacency is truly directed.
+  const mergedEdges = (() => {
+    const vsEdges = topologyView.edges.filter(
+      e => vsActivitySet.has(e.sourceActivityId) && vsActivitySet.has(e.targetActivityId)
+    );
+    const edgeMap = new Map<string, { sourceActivityId: string; targetActivityId: string; basis: TopologyBasis[]; directed: boolean }>();
+    for (const e of vsEdges) {
+      // Canonical key — always lower-id first for undirected, exact order for directed
+      const hasDirected = e.basis.includes("outcomeAdjacency");
+      const undirectedBases = e.basis.filter(b => b !== "outcomeAdjacency");
+      // Add directed edge (outcomeAdjacency) as-is
+      if (hasDirected) {
+        const dKey = `d:${e.sourceActivityId}→${e.targetActivityId}`;
+        if (!edgeMap.has(dKey)) {
+          edgeMap.set(dKey, { sourceActivityId: e.sourceActivityId, targetActivityId: e.targetActivityId, basis: ["outcomeAdjacency"], directed: true });
+        }
+      }
+      // Merge undirected bases into canonical pair
+      if (undirectedBases.length > 0) {
+        const [a, b] = e.sourceActivityId < e.targetActivityId
+          ? [e.sourceActivityId, e.targetActivityId]
+          : [e.targetActivityId, e.sourceActivityId];
+        const uKey = `u:${a}↔${b}`;
+        const existing = edgeMap.get(uKey);
+        if (existing) {
+          for (const basis of undirectedBases) {
+            if (!existing.basis.includes(basis)) existing.basis.push(basis);
+          }
+        } else {
+          edgeMap.set(uKey, { sourceActivityId: a, targetActivityId: b, basis: [...undirectedBases], directed: false });
+        }
+      }
+    }
+    return [...edgeMap.values()];
+  })();
 
   // Collect active bases
   const activeBases = new Set<TopologyBasis>();
-  edges.forEach(e => e.basis.forEach(b => activeBases.add(b)));
+  mergedEdges.forEach(e => e.basis.forEach(b => activeBases.add(b)));
 
   function activityName(actId: string): string {
     return scaffoldData.elements.activities[actId]?.name ?? actId;
@@ -229,7 +262,7 @@ export function ConstraintDAGOverlay({
           <div>
             <h3 className="text-sm font-semibold text-gray-800">Activity Constraint Graph</h3>
             <p className="text-[10px] text-gray-400 mt-0.5">
-              {edges.length} coupling edge{edges.length !== 1 ? "s" : ""} across {activityIds.length} activities
+              {mergedEdges.length} coupling edge{mergedEdges.length !== 1 ? "s" : ""} across {activityIds.length} activities
               <span className="ml-2 text-gray-300">·</span>
               <span className="ml-2">Drag nodes to rearrange</span>
             </p>
@@ -272,7 +305,7 @@ export function ConstraintDAGOverlay({
             </defs>
 
             {/* Edges */}
-            {edges.map((edge, i) => {
+            {mergedEdges.map((edge, i) => {
               const si = activityIndexMap.get(edge.sourceActivityId);
               const ti = activityIndexMap.get(edge.targetActivityId);
               if (si === undefined || ti === undefined) return null;
@@ -308,6 +341,13 @@ export function ConstraintDAGOverlay({
               const endY = tgt.y - Math.sin(angle) * (NODE_H / 2 + 2);
               const path = `M ${src.x} ${src.y} Q ${cpx} ${cpy}, ${endX} ${endY}`;
 
+              // Build a TopologyEdge-shaped object for the tooltip
+              const tooltipEdge: TopologyEdge = {
+                sourceActivityId: edge.sourceActivityId,
+                targetActivityId: edge.targetActivityId,
+                basis: edge.basis,
+              };
+
               return (
                 <g key={i}>
                   {/* Invisible wider hit area for hover */}
@@ -317,11 +357,11 @@ export function ConstraintDAGOverlay({
                     stroke="transparent"
                     strokeWidth={14}
                     style={{ cursor: "pointer" }}
-                    onPointerEnter={ev => handleEdgeEnter(ev, edge)}
+                    onPointerEnter={ev => handleEdgeEnter(ev, tooltipEdge)}
                     onPointerMove={handleEdgeMove}
                     onPointerLeave={handleEdgeLeave}
                   />
-                  {/* Visible edge */}
+                  {/* Visible edge — arrow only for directed (sequential) edges */}
                   <path
                     d={path}
                     fill="none"
@@ -329,7 +369,7 @@ export function ConstraintDAGOverlay({
                     strokeWidth={isBinding ? 2.5 : 1.5}
                     strokeDasharray={style.dash}
                     opacity={isBinding ? 0.85 : 0.5}
-                    markerEnd={`url(#dag-arrow-${basis})`}
+                    markerEnd={edge.directed ? `url(#dag-arrow-${basis})` : undefined}
                     style={{ pointerEvents: "none" }}
                   />
                 </g>
@@ -427,7 +467,9 @@ export function ConstraintDAGOverlay({
               }}
             >
               <div className="text-[10px] font-semibold text-gray-700 mb-1">
-                {activityName(tooltip.edge.sourceActivityId)} → {activityName(tooltip.edge.targetActivityId)}
+                {activityName(tooltip.edge.sourceActivityId)}
+                {tooltip.edge.basis.length === 1 && tooltip.edge.basis[0] === "outcomeAdjacency" ? " → " : " ↔ "}
+                {activityName(tooltip.edge.targetActivityId)}
               </div>
               <div className="flex flex-col gap-1">
                 {tooltip.edge.basis.map(b => {
