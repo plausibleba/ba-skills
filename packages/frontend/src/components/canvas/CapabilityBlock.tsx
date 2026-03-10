@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { useState, useRef, useEffect } from "react";
 import type { ScaffoldData, ScaffoldActivity } from "../../types.ts";
 import type { PPITLayer } from "./ppit.ts";
 import { PPIT_LAYERS } from "./ppit.ts";
@@ -12,6 +13,52 @@ interface CapPPIT {
   activities: string[];
   informationObjectIds: string[];
   technologyAppIds: string[];
+}
+
+/* ── Mini add button — compact inline add for PPIT chips ──────────── */
+
+function MiniAddButton({ placeholder, chipClass, onAdd }: {
+  placeholder: string;
+  chipClass: string;
+  onAdd: (name: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (open && ref.current) ref.current.focus(); }, [open]);
+
+  if (!open) {
+    return (
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+        className={`rounded-full border border-dashed px-1.5 py-0.5 text-[9px] opacity-60 hover:opacity-100 transition-opacity ${chipClass}`}
+      >+</button>
+    );
+  }
+  return (
+    <input
+      ref={ref}
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => {
+        e.stopPropagation();
+        if (e.key === "Enter") {
+          const n = value.trim();
+          if (n) onAdd(n);
+          setValue(""); setOpen(false);
+        }
+        if (e.key === "Escape") { setValue(""); setOpen(false); }
+      }}
+      onBlur={() => {
+        const n = value.trim();
+        if (n) onAdd(n);
+        setValue(""); setOpen(false);
+      }}
+      placeholder={placeholder}
+      className="rounded-full border border-gray-300 px-1.5 py-0.5 text-[9px] text-gray-700 w-20 focus:outline-none focus:ring-1 focus:ring-vcc-300"
+    />
+  );
 }
 
 /* ── Badge Counts (compact R3 A5 I2 T3 indicators) ────────────────── */
@@ -55,7 +102,8 @@ export function CapabilityBlock({
   ppitToggles: Record<PPITLayer, boolean>;
   isFirst?: boolean;
 }) {
-  const { updateCapabilityName } = useCanvasStore();
+  const { updateCapabilityName, addInfoObjectToCapability, removeInfoObjectFromCapability, addTechAppToCapability, removeTechAppFromCapability } = useCanvasStore();
+  const activityId = activity.id;
   const cap = scaffold.elements.capabilities[capabilityId];
   const anyToggle = PPIT_LAYERS.some((l) => ppitToggles[l]);
 
@@ -80,33 +128,29 @@ export function CapabilityBlock({
       : [activity.name]
     : [];
 
-  const infoObjs = ppitToggles.concepts
+  // Resolve Info Objects — keep IDs for add/remove
+  const infoObjIds: string[] = ppitToggles.concepts
     ? capPPIT
-      ? (capPPIT.informationObjectIds ?? []).map((iid) => {
-          const el = (scaffold.elements as Record<string, Record<string, { name?: string }>>).informationObjects;
-          return el?.[iid]?.name ?? humanizeId(iid);
-        })
+      ? (capPPIT.informationObjectIds ?? [])
       : ((activityRec.informationObjectIds as string[] | undefined) ?? [])
-          .map((iid) => {
-            const el = (scaffold.elements as Record<string, Record<string, { name?: string }>>).informationObjects;
-            return el?.[iid]?.name ?? humanizeId(iid);
-          })
     : [];
+  const resolveInfoName = (iid: string) => {
+    const el = (scaffold.elements as Record<string, Record<string, { name?: string }>>).informationObjects;
+    return el?.[iid]?.name ?? humanizeId(iid);
+  };
 
-  const techApps = ppitToggles.applications
+  // Resolve Tech Apps — keep IDs for add/remove
+  const techAppIds: string[] = ppitToggles.applications
     ? capPPIT
-      ? (capPPIT.technologyAppIds ?? []).map((tid) => {
-          const el = (scaffold.elements as Record<string, Record<string, { name?: string }>>).technologyApps;
-          return el?.[tid]?.name ?? humanizeId(tid);
-        })
+      ? (capPPIT.technologyAppIds ?? [])
       : ((activityRec.technologyAppIds as string[] | undefined) ?? [])
-          .map((tid) => {
-            const el = (scaffold.elements as Record<string, Record<string, { name?: string }>>).technologyApps;
-            return el?.[tid]?.name ?? humanizeId(tid);
-          })
     : [];
+  const resolveTechName = (tid: string) => {
+    const el = (scaffold.elements as Record<string, Record<string, { name?: string }>>).technologyApps;
+    return el?.[tid]?.name ?? humanizeId(tid);
+  };
 
-  const hasContent = roles.length > 0 || activities.length > 0 || infoObjs.length > 0 || techApps.length > 0;
+  const hasContent = roles.length > 0 || activities.length > 0 || infoObjIds.length > 0 || techAppIds.length > 0;
 
   const capDescription = (cap as Record<string, unknown> | undefined)?.description as string | undefined;
 
@@ -167,25 +211,45 @@ export function CapabilityBlock({
             </div>
           )}
 
-          {/* Information Objects — secondary chips */}
-          {infoObjs.length > 0 && (
+          {/* Information Objects — chips with add/remove */}
+          {ppitToggles.concepts && (
             <div className="flex flex-wrap gap-1">
-              {infoObjs.map((i) => (
-                <span key={i} className="rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] text-amber-700">
-                  {i}
+              {infoObjIds.map((iid) => (
+                <span key={iid} className="group/io inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] text-amber-700">
+                  {resolveInfoName(iid)}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removeInfoObjectFromCapability(activityId, capabilityId, iid); }}
+                    className="ml-0.5 hidden text-amber-400 hover:text-red-500 group-hover/io:inline"
+                    title="Remove"
+                  >×</button>
                 </span>
               ))}
+              <MiniAddButton
+                placeholder="Info object…"
+                chipClass="bg-amber-50 text-amber-600 border-amber-200"
+                onAdd={(name) => addInfoObjectToCapability(activityId, capabilityId, name)}
+              />
             </div>
           )}
 
-          {/* Technology — secondary chips */}
-          {techApps.length > 0 && (
+          {/* Technology — chips with add/remove */}
+          {ppitToggles.applications && (
             <div className="flex flex-wrap gap-1">
-              {techApps.map((t) => (
-                <span key={t} className="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] text-emerald-600">
-                  {t}
+              {techAppIds.map((tid) => (
+                <span key={tid} className="group/tech inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] text-emerald-600">
+                  {resolveTechName(tid)}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removeTechAppFromCapability(activityId, capabilityId, tid); }}
+                    className="ml-0.5 hidden text-emerald-400 hover:text-red-500 group-hover/tech:inline"
+                    title="Remove"
+                  >×</button>
                 </span>
               ))}
+              <MiniAddButton
+                placeholder="Tech app…"
+                chipClass="bg-emerald-50 text-emerald-600 border-emerald-200"
+                onAdd={(name) => addTechAppToCapability(activityId, capabilityId, name)}
+              />
             </div>
           )}
         </div>

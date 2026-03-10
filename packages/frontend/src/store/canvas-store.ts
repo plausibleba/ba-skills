@@ -74,6 +74,10 @@ interface CanvasState {
   addRole: (roleName: string) => string;
   removeRoleFromActivity: (activityId: string, roleId: string) => void;
   addRoleToActivity: (activityId: string, roleId: string) => void;
+  addInfoObjectToCapability: (activityId: string, capabilityId: string, name: string) => string;
+  removeInfoObjectFromCapability: (activityId: string, capabilityId: string, infoId: string) => void;
+  addTechAppToCapability: (activityId: string, capabilityId: string, name: string) => string;
+  removeTechAppFromCapability: (activityId: string, capabilityId: string, techId: string) => void;
 
   // Bundle save/load (D-092)
   saveFullBundle: () => Promise<void>;
@@ -728,6 +732,127 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         },
       },
     };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    if (selectedVsId) get().generateCanvasForVs(selectedVsId);
+  },
+
+  addInfoObjectToCapability: (activityId: string, capabilityId: string, name: string): string => {
+    const { scaffoldData, selectedVsId } = get();
+    if (!scaffoldData) return "";
+    const activity = scaffoldData.elements.activities[activityId];
+    if (!activity) return "";
+
+    const infoId = `io_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+    const newObj = { id: infoId, elementType: "InformationObject", name };
+
+    // Add to elements registry
+    const infoObjs = scaffoldData.elements.informationObjects ?? {};
+    const updatedElements = {
+      ...scaffoldData.elements,
+      informationObjects: { ...infoObjs, [infoId]: newObj },
+    };
+
+    // Add to capabilityPPIT if it exists on the activity
+    const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
+    if (ppitMap && ppitMap[capabilityId]) {
+      const capPpit = ppitMap[capabilityId];
+      const updatedPpit = { ...capPpit, informationObjectIds: [...(capPpit.informationObjectIds ?? []), infoId] };
+      const updatedActivity = { ...activity, capabilityPPIT: { ...ppitMap, [capabilityId]: updatedPpit } };
+      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity };
+    } else {
+      // Fall back to activity-level informationObjectIds
+      const actRec = activity as any;
+      const currentIds = actRec.informationObjectIds ?? [];
+      const updatedActivity = { ...activity, informationObjectIds: [...currentIds, infoId] };
+      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity as any };
+    }
+
+    const updated: ScaffoldData = { ...scaffoldData, elements: updatedElements };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    if (selectedVsId) get().generateCanvasForVs(selectedVsId);
+    return infoId;
+  },
+
+  removeInfoObjectFromCapability: (activityId: string, capabilityId: string, infoId: string) => {
+    const { scaffoldData, selectedVsId } = get();
+    if (!scaffoldData) return;
+    const activity = scaffoldData.elements.activities[activityId];
+    if (!activity) return;
+
+    const updatedElements = { ...scaffoldData.elements };
+    const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
+    if (ppitMap && ppitMap[capabilityId]) {
+      const capPpit = ppitMap[capabilityId];
+      const updatedPpit = { ...capPpit, informationObjectIds: (capPpit.informationObjectIds ?? []).filter((id: string) => id !== infoId) };
+      const updatedActivity = { ...activity, capabilityPPIT: { ...ppitMap, [capabilityId]: updatedPpit } };
+      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity };
+    } else {
+      const actRec = activity as any;
+      const currentIds = (actRec.informationObjectIds ?? []).filter((id: string) => id !== infoId);
+      const updatedActivity = { ...activity, informationObjectIds: currentIds };
+      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity as any };
+    }
+
+    const updated: ScaffoldData = { ...scaffoldData, elements: updatedElements };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    if (selectedVsId) get().generateCanvasForVs(selectedVsId);
+  },
+
+  addTechAppToCapability: (activityId: string, capabilityId: string, name: string): string => {
+    const { scaffoldData, selectedVsId } = get();
+    if (!scaffoldData) return "";
+    const activity = scaffoldData.elements.activities[activityId];
+    if (!activity) return "";
+
+    const techId = `tech_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+    const newApp = { id: techId, elementType: "TechnologyApp", name };
+
+    const techApps = (scaffoldData.elements as any).technologyApps ?? {};
+    const updatedElements = {
+      ...scaffoldData.elements,
+      technologyApps: { ...techApps, [techId]: newApp },
+    };
+
+    const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
+    if (ppitMap && ppitMap[capabilityId]) {
+      const capPpit = ppitMap[capabilityId];
+      const updatedPpit = { ...capPpit, technologyAppIds: [...(capPpit.technologyAppIds ?? []), techId] };
+      const updatedActivity = { ...activity, capabilityPPIT: { ...ppitMap, [capabilityId]: updatedPpit } };
+      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity };
+    } else {
+      const actRec = activity as any;
+      const currentIds = actRec.technologyAppIds ?? [];
+      const updatedActivity = { ...activity, technologyAppIds: [...currentIds, techId] };
+      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity as any };
+    }
+
+    const updated: ScaffoldData = { ...scaffoldData, elements: updatedElements };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    if (selectedVsId) get().generateCanvasForVs(selectedVsId);
+    return techId;
+  },
+
+  removeTechAppFromCapability: (activityId: string, capabilityId: string, techId: string) => {
+    const { scaffoldData, selectedVsId } = get();
+    if (!scaffoldData) return;
+    const activity = scaffoldData.elements.activities[activityId];
+    if (!activity) return;
+
+    const updatedElements = { ...scaffoldData.elements };
+    const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
+    if (ppitMap && ppitMap[capabilityId]) {
+      const capPpit = ppitMap[capabilityId];
+      const updatedPpit = { ...capPpit, technologyAppIds: (capPpit.technologyAppIds ?? []).filter((id: string) => id !== techId) };
+      const updatedActivity = { ...activity, capabilityPPIT: { ...ppitMap, [capabilityId]: updatedPpit } };
+      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity };
+    } else {
+      const actRec = activity as any;
+      const currentIds = (actRec.technologyAppIds ?? []).filter((id: string) => id !== techId);
+      const updatedActivity = { ...activity, technologyAppIds: currentIds };
+      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity as any };
+    }
+
+    const updated: ScaffoldData = { ...scaffoldData, elements: updatedElements };
     set({ scaffoldData: updated, scaffoldDirty: true });
     if (selectedVsId) get().generateCanvasForVs(selectedVsId);
   },
