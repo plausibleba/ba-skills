@@ -114,6 +114,7 @@ export function StageColumn({
         </div>
         {primary && (
           <StructurePane
+            activityId={primaryId}
             activity={primary}
             scaffold={scaffold}
             isOpen={structureOpen}

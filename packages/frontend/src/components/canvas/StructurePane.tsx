@@ -6,11 +6,13 @@ import { useCanvasStore } from "../../store/canvas-store.ts";
 /* ── Structure Pane — entry/exit states + metrics ──────────────────── */
 
 export function StructurePane({
+  activityId,
   activity,
   scaffold,
   isOpen,
   maxMetricRows,
 }: {
+  activityId: string;
   activity: ScaffoldActivity;
   scaffold: ScaffoldData;
   isOpen: boolean;
@@ -88,7 +90,7 @@ export function StructurePane({
       {/* Participating Stakeholders — aggregated from all capabilities' PPIT roleIds */}
       {(() => {
         // Read from the store's scaffoldData directly for freshness after mutations
-        const storeAct = scaffoldData?.elements.activities[activity.id] ?? activity;
+        const storeAct = scaffoldData?.elements.activities[activityId] ?? activity;
         const ppitMap = (storeAct as unknown as Record<string, unknown>).capabilityPPIT as Record<string, { roleIds?: string[] }> | undefined;
         const capIds = (storeAct as any).requiresCapabilityIds ?? (storeAct as any).enabledByCapabilityIds ?? [];
         const aggregatedRoleIds = new Set<string>();
