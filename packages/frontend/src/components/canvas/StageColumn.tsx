@@ -66,9 +66,9 @@ export function StageColumn({
 
   return (
     <div className="flex h-full w-[300px] flex-shrink-0 flex-col">
-      {/* Dark header — flat fill, strong contrast */}
+      {/* Dark header — flat fill, strong contrast — sticky so it stays visible on scroll */}
       <div
-        className={`rounded-t-lg border border-b-0 ${
+        className={`sticky top-0 z-10 rounded-t-lg border border-b-0 ${
           hasBinding
             ? "border-status-binding bg-status-binding"
             : "border-[#2D4A6B] bg-[#2D4A6B]"

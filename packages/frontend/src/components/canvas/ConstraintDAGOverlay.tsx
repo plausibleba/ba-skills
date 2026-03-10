@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import type { CanvasViewModel, TopologyView, TopologyBasis, ScaffoldData } from "../../types.ts";
+import { useState, useRef, useCallback, useEffect, type ReactNode } from "react";
+import type { CanvasViewModel, TopologyView, TopologyBasis, TopologyEdge, ScaffoldData } from "../../types.ts";
 
 // ─── Geometry ────────────────────────────────────────────────────────────────
 
@@ -129,6 +129,34 @@ export function ConstraintDAGOverlay({
     dragRef.current = null;
   }, []);
 
+  // Edge tooltip state
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    edge: TopologyEdge;
+  } | null>(null);
+
+  const handleEdgeEnter = useCallback((e: React.PointerEvent, edge: TopologyEdge) => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    setTooltip({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top - 12,
+      edge,
+    });
+  }, []);
+
+  const handleEdgeMove = useCallback((e: React.PointerEvent) => {
+    if (!tooltip) return;
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    setTooltip(prev => prev ? { ...prev, x: e.clientX - rect.left, y: e.clientY - rect.top - 12 } : null);
+  }, [tooltip]);
+
+  const handleEdgeLeave = useCallback(() => setTooltip(null), []);
+
   // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -167,7 +195,7 @@ export function ConstraintDAGOverlay({
         </div>
 
         {/* Graph */}
-        <div className="flex-1 overflow-auto bg-gray-50/30 p-4">
+        <div className="relative flex-1 overflow-auto bg-gray-50/30 p-4">
           <svg
             ref={svgRef}
             width={CANVAS_W}
@@ -231,16 +259,30 @@ export function ConstraintDAGOverlay({
               const path = `M ${src.x} ${src.y} Q ${cpx} ${cpy}, ${endX} ${endY}`;
 
               return (
-                <path
-                  key={i}
-                  d={path}
-                  fill="none"
-                  stroke={style.color}
-                  strokeWidth={isBinding ? 2.5 : 1.5}
-                  strokeDasharray={style.dash}
-                  opacity={isBinding ? 0.85 : 0.5}
-                  markerEnd={`url(#dag-arrow-${basis})`}
-                />
+                <g key={i}>
+                  {/* Invisible wider hit area for hover */}
+                  <path
+                    d={path}
+                    fill="none"
+                    stroke="transparent"
+                    strokeWidth={14}
+                    style={{ cursor: "pointer" }}
+                    onPointerEnter={ev => handleEdgeEnter(ev, edge)}
+                    onPointerMove={handleEdgeMove}
+                    onPointerLeave={handleEdgeLeave}
+                  />
+                  {/* Visible edge */}
+                  <path
+                    d={path}
+                    fill="none"
+                    stroke={style.color}
+                    strokeWidth={isBinding ? 2.5 : 1.5}
+                    strokeDasharray={style.dash}
+                    opacity={isBinding ? 0.85 : 0.5}
+                    markerEnd={`url(#dag-arrow-${basis})`}
+                    style={{ pointerEvents: "none" }}
+                  />
+                </g>
               );
             })}
 
@@ -322,6 +364,34 @@ export function ConstraintDAGOverlay({
               );
             })}
           </svg>
+
+          {/* Edge tooltip */}
+          {tooltip && (
+            <div
+              className="pointer-events-none absolute z-10 rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-lg"
+              style={{
+                left: tooltip.x,
+                top: tooltip.y,
+                transform: "translate(-50%, -100%)",
+                maxWidth: 260,
+              }}
+            >
+              <div className="text-[10px] font-semibold text-gray-700 mb-1">
+                {activityName(tooltip.edge.sourceActivityId)} → {activityName(tooltip.edge.targetActivityId)}
+              </div>
+              <div className="flex flex-col gap-0.5">
+                {tooltip.edge.basis.map(b => {
+                  const s = BASIS_STYLES[b];
+                  return (
+                    <div key={b} className="flex items-center gap-1.5">
+                      <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
+                      <span className="text-[10px] text-gray-500">{s.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Legend */}

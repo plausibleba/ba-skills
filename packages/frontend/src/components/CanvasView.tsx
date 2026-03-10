@@ -108,7 +108,7 @@ export function CanvasView() {
 
   return (
     <div className="flex h-full gap-0">
-      <div className="flex flex-1 flex-col gap-4 overflow-hidden pl-6 pt-4">
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto pl-6 pt-4">
         {/* Stub banner */}
         {isStub && (
           <div className="flex items-center gap-2 rounded-lg border border-vcc-100 bg-vcc-50/50 px-4 py-2">
