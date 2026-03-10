@@ -3,6 +3,7 @@ import type { PPITLayer } from "./ppit.ts";
 import { CapabilityBlock } from "./CapabilityBlock.tsx";
 import { TransformationPane } from "./TransformationPane.tsx";
 import { useCanvasStore } from "../../store/canvas-store.ts";
+import { AddItemInput } from "./AddItemInput.tsx";
 
 /* ── Stage Card ────────────────────────────────────────────────────── */
 
@@ -30,7 +31,7 @@ export function StageCard({
   const activity = scaffold.elements.activities[activityId];
   if (!activity) return null;
 
-  const { userStoriesByActivity, setActivityStories } = useCanvasStore();
+  const { userStoriesByActivity, setActivityStories, addCapabilityToActivity, removeCapabilityFromActivity } = useCanvasStore();
 
   const caps = (activity as any).enabledByCapabilityIds ?? (activity as any).requiresCapabilityIds ?? [];
   const showSummary = false;
@@ -67,20 +68,31 @@ export function StageCard({
         </div>
       )}
 
-      {caps.length > 0 && (
-        <div className="space-y-1 px-2.5 py-2">
-          {caps.map((capId, idx) => (
+      <div className="space-y-1 px-2.5 py-2">
+        {caps.map((capId, idx) => (
+          <div key={capId} className="group/cap relative">
             <CapabilityBlock
-              key={capId}
               capabilityId={capId}
               scaffold={scaffold}
               activity={activity}
               ppitToggles={ppitToggles}
               isFirst={idx === 0}
             />
-          ))}
-        </div>
-      )}
+            {/* Remove capability button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); removeCapabilityFromActivity(activityId, capId); }}
+              title="Remove capability"
+              className="absolute -right-1 -top-1 z-10 hidden h-4 w-4 items-center justify-center rounded-full bg-red-100 text-[9px] text-red-500 hover:bg-red-200 group-hover/cap:flex"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+        <AddItemInput
+          label="Capability"
+          onAdd={(name) => addCapabilityToActivity(activityId, name)}
+        />
+      </div>
 
       {/* Transformation pane: friction, controls (future: painpoints, ideas, requirements) */}
       <TransformationPane

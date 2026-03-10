@@ -26,6 +26,7 @@ export function StageColumn({
   analyticsOpen,
   onFrictionClick,
   maxMetricRows,
+  onRemoveActivity,
 }: {
   column: CanvasColumn;
   scaffold: ScaffoldData;
@@ -40,6 +41,7 @@ export function StageColumn({
   analyticsOpen: boolean;
   onFrictionClick: (activityId: string) => void;
   maxMetricRows: number;
+  onRemoveActivity?: () => void;
 }) {
   const { updateActivityName } = useCanvasStore();
   const fCnt = column.activityIds.reduce(
@@ -78,6 +80,15 @@ export function StageColumn({
               <span className="rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[10px] font-mono text-white/80 backdrop-blur-sm">
                 {fCnt} obs
               </span>
+            )}
+            {onRemoveActivity && (
+              <button
+                onClick={onRemoveActivity}
+                title="Remove this stage"
+                className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5 text-[9px] font-semibold text-white/50 hover:bg-red-500/40 hover:text-white transition-colors"
+              >
+                ×
+              </button>
             )}
           </div>
         </div>

@@ -66,6 +66,15 @@ interface CanvasState {
   updateVsDescription: (vsId: string, description: string) => void;
   updateOutcomeName: (outcomeId: string, name: string) => void;
 
+  // Add/remove actions (D-093: Phase 2 Editable Canvas)
+  addCapabilityToActivity: (activityId: string, capabilityName: string) => string;
+  removeCapabilityFromActivity: (activityId: string, capabilityId: string) => void;
+  addActivity: (vsId: string, activityName: string, afterActivityId?: string) => string;
+  removeActivity: (vsId: string, activityId: string) => void;
+  addRole: (roleName: string) => string;
+  removeRoleFromActivity: (activityId: string, roleId: string) => void;
+  addRoleToActivity: (activityId: string, roleId: string) => void;
+
   // Bundle save/load (D-092)
   saveFullBundle: () => Promise<void>;
 }
@@ -522,6 +531,200 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         outcomes: {
           ...scaffoldData.elements.outcomes,
           [outcomeId]: { ...outcome, name },
+        },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    if (selectedVsId) get().generateCanvasForVs(selectedVsId);
+  },
+
+  // ── Add/remove actions (D-093: Phase 2) ──────────────────────────────────────
+
+  addCapabilityToActivity: (activityId: string, capabilityName: string): string => {
+    const { scaffoldData, selectedVsId } = get();
+    if (!scaffoldData) return "";
+    const activity = scaffoldData.elements.activities[activityId];
+    if (!activity) return "";
+
+    const capId = `cap_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+    const newCap = { id: capId, elementType: "Capability", name: capabilityName };
+
+    // Add to elements registry + activity's capability list
+    const capIds = [...((activity as any).requiresCapabilityIds ?? (activity as any).enabledByCapabilityIds ?? []), capId];
+    const updatedActivity = { ...activity, requiresCapabilityIds: capIds };
+
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        capabilities: { ...scaffoldData.elements.capabilities, [capId]: newCap },
+        activities: { ...scaffoldData.elements.activities, [activityId]: updatedActivity },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    if (selectedVsId) get().generateCanvasForVs(selectedVsId);
+    return capId;
+  },
+
+  removeCapabilityFromActivity: (activityId: string, capabilityId: string) => {
+    const { scaffoldData, selectedVsId } = get();
+    if (!scaffoldData) return;
+    const activity = scaffoldData.elements.activities[activityId];
+    if (!activity) return;
+
+    const currentCaps = (activity as any).requiresCapabilityIds ?? (activity as any).enabledByCapabilityIds ?? [];
+    const capIds = currentCaps.filter((id: string) => id !== capabilityId);
+    const updatedActivity = { ...activity, requiresCapabilityIds: capIds };
+
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        activities: { ...scaffoldData.elements.activities, [activityId]: updatedActivity },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    if (selectedVsId) get().generateCanvasForVs(selectedVsId);
+  },
+
+  addActivity: (vsId: string, activityName: string, afterActivityId?: string): string => {
+    const { scaffoldData } = get();
+    if (!scaffoldData) return "";
+    const vs = scaffoldData.elements.valueStreams[vsId];
+    if (!vs) return "";
+
+    const actId = `act_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+    const preOutId = `out_${actId}_pre`;
+    const postOutId = `out_${actId}_post`;
+
+    const newActivity = {
+      id: actId,
+      elementType: "Activity",
+      name: activityName,
+      performedByRoleIds: [],
+      preOutcomeId: preOutId,
+      postOutcomeId: postOutId,
+      requiresCapabilityIds: [],
+      metricIds: [],
+      controlIds: [],
+    };
+    const newPreOutcome = { id: preOutId, elementType: "Outcome", name: `${activityName} — Entry` };
+    const newPostOutcome = { id: postOutId, elementType: "Outcome", name: `${activityName} — Exit` };
+
+    // Insert into VS activityIds at the right position
+    const currentIds = [...(vs.activityIds ?? [])];
+    if (afterActivityId) {
+      const idx = currentIds.indexOf(afterActivityId);
+      if (idx >= 0) {
+        currentIds.splice(idx + 1, 0, actId);
+      } else {
+        currentIds.push(actId);
+      }
+    } else {
+      currentIds.push(actId);
+    }
+
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        activities: { ...scaffoldData.elements.activities, [actId]: newActivity as any },
+        outcomes: {
+          ...scaffoldData.elements.outcomes,
+          [preOutId]: newPreOutcome,
+          [postOutId]: newPostOutcome,
+        },
+        valueStreams: {
+          ...scaffoldData.elements.valueStreams,
+          [vsId]: { ...vs, activityIds: currentIds },
+        },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    get().generateCanvasForVs(vsId);
+    _refreshNetworkNodes(get, set, updated);
+    return actId;
+  },
+
+  removeActivity: (vsId: string, activityId: string) => {
+    const { scaffoldData } = get();
+    if (!scaffoldData) return;
+    const vs = scaffoldData.elements.valueStreams[vsId];
+    if (!vs) return;
+
+    const currentIds = vs.activityIds ?? [];
+    if (currentIds.length <= 1) return; // Never remove the last activity
+
+    const updatedIds = currentIds.filter((id) => id !== activityId);
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        valueStreams: {
+          ...scaffoldData.elements.valueStreams,
+          [vsId]: { ...vs, activityIds: updatedIds },
+        },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    get().generateCanvasForVs(vsId);
+    _refreshNetworkNodes(get, set, updated);
+  },
+
+  addRole: (roleName: string): string => {
+    const { scaffoldData } = get();
+    if (!scaffoldData) return "";
+
+    const roleId = `role_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+    const newRole = { id: roleId, elementType: "Role", name: roleName };
+
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        roles: { ...scaffoldData.elements.roles, [roleId]: newRole },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    return roleId;
+  },
+
+  removeRoleFromActivity: (activityId: string, roleId: string) => {
+    const { scaffoldData, selectedVsId } = get();
+    if (!scaffoldData) return;
+    const activity = scaffoldData.elements.activities[activityId];
+    if (!activity) return;
+
+    const roleIds = (activity.performedByRoleIds ?? []).filter((id) => id !== roleId);
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        activities: {
+          ...scaffoldData.elements.activities,
+          [activityId]: { ...activity, performedByRoleIds: roleIds },
+        },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    if (selectedVsId) get().generateCanvasForVs(selectedVsId);
+  },
+
+  addRoleToActivity: (activityId: string, roleId: string) => {
+    const { scaffoldData, selectedVsId } = get();
+    if (!scaffoldData) return;
+    const activity = scaffoldData.elements.activities[activityId];
+    if (!activity) return;
+
+    const current = activity.performedByRoleIds ?? [];
+    if (current.includes(roleId)) return; // Already assigned
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        activities: {
+          ...scaffoldData.elements.activities,
+          [activityId]: { ...activity, performedByRoleIds: [...current, roleId] },
         },
       },
     };

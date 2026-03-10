@@ -17,7 +17,7 @@ import { useCanvasControls } from "./canvas/useCanvasControls.ts";
 /* ── Canvas View — orchestrator ────────────────────────────────────── */
 
 export function CanvasView() {
-  const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories, updateVsName, updateVsDescription } =
+  const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories, updateVsName, updateVsDescription, addActivity, removeActivity } =
     useCanvasStore();
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
     null,
@@ -190,10 +190,30 @@ export function CanvasView() {
                 analyticsOpen={analyticsOpen}
                 onFrictionClick={setSelectedActivityId}
                 maxMetricRows={maxMetricRows}
+                onRemoveActivity={canvasViewModel.columns.length > 1
+                  ? () => removeActivity(canvasViewModel.valueStreamId, col.activityIds[0])
+                  : undefined}
               />
               {i < canvasViewModel.columns.length - 1 && <FlowChevron />}
             </div>
           ))}
+          {/* Add Stage button */}
+          <div className="flex w-[120px] flex-shrink-0 items-start justify-center pt-8">
+            <button
+              onClick={() => {
+                const lastCol = canvasViewModel.columns[canvasViewModel.columns.length - 1];
+                const afterId = lastCol?.activityIds[0];
+                addActivity(canvasViewModel.valueStreamId, "New Stage", afterId);
+              }}
+              className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-6 text-gray-400 hover:border-vcc-400 hover:text-vcc-600 transition-colors"
+              title="Add a new stage"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="text-[10px] font-medium">Add Stage</span>
+            </button>
+          </div>
         </div>
 
         {/* ── Validation findings ── */}
