@@ -73,6 +73,7 @@ export function StageCard({
           <div key={capId} className="group/cap relative">
             <CapabilityBlock
               capabilityId={capId}
+              activityId={activityId}
               scaffold={scaffold}
               activity={activity}
               ppitToggles={ppitToggles}

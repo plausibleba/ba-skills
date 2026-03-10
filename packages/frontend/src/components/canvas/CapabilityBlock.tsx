@@ -91,19 +91,20 @@ function CapabilityBadgeCounts({ ppit }: { ppit: CapPPIT | null }) {
 
 export function CapabilityBlock({
   capabilityId,
+  activityId,
   scaffold,
   activity,
   ppitToggles,
   isFirst = false,
 }: {
   capabilityId: string;
+  activityId: string;
   scaffold: ScaffoldData;
   activity: ScaffoldActivity;
   ppitToggles: Record<PPITLayer, boolean>;
   isFirst?: boolean;
 }) {
   const { updateCapabilityName, addInfoObjectToCapability, removeInfoObjectFromCapability, addTechAppToCapability, removeTechAppFromCapability, updatePpitActivity, addPpitActivity, removePpitActivity, addRoleToCapability, removeRoleFromCapability, addRole, scaffoldData } = useCanvasStore();
-  const activityId = activity.id;
   const cap = scaffold.elements.capabilities[capabilityId];
   const anyToggle = PPIT_LAYERS.some((l) => ppitToggles[l]);
 
