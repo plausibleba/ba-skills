@@ -1,0 +1,2563 @@
+{
+  "bundleVersion": "1.0",
+  "createdAt": "2026-03-11T20:30:38.509Z",
+  "scaffold": {
+    "schemaVersion": "1.0.0",
+    "scaffoldId": "scaffold_filtration_company",
+    "name": "Filtration Company — Operating Model",
+    "description": "End-to-end value streams for water filtration systems sales, delivery, and service operations",
+    "createdAt": "2024-01-09T10:00:00.000Z",
+    "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "elements": {
+      "valueStreams": {
+        "vs_lead_to_customer": {
+          "name": "Lead to Customer",
+          "description": "End-to-end flow from identifying prospects through closing sales across customer segments",
+          "activityIds": [
+            "act_identify_prospects",
+            "act_gather_intelligence",
+            "act_engage_customer",
+            "act_develop_proposal",
+            "act_convert_order"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_sales_representative",
+          "elementType": "ValueStream"
+        },
+        "vs_order_to_delivery": {
+          "name": "Order to Delivery",
+          "description": "End-to-end flow from order receipt through product delivery to end customers",
+          "activityIds": [
+            "act_process_order",
+            "act_allocate_inventory",
+            "act_plan_distribution",
+            "act_execute_delivery",
+            "act_support_installation"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_distribution_coordinator",
+          "elementType": "ValueStream"
+        },
+        "vs_partner_to_productive": {
+          "name": "Partner to Productive",
+          "description": "End-to-end flow from partner onboarding through enabling proactive selling capabilities",
+          "activityIds": [
+            "act_onboard_partner",
+            "act_train_products",
+            "act_provision_tools",
+            "act_enable_performance",
+            "act_manage_relationship"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_partner_manager",
+          "elementType": "ValueStream"
+        },
+        "vs_install_to_maintenance": {
+          "name": "Install to Maintenance",
+          "description": "End-to-end flow from initial installation through ongoing cartridge replacement and maintenance",
+          "activityIds": [
+            "act_complete_installation",
+            "act_schedule_maintenance",
+            "act_notify_replacement",
+            "act_deliver_service",
+            "act_recognize_revenue"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_service_technician",
+          "elementType": "ValueStream"
+        },
+        "vs_territory_to_performance": {
+          "name": "Territory to Performance",
+          "description": "End-to-end flow from territory assignment through sales performance measurement and optimization",
+          "activityIds": [
+            "act_plan_territory",
+            "act_optimize_routes",
+            "act_execute_activities",
+            "act_track_performance",
+            "act_calculate_commission"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "role_sales_manager",
+          "elementType": "ValueStream"
+        }
+      },
+      "activities": {
+        "act_identify_prospects": {
+          "name": "Identify Prospects",
+          "preOutcomeId": "outcome_prospect_identification_initiated",
+          "postOutcomeId": "outcome_prospect_identification_complete",
+          "nextActivityId": "act_gather_intelligence",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_data_management",
+            "cap_market_intelligence"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative"
+          ],
+          "informationObjectIds": [
+            "io_prospect_list",
+            "io_territory_plan",
+            "io_market_data"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Research potential customer profiles",
+                "Assess customer fit criteria",
+                "Prioritize prospect opportunities"
+              ],
+              "informationObjectIds": [
+                "io_prospect_list",
+                "io_territory_plan"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Aggregate territory demand signals",
+                "Reconcile prospect data sources",
+                "Update territory assignment records"
+              ],
+              "informationObjectIds": [
+                "io_market_data",
+                "io_territory_plan"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm",
+                "tech_netsuite_erp"
+              ]
+            },
+            "cap_market_intelligence": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Analyze market trends and opportunities",
+                "Identify competitive landscape",
+                "Assess territory potential"
+              ],
+              "informationObjectIds": [
+                "io_market_data",
+                "io_prospect_list"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_gather_intelligence": {
+          "name": "Gather Intelligence",
+          "preOutcomeId": "outcome_prospect_identification_complete",
+          "postOutcomeId": "outcome_pre_visit_intelligence_complete",
+          "nextActivityId": "act_engage_customer",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_data_management",
+            "cap_stakeholder_communication"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative",
+            "role_customer_care_representative"
+          ],
+          "informationObjectIds": [
+            "io_customer_profile",
+            "io_intelligence_report",
+            "io_market_data"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_sales_representative",
+                "role_customer_care_representative"
+              ],
+              "activities": [
+                "Review customer history and preferences",
+                "Assess relationship health score",
+                "Plan engagement approach"
+              ],
+              "informationObjectIds": [
+                "io_customer_profile",
+                "io_intelligence_report"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_customer_care_representative"
+              ],
+              "activities": [
+                "Consolidate data from multiple sources",
+                "Validate data accuracy",
+                "Update central records"
+              ],
+              "informationObjectIds": [
+                "io_market_data",
+                "io_customer_profile"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm",
+                "tech_netsuite_erp"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_customer_care_representative"
+              ],
+              "activities": [
+                "Coordinate with internal teams",
+                "Gather customer insights",
+                "Prepare intelligence briefings"
+              ],
+              "informationObjectIds": [
+                "io_intelligence_report",
+                "io_customer_profile"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite",
+                "tech_whatsapp_sms"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_engage_customer": {
+          "name": "Engage Customer",
+          "preOutcomeId": "outcome_pre_visit_intelligence_complete",
+          "postOutcomeId": "outcome_customer_engagement_complete",
+          "nextActivityId": "act_develop_proposal",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_stakeholder_communication",
+            "cap_product_knowledge"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative"
+          ],
+          "informationObjectIds": [
+            "io_meeting_notes",
+            "io_customer_requirements",
+            "io_product_catalog"
+          ],
+          "metricIds": [
+            "metric_sales_admin_time"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Conduct discovery meetings",
+                "Build customer rapport",
+                "Understand business needs"
+              ],
+              "informationObjectIds": [
+                "io_meeting_notes",
+                "io_customer_requirements"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Present value propositions",
+                "Facilitate stakeholder discussions",
+                "Address customer concerns"
+              ],
+              "informationObjectIds": [
+                "io_meeting_notes",
+                "io_product_catalog"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite",
+                "tech_whatsapp_sms"
+              ]
+            },
+            "cap_product_knowledge": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Demonstrate product capabilities",
+                "Explain technical specifications",
+                "Match solutions to requirements"
+              ],
+              "informationObjectIds": [
+                "io_product_catalog",
+                "io_customer_requirements"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_develop_proposal": {
+          "name": "Develop Proposal",
+          "preOutcomeId": "outcome_customer_engagement_complete",
+          "postOutcomeId": "outcome_proposal_development_complete",
+          "nextActivityId": "act_convert_order",
+          "requiresCapabilityIds": [
+            "cap_product_knowledge",
+            "cap_pricing_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative"
+          ],
+          "informationObjectIds": [
+            "io_proposal_document",
+            "io_pricing_sheet",
+            "io_customer_requirements"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_product_knowledge": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Configure product solutions",
+                "Validate technical requirements",
+                "Prepare solution specifications"
+              ],
+              "informationObjectIds": [
+                "io_proposal_document",
+                "io_customer_requirements"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            },
+            "cap_pricing_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Calculate pricing scenarios",
+                "Apply discount structures",
+                "Validate margin requirements"
+              ],
+              "informationObjectIds": [
+                "io_pricing_sheet",
+                "io_proposal_document"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp",
+                "tech_salesforce_crm"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Compile proposal data",
+                "Validate information accuracy",
+                "Archive proposal versions"
+              ],
+              "informationObjectIds": [
+                "io_proposal_document",
+                "io_pricing_sheet"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm",
+                "tech_google_suite"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_convert_order": {
+          "name": "Convert Order",
+          "preOutcomeId": "outcome_proposal_development_complete",
+          "postOutcomeId": "outcome_order_conversion_complete",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_order_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative"
+          ],
+          "informationObjectIds": [
+            "io_customer_order",
+            "io_contract_agreement",
+            "io_order_confirmation"
+          ],
+          "metricIds": [
+            "metric_crm_activity_logging"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Negotiate contract terms",
+                "Address final objections",
+                "Secure customer commitment"
+              ],
+              "informationObjectIds": [
+                "io_contract_agreement",
+                "io_customer_order"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            },
+            "cap_order_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Process order details",
+                "Validate order completeness",
+                "Submit order for fulfillment"
+              ],
+              "informationObjectIds": [
+                "io_customer_order",
+                "io_order_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp",
+                "tech_salesforce_crm"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Validate order data completeness",
+                "Reconcile pricing against contracts",
+                "Archive order records"
+              ],
+              "informationObjectIds": [
+                "io_customer_order",
+                "io_contract_agreement"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm",
+                "tech_netsuite_erp"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_process_order": {
+          "name": "Process Order",
+          "preOutcomeId": "outcome_order_processing_initiated",
+          "postOutcomeId": "outcome_order_processing_complete",
+          "nextActivityId": "act_allocate_inventory",
+          "requiresCapabilityIds": [
+            "cap_order_management",
+            "cap_data_management",
+            "cap_compliance_management"
+          ],
+          "performedByRoleIds": [
+            "role_order_processor"
+          ],
+          "informationObjectIds": [
+            "io_customer_order",
+            "io_order_confirmation",
+            "io_processing_record"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_order_management": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Validate order information",
+                "Check credit approval",
+                "Initialize order workflow"
+              ],
+              "informationObjectIds": [
+                "io_customer_order",
+                "io_order_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Synchronize order data",
+                "Update system records",
+                "Maintain data integrity"
+              ],
+              "informationObjectIds": [
+                "io_processing_record",
+                "io_customer_order"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp",
+                "tech_mulesoft"
+              ]
+            },
+            "cap_compliance_management": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Verify regulatory requirements",
+                "Check compliance standards",
+                "Document audit trail"
+              ],
+              "informationObjectIds": [
+                "io_processing_record",
+                "io_order_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_allocate_inventory": {
+          "name": "Allocate Inventory",
+          "preOutcomeId": "outcome_order_processing_complete",
+          "postOutcomeId": "outcome_inventory_allocation_complete",
+          "nextActivityId": "act_plan_distribution",
+          "requiresCapabilityIds": [
+            "cap_inventory_management",
+            "cap_data_management",
+            "cap_supply_chain_coordination"
+          ],
+          "performedByRoleIds": [
+            "role_order_processor"
+          ],
+          "informationObjectIds": [
+            "io_inventory_record",
+            "io_allocation_plan",
+            "io_stock_report"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_inventory_management": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Check inventory availability",
+                "Reserve stock allocation",
+                "Update inventory levels"
+              ],
+              "informationObjectIds": [
+                "io_inventory_record",
+                "io_allocation_plan"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Synchronize inventory data",
+                "Update allocation records",
+                "Maintain stock accuracy"
+              ],
+              "informationObjectIds": [
+                "io_stock_report",
+                "io_inventory_record"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp",
+                "tech_mulesoft"
+              ]
+            },
+            "cap_supply_chain_coordination": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Coordinate with warehouses",
+                "Schedule inventory movements",
+                "Optimize allocation priorities"
+              ],
+              "informationObjectIds": [
+                "io_allocation_plan",
+                "io_stock_report"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_plan_distribution": {
+          "name": "Plan Distribution",
+          "preOutcomeId": "outcome_inventory_allocation_complete",
+          "postOutcomeId": "outcome_distribution_planning_complete",
+          "nextActivityId": "act_execute_delivery",
+          "requiresCapabilityIds": [
+            "cap_supply_chain_coordination",
+            "cap_logistics_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_distribution_coordinator"
+          ],
+          "informationObjectIds": [
+            "io_distribution_plan",
+            "io_shipping_schedule",
+            "io_route_optimization"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_supply_chain_coordination": {
+              "roleIds": [
+                "role_distribution_coordinator"
+              ],
+              "activities": [
+                "Coordinate shipping schedules",
+                "Optimize delivery routes",
+                "Manage carrier relationships"
+              ],
+              "informationObjectIds": [
+                "io_distribution_plan",
+                "io_shipping_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp"
+              ]
+            },
+            "cap_logistics_management": {
+              "roleIds": [
+                "role_distribution_coordinator"
+              ],
+              "activities": [
+                "Plan delivery logistics",
+                "Schedule transportation",
+                "Optimize route efficiency"
+              ],
+              "informationObjectIds": [
+                "io_route_optimization",
+                "io_shipping_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_distribution_coordinator"
+              ],
+              "activities": [
+                "Consolidate shipping data",
+                "Update delivery schedules",
+                "Maintain logistics records"
+              ],
+              "informationObjectIds": [
+                "io_distribution_plan",
+                "io_route_optimization"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp",
+                "tech_mulesoft"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_execute_delivery": {
+          "name": "Execute Delivery",
+          "preOutcomeId": "outcome_distribution_planning_complete",
+          "postOutcomeId": "outcome_delivery_execution_complete",
+          "nextActivityId": "act_support_installation",
+          "requiresCapabilityIds": [
+            "cap_logistics_management",
+            "cap_stakeholder_communication",
+            "cap_performance_monitoring"
+          ],
+          "performedByRoleIds": [
+            "role_distribution_coordinator"
+          ],
+          "informationObjectIds": [
+            "io_delivery_confirmation",
+            "io_tracking_record",
+            "io_customer_notification"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_logistics_management": {
+              "roleIds": [
+                "role_distribution_coordinator"
+              ],
+              "activities": [
+                "Execute delivery operations",
+                "Track shipment progress",
+                "Manage delivery exceptions"
+              ],
+              "informationObjectIds": [
+                "io_delivery_confirmation",
+                "io_tracking_record"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_distribution_coordinator"
+              ],
+              "activities": [
+                "Notify customers of delivery",
+                "Coordinate with delivery teams",
+                "Handle delivery inquiries"
+              ],
+              "informationObjectIds": [
+                "io_customer_notification",
+                "io_tracking_record"
+              ],
+              "technologyAppIds": [
+                "tech_whatsapp_sms",
+                "tech_google_suite"
+              ]
+            },
+            "cap_performance_monitoring": {
+              "roleIds": [
+                "role_distribution_coordinator"
+              ],
+              "activities": [
+                "Monitor delivery performance",
+                "Track delivery metrics",
+                "Report delivery status"
+              ],
+              "informationObjectIds": [
+                "io_delivery_confirmation",
+                "io_tracking_record"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_support_installation": {
+          "name": "Support Installation",
+          "preOutcomeId": "outcome_delivery_execution_complete",
+          "postOutcomeId": "outcome_installation_support_complete",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_technical_support",
+            "cap_stakeholder_communication",
+            "cap_product_knowledge"
+          ],
+          "performedByRoleIds": [
+            "role_service_technician"
+          ],
+          "informationObjectIds": [
+            "io_installation_guide",
+            "io_support_record",
+            "io_completion_certificate"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_technical_support": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Provide installation guidance",
+                "Troubleshoot technical issues",
+                "Validate system operation"
+              ],
+              "informationObjectIds": [
+                "io_installation_guide",
+                "io_support_record"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Communicate with customers",
+                "Coordinate with installers",
+                "Document support interactions"
+              ],
+              "informationObjectIds": [
+                "io_support_record",
+                "io_completion_certificate"
+              ],
+              "technologyAppIds": [
+                "tech_whatsapp_sms",
+                "tech_google_suite"
+              ]
+            },
+            "cap_product_knowledge": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Apply product expertise",
+                "Explain system features",
+                "Provide usage training"
+              ],
+              "informationObjectIds": [
+                "io_installation_guide",
+                "io_completion_certificate"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_onboard_partner": {
+          "name": "Onboard Partner",
+          "preOutcomeId": "outcome_partner_onboarding_initiated",
+          "postOutcomeId": "outcome_partner_onboarding_complete",
+          "nextActivityId": "act_train_products",
+          "requiresCapabilityIds": [
+            "cap_partner_management",
+            "cap_stakeholder_communication",
+            "cap_compliance_management"
+          ],
+          "performedByRoleIds": [
+            "role_partner_manager"
+          ],
+          "informationObjectIds": [
+            "io_partner_agreement",
+            "io_onboarding_checklist",
+            "io_partner_profile"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_partner_management": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Establish partner agreements",
+                "Set partnership terms",
+                "Define performance expectations"
+              ],
+              "informationObjectIds": [
+                "io_partner_agreement",
+                "io_partner_profile"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Conduct partner orientation",
+                "Facilitate introductions",
+                "Establish communication channels"
+              ],
+              "informationObjectIds": [
+                "io_onboarding_checklist",
+                "io_partner_profile"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite",
+                "tech_whatsapp_sms"
+              ]
+            },
+            "cap_compliance_management": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Verify partner credentials",
+                "Ensure regulatory compliance",
+                "Document certification requirements"
+              ],
+              "informationObjectIds": [
+                "io_partner_agreement",
+                "io_onboarding_checklist"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_train_products": {
+          "name": "Train Products",
+          "preOutcomeId": "outcome_partner_onboarding_complete",
+          "postOutcomeId": "outcome_product_training_complete",
+          "nextActivityId": "act_provision_tools",
+          "requiresCapabilityIds": [
+            "cap_product_knowledge",
+            "cap_training_delivery",
+            "cap_performance_monitoring"
+          ],
+          "performedByRoleIds": [
+            "role_partner_manager"
+          ],
+          "informationObjectIds": [
+            "io_training_materials",
+            "io_certification_record",
+            "io_product_catalog"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_product_knowledge": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Deliver product training",
+                "Explain technical specifications",
+                "Demonstrate product features"
+              ],
+              "informationObjectIds": [
+                "io_training_materials",
+                "io_product_catalog"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            },
+            "cap_training_delivery": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Conduct training sessions",
+                "Assess learning outcomes",
+                "Provide hands-on practice"
+              ],
+              "informationObjectIds": [
+                "io_training_materials",
+                "io_certification_record"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            },
+            "cap_performance_monitoring": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Track training progress",
+                "Monitor certification status",
+                "Evaluate training effectiveness"
+              ],
+              "informationObjectIds": [
+                "io_certification_record",
+                "io_training_materials"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_provision_tools": {
+          "name": "Provision Tools",
+          "preOutcomeId": "outcome_product_training_complete",
+          "postOutcomeId": "outcome_sales_tool_provisioning_complete",
+          "nextActivityId": "act_enable_performance",
+          "requiresCapabilityIds": [
+            "cap_technology_provisioning",
+            "cap_data_management",
+            "cap_stakeholder_communication"
+          ],
+          "performedByRoleIds": [
+            "role_partner_manager"
+          ],
+          "informationObjectIds": [
+            "io_sales_tools",
+            "io_access_credentials",
+            "io_tool_inventory"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_technology_provisioning": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Deploy sales tools",
+                "Configure system access",
+                "Set up user accounts"
+              ],
+              "informationObjectIds": [
+                "io_sales_tools",
+                "io_access_credentials"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm",
+                "tech_disparate_tools"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Maintain tool inventory",
+                "Update access records",
+                "Synchronize tool data"
+              ],
+              "informationObjectIds": [
+                "io_tool_inventory",
+                "io_access_credentials"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm",
+                "tech_mulesoft"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Provide tool training",
+                "Communicate usage guidelines",
+                "Support tool adoption"
+              ],
+              "informationObjectIds": [
+                "io_sales_tools",
+                "io_tool_inventory"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite",
+                "tech_whatsapp_sms"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_enable_performance": {
+          "name": "Enable Performance",
+          "preOutcomeId": "outcome_sales_tool_provisioning_complete",
+          "postOutcomeId": "outcome_performance_enablement_complete",
+          "nextActivityId": "act_manage_relationship",
+          "requiresCapabilityIds": [
+            "cap_performance_monitoring",
+            "cap_training_delivery",
+            "cap_partner_management"
+          ],
+          "performedByRoleIds": [
+            "role_partner_manager"
+          ],
+          "informationObjectIds": [
+            "io_performance_metrics",
+            "io_coaching_plan",
+            "io_enablement_record"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_performance_monitoring": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Monitor partner performance",
+                "Track sales metrics",
+                "Identify improvement opportunities"
+              ],
+              "informationObjectIds": [
+                "io_performance_metrics",
+                "io_enablement_record"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            },
+            "cap_training_delivery": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Provide ongoing coaching",
+                "Deliver skill development",
+                "Conduct performance reviews"
+              ],
+              "informationObjectIds": [
+                "io_coaching_plan",
+                "io_performance_metrics"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            },
+            "cap_partner_management": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Develop partner capabilities",
+                "Set performance goals",
+                "Provide strategic guidance"
+              ],
+              "informationObjectIds": [
+                "io_coaching_plan",
+                "io_enablement_record"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_manage_relationship": {
+          "name": "Manage Relationship",
+          "preOutcomeId": "outcome_performance_enablement_complete",
+          "postOutcomeId": "outcome_relationship_management_complete",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_partner_management",
+            "cap_stakeholder_communication",
+            "cap_performance_monitoring"
+          ],
+          "performedByRoleIds": [
+            "role_partner_manager"
+          ],
+          "informationObjectIds": [
+            "io_relationship_record",
+            "io_partner_feedback",
+            "io_strategic_plan"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_partner_management": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Maintain strategic partnerships",
+                "Develop long-term relationships",
+                "Optimize partner value"
+              ],
+              "informationObjectIds": [
+                "io_relationship_record",
+                "io_strategic_plan"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Conduct regular check-ins",
+                "Gather partner feedback",
+                "Communicate strategic updates"
+              ],
+              "informationObjectIds": [
+                "io_partner_feedback",
+                "io_relationship_record"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite",
+                "tech_whatsapp_sms"
+              ]
+            },
+            "cap_performance_monitoring": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Evaluate relationship health",
+                "Monitor partnership ROI",
+                "Track engagement levels"
+              ],
+              "informationObjectIds": [
+                "io_relationship_record",
+                "io_strategic_plan"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_complete_installation": {
+          "name": "Complete Installation",
+          "preOutcomeId": "outcome_installation_completion_initiated",
+          "postOutcomeId": "outcome_installation_completion_complete",
+          "nextActivityId": "act_schedule_maintenance",
+          "requiresCapabilityIds": [
+            "cap_technical_support",
+            "cap_product_knowledge",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_service_technician"
+          ],
+          "informationObjectIds": [
+            "io_installation_record",
+            "io_system_configuration",
+            "io_completion_certificate"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_technical_support": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Complete system installation",
+                "Perform system testing",
+                "Validate operational status"
+              ],
+              "informationObjectIds": [
+                "io_installation_record",
+                "io_system_configuration"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            },
+            "cap_product_knowledge": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Configure system parameters",
+                "Optimize system performance",
+                "Document system specifications"
+              ],
+              "informationObjectIds": [
+                "io_system_configuration",
+                "io_completion_certificate"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Record installation details",
+                "Update system database",
+                "Archive installation records"
+              ],
+              "informationObjectIds": [
+                "io_installation_record",
+                "io_completion_certificate"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp",
+                "tech_mulesoft"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_schedule_maintenance": {
+          "name": "Schedule Maintenance",
+          "preOutcomeId": "outcome_installation_completion_complete",
+          "postOutcomeId": "outcome_maintenance_scheduling_complete",
+          "nextActivityId": "act_notify_replacement",
+          "requiresCapabilityIds": [
+            "cap_service_scheduling",
+            "cap_data_management",
+            "cap_stakeholder_communication"
+          ],
+          "performedByRoleIds": [
+            "role_service_technician"
+          ],
+          "informationObjectIds": [
+            "io_maintenance_schedule",
+            "io_service_calendar",
+            "io_customer_notification"
+          ],
+          "metricIds": [
+            "metric_cartridge_replacement_rate"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_service_scheduling": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Plan maintenance intervals",
+                "Schedule service appointments",
+                "Optimize service routes"
+              ],
+              "informationObjectIds": [
+                "io_maintenance_schedule",
+                "io_service_calendar"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Maintain service records",
+                "Update scheduling data",
+                "Synchronize calendar systems"
+              ],
+              "informationObjectIds": [
+                "io_service_calendar",
+                "io_maintenance_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp",
+                "tech_mulesoft"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Notify customers of schedules",
+                "Confirm service appointments",
+                "Communicate maintenance plans"
+              ],
+              "informationObjectIds": [
+                "io_customer_notification",
+                "io_maintenance_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_whatsapp_sms",
+                "tech_google_suite"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_notify_replacement": {
+          "name": "Notify Replacement",
+          "preOutcomeId": "outcome_maintenance_scheduling_complete",
+          "postOutcomeId": "outcome_replacement_notification_complete",
+          "nextActivityId": "act_deliver_service",
+          "requiresCapabilityIds": [
+            "cap_stakeholder_communication",
+            "cap_service_scheduling",
+            "cap_customer_relationship_management"
+          ],
+          "performedByRoleIds": [
+            "role_service_technician"
+          ],
+          "informationObjectIds": [
+            "io_replacement_notice",
+            "io_service_reminder",
+            "io_customer_response"
+          ],
+          "metricIds": [
+            "metric_cartridge_replacement_rate"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Send replacement notifications",
+                "Explain service requirements",
+                "Handle customer inquiries"
+              ],
+              "informationObjectIds": [
+                "io_replacement_notice",
+                "io_service_reminder"
+              ],
+              "technologyAppIds": [
+                "tech_whatsapp_sms",
+                "tech_google_suite"
+              ]
+            },
+            "cap_service_scheduling": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Coordinate replacement timing",
+                "Schedule service visits",
+                "Manage service capacity"
+              ],
+              "informationObjectIds": [
+                "io_service_reminder",
+                "io_customer_response"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            },
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Maintain customer engagement",
+                "Track service preferences",
+                "Build service relationships"
+              ],
+              "informationObjectIds": [
+                "io_customer_response",
+                "io_replacement_notice"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_deliver_service": {
+          "name": "Deliver Service",
+          "preOutcomeId": "outcome_replacement_notification_complete",
+          "postOutcomeId": "outcome_service_delivery_complete",
+          "nextActivityId": "act_recognize_revenue",
+          "requiresCapabilityIds": [
+            "cap_technical_support",
+            "cap_service_scheduling",
+            "cap_product_knowledge"
+          ],
+          "performedByRoleIds": [
+            "role_service_technician"
+          ],
+          "informationObjectIds": [
+            "io_service_report",
+            "io_replacement_parts",
+            "io_service_confirmation"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_technical_support": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Perform cartridge replacement",
+                "Conduct system maintenance",
+                "Validate system performance"
+              ],
+              "informationObjectIds": [
+                "io_service_report",
+                "io_replacement_parts"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            },
+            "cap_service_scheduling": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Execute service appointments",
+                "Manage service delivery",
+                "Optimize service efficiency"
+              ],
+              "informationObjectIds": [
+                "io_service_confirmation",
+                "io_service_report"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            },
+            "cap_product_knowledge": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Apply technical expertise",
+                "Ensure proper installation",
+                "Provide system guidance"
+              ],
+              "informationObjectIds": [
+                "io_replacement_parts",
+                "io_service_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_recognize_revenue": {
+          "name": "Recognize Revenue",
+          "preOutcomeId": "outcome_service_delivery_complete",
+          "postOutcomeId": "outcome_revenue_recognition_complete",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_financial_management",
+            "cap_data_management",
+            "cap_compliance_management"
+          ],
+          "performedByRoleIds": [
+            "role_service_technician"
+          ],
+          "informationObjectIds": [
+            "io_revenue_record",
+            "io_billing_statement",
+            "io_financial_report"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_financial_management": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Process service billing",
+                "Calculate revenue amounts",
+                "Generate financial records"
+              ],
+              "informationObjectIds": [
+                "io_revenue_record",
+                "io_billing_statement"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Update financial systems",
+                "Maintain revenue records",
+                "Synchronize billing data"
+              ],
+              "informationObjectIds": [
+                "io_financial_report",
+                "io_revenue_record"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp",
+                "tech_mulesoft"
+              ]
+            },
+            "cap_compliance_management": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Ensure revenue compliance",
+                "Validate billing accuracy",
+                "Document financial transactions"
+              ],
+              "informationObjectIds": [
+                "io_billing_statement",
+                "io_financial_report"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_plan_territory": {
+          "name": "Plan Territory",
+          "preOutcomeId": "outcome_territory_planning_initiated",
+          "postOutcomeId": "outcome_territory_planning_complete",
+          "nextActivityId": "act_optimize_routes",
+          "requiresCapabilityIds": [
+            "cap_territory_management",
+            "cap_data_management",
+            "cap_market_intelligence"
+          ],
+          "performedByRoleIds": [
+            "role_sales_manager"
+          ],
+          "informationObjectIds": [
+            "io_territory_plan",
+            "io_market_analysis",
+            "io_resource_allocation"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_territory_management": {
+              "roleIds": [
+                "role_sales_manager"
+              ],
+              "activities": [
+                "Define territory boundaries",
+                "Assign sales resources",
+                "Set territory objectives"
+              ],
+              "informationObjectIds": [
+                "io_territory_plan",
+                "io_resource_allocation"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_sales_manager"
+              ],
+              "activities": [
+                "Aggregate territory demand signals",
+                "Reconcile forecast data",
+                "Update territory assignment records"
+              ],
+              "informationObjectIds": [
+                "io_market_analysis",
+                "io_territory_plan"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm",
+                "tech_netsuite_erp"
+              ]
+            },
+            "cap_market_intelligence": {
+              "roleIds": [
+                "role_sales_manager"
+              ],
+              "activities": [
+                "Analyze territory potential",
+                "Assess competitive landscape",
+                "Identify growth opportunities"
+              ],
+              "informationObjectIds": [
+                "io_market_analysis",
+                "io_resource_allocation"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_optimize_routes": {
+          "name": "Optimize Routes",
+          "preOutcomeId": "outcome_territory_planning_complete",
+          "postOutcomeId": "outcome_route_optimization_complete",
+          "nextActivityId": "act_execute_activities",
+          "requiresCapabilityIds": [
+            "cap_territory_management",
+            "cap_logistics_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_manager"
+          ],
+          "informationObjectIds": [
+            "io_route_plan",
+            "io_travel_schedule",
+            "io_efficiency_metrics"
+          ],
+          "metricIds": [
+            "metric_sales_admin_time"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_territory_management": {
+              "roleIds": [
+                "role_sales_manager"
+              ],
+              "activities": [
+                "Optimize territory coverage",
+                "Plan customer visits",
+                "Allocate sales time"
+              ],
+              "informationObjectIds": [
+                "io_route_plan",
+                "io_travel_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            },
+            "cap_logistics_management": {
+              "roleIds": [
+                "role_sales_manager"
+              ],
+              "activities": [
+                "Plan efficient routes",
+                "Optimize travel time",
+                "Coordinate visit schedules"
+              ],
+              "informationObjectIds": [
+                "io_travel_schedule",
+                "io_efficiency_metrics"
+              ],
+              "technologyAppIds": [
+                "tech_google_suite"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_sales_manager"
+              ],
+              "activities": [
+                "Analyze route efficiency",
+                "Update routing data",
+                "Maintain schedule records"
+              ],
+              "informationObjectIds": [
+                "io_route_plan",
+                "io_efficiency_metrics"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm",
+                "tech_google_suite"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_execute_activities": {
+          "name": "Execute Activities",
+          "preOutcomeId": "outcome_route_optimization_complete",
+          "postOutcomeId": "outcome_activity_execution_complete",
+          "nextActivityId": "act_track_performance",
+          "requiresCapabilityIds": [
+            "cap_territory_management",
+            "cap_customer_relationship_management",
+            "cap_performance_monitoring"
+          ],
+          "performedByRoleIds": [
+            "role_sales_manager",
+            "role_sales_representative"
+          ],
+          "informationObjectIds": [
+            "io_activity_log",
+            "io_customer_interactions",
+            "io_sales_results"
+          ],
+          "metricIds": [
+            "metric_sales_admin_time"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_territory_management": {
+              "roleIds": [
+                "role_sales_manager",
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Execute territory plans",
+                "Conduct customer visits",
+                "Manage territory activities"
+              ],
+              "informationObjectIds": [
+                "io_activity_log",
+                "io_customer_interactions"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            },
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Engage with customers",
+                "Build relationships",
+                "Drive sales opportunities"
+              ],
+              "informationObjectIds": [
+                "io_customer_interactions",
+                "io_sales_results"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            },
+            "cap_performance_monitoring": {
+              "roleIds": [
+                "role_sales_manager"
+              ],
+              "activities": [
+                "Monitor activity execution",
+                "Track sales progress",
+                "Measure territory performance"
+              ],
+              "informationObjectIds": [
+                "io_activity_log",
+                "io_sales_results"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_track_performance": {
+          "name": "Track Performance",
+          "preOutcomeId": "outcome_activity_execution_complete",
+          "postOutcomeId": "outcome_performance_tracking_complete",
+          "nextActivityId": "act_calculate_commission",
+          "requiresCapabilityIds": [
+            "cap_performance_monitoring",
+            "cap_data_management",
+            "cap_financial_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_manager"
+          ],
+          "informationObjectIds": [
+            "io_performance_report",
+            "io_sales_metrics",
+            "io_kpi_dashboard"
+          ],
+          "metricIds": [
+            "metric_crm_activity_logging"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_performance_monitoring": {
+              "roleIds": [
+                "role_sales_manager"
+              ],
+              "activities": [
+                "Measure sales performance",
+                "Analyze territory results",
+                "Track KPI achievement"
+              ],
+              "informationObjectIds": [
+                "io_performance_report",
+                "io_sales_metrics"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_sales_manager"
+              ],
+              "activities": [
+                "Consolidate performance data",
+                "Update metrics databases",
+                "Maintain reporting accuracy"
+              ],
+              "informationObjectIds": [
+                "io_kpi_dashboard",
+                "io_sales_metrics"
+              ],
+              "technologyAppIds": [
+                "tech_salesforce_crm",
+                "tech_netsuite_erp"
+              ]
+            },
+            "cap_financial_management": {
+              "roleIds": [
+                "role_sales_manager"
+              ],
+              "activities": [
+                "Analyze revenue performance",
+                "Track financial metrics",
+                "Prepare financial reports"
+              ],
+              "informationObjectIds": [
+                "io_performance_report",
+                "io_kpi_dashboard"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_calculate_commission": {
+          "name": "Calculate Commission",
+          "preOutcomeId": "outcome_performance_tracking_complete",
+          "postOutcomeId": "outcome_commission_calculation_complete",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_financial_management",
+            "cap_data_management",
+            "cap_compliance_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_manager"
+          ],
+          "informationObjectIds": [
+            "io_commission_report",
+            "io_compensation_record",
+            "io_payment_schedule"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_financial_management": {
+              "roleIds": [
+                "role_sales_manager"
+              ],
+              "activities": [
+                "Calculate commission amounts",
+                "Process compensation payments",
+                "Generate financial statements"
+              ],
+              "informationObjectIds": [
+                "io_commission_report",
+                "io_compensation_record"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_sales_manager"
+              ],
+              "activities": [
+                "Maintain commission records",
+                "Update compensation data",
+                "Synchronize payroll systems"
+              ],
+              "informationObjectIds": [
+                "io_payment_schedule",
+                "io_compensation_record"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp",
+                "tech_mulesoft"
+              ]
+            },
+            "cap_compliance_management": {
+              "roleIds": [
+                "role_sales_manager"
+              ],
+              "activities": [
+                "Ensure compensation compliance",
+                "Validate calculation accuracy",
+                "Document commission transactions"
+              ],
+              "informationObjectIds": [
+                "io_commission_report",
+                "io_payment_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_netsuite_erp"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        }
+      },
+      "outcomes": {
+        "outcome_prospect_identification_initiated": {
+          "name": "Prospect Identification Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_prospect_identification_complete": {
+          "name": "Prospect Identification Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_pre_visit_intelligence_complete": {
+          "name": "Pre-Visit Intelligence Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_customer_engagement_complete": {
+          "name": "Customer Engagement Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_proposal_development_complete": {
+          "name": "Proposal Development Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_order_conversion_complete": {
+          "name": "Order Conversion Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_order_processing_initiated": {
+          "name": "Order Processing Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_order_processing_complete": {
+          "name": "Order Processing Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_inventory_allocation_complete": {
+          "name": "Inventory Allocation Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_distribution_planning_complete": {
+          "name": "Distribution Planning Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_delivery_execution_complete": {
+          "name": "Delivery Execution Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_installation_support_complete": {
+          "name": "Installation Support Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_partner_onboarding_initiated": {
+          "name": "Partner Onboarding Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_partner_onboarding_complete": {
+          "name": "Partner Onboarding Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_product_training_complete": {
+          "name": "Product Training Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_sales_tool_provisioning_complete": {
+          "name": "Sales Tool Provisioning Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_performance_enablement_complete": {
+          "name": "Performance Enablement Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_relationship_management_complete": {
+          "name": "Relationship Management Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_installation_completion_initiated": {
+          "name": "Installation Completion Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_installation_completion_complete": {
+          "name": "Installation Completion Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_maintenance_scheduling_complete": {
+          "name": "Maintenance Scheduling Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_replacement_notification_complete": {
+          "name": "Replacement Notification Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_service_delivery_complete": {
+          "name": "Service Delivery Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_revenue_recognition_complete": {
+          "name": "Revenue Recognition Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_territory_planning_initiated": {
+          "name": "Territory Planning Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_territory_planning_complete": {
+          "name": "Territory Planning Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_route_optimization_complete": {
+          "name": "Route Optimization Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_activity_execution_complete": {
+          "name": "Activity Execution Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_performance_tracking_complete": {
+          "name": "Performance Tracking Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_commission_calculation_complete": {
+          "name": "Commission Calculation Complete",
+          "elementType": "Outcome"
+        }
+      },
+      "roles": {
+        "role_sales_representative": {
+          "name": "Sales Representative",
+          "description": "Territory-based sales professionals responsible for customer engagement and order conversion",
+          "elementType": "Role"
+        },
+        "role_customer_care_representative": {
+          "name": "Customer Care Representative",
+          "description": "Provides customer intelligence and support information to sales teams",
+          "elementType": "Role"
+        },
+        "role_order_processor": {
+          "name": "Order Processor",
+          "description": "Handles order processing and inventory allocation activities",
+          "elementType": "Role"
+        },
+        "role_distribution_coordinator": {
+          "name": "Distribution Coordinator",
+          "description": "Manages distribution planning and delivery execution",
+          "elementType": "Role"
+        },
+        "role_partner_manager": {
+          "name": "Partner Manager",
+          "description": "Manages relationships with trade partners, plumbers, and distributors",
+          "elementType": "Role"
+        },
+        "role_service_technician": {
+          "name": "Service Technician",
+          "description": "Performs installation completion and service delivery activities",
+          "elementType": "Role"
+        },
+        "role_sales_manager": {
+          "name": "Sales Manager",
+          "description": "Oversees territory planning, performance tracking, and commission calculation",
+          "elementType": "Role"
+        }
+      },
+      "capabilities": {
+        "cap_customer_relationship_management": {
+          "name": "Customer Relationship Management",
+          "description": "Ability to build, maintain, and optimize customer relationships throughout the sales and service lifecycle",
+          "elementType": "Capability"
+        },
+        "cap_data_management": {
+          "name": "Data Management",
+          "description": "Ability to collect, validate, synchronize, and maintain accurate business data across systems",
+          "elementType": "Capability"
+        },
+        "cap_market_intelligence": {
+          "name": "Market Intelligence",
+          "description": "Ability to gather, analyze, and apply market insights to drive business decisions",
+          "elementType": "Capability"
+        },
+        "cap_stakeholder_communication": {
+          "name": "Stakeholder Communication",
+          "description": "Ability to effectively communicate with internal and external stakeholders across channels",
+          "elementType": "Capability"
+        },
+        "cap_product_knowledge": {
+          "name": "Product Knowledge",
+          "description": "Deep understanding of product features, capabilities, and applications to support sales and service",
+          "elementType": "Capability"
+        },
+        "cap_pricing_management": {
+          "name": "Pricing Management",
+          "description": "Ability to calculate, validate, and optimize pricing strategies and discount structures",
+          "elementType": "Capability"
+        },
+        "cap_order_management": {
+          "name": "Order Management",
+          "description": "Ability to process, validate, and fulfill customer orders efficiently and accurately",
+          "elementType": "Capability"
+        },
+        "cap_compliance_management": {
+          "name": "Compliance Management",
+          "description": "Ability to ensure adherence to regulatory requirements and business standards",
+          "elementType": "Capability"
+        },
+        "cap_inventory_management": {
+          "name": "Inventory Management",
+          "description": "Ability to track, allocate, and optimize inventory levels and availability",
+          "elementType": "Capability"
+        },
+        "cap_supply_chain_coordination": {
+          "name": "Supply Chain Coordination",
+          "description": "Ability to coordinate and optimize supply chain activities and relationships",
+          "elementType": "Capability"
+        },
+        "cap_logistics_management": {
+          "name": "Logistics Management",
+          "description": "Ability to plan, execute, and optimize transportation and delivery operations",
+          "elementType": "Capability"
+        },
+        "cap_performance_monitoring": {
+          "name": "Performance Monitoring",
+          "description": "Ability to track, measure, and analyze business performance against objectives",
+          "elementType": "Capability"
+        },
+        "cap_technical_support": {
+          "name": "Technical Support",
+          "description": "Ability to provide technical assistance, troubleshooting, and system support",
+          "elementType": "Capability"
+        },
+        "cap_partner_management": {
+          "name": "Partner Management",
+          "description": "Ability to develop, manage, and optimize strategic partner relationships",
+          "elementType": "Capability"
+        },
+        "cap_training_delivery": {
+          "name": "Training Delivery",
+          "description": "Ability to design, deliver, and assess training programs and learning outcomes",
+          "elementType": "Capability"
+        },
+        "cap_technology_provisioning": {
+          "name": "Technology Provisioning",
+          "description": "Ability to deploy, configure, and manage technology tools and systems",
+          "elementType": "Capability"
+        },
+        "cap_service_scheduling": {
+          "name": "Service Scheduling",
+          "description": "Ability to plan, coordinate, and optimize service delivery schedules",
+          "elementType": "Capability"
+        },
+        "cap_financial_management": {
+          "name": "Financial Management",
+          "description": "Ability to manage financial processes, calculations, and reporting",
+          "elementType": "Capability"
+        },
+        "cap_territory_management": {
+          "name": "Territory Management",
+          "description": "Ability to plan, organize, and optimize sales territory coverage and activities",
+          "elementType": "Capability"
+        }
+      },
+      "informationObjects": {
+        "io_prospect_list": {
+          "name": "Prospect List",
+          "elementType": "InformationObject"
+        },
+        "io_territory_plan": {
+          "name": "Territory Plan",
+          "elementType": "InformationObject"
+        },
+        "io_market_data": {
+          "name": "Market Data",
+          "elementType": "InformationObject"
+        },
+        "io_customer_profile": {
+          "name": "Customer Profile",
+          "elementType": "InformationObject"
+        },
+        "io_intelligence_report": {
+          "name": "Intelligence Report",
+          "elementType": "InformationObject"
+        },
+        "io_meeting_notes": {
+          "name": "Meeting Notes",
+          "elementType": "InformationObject"
+        },
+        "io_customer_requirements": {
+          "name": "Customer Requirements",
+          "elementType": "InformationObject"
+        },
+        "io_product_catalog": {
+          "name": "Product Catalog",
+          "elementType": "InformationObject"
+        },
+        "io_proposal_document": {
+          "name": "Proposal Document",
+          "elementType": "InformationObject"
+        },
+        "io_pricing_sheet": {
+          "name": "Pricing Sheet",
+          "elementType": "InformationObject"
+        },
+        "io_customer_order": {
+          "name": "Customer Order",
+          "elementType": "InformationObject"
+        },
+        "io_contract_agreement": {
+          "name": "Contract Agreement",
+          "elementType": "InformationObject"
+        },
+        "io_order_confirmation": {
+          "name": "Order Confirmation",
+          "elementType": "InformationObject"
+        },
+        "io_processing_record": {
+          "name": "Processing Record",
+          "elementType": "InformationObject"
+        },
+        "io_inventory_record": {
+          "name": "Inventory Record",
+          "elementType": "InformationObject"
+        },
+        "io_allocation_plan": {
+          "name": "Allocation Plan",
+          "elementType": "InformationObject"
+        },
+        "io_stock_report": {
+          "name": "Stock Report",
+          "elementType": "InformationObject"
+        },
+        "io_distribution_plan": {
+          "name": "Distribution Plan",
+          "elementType": "InformationObject"
+        },
+        "io_shipping_schedule": {
+          "name": "Shipping Schedule",
+          "elementType": "InformationObject"
+        },
+        "io_route_optimization": {
+          "name": "Route Optimization",
+          "elementType": "InformationObject"
+        },
+        "io_delivery_confirmation": {
+          "name": "Delivery Confirmation",
+          "elementType": "InformationObject"
+        },
+        "io_tracking_record": {
+          "name": "Tracking Record",
+          "elementType": "InformationObject"
+        },
+        "io_customer_notification": {
+          "name": "Customer Notification",
+          "elementType": "InformationObject"
+        },
+        "io_installation_guide": {
+          "name": "Installation Guide",
+          "elementType": "InformationObject"
+        },
+        "io_support_record": {
+          "name": "Support Record",
+          "elementType": "InformationObject"
+        },
+        "io_completion_certificate": {
+          "name": "Completion Certificate",
+          "elementType": "InformationObject"
+        },
+        "io_partner_agreement": {
+          "name": "Partner Agreement",
+          "elementType": "InformationObject"
+        },
+        "io_onboarding_checklist": {
+          "name": "Onboarding Checklist",
+          "elementType": "InformationObject"
+        },
+        "io_partner_profile": {
+          "name": "Partner Profile",
+          "elementType": "InformationObject"
+        },
+        "io_training_materials": {
+          "name": "Training Materials",
+          "elementType": "InformationObject"
+        },
+        "io_certification_record": {
+          "name": "Certification Record",
+          "elementType": "InformationObject"
+        },
+        "io_sales_tools": {
+          "name": "Sales Tools",
+          "elementType": "InformationObject"
+        },
+        "io_access_credentials": {
+          "name": "Access Credentials",
+          "elementType": "InformationObject"
+        },
+        "io_tool_inventory": {
+          "name": "Tool Inventory",
+          "elementType": "InformationObject"
+        },
+        "io_performance_metrics": {
+          "name": "Performance Metrics",
+          "elementType": "InformationObject"
+        },
+        "io_coaching_plan": {
+          "name": "Coaching Plan",
+          "elementType": "InformationObject"
+        },
+        "io_enablement_record": {
+          "name": "Enablement Record",
+          "elementType": "InformationObject"
+        },
+        "io_relationship_record": {
+          "name": "Relationship Record",
+          "elementType": "InformationObject"
+        },
+        "io_partner_feedback": {
+          "name": "Partner Feedback",
+          "elementType": "InformationObject"
+        },
+        "io_strategic_plan": {
+          "name": "Strategic Plan",
+          "elementType": "InformationObject"
+        },
+        "io_installation_record": {
+          "name": "Installation Record",
+          "elementType": "InformationObject"
+        },
+        "io_system_configuration": {
+          "name": "System Configuration",
+          "elementType": "InformationObject"
+        },
+        "io_maintenance_schedule": {
+          "name": "Maintenance Schedule",
+          "elementType": "InformationObject"
+        },
+        "io_service_calendar": {
+          "name": "Service Calendar",
+          "elementType": "InformationObject"
+        },
+        "io_replacement_notice": {
+          "name": "Replacement Notice",
+          "elementType": "InformationObject"
+        },
+        "io_service_reminder": {
+          "name": "Service Reminder",
+          "elementType": "InformationObject"
+        },
+        "io_customer_response": {
+          "name": "Customer Response",
+          "elementType": "InformationObject"
+        },
+        "io_service_report": {
+          "name": "Service Report",
+          "elementType": "InformationObject"
+        },
+        "io_replacement_parts": {
+          "name": "Replacement Parts",
+          "elementType": "InformationObject"
+        },
+        "io_service_confirmation": {
+          "name": "Service Confirmation",
+          "elementType": "InformationObject"
+        },
+        "io_revenue_record": {
+          "name": "Revenue Record",
+          "elementType": "InformationObject"
+        },
+        "io_billing_statement": {
+          "name": "Billing Statement",
+          "elementType": "InformationObject"
+        },
+        "io_financial_report": {
+          "name": "Financial Report",
+          "elementType": "InformationObject"
+        },
+        "io_market_analysis": {
+          "name": "Market Analysis",
+          "elementType": "InformationObject"
+        },
+        "io_resource_allocation": {
+          "name": "Resource Allocation",
+          "elementType": "InformationObject"
+        },
+        "io_route_plan": {
+          "name": "Route Plan",
+          "elementType": "InformationObject"
+        },
+        "io_travel_schedule": {
+          "name": "Travel Schedule",
+          "elementType": "InformationObject"
+        },
+        "io_efficiency_metrics": {
+          "name": "Efficiency Metrics",
+          "elementType": "InformationObject"
+        },
+        "io_activity_log": {
+          "name": "Activity Log",
+          "elementType": "InformationObject"
+        },
+        "io_customer_interactions": {
+          "name": "Customer Interactions",
+          "elementType": "InformationObject"
+        },
+        "io_sales_results": {
+          "name": "Sales Results",
+          "elementType": "InformationObject"
+        },
+        "io_performance_report": {
+          "name": "Performance Report",
+          "elementType": "InformationObject"
+        },
+        "io_sales_metrics": {
+          "name": "Sales Metrics",
+          "elementType": "InformationObject"
+        },
+        "io_kpi_dashboard": {
+          "name": "KPI Dashboard",
+          "elementType": "InformationObject"
+        },
+        "io_commission_report": {
+          "name": "Commission Report",
+          "elementType": "InformationObject"
+        },
+        "io_compensation_record": {
+          "name": "Compensation Record",
+          "elementType": "InformationObject"
+        },
+        "io_payment_schedule": {
+          "name": "Payment Schedule",
+          "elementType": "InformationObject"
+        }
+      },
+      "controls": {},
+      "constraints": {},
+      "directives": {},
+      "deonticLogic": {},
+      "flowLogic": {},
+      "concepts": {},
+      "properties": {},
+      "metrics": {
+        "metric_sales_admin_time": {
+          "name": "Sales Admin Time",
+          "elementType": "Metric"
+        },
+        "metric_integration_project_duration": {
+          "name": "Integration Project Duration",
+          "elementType": "Metric"
+        },
+        "metric_cartridge_replacement_rate": {
+          "name": "Cartridge Replacement Rate",
+          "elementType": "Metric"
+        },
+        "metric_crm_activity_logging": {
+          "name": "CRM Activity Logging",
+          "elementType": "Metric"
+        }
+      },
+      "measures": {},
+      "conditions": {}
+    },
+    "_discoveryPainPoints": "1. [DataSignalFriction] NetSuite integration project extended from 3 months to 9+ months with no completion (intensity 9/10, stage: Order Processing) ← flagged as binding\n2. [TechnologyIntegrationFriction] 90+ Salesforce customizations making standard implementations difficult (intensity 8/10, stage: Customer Engagement) ← flagged as binding\n3. [ProcessHandoffFriction] Sales teams waste 3 days per week on admin and meetings instead of selling (intensity 8/10, stage: Activity Execution) ← flagged as binding\n4. [DataSignalFriction] Lack of pre-visit customer intelligence requiring manual information gathering (intensity 7/10, stage: Pre-Visit Intelligence) ← flagged as binding\n5. [IncentiveCapacityFriction] Distributors becoming order-takers rather than proactive sellers due to lack of tools (intensity 7/10, stage: Performance Enablement)\n6. [GovernanceRiskFriction] CRM activity metrics not enforced due to system inadequacy concerns (intensity 6/10, stage: Performance Tracking)"
+  },
+  "heatmaps": []
+}

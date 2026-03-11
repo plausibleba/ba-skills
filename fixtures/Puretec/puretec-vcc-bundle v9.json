@@ -1,0 +1,1243 @@
+{
+  "bundleVersion": "1.0",
+  "createdAt": "2026-03-09T02:15:12.887Z",
+  "scaffold": {
+    "schemaVersion": "1.0.0",
+    "scaffoldId": "scaffold_puretec",
+    "name": "PureTec — Operating Model",
+    "description": "Water filtration business operating model covering sales, fulfillment, and maintenance value streams",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "elements": {
+      "valueStreams": {
+        "vs_lead_to_customer": {
+          "name": "Lead to Customer",
+          "description": "End-to-end flow from prospect identification through customer acquisition via trade partners and distributors",
+          "activityIds": [
+            "act_identify_prospect",
+            "act_engage_channel_partner",
+            "act_assess_customer_needs",
+            "act_present_solution",
+            "act_convert_order"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_sales_representative",
+          "elementType": "ValueStream"
+        },
+        "vs_order_to_delivery": {
+          "name": "Order to Delivery",
+          "description": "End-to-end flow from order receipt through product delivery and installation support",
+          "activityIds": [
+            "act_process_order",
+            "act_allocate_inventory",
+            "act_prepare_fulfillment",
+            "act_coordinate_delivery",
+            "act_support_installation"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_order_processor",
+          "elementType": "ValueStream"
+        },
+        "vs_customer_to_maintenance_revenue": {
+          "name": "Customer to Maintenance Revenue",
+          "description": "End-to-end flow from installed customer through ongoing cartridge replacement and maintenance services",
+          "activityIds": [
+            "act_register_installation",
+            "act_setup_maintenance_schedule",
+            "act_notify_replacement",
+            "act_fulfill_cartridge",
+            "act_complete_service"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_customer_care_representative",
+          "elementType": "ValueStream"
+        },
+        "vs_territory_to_sales_performance": {
+          "name": "Territory to Sales Performance",
+          "description": "End-to-end flow from territory assignment through sales execution and performance measurement",
+          "activityIds": [
+            "act_plan_territory",
+            "act_gather_account_intelligence",
+            "act_execute_customer_visit",
+            "act_document_activity",
+            "act_assess_performance"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "role_sales_manager",
+          "elementType": "ValueStream"
+        },
+        "vs_issue_to_resolution": {
+          "name": "Issue to Resolution",
+          "description": "End-to-end flow from customer support request through problem resolution and follow-up",
+          "activityIds": [
+            "act_intake_issue",
+            "act_diagnose_problem",
+            "act_develop_solution",
+            "act_implement_resolution",
+            "act_confirm_customer"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_customer_care_representative",
+          "elementType": "ValueStream"
+        }
+      },
+      "activities": {
+        "act_identify_prospect": {
+          "name": "Identify Prospect",
+          "preOutcomeId": "outcome_prospect_identification_initiated",
+          "postOutcomeId": "outcome_prospect_identification_complete",
+          "nextActivityId": "act_engage_channel_partner",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_market_intelligence",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative"
+          ],
+          "informationObjectIds": [
+            "io_prospect_profile",
+            "io_market_data",
+            "io_territory_plan"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_engage_channel_partner": {
+          "name": "Engage Channel Partner",
+          "preOutcomeId": "outcome_prospect_identification_complete",
+          "postOutcomeId": "outcome_channel_partner_engagement_complete",
+          "nextActivityId": "act_assess_customer_needs",
+          "requiresCapabilityIds": [
+            "cap_partner_relationship_management",
+            "cap_stakeholder_communication",
+            "cap_customer_relationship_management"
+          ],
+          "performedByRoleIds": [
+            "role_channel_partner",
+            "role_sales_representative"
+          ],
+          "informationObjectIds": [
+            "io_partner_agreement",
+            "io_customer_referral",
+            "io_product_catalog"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_assess_customer_needs": {
+          "name": "Assess Customer Needs",
+          "preOutcomeId": "outcome_channel_partner_engagement_complete",
+          "postOutcomeId": "outcome_customer_needs_assessment_complete",
+          "nextActivityId": "act_present_solution",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_technical_consultation",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative",
+            "role_channel_partner"
+          ],
+          "informationObjectIds": [
+            "io_needs_assessment",
+            "io_site_survey",
+            "io_customer_requirements"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_present_solution": {
+          "name": "Present Solution",
+          "preOutcomeId": "outcome_customer_needs_assessment_complete",
+          "postOutcomeId": "outcome_solution_presentation_complete",
+          "nextActivityId": "act_convert_order",
+          "requiresCapabilityIds": [
+            "cap_technical_consultation",
+            "cap_stakeholder_communication",
+            "cap_product_configuration"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative",
+            "role_channel_partner"
+          ],
+          "informationObjectIds": [
+            "io_solution_proposal",
+            "io_product_specification",
+            "io_pricing_quote"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_convert_order": {
+          "name": "Convert Order",
+          "preOutcomeId": "outcome_solution_presentation_complete",
+          "postOutcomeId": "outcome_order_conversion_complete",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_order_management",
+            "cap_customer_relationship_management",
+            "cap_contract_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative",
+            "role_channel_partner"
+          ],
+          "informationObjectIds": [
+            "io_customer_order",
+            "io_sales_contract",
+            "io_payment_terms"
+          ],
+          "metricIds": [
+            "metric_annual_growth_rate"
+          ],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_process_order": {
+          "name": "Process Order",
+          "preOutcomeId": "outcome_order_processing_initiated",
+          "postOutcomeId": "outcome_order_processing_complete",
+          "nextActivityId": "act_allocate_inventory",
+          "requiresCapabilityIds": [
+            "cap_order_management",
+            "cap_data_management",
+            "cap_compliance_management"
+          ],
+          "performedByRoleIds": [
+            "role_order_processor"
+          ],
+          "informationObjectIds": [
+            "io_customer_order",
+            "io_order_confirmation",
+            "io_processing_checklist"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_allocate_inventory": {
+          "name": "Allocate Inventory",
+          "preOutcomeId": "outcome_order_processing_complete",
+          "postOutcomeId": "outcome_inventory_allocation_complete",
+          "nextActivityId": "act_prepare_fulfillment",
+          "requiresCapabilityIds": [
+            "cap_inventory_management",
+            "cap_data_management",
+            "cap_supply_chain_coordination"
+          ],
+          "performedByRoleIds": [
+            "role_inventory_manager"
+          ],
+          "informationObjectIds": [
+            "io_inventory_record",
+            "io_allocation_report",
+            "io_stock_availability"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_prepare_fulfillment": {
+          "name": "Prepare Fulfillment",
+          "preOutcomeId": "outcome_inventory_allocation_complete",
+          "postOutcomeId": "outcome_fulfillment_preparation_complete",
+          "nextActivityId": "act_coordinate_delivery",
+          "requiresCapabilityIds": [
+            "cap_order_fulfillment",
+            "cap_supply_chain_coordination",
+            "cap_quality_assurance"
+          ],
+          "performedByRoleIds": [
+            "role_inventory_manager"
+          ],
+          "informationObjectIds": [
+            "io_pick_list",
+            "io_packing_slip",
+            "io_quality_checklist"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_coordinate_delivery": {
+          "name": "Coordinate Delivery",
+          "preOutcomeId": "outcome_fulfillment_preparation_complete",
+          "postOutcomeId": "outcome_delivery_coordination_complete",
+          "nextActivityId": "act_support_installation",
+          "requiresCapabilityIds": [
+            "cap_logistics_coordination",
+            "cap_stakeholder_communication",
+            "cap_supply_chain_coordination"
+          ],
+          "performedByRoleIds": [
+            "role_order_processor"
+          ],
+          "informationObjectIds": [
+            "io_delivery_schedule",
+            "io_shipping_manifest",
+            "io_tracking_information"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_support_installation": {
+          "name": "Support Installation",
+          "preOutcomeId": "outcome_delivery_coordination_complete",
+          "postOutcomeId": "outcome_installation_support_complete",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_technical_support",
+            "cap_customer_relationship_management",
+            "cap_technical_consultation"
+          ],
+          "performedByRoleIds": [
+            "role_installation_technician"
+          ],
+          "informationObjectIds": [
+            "io_installation_guide",
+            "io_installation_record",
+            "io_customer_handover"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_register_installation": {
+          "name": "Register Installation",
+          "preOutcomeId": "outcome_installation_registration_initiated",
+          "postOutcomeId": "outcome_installation_registration_complete",
+          "nextActivityId": "act_setup_maintenance_schedule",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_data_management",
+            "cap_service_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_care_representative"
+          ],
+          "informationObjectIds": [
+            "io_installation_record",
+            "io_customer_profile",
+            "io_product_registration"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_setup_maintenance_schedule": {
+          "name": "Setup Maintenance Schedule",
+          "preOutcomeId": "outcome_installation_registration_complete",
+          "postOutcomeId": "outcome_maintenance_schedule_setup_complete",
+          "nextActivityId": "act_notify_replacement",
+          "requiresCapabilityIds": [
+            "cap_service_management",
+            "cap_scheduling_coordination",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_care_representative"
+          ],
+          "informationObjectIds": [
+            "io_service_schedule",
+            "io_maintenance_plan",
+            "io_reminder_settings"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_notify_replacement": {
+          "name": "Notify Replacement",
+          "preOutcomeId": "outcome_maintenance_schedule_setup_complete",
+          "postOutcomeId": "outcome_replacement_notification_complete",
+          "nextActivityId": "act_fulfill_cartridge",
+          "requiresCapabilityIds": [
+            "cap_stakeholder_communication",
+            "cap_service_management",
+            "cap_customer_relationship_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_care_representative"
+          ],
+          "informationObjectIds": [
+            "io_replacement_notification",
+            "io_service_reminder",
+            "io_customer_response"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_fulfill_cartridge": {
+          "name": "Fulfill Cartridge",
+          "preOutcomeId": "outcome_replacement_notification_complete",
+          "postOutcomeId": "outcome_cartridge_fulfillment_complete",
+          "nextActivityId": "act_complete_service",
+          "requiresCapabilityIds": [
+            "cap_order_fulfillment",
+            "cap_inventory_management",
+            "cap_logistics_coordination"
+          ],
+          "performedByRoleIds": [
+            "role_inventory_manager"
+          ],
+          "informationObjectIds": [
+            "io_cartridge_order",
+            "io_fulfillment_record",
+            "io_delivery_confirmation"
+          ],
+          "metricIds": [
+            "metric_cartridge_replacement_rate"
+          ],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_complete_service": {
+          "name": "Complete Service",
+          "preOutcomeId": "outcome_cartridge_fulfillment_complete",
+          "postOutcomeId": "outcome_service_completion_complete",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_service_management",
+            "cap_customer_relationship_management",
+            "cap_performance_monitoring"
+          ],
+          "performedByRoleIds": [
+            "role_customer_care_representative"
+          ],
+          "informationObjectIds": [
+            "io_service_completion",
+            "io_customer_feedback",
+            "io_revenue_record"
+          ],
+          "metricIds": [
+            "metric_cartridge_replacement_rate"
+          ],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_plan_territory": {
+          "name": "Plan Territory",
+          "preOutcomeId": "outcome_territory_planning_initiated",
+          "postOutcomeId": "outcome_territory_planning_complete",
+          "nextActivityId": "act_gather_account_intelligence",
+          "requiresCapabilityIds": [
+            "cap_territory_management",
+            "cap_market_intelligence",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative",
+            "role_sales_manager"
+          ],
+          "informationObjectIds": [
+            "io_territory_plan",
+            "io_account_mapping",
+            "io_sales_targets"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_gather_account_intelligence": {
+          "name": "Gather Account Intelligence",
+          "preOutcomeId": "outcome_territory_planning_complete",
+          "postOutcomeId": "outcome_account_intelligence_gathering_complete",
+          "nextActivityId": "act_execute_customer_visit",
+          "requiresCapabilityIds": [
+            "cap_market_intelligence",
+            "cap_data_management",
+            "cap_customer_relationship_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative",
+            "role_customer_care_representative"
+          ],
+          "informationObjectIds": [
+            "io_account_intelligence",
+            "io_customer_history",
+            "io_market_research"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_execute_customer_visit": {
+          "name": "Execute Customer Visit",
+          "preOutcomeId": "outcome_account_intelligence_gathering_complete",
+          "postOutcomeId": "outcome_customer_visit_execution_complete",
+          "nextActivityId": "act_document_activity",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_stakeholder_communication",
+            "cap_technical_consultation"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative"
+          ],
+          "informationObjectIds": [
+            "io_visit_plan",
+            "io_customer_interaction",
+            "io_visit_outcomes"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_document_activity": {
+          "name": "Document Activity",
+          "preOutcomeId": "outcome_customer_visit_execution_complete",
+          "postOutcomeId": "outcome_activity_documentation_complete",
+          "nextActivityId": "act_assess_performance",
+          "requiresCapabilityIds": [
+            "cap_data_management",
+            "cap_performance_monitoring",
+            "cap_compliance_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative"
+          ],
+          "informationObjectIds": [
+            "io_activity_report",
+            "io_sales_record",
+            "io_crm_update"
+          ],
+          "metricIds": [
+            "metric_sales_admin_time"
+          ],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_assess_performance": {
+          "name": "Assess Performance",
+          "preOutcomeId": "outcome_activity_documentation_complete",
+          "postOutcomeId": "outcome_performance_assessment_complete",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_performance_monitoring",
+            "cap_data_management",
+            "cap_territory_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_manager"
+          ],
+          "informationObjectIds": [
+            "io_performance_report",
+            "io_sales_metrics",
+            "io_commission_calculation"
+          ],
+          "metricIds": [
+            "metric_sales_admin_time",
+            "metric_annual_growth_rate"
+          ],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_intake_issue": {
+          "name": "Intake Issue",
+          "preOutcomeId": "outcome_issue_intake_initiated",
+          "postOutcomeId": "outcome_issue_intake_complete",
+          "nextActivityId": "act_diagnose_problem",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_stakeholder_communication",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_care_representative"
+          ],
+          "informationObjectIds": [
+            "io_support_request",
+            "io_issue_ticket",
+            "io_customer_contact"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_diagnose_problem": {
+          "name": "Diagnose Problem",
+          "preOutcomeId": "outcome_issue_intake_complete",
+          "postOutcomeId": "outcome_problem_diagnosis_complete",
+          "nextActivityId": "act_develop_solution",
+          "requiresCapabilityIds": [
+            "cap_technical_support",
+            "cap_problem_solving",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_care_representative",
+            "role_installation_technician"
+          ],
+          "informationObjectIds": [
+            "io_diagnostic_report",
+            "io_problem_analysis",
+            "io_technical_data"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_develop_solution": {
+          "name": "Develop Solution",
+          "preOutcomeId": "outcome_problem_diagnosis_complete",
+          "postOutcomeId": "outcome_solution_development_complete",
+          "nextActivityId": "act_implement_resolution",
+          "requiresCapabilityIds": [
+            "cap_problem_solving",
+            "cap_technical_support",
+            "cap_service_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_care_representative",
+            "role_installation_technician"
+          ],
+          "informationObjectIds": [
+            "io_solution_plan",
+            "io_resolution_steps",
+            "io_resource_requirements"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_implement_resolution": {
+          "name": "Implement Resolution",
+          "preOutcomeId": "outcome_solution_development_complete",
+          "postOutcomeId": "outcome_resolution_implementation_complete",
+          "nextActivityId": "act_confirm_customer",
+          "requiresCapabilityIds": [
+            "cap_technical_support",
+            "cap_service_management",
+            "cap_stakeholder_communication"
+          ],
+          "performedByRoleIds": [
+            "role_installation_technician",
+            "role_customer_care_representative"
+          ],
+          "informationObjectIds": [
+            "io_resolution_record",
+            "io_implementation_log",
+            "io_service_delivery"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_confirm_customer": {
+          "name": "Confirm Customer",
+          "preOutcomeId": "outcome_resolution_implementation_complete",
+          "postOutcomeId": "outcome_customer_confirmation_complete",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_stakeholder_communication",
+            "cap_service_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_care_representative"
+          ],
+          "informationObjectIds": [
+            "io_customer_confirmation",
+            "io_satisfaction_survey",
+            "io_case_closure"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        }
+      },
+      "outcomes": {
+        "outcome_prospect_identification_initiated": {
+          "name": "Prospect Identification Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_prospect_identification_complete": {
+          "name": "Prospect Identification Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_channel_partner_engagement_complete": {
+          "name": "Channel Partner Engagement Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_customer_needs_assessment_complete": {
+          "name": "Customer Needs Assessment Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_solution_presentation_complete": {
+          "name": "Solution Presentation Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_order_conversion_complete": {
+          "name": "Order Conversion Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_order_processing_initiated": {
+          "name": "Order Processing Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_order_processing_complete": {
+          "name": "Order Processing Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_inventory_allocation_complete": {
+          "name": "Inventory Allocation Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_fulfillment_preparation_complete": {
+          "name": "Fulfillment Preparation Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_delivery_coordination_complete": {
+          "name": "Delivery Coordination Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_installation_support_complete": {
+          "name": "Installation Support Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_installation_registration_initiated": {
+          "name": "Installation Registration Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_installation_registration_complete": {
+          "name": "Installation Registration Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_maintenance_schedule_setup_complete": {
+          "name": "Maintenance Schedule Setup Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_replacement_notification_complete": {
+          "name": "Replacement Notification Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_cartridge_fulfillment_complete": {
+          "name": "Cartridge Fulfillment Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_service_completion_complete": {
+          "name": "Service Completion Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_territory_planning_initiated": {
+          "name": "Territory Planning Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_territory_planning_complete": {
+          "name": "Territory Planning Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_account_intelligence_gathering_complete": {
+          "name": "Account Intelligence Gathering Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_customer_visit_execution_complete": {
+          "name": "Customer Visit Execution Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_activity_documentation_complete": {
+          "name": "Activity Documentation Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_performance_assessment_complete": {
+          "name": "Performance Assessment Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_issue_intake_initiated": {
+          "name": "Issue Intake Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_issue_intake_complete": {
+          "name": "Issue Intake Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_problem_diagnosis_complete": {
+          "name": "Problem Diagnosis Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_solution_development_complete": {
+          "name": "Solution Development Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_resolution_implementation_complete": {
+          "name": "Resolution Implementation Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_customer_confirmation_complete": {
+          "name": "Customer Confirmation Complete",
+          "elementType": "Outcome"
+        }
+      },
+      "roles": {
+        "role_sales_representative": {
+          "name": "Sales Representative",
+          "description": "Territory-based sales professionals responsible for customer visits and relationship management",
+          "elementType": "Role"
+        },
+        "role_channel_partner": {
+          "name": "Channel Partner",
+          "description": "Plumbers and distributors who sell PureTec products to end customers",
+          "elementType": "Role"
+        },
+        "role_customer_care_representative": {
+          "name": "Customer Care Representative",
+          "description": "Provides customer intelligence and support information to sales teams",
+          "elementType": "Role"
+        },
+        "role_order_processor": {
+          "name": "Order Processor",
+          "description": "Processes customer orders and manages order fulfillment workflow",
+          "elementType": "Role"
+        },
+        "role_inventory_manager": {
+          "name": "Inventory Manager",
+          "description": "Manages allocation and availability of 4000+ product SKUs",
+          "elementType": "Role"
+        },
+        "role_installation_technician": {
+          "name": "Installation Technician",
+          "description": "Performs product installation and provides technical support",
+          "elementType": "Role"
+        },
+        "role_sales_manager": {
+          "name": "Sales Manager",
+          "description": "Oversees territory planning and sales performance assessment",
+          "elementType": "Role"
+        }
+      },
+      "capabilities": {
+        "cap_customer_relationship_management": {
+          "name": "Customer Relationship Management",
+          "description": "Ability to build, maintain and manage customer relationships throughout the lifecycle",
+          "elementType": "Capability"
+        },
+        "cap_market_intelligence": {
+          "name": "Market Intelligence",
+          "description": "Ability to gather, analyze and apply market and competitive intelligence",
+          "elementType": "Capability"
+        },
+        "cap_data_management": {
+          "name": "Data Management",
+          "description": "Ability to capture, store, process and maintain business data accurately",
+          "elementType": "Capability"
+        },
+        "cap_partner_relationship_management": {
+          "name": "Partner Relationship Management",
+          "description": "Ability to manage and coordinate with channel partners and distributors",
+          "elementType": "Capability"
+        },
+        "cap_stakeholder_communication": {
+          "name": "Stakeholder Communication",
+          "description": "Ability to communicate effectively with internal and external stakeholders",
+          "elementType": "Capability"
+        },
+        "cap_technical_consultation": {
+          "name": "Technical Consultation",
+          "description": "Ability to provide technical advice and consultation on product solutions",
+          "elementType": "Capability"
+        },
+        "cap_product_configuration": {
+          "name": "Product Configuration",
+          "description": "Ability to configure and customize products to meet customer requirements",
+          "elementType": "Capability"
+        },
+        "cap_order_management": {
+          "name": "Order Management",
+          "description": "Ability to process, track and manage customer orders through fulfillment",
+          "elementType": "Capability"
+        },
+        "cap_contract_management": {
+          "name": "Contract Management",
+          "description": "Ability to create, negotiate and manage customer contracts and agreements",
+          "elementType": "Capability"
+        },
+        "cap_compliance_management": {
+          "name": "Compliance Management",
+          "description": "Ability to ensure adherence to regulatory and business compliance requirements",
+          "elementType": "Capability"
+        },
+        "cap_inventory_management": {
+          "name": "Inventory Management",
+          "description": "Ability to manage stock levels, allocation and availability across product SKUs",
+          "elementType": "Capability"
+        },
+        "cap_supply_chain_coordination": {
+          "name": "Supply Chain Coordination",
+          "description": "Ability to coordinate activities across the supply chain from sourcing to delivery",
+          "elementType": "Capability"
+        },
+        "cap_order_fulfillment": {
+          "name": "Order Fulfillment",
+          "description": "Ability to pick, pack and prepare orders for delivery to customers",
+          "elementType": "Capability"
+        },
+        "cap_quality_assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to ensure product and service quality meets standards and requirements",
+          "elementType": "Capability"
+        },
+        "cap_logistics_coordination": {
+          "name": "Logistics Coordination",
+          "description": "Ability to coordinate shipping, delivery and transportation logistics",
+          "elementType": "Capability"
+        },
+        "cap_technical_support": {
+          "name": "Technical Support",
+          "description": "Ability to provide technical assistance and support for product installation and issues",
+          "elementType": "Capability"
+        },
+        "cap_service_management": {
+          "name": "Service Management",
+          "description": "Ability to manage ongoing customer service and maintenance activities",
+          "elementType": "Capability"
+        },
+        "cap_scheduling_coordination": {
+          "name": "Scheduling Coordination",
+          "description": "Ability to coordinate and manage schedules for service and maintenance activities",
+          "elementType": "Capability"
+        },
+        "cap_territory_management": {
+          "name": "Territory Management",
+          "description": "Ability to plan, organize and manage sales territories and account assignments",
+          "elementType": "Capability"
+        },
+        "cap_performance_monitoring": {
+          "name": "Performance Monitoring",
+          "description": "Ability to track, measure and analyze business and individual performance metrics",
+          "elementType": "Capability"
+        },
+        "cap_problem_solving": {
+          "name": "Problem Solving",
+          "description": "Ability to identify, analyze and resolve customer and operational problems",
+          "elementType": "Capability"
+        }
+      },
+      "informationObjects": {
+        "io_prospect_profile": {
+          "name": "Prospect Profile",
+          "elementType": "InformationObject"
+        },
+        "io_market_data": {
+          "name": "Market Data",
+          "elementType": "InformationObject"
+        },
+        "io_territory_plan": {
+          "name": "Territory Plan",
+          "elementType": "InformationObject"
+        },
+        "io_partner_agreement": {
+          "name": "Partner Agreement",
+          "elementType": "InformationObject"
+        },
+        "io_customer_referral": {
+          "name": "Customer Referral",
+          "elementType": "InformationObject"
+        },
+        "io_product_catalog": {
+          "name": "Product Catalog",
+          "elementType": "InformationObject"
+        },
+        "io_needs_assessment": {
+          "name": "Needs Assessment",
+          "elementType": "InformationObject"
+        },
+        "io_site_survey": {
+          "name": "Site Survey",
+          "elementType": "InformationObject"
+        },
+        "io_customer_requirements": {
+          "name": "Customer Requirements",
+          "elementType": "InformationObject"
+        },
+        "io_solution_proposal": {
+          "name": "Solution Proposal",
+          "elementType": "InformationObject"
+        },
+        "io_product_specification": {
+          "name": "Product Specification",
+          "elementType": "InformationObject"
+        },
+        "io_pricing_quote": {
+          "name": "Pricing Quote",
+          "elementType": "InformationObject"
+        },
+        "io_customer_order": {
+          "name": "Customer Order",
+          "elementType": "InformationObject"
+        },
+        "io_sales_contract": {
+          "name": "Sales Contract",
+          "elementType": "InformationObject"
+        },
+        "io_payment_terms": {
+          "name": "Payment Terms",
+          "elementType": "InformationObject"
+        },
+        "io_order_confirmation": {
+          "name": "Order Confirmation",
+          "elementType": "InformationObject"
+        },
+        "io_processing_checklist": {
+          "name": "Processing Checklist",
+          "elementType": "InformationObject"
+        },
+        "io_inventory_record": {
+          "name": "Inventory Record",
+          "elementType": "InformationObject"
+        },
+        "io_allocation_report": {
+          "name": "Allocation Report",
+          "elementType": "InformationObject"
+        },
+        "io_stock_availability": {
+          "name": "Stock Availability",
+          "elementType": "InformationObject"
+        },
+        "io_pick_list": {
+          "name": "Pick List",
+          "elementType": "InformationObject"
+        },
+        "io_packing_slip": {
+          "name": "Packing Slip",
+          "elementType": "InformationObject"
+        },
+        "io_quality_checklist": {
+          "name": "Quality Checklist",
+          "elementType": "InformationObject"
+        },
+        "io_delivery_schedule": {
+          "name": "Delivery Schedule",
+          "elementType": "InformationObject"
+        },
+        "io_shipping_manifest": {
+          "name": "Shipping Manifest",
+          "elementType": "InformationObject"
+        },
+        "io_tracking_information": {
+          "name": "Tracking Information",
+          "elementType": "InformationObject"
+        },
+        "io_installation_guide": {
+          "name": "Installation Guide",
+          "elementType": "InformationObject"
+        },
+        "io_installation_record": {
+          "name": "Installation Record",
+          "elementType": "InformationObject"
+        },
+        "io_customer_handover": {
+          "name": "Customer Handover",
+          "elementType": "InformationObject"
+        },
+        "io_customer_profile": {
+          "name": "Customer Profile",
+          "elementType": "InformationObject"
+        },
+        "io_product_registration": {
+          "name": "Product Registration",
+          "elementType": "InformationObject"
+        },
+        "io_service_schedule": {
+          "name": "Service Schedule",
+          "elementType": "InformationObject"
+        },
+        "io_maintenance_plan": {
+          "name": "Maintenance Plan",
+          "elementType": "InformationObject"
+        },
+        "io_reminder_settings": {
+          "name": "Reminder Settings",
+          "elementType": "InformationObject"
+        },
+        "io_replacement_notification": {
+          "name": "Replacement Notification",
+          "elementType": "InformationObject"
+        },
+        "io_service_reminder": {
+          "name": "Service Reminder",
+          "elementType": "InformationObject"
+        },
+        "io_customer_response": {
+          "name": "Customer Response",
+          "elementType": "InformationObject"
+        },
+        "io_cartridge_order": {
+          "name": "Cartridge Order",
+          "elementType": "InformationObject"
+        },
+        "io_fulfillment_record": {
+          "name": "Fulfillment Record",
+          "elementType": "InformationObject"
+        },
+        "io_delivery_confirmation": {
+          "name": "Delivery Confirmation",
+          "elementType": "InformationObject"
+        },
+        "io_service_completion": {
+          "name": "Service Completion",
+          "elementType": "InformationObject"
+        },
+        "io_customer_feedback": {
+          "name": "Customer Feedback",
+          "elementType": "InformationObject"
+        },
+        "io_revenue_record": {
+          "name": "Revenue Record",
+          "elementType": "InformationObject"
+        },
+        "io_account_mapping": {
+          "name": "Account Mapping",
+          "elementType": "InformationObject"
+        },
+        "io_sales_targets": {
+          "name": "Sales Targets",
+          "elementType": "InformationObject"
+        },
+        "io_account_intelligence": {
+          "name": "Account Intelligence",
+          "elementType": "InformationObject"
+        },
+        "io_customer_history": {
+          "name": "Customer History",
+          "elementType": "InformationObject"
+        },
+        "io_market_research": {
+          "name": "Market Research",
+          "elementType": "InformationObject"
+        },
+        "io_visit_plan": {
+          "name": "Visit Plan",
+          "elementType": "InformationObject"
+        },
+        "io_customer_interaction": {
+          "name": "Customer Interaction",
+          "elementType": "InformationObject"
+        },
+        "io_visit_outcomes": {
+          "name": "Visit Outcomes",
+          "elementType": "InformationObject"
+        },
+        "io_activity_report": {
+          "name": "Activity Report",
+          "elementType": "InformationObject"
+        },
+        "io_sales_record": {
+          "name": "Sales Record",
+          "elementType": "InformationObject"
+        },
+        "io_crm_update": {
+          "name": "CRM Update",
+          "elementType": "InformationObject"
+        },
+        "io_performance_report": {
+          "name": "Performance Report",
+          "elementType": "InformationObject"
+        },
+        "io_sales_metrics": {
+          "name": "Sales Metrics",
+          "elementType": "InformationObject"
+        },
+        "io_commission_calculation": {
+          "name": "Commission Calculation",
+          "elementType": "InformationObject"
+        },
+        "io_support_request": {
+          "name": "Support Request",
+          "elementType": "InformationObject"
+        },
+        "io_issue_ticket": {
+          "name": "Issue Ticket",
+          "elementType": "InformationObject"
+        },
+        "io_customer_contact": {
+          "name": "Customer Contact",
+          "elementType": "InformationObject"
+        },
+        "io_diagnostic_report": {
+          "name": "Diagnostic Report",
+          "elementType": "InformationObject"
+        },
+        "io_problem_analysis": {
+          "name": "Problem Analysis",
+          "elementType": "InformationObject"
+        },
+        "io_technical_data": {
+          "name": "Technical Data",
+          "elementType": "InformationObject"
+        },
+        "io_solution_plan": {
+          "name": "Solution Plan",
+          "elementType": "InformationObject"
+        },
+        "io_resolution_steps": {
+          "name": "Resolution Steps",
+          "elementType": "InformationObject"
+        },
+        "io_resource_requirements": {
+          "name": "Resource Requirements",
+          "elementType": "InformationObject"
+        },
+        "io_resolution_record": {
+          "name": "Resolution Record",
+          "elementType": "InformationObject"
+        },
+        "io_implementation_log": {
+          "name": "Implementation Log",
+          "elementType": "InformationObject"
+        },
+        "io_service_delivery": {
+          "name": "Service Delivery",
+          "elementType": "InformationObject"
+        },
+        "io_customer_confirmation": {
+          "name": "Customer Confirmation",
+          "elementType": "InformationObject"
+        },
+        "io_satisfaction_survey": {
+          "name": "Satisfaction Survey",
+          "elementType": "InformationObject"
+        },
+        "io_case_closure": {
+          "name": "Case Closure",
+          "elementType": "InformationObject"
+        }
+      },
+      "controls": {},
+      "constraints": {},
+      "directives": {},
+      "deonticLogic": {},
+      "flowLogic": {},
+      "concepts": {},
+      "properties": {},
+      "metrics": {
+        "metric_sales_admin_time": {
+          "name": "Sales Admin Time",
+          "elementType": "Metric"
+        },
+        "metric_integration_project_duration": {
+          "name": "Integration Project Duration",
+          "elementType": "Metric"
+        },
+        "metric_annual_growth_rate": {
+          "name": "Annual Growth Rate",
+          "elementType": "Metric"
+        },
+        "metric_cartridge_replacement_rate": {
+          "name": "Cartridge Replacement Rate",
+          "elementType": "Metric"
+        }
+      },
+      "measures": {},
+      "conditions": {}
+    },
+    "_discoveryPainPoints": "1. [ProcessHandoffFriction] Sales teams waste 3 days per week on admin and meetings instead of selling (intensity 8/10, stage: Customer Visit Execution) ← flagged as binding\n2. [TechnologyIntegrationFriction] NetSuite-Salesforce integration failure causing manual processes and system fragmentation (intensity 9/10, stage: Order Processing) ← flagged as binding\n3. [DataSignalFriction] Lack of customer intelligence requiring manual information gathering before visits (intensity 7/10, stage: Account Intelligence Gathering) ← flagged as binding\n4. [IncentiveCapacityFriction] Channel partners becoming order takers rather than proactive sellers due to lack of tools (intensity 6/10, stage: Channel Partner Engagement)\n5. [TechnologyIntegrationFriction] 90+ Salesforce customizations making standard implementations complex (intensity 8/10, stage: Activity Documentation) ← flagged as binding"
+  },
+  "heatmaps": []
+}

@@ -72,10 +72,12 @@ function useNodePositions(nodes: NetworkNode[]) {
 
       const zone1RowCount = zone1Rows.length;
       const canvasWidth = PADDING_X * 2 + totalWidth;
+      const BOTTOM_LABEL_SPACE = 32; // room for zone label below bottom box
       const canvasHeight = PADDING_Y * 2
         + zone0Rows.length * (NODE_HEIGHT + WRAP_GAP) - WRAP_GAP
         + ZONE_GAP
-        + zone1RowCount * (NODE_HEIGHT + WRAP_GAP) - WRAP_GAP;
+        + zone1RowCount * (NODE_HEIGHT + WRAP_GAP) - WRAP_GAP
+        + BOTTOM_LABEL_SPACE;
 
       return { positions, canvasWidth, canvasHeight };
     }
@@ -628,8 +630,15 @@ export function NetworkView() {
             const ZONE_LABEL_H = 28;
             const minX = Math.min(...zonePositions.map((p) => p.x)) - ZONE_PAD;
             const maxX = Math.max(...zonePositions.map((p) => p.x)) + NODE_WIDTH + ZONE_PAD;
-            const minY = Math.min(...zonePositions.map((p) => p.y)) - ZONE_PAD - ZONE_LABEL_H;
+            // For row 0 (top zone): label above, so extend minY up for label space
+            // For row > 0 (lower zones): label below, no need to extend minY
+            const labelAbove = zone.row === 0;
+            const minY = Math.min(...zonePositions.map((p) => p.y)) - ZONE_PAD - (labelAbove ? ZONE_LABEL_H : 0);
             const maxY = Math.max(...zonePositions.map((p) => p.y)) + NODE_HEIGHT + ZONE_PAD;
+
+            // Label position: above box for top zone, below box for lower zones
+            const labelX = minX + (maxX - minX) / 2;
+            const labelY = labelAbove ? minY - 8 : maxY + 20;
 
             return (
               <g key={zone.id}>
@@ -646,8 +655,8 @@ export function NetworkView() {
                   opacity={0.5}
                 />
                 <text
-                  x={minX + (maxX - minX) / 2}
-                  y={minY - 8}
+                  x={labelX}
+                  y={labelY}
                   textAnchor="middle"
                   className="fill-gray-400"
                   fontSize={13}

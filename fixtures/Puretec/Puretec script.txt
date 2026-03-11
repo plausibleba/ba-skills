@@ -1,0 +1,29 @@
+Daniel Roach
+Okay, companies called PureTec. Water filtration manufacturer and distributor. The board is, brothers, 2 are shed CEO. They have been growing at a rate of 15% year and year. The differentiator is their premium product and that it, uh, looks quite nice on this side of your house. They have 3 people team. They just hired the head of tech 10 months ago. They, before that, they didn't have any in-house IT people. Um, 
+
+You
+Mm. 
+
+Daniel Roach
+The board was 
+
+You
+Mm. 
+
+Daniel Roach
+questioning whether they should even proceed with a sales force implementation. They have worked with multiple implementation, um, source was a limitation, 
+
+You
+Thanks. 
+
+Daniel Roach
+um, which has caused some instability in the history, like delivery. Originally they worked with, um, a partner that was based in Melbourne and and they were, Based in Adelaide, doing virtual workshops. Then they worked with another partner, which was local, but then they had a relationship breakdown. And then they're working with another implementation partner, but they seem to be, um, a little income, some key things. Um, apparently they've developed 90 or more customisation to the salesforce systems. Um, meaning that things that should be straightforward or standard, that's now becoming harder. To implement them should be because these partners implemented, um, very custom things. Um, they, once you integrate with net suite, EIP. That's the key thing that they're trying to do, they've had ongoing issues with that. Originally, it was meant to be like a 3 month project to integrate net sweep, but that's taken over 9 months. Um, They invested in Mielsov to try and solve for that, but it seems like, um, for historical reasons and incompetencies of the current implementation team. They still haven't even been able to integrate Ned Suite with Nilsa. Um, The staff use multiple systems because they're kind of forced to, despite having, you know, a bunch of cells, tools, um, because the processors aren't there. They end up having to still use like disparate tools to get the job done. And because of this, there's a lot of manual processes. In their sales process, uh, so the business model, they distribute through trade partners, they distribute through plumbers and distributors, uh, plumbers prefer working with pure tech, uh, because of uh, easy installation, high quality, and excellent support, uh, the challenges that distributors, are better at taking orders than they are at proactive selling. So essentially, they get a little bit lazy and they just become order takers and they don't have the tools 
+
+You
+Awesome. 
+
+Daniel Roach
+to help them be proactive. The customers segments that they target, uh, customers who are priced focussed, so they have basic filtration needs, customers who are health conscious, worried about contaminants in the water, uh, and what quality pro, uh, product. Uh, they also target premium customers like architect design home, uh, due to the aesthetic, you know, qualities of the water system on the side of the house. They have 4 over 4000 different product skews, including their filtration systems, parts and cartridges, uh, they have maintenance revenue. So a cartridge needs to be replaced every 12 months. This means that they sort of hope or expect to hope to be able to replace these cartridges on a yearly basis. Their sales teams. Um, geographic territories, their state-based, postcode driven, sales teams, um, they think that they waste 3 days uh, of selling time, lost to admin and meetings. They use salesforce for route planning, but they say that that's lacking customer intelligence. So, they need um, manual information from customer care, um, which we think that we could help with AI. They should be able to know all of the historical last orders, delivery issues, um, opportunity, um, prior to the visit. So the key thing for them is having like a brief of the account that they're going to go and visit before they get there. Uh, because they're dealing with plumbers primarily, primary channel is WhatsApp and SMS, because they're plumbers on the road. Uh, the sales team is commission based, but they aren't logging, uh, like salesforce activity metrics as a KPI, mainly because the exact team is concerned that the system isn't, yeah, up to scratch and then if they're trying to enforce use of the CRM, you know, people would get disgruntled because, um, the system isn't working for them yet. So how can they be made to use the system? Um. They. I've had some issues with their marketing product, but that's not the focus of what we're working on. Um, okay, strategic priorities, they want to sort out their integration foundation with NetSuite, so connecting NetSuite to Salesforce and having that as the, the foundation for the data that's gonna have all these upstream benefits. Uh, they want more effectiveness in their sales team. So essentially having this pre-meeting intelligence, but having that in a easy to use way. So, first, um, and easy and conversational. Their mantras, they want it to feel like a 15 year old, could use the system. Um. Knowledge considerations, the, them having a migration to Microsoft from Google Suite, they're considering moving over from teams to Slack. They know that with Slack, they would get better integration with salesforce. And they think that the sales teams would really benefit from being on Slack. They think that there's a lot of opportunity for AI automation after attending the salesforce conference. And that's it. 
+
+You
+Perfect. 

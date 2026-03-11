@@ -1,0 +1,1961 @@
+{
+  "bundleVersion": "1.0",
+  "createdAt": "2026-03-09T00:39:23.841Z",
+  "scaffold": {
+    "schemaVersion": "1.0.0",
+    "scaffoldId": "scaffold_organization",
+    "name": "Organization — Operating Model",
+    "description": "Value stream model covering customer acquisition, delivery, support, and strategic operations",
+    "createdAt": "2024-12-19T10:30:00.000Z",
+    "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "elements": {
+      "valueStreams": {
+        "vs_lead_to_customer": {
+          "id": "vs_lead_to_customer",
+          "elementType": "ValueStream",
+          "name": "Lead to Customer",
+          "activityIds": [
+            "act_qualify_lead_against_ideal_customer_profile",
+            "act_conduct_discovery_call_to_understand_requirements",
+            "act_prepare_customized_proposal_with_pricing_options",
+            "act_negotiate_contract_terms_and_finalize_agreement"
+          ]
+        },
+        "vs_order_to_delivery": {
+          "id": "vs_order_to_delivery",
+          "elementType": "ValueStream",
+          "name": "Order to Delivery",
+          "activityIds": [
+            "act_process_customer_order_and_validate_requirements",
+            "act_coordinate_resource_allocation_and_project_scheduling",
+            "act_execute_delivery_activities_according_to_project_plan",
+            "act_conduct_customer_acceptance_testing_and_handover"
+          ]
+        },
+        "vs_issue_to_resolution": {
+          "id": "vs_issue_to_resolution",
+          "elementType": "ValueStream",
+          "name": "Issue to Resolution",
+          "activityIds": [
+            "act_receive_and_categorize_customer_support_request",
+            "act_diagnose_issue_and_identify_root_cause",
+            "act_implement_solution_and_test_resolution_effectiveness",
+            "act_confirm_customer_satisfaction_and_close_ticket"
+          ]
+        },
+        "vs_strategy_to_execution": {
+          "id": "vs_strategy_to_execution",
+          "elementType": "ValueStream",
+          "name": "Strategy to Execution",
+          "activityIds": [
+            "act_analyze_market_trends_and_competitive_landscape",
+            "act_develop_strategic_initiatives_and_resource_requirements",
+            "act_communicate_strategy_to_stakeholders_and_teams",
+            "act_monitor_execution_progress_and_adjust_plans"
+          ]
+        },
+        "vs_hire_to_productive": {
+          "id": "vs_hire_to_productive",
+          "elementType": "ValueStream",
+          "name": "Hire to Productive",
+          "activityIds": [
+            "act_identify_staffing_needs_and_create_job_descriptions",
+            "act_source_candidates_and_conduct_screening_interviews",
+            "act_evaluate_candidates_and_make_hiring_decisions",
+            "act_onboard_new_employee_and_provide_initial_training"
+          ]
+        },
+        "vs_idea_to_launch": {
+          "id": "vs_idea_to_launch",
+          "elementType": "ValueStream",
+          "name": "Idea to Launch",
+          "activityIds": [
+            "act_evaluate_product_concept_against_market_opportunity",
+            "act_design_product_features_and_technical_architecture",
+            "act_develop_and_test_product_functionality",
+            "act_launch_product_to_market_with_support_materials"
+          ]
+        }
+      },
+      "activities": {
+        "act_qualify_lead_against_ideal_customer_profile": {
+          "id": "act_qualify_lead_against_ideal_customer_profile",
+          "elementType": "Activity",
+          "name": "Qualify lead against ideal customer profile",
+          "preOutcomeId": "outcome_lead_received",
+          "postOutcomeId": "outcome_lead_qualified",
+          "performedByRoleIds": [
+            "role_sales_development_rep"
+          ],
+          "requiresCapabilityIds": [
+            "cap_lead_qualification",
+            "cap_customer_data_management"
+          ],
+          "metricIds": [
+            "metric_lead_qualification_rate"
+          ],
+          "capabilityPPIT": {
+            "cap_lead_qualification": {
+              "activities": [
+                "Review lead source and contact information",
+                "Assess company size and industry fit",
+                "Validate budget and decision-making authority"
+              ],
+              "roleIds": [
+                "role_sales_development_rep"
+              ],
+              "informationObjectIds": [
+                "info_lead_profile",
+                "info_qualification_criteria"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_customer_data_management": {
+              "activities": [
+                "Update lead status in CRM system",
+                "Enrich lead data with company information"
+              ],
+              "roleIds": [
+                "role_sales_development_rep"
+              ],
+              "informationObjectIds": [
+                "info_lead_profile"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_conduct_discovery_call_to_understand_requirements": {
+          "id": "act_conduct_discovery_call_to_understand_requirements",
+          "elementType": "Activity",
+          "name": "Conduct discovery call to understand requirements",
+          "preOutcomeId": "outcome_lead_qualified",
+          "postOutcomeId": "outcome_requirements_understood",
+          "performedByRoleIds": [
+            "role_account_executive"
+          ],
+          "requiresCapabilityIds": [
+            "cap_customer_engagement",
+            "cap_needs_assessment"
+          ],
+          "metricIds": [],
+          "capabilityPPIT": {
+            "cap_customer_engagement": {
+              "activities": [
+                "Schedule and conduct discovery call",
+                "Build rapport with key stakeholders",
+                "Present company capabilities overview"
+              ],
+              "roleIds": [
+                "role_account_executive"
+              ],
+              "informationObjectIds": [
+                "info_customer_requirements",
+                "info_meeting_notes"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_needs_assessment": {
+              "activities": [
+                "Identify current state challenges",
+                "Understand desired future state",
+                "Document technical and business requirements"
+              ],
+              "roleIds": [
+                "role_account_executive"
+              ],
+              "informationObjectIds": [
+                "info_customer_requirements"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_prepare_customized_proposal_with_pricing_options": {
+          "id": "act_prepare_customized_proposal_with_pricing_options",
+          "elementType": "Activity",
+          "name": "Prepare customized proposal with pricing options",
+          "preOutcomeId": "outcome_requirements_understood",
+          "postOutcomeId": "outcome_proposal_presented",
+          "performedByRoleIds": [
+            "role_account_executive",
+            "role_solution_architect"
+          ],
+          "requiresCapabilityIds": [
+            "cap_solution_design",
+            "cap_pricing_management"
+          ],
+          "metricIds": [
+            "metric_proposal_win_rate"
+          ],
+          "capabilityPPIT": {
+            "cap_solution_design": {
+              "activities": [
+                "Design technical solution architecture",
+                "Create implementation timeline",
+                "Identify resource requirements"
+              ],
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "informationObjectIds": [
+                "info_proposal_document",
+                "info_solution_design"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_pricing_management": {
+              "activities": [
+                "Calculate project costs and margins",
+                "Develop pricing options and packages",
+                "Review pricing with management"
+              ],
+              "roleIds": [
+                "role_account_executive"
+              ],
+              "informationObjectIds": [
+                "info_proposal_document",
+                "info_pricing_model"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_negotiate_contract_terms_and_finalize_agreement": {
+          "id": "act_negotiate_contract_terms_and_finalize_agreement",
+          "elementType": "Activity",
+          "name": "Negotiate contract terms and finalize agreement",
+          "preOutcomeId": "outcome_proposal_presented",
+          "postOutcomeId": "outcome_contract_signed",
+          "performedByRoleIds": [
+            "role_account_executive"
+          ],
+          "requiresCapabilityIds": [
+            "cap_contract_negotiation",
+            "cap_legal_compliance"
+          ],
+          "metricIds": [],
+          "capabilityPPIT": {
+            "cap_contract_negotiation": {
+              "activities": [
+                "Review customer feedback on proposal",
+                "Negotiate pricing and terms",
+                "Address legal and commercial concerns"
+              ],
+              "roleIds": [
+                "role_account_executive"
+              ],
+              "informationObjectIds": [
+                "info_contract_agreement"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_legal_compliance": {
+              "activities": [
+                "Review contract terms for compliance",
+                "Ensure proper approvals and signatures"
+              ],
+              "roleIds": [
+                "role_account_executive"
+              ],
+              "informationObjectIds": [
+                "info_contract_agreement"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_process_customer_order_and_validate_requirements": {
+          "id": "act_process_customer_order_and_validate_requirements",
+          "elementType": "Activity",
+          "name": "Process customer order and validate requirements",
+          "preOutcomeId": "outcome_order_received",
+          "postOutcomeId": "outcome_order_validated",
+          "performedByRoleIds": [
+            "role_project_manager"
+          ],
+          "requiresCapabilityIds": [
+            "cap_order_processing",
+            "cap_requirements_validation"
+          ],
+          "metricIds": [
+            "metric_order_processing_time"
+          ],
+          "capabilityPPIT": {
+            "cap_order_processing": {
+              "activities": [
+                "Create project record in system",
+                "Validate order details against contract",
+                "Set up customer account for delivery"
+              ],
+              "roleIds": [
+                "role_project_manager"
+              ],
+              "informationObjectIds": [
+                "info_customer_order",
+                "info_project_charter"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_requirements_validation": {
+              "activities": [
+                "Review technical specifications",
+                "Confirm resource availability",
+                "Validate delivery timeline"
+              ],
+              "roleIds": [
+                "role_project_manager"
+              ],
+              "informationObjectIds": [
+                "info_customer_order",
+                "info_technical_specifications"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_coordinate_resource_allocation_and_project_scheduling": {
+          "id": "act_coordinate_resource_allocation_and_project_scheduling",
+          "elementType": "Activity",
+          "name": "Coordinate resource allocation and project scheduling",
+          "preOutcomeId": "outcome_order_validated",
+          "postOutcomeId": "outcome_resources_allocated",
+          "performedByRoleIds": [
+            "role_project_manager"
+          ],
+          "requiresCapabilityIds": [
+            "cap_resource_management",
+            "cap_project_planning"
+          ],
+          "metricIds": [],
+          "capabilityPPIT": {
+            "cap_resource_management": {
+              "activities": [
+                "Identify required skills and expertise",
+                "Assign team members to project",
+                "Coordinate with resource managers"
+              ],
+              "roleIds": [
+                "role_project_manager"
+              ],
+              "informationObjectIds": [
+                "info_project_plan",
+                "info_resource_allocation"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_project_planning": {
+              "activities": [
+                "Create detailed project schedule",
+                "Define milestones and deliverables",
+                "Set up project governance structure"
+              ],
+              "roleIds": [
+                "role_project_manager"
+              ],
+              "informationObjectIds": [
+                "info_project_plan"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_execute_delivery_activities_according_to_project_plan": {
+          "id": "act_execute_delivery_activities_according_to_project_plan",
+          "elementType": "Activity",
+          "name": "Execute delivery activities according to project plan",
+          "preOutcomeId": "outcome_resources_allocated",
+          "postOutcomeId": "outcome_delivery_completed",
+          "performedByRoleIds": [
+            "role_delivery_consultant"
+          ],
+          "requiresCapabilityIds": [
+            "cap_service_delivery",
+            "cap_quality_assurance"
+          ],
+          "metricIds": [
+            "metric_on_time_delivery_rate"
+          ],
+          "capabilityPPIT": {
+            "cap_service_delivery": {
+              "activities": [
+                "Implement solution components",
+                "Configure systems and processes",
+                "Conduct testing and validation"
+              ],
+              "roleIds": [
+                "role_delivery_consultant"
+              ],
+              "informationObjectIds": [
+                "info_delivery_documentation",
+                "info_technical_specifications"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_quality_assurance": {
+              "activities": [
+                "Review deliverables against requirements",
+                "Conduct quality checkpoints",
+                "Document delivery evidence"
+              ],
+              "roleIds": [
+                "role_delivery_consultant"
+              ],
+              "informationObjectIds": [
+                "info_delivery_documentation",
+                "info_quality_checklist"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_conduct_customer_acceptance_testing_and_handover": {
+          "id": "act_conduct_customer_acceptance_testing_and_handover",
+          "elementType": "Activity",
+          "name": "Conduct customer acceptance testing and handover",
+          "preOutcomeId": "outcome_delivery_completed",
+          "postOutcomeId": "outcome_customer_accepted",
+          "performedByRoleIds": [
+            "role_delivery_consultant",
+            "role_project_manager"
+          ],
+          "requiresCapabilityIds": [
+            "cap_customer_acceptance",
+            "cap_knowledge_transfer"
+          ],
+          "metricIds": [
+            "metric_customer_satisfaction_score"
+          ],
+          "capabilityPPIT": {
+            "cap_customer_acceptance": {
+              "activities": [
+                "Facilitate customer testing sessions",
+                "Address any issues or concerns",
+                "Obtain formal acceptance sign-off"
+              ],
+              "roleIds": [
+                "role_delivery_consultant"
+              ],
+              "informationObjectIds": [
+                "info_acceptance_criteria",
+                "info_delivery_documentation"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_knowledge_transfer": {
+              "activities": [
+                "Conduct handover training sessions",
+                "Provide documentation and support materials",
+                "Transition to ongoing support team"
+              ],
+              "roleIds": [
+                "role_project_manager"
+              ],
+              "informationObjectIds": [
+                "info_training_materials",
+                "info_support_documentation"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_receive_and_categorize_customer_support_request": {
+          "id": "act_receive_and_categorize_customer_support_request",
+          "elementType": "Activity",
+          "name": "Receive and categorize customer support request",
+          "preOutcomeId": "outcome_issue_reported",
+          "postOutcomeId": "outcome_issue_categorized",
+          "performedByRoleIds": [
+            "role_support_agent"
+          ],
+          "requiresCapabilityIds": [
+            "cap_incident_management",
+            "cap_customer_communication"
+          ],
+          "metricIds": [
+            "metric_first_response_time"
+          ],
+          "capabilityPPIT": {
+            "cap_incident_management": {
+              "activities": [
+                "Log support request in ticketing system",
+                "Assign priority and category",
+                "Route to appropriate support queue"
+              ],
+              "roleIds": [
+                "role_support_agent"
+              ],
+              "informationObjectIds": [
+                "info_support_ticket",
+                "info_issue_classification"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_customer_communication": {
+              "activities": [
+                "Acknowledge receipt of support request",
+                "Set customer expectations for resolution",
+                "Provide initial guidance if available"
+              ],
+              "roleIds": [
+                "role_support_agent"
+              ],
+              "informationObjectIds": [
+                "info_support_ticket",
+                "info_customer_communication"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_diagnose_issue_and_identify_root_cause": {
+          "id": "act_diagnose_issue_and_identify_root_cause",
+          "elementType": "Activity",
+          "name": "Diagnose issue and identify root cause",
+          "preOutcomeId": "outcome_issue_categorized",
+          "postOutcomeId": "outcome_root_cause_identified",
+          "performedByRoleIds": [
+            "role_technical_specialist"
+          ],
+          "requiresCapabilityIds": [
+            "cap_technical_diagnosis",
+            "cap_problem_solving"
+          ],
+          "metricIds": [],
+          "capabilityPPIT": {
+            "cap_technical_diagnosis": {
+              "activities": [
+                "Analyze system logs and error messages",
+                "Reproduce issue in test environment",
+                "Review configuration and setup"
+              ],
+              "roleIds": [
+                "role_technical_specialist"
+              ],
+              "informationObjectIds": [
+                "info_diagnostic_data",
+                "info_technical_documentation"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_problem_solving": {
+              "activities": [
+                "Apply systematic troubleshooting methodology",
+                "Consult knowledge base and documentation",
+                "Escalate to subject matter experts if needed"
+              ],
+              "roleIds": [
+                "role_technical_specialist"
+              ],
+              "informationObjectIds": [
+                "info_diagnostic_data",
+                "info_solution_knowledge"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_implement_solution_and_test_resolution_effectiveness": {
+          "id": "act_implement_solution_and_test_resolution_effectiveness",
+          "elementType": "Activity",
+          "name": "Implement solution and test resolution effectiveness",
+          "preOutcomeId": "outcome_root_cause_identified",
+          "postOutcomeId": "outcome_solution_implemented",
+          "performedByRoleIds": [
+            "role_technical_specialist"
+          ],
+          "requiresCapabilityIds": [
+            "cap_solution_implementation",
+            "cap_testing_validation"
+          ],
+          "metricIds": [
+            "metric_resolution_time"
+          ],
+          "capabilityPPIT": {
+            "cap_solution_implementation": {
+              "activities": [
+                "Apply fix or configuration change",
+                "Update system settings or code",
+                "Deploy solution to production environment"
+              ],
+              "roleIds": [
+                "role_technical_specialist"
+              ],
+              "informationObjectIds": [
+                "info_solution_documentation",
+                "info_change_record"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_testing_validation": {
+              "activities": [
+                "Test solution in customer environment",
+                "Verify issue resolution",
+                "Validate system functionality"
+              ],
+              "roleIds": [
+                "role_technical_specialist"
+              ],
+              "informationObjectIds": [
+                "info_test_results",
+                "info_solution_documentation"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_confirm_customer_satisfaction_and_close_ticket": {
+          "id": "act_confirm_customer_satisfaction_and_close_ticket",
+          "elementType": "Activity",
+          "name": "Confirm customer satisfaction and close ticket",
+          "preOutcomeId": "outcome_solution_implemented",
+          "postOutcomeId": "outcome_issue_resolved",
+          "performedByRoleIds": [
+            "role_support_agent"
+          ],
+          "requiresCapabilityIds": [
+            "cap_customer_satisfaction",
+            "cap_case_closure"
+          ],
+          "metricIds": [],
+          "capabilityPPIT": {
+            "cap_customer_satisfaction": {
+              "activities": [
+                "Contact customer to confirm resolution",
+                "Gather feedback on support experience",
+                "Address any remaining concerns"
+              ],
+              "roleIds": [
+                "role_support_agent"
+              ],
+              "informationObjectIds": [
+                "info_customer_feedback",
+                "info_support_ticket"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_case_closure": {
+              "activities": [
+                "Update ticket with resolution details",
+                "Document lessons learned",
+                "Close ticket in support system"
+              ],
+              "roleIds": [
+                "role_support_agent"
+              ],
+              "informationObjectIds": [
+                "info_support_ticket",
+                "info_resolution_summary"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_analyze_market_trends_and_competitive_landscape": {
+          "id": "act_analyze_market_trends_and_competitive_landscape",
+          "elementType": "Activity",
+          "name": "Analyze market trends and competitive landscape",
+          "preOutcomeId": "outcome_planning_cycle_initiated",
+          "postOutcomeId": "outcome_market_analysis_completed",
+          "performedByRoleIds": [
+            "role_strategy_analyst"
+          ],
+          "requiresCapabilityIds": [
+            "cap_market_research",
+            "cap_competitive_intelligence"
+          ],
+          "metricIds": [],
+          "capabilityPPIT": {
+            "cap_market_research": {
+              "activities": [
+                "Gather industry reports and market data",
+                "Analyze customer behavior trends",
+                "Identify emerging market opportunities"
+              ],
+              "roleIds": [
+                "role_strategy_analyst"
+              ],
+              "informationObjectIds": [
+                "info_market_analysis",
+                "info_industry_data"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_competitive_intelligence": {
+              "activities": [
+                "Research competitor strategies and offerings",
+                "Analyze competitive positioning",
+                "Identify competitive threats and opportunities"
+              ],
+              "roleIds": [
+                "role_strategy_analyst"
+              ],
+              "informationObjectIds": [
+                "info_competitive_analysis",
+                "info_market_analysis"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_develop_strategic_initiatives_and_resource_requirements": {
+          "id": "act_develop_strategic_initiatives_and_resource_requirements",
+          "elementType": "Activity",
+          "name": "Develop strategic initiatives and resource requirements",
+          "preOutcomeId": "outcome_market_analysis_completed",
+          "postOutcomeId": "outcome_strategy_developed",
+          "performedByRoleIds": [
+            "role_executive_leader"
+          ],
+          "requiresCapabilityIds": [
+            "cap_strategic_planning",
+            "cap_resource_planning"
+          ],
+          "metricIds": [],
+          "capabilityPPIT": {
+            "cap_strategic_planning": {
+              "activities": [
+                "Define strategic objectives and priorities",
+                "Develop initiative roadmap and timeline",
+                "Assess strategic risks and mitigation plans"
+              ],
+              "roleIds": [
+                "role_executive_leader"
+              ],
+              "informationObjectIds": [
+                "info_strategic_plan",
+                "info_initiative_portfolio"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_resource_planning": {
+              "activities": [
+                "Estimate resource requirements for initiatives",
+                "Develop budget and investment plans",
+                "Identify capability gaps and development needs"
+              ],
+              "roleIds": [
+                "role_executive_leader"
+              ],
+              "informationObjectIds": [
+                "info_resource_plan",
+                "info_strategic_plan"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_communicate_strategy_to_stakeholders_and_teams": {
+          "id": "act_communicate_strategy_to_stakeholders_and_teams",
+          "elementType": "Activity",
+          "name": "Communicate strategy to stakeholders and teams",
+          "preOutcomeId": "outcome_strategy_developed",
+          "postOutcomeId": "outcome_strategy_communicated",
+          "performedByRoleIds": [
+            "role_executive_leader"
+          ],
+          "requiresCapabilityIds": [
+            "cap_stakeholder_communication",
+            "cap_change_management"
+          ],
+          "metricIds": [
+            "metric_strategy_alignment_score"
+          ],
+          "capabilityPPIT": {
+            "cap_stakeholder_communication": {
+              "activities": [
+                "Present strategy to board and investors",
+                "Conduct all-hands strategy sessions",
+                "Create communication materials and messaging"
+              ],
+              "roleIds": [
+                "role_executive_leader"
+              ],
+              "informationObjectIds": [
+                "info_communication_materials",
+                "info_strategic_plan"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_change_management": {
+              "activities": [
+                "Address stakeholder concerns and questions",
+                "Build buy-in and commitment",
+                "Establish governance for strategy execution"
+              ],
+              "roleIds": [
+                "role_executive_leader"
+              ],
+              "informationObjectIds": [
+                "info_stakeholder_feedback",
+                "info_governance_framework"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_monitor_execution_progress_and_adjust_plans": {
+          "id": "act_monitor_execution_progress_and_adjust_plans",
+          "elementType": "Activity",
+          "name": "Monitor execution progress and adjust plans",
+          "preOutcomeId": "outcome_strategy_communicated",
+          "postOutcomeId": "outcome_strategy_executed",
+          "performedByRoleIds": [
+            "role_executive_leader"
+          ],
+          "requiresCapabilityIds": [
+            "cap_performance_monitoring",
+            "cap_strategic_adjustment"
+          ],
+          "metricIds": [
+            "metric_strategic_initiative_completion_rate"
+          ],
+          "capabilityPPIT": {
+            "cap_performance_monitoring": {
+              "activities": [
+                "Track initiative progress against milestones",
+                "Monitor key performance indicators",
+                "Conduct regular strategy review meetings"
+              ],
+              "roleIds": [
+                "role_executive_leader"
+              ],
+              "informationObjectIds": [
+                "info_performance_dashboard",
+                "info_progress_reports"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_strategic_adjustment": {
+              "activities": [
+                "Identify deviations from plan",
+                "Make strategic course corrections",
+                "Reallocate resources as needed"
+              ],
+              "roleIds": [
+                "role_executive_leader"
+              ],
+              "informationObjectIds": [
+                "info_adjustment_decisions",
+                "info_performance_dashboard"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_identify_staffing_needs_and_create_job_descriptions": {
+          "id": "act_identify_staffing_needs_and_create_job_descriptions",
+          "elementType": "Activity",
+          "name": "Identify staffing needs and create job descriptions",
+          "preOutcomeId": "outcome_hiring_need_identified",
+          "postOutcomeId": "outcome_job_posted",
+          "performedByRoleIds": [
+            "role_hr_business_partner"
+          ],
+          "requiresCapabilityIds": [
+            "cap_workforce_planning",
+            "cap_job_design"
+          ],
+          "metricIds": [],
+          "capabilityPPIT": {
+            "cap_workforce_planning": {
+              "activities": [
+                "Analyze current and future staffing requirements",
+                "Assess skill gaps and organizational needs",
+                "Prioritize hiring requirements"
+              ],
+              "roleIds": [
+                "role_hr_business_partner"
+              ],
+              "informationObjectIds": [
+                "info_workforce_plan",
+                "info_staffing_requirements"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_job_design": {
+              "activities": [
+                "Define role responsibilities and requirements",
+                "Create compelling job descriptions",
+                "Establish compensation and benefits package"
+              ],
+              "roleIds": [
+                "role_hr_business_partner"
+              ],
+              "informationObjectIds": [
+                "info_job_description",
+                "info_compensation_framework"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_source_candidates_and_conduct_screening_interviews": {
+          "id": "act_source_candidates_and_conduct_screening_interviews",
+          "elementType": "Activity",
+          "name": "Source candidates and conduct screening interviews",
+          "preOutcomeId": "outcome_job_posted",
+          "postOutcomeId": "outcome_candidates_screened",
+          "performedByRoleIds": [
+            "role_recruiter"
+          ],
+          "requiresCapabilityIds": [
+            "cap_talent_sourcing",
+            "cap_candidate_screening"
+          ],
+          "metricIds": [
+            "metric_time_to_fill"
+          ],
+          "capabilityPPIT": {
+            "cap_talent_sourcing": {
+              "activities": [
+                "Post job openings on relevant platforms",
+                "Search talent databases and networks",
+                "Engage passive candidates through outreach"
+              ],
+              "roleIds": [
+                "role_recruiter"
+              ],
+              "informationObjectIds": [
+                "info_candidate_pipeline",
+                "info_sourcing_channels"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_candidate_screening": {
+              "activities": [
+                "Review resumes and applications",
+                "Conduct initial phone screenings",
+                "Assess basic qualifications and fit"
+              ],
+              "roleIds": [
+                "role_recruiter"
+              ],
+              "informationObjectIds": [
+                "info_candidate_profiles",
+                "info_screening_notes"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_evaluate_candidates_and_make_hiring_decisions": {
+          "id": "act_evaluate_candidates_and_make_hiring_decisions",
+          "elementType": "Activity",
+          "name": "Evaluate candidates and make hiring decisions",
+          "preOutcomeId": "outcome_candidates_screened",
+          "postOutcomeId": "outcome_candidate_selected",
+          "performedByRoleIds": [
+            "role_hiring_manager"
+          ],
+          "requiresCapabilityIds": [
+            "cap_candidate_evaluation",
+            "cap_hiring_decision_making"
+          ],
+          "metricIds": [
+            "metric_hiring_manager_satisfaction"
+          ],
+          "capabilityPPIT": {
+            "cap_candidate_evaluation": {
+              "activities": [
+                "Conduct structured behavioral interviews",
+                "Assess technical skills and competencies",
+                "Check references and background"
+              ],
+              "roleIds": [
+                "role_hiring_manager"
+              ],
+              "informationObjectIds": [
+                "info_interview_feedback",
+                "info_candidate_assessments"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_hiring_decision_making": {
+              "activities": [
+                "Compare candidates against selection criteria",
+                "Make final hiring recommendation",
+                "Negotiate offer terms and conditions"
+              ],
+              "roleIds": [
+                "role_hiring_manager"
+              ],
+              "informationObjectIds": [
+                "info_hiring_decision",
+                "info_offer_package"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_onboard_new_employee_and_provide_initial_training": {
+          "id": "act_onboard_new_employee_and_provide_initial_training",
+          "elementType": "Activity",
+          "name": "Onboard new employee and provide initial training",
+          "preOutcomeId": "outcome_candidate_selected",
+          "postOutcomeId": "outcome_employee_productive",
+          "performedByRoleIds": [
+            "role_hr_business_partner",
+            "role_hiring_manager"
+          ],
+          "requiresCapabilityIds": [
+            "cap_employee_onboarding",
+            "cap_training_delivery"
+          ],
+          "metricIds": [
+            "metric_new_hire_satisfaction"
+          ],
+          "capabilityPPIT": {
+            "cap_employee_onboarding": {
+              "activities": [
+                "Complete new hire paperwork and setup",
+                "Conduct orientation and company introduction",
+                "Assign buddy or mentor for support"
+              ],
+              "roleIds": [
+                "role_hr_business_partner"
+              ],
+              "informationObjectIds": [
+                "info_onboarding_checklist",
+                "info_employee_handbook"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_training_delivery": {
+              "activities": [
+                "Provide role-specific training program",
+                "Introduce team members and stakeholders",
+                "Set initial goals and expectations"
+              ],
+              "roleIds": [
+                "role_hiring_manager"
+              ],
+              "informationObjectIds": [
+                "info_training_curriculum",
+                "info_performance_goals"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_evaluate_product_concept_against_market_opportunity": {
+          "id": "act_evaluate_product_concept_against_market_opportunity",
+          "elementType": "Activity",
+          "name": "Evaluate product concept against market opportunity",
+          "preOutcomeId": "outcome_idea_generated",
+          "postOutcomeId": "outcome_concept_validated",
+          "performedByRoleIds": [
+            "role_product_manager"
+          ],
+          "requiresCapabilityIds": [
+            "cap_market_validation",
+            "cap_business_case_development"
+          ],
+          "metricIds": [],
+          "capabilityPPIT": {
+            "cap_market_validation": {
+              "activities": [
+                "Conduct customer interviews and surveys",
+                "Analyze market size and potential",
+                "Assess competitive landscape and differentiation"
+              ],
+              "roleIds": [
+                "role_product_manager"
+              ],
+              "informationObjectIds": [
+                "info_market_research",
+                "info_customer_feedback"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_business_case_development": {
+              "activities": [
+                "Develop revenue and cost projections",
+                "Create business case and ROI analysis",
+                "Define success metrics and milestones"
+              ],
+              "roleIds": [
+                "role_product_manager"
+              ],
+              "informationObjectIds": [
+                "info_business_case",
+                "info_financial_projections"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_design_product_features_and_technical_architecture": {
+          "id": "act_design_product_features_and_technical_architecture",
+          "elementType": "Activity",
+          "name": "Design product features and technical architecture",
+          "preOutcomeId": "outcome_concept_validated",
+          "postOutcomeId": "outcome_design_completed",
+          "performedByRoleIds": [
+            "role_product_designer",
+            "role_technical_architect"
+          ],
+          "requiresCapabilityIds": [
+            "cap_product_design",
+            "cap_technical_architecture"
+          ],
+          "metricIds": [],
+          "capabilityPPIT": {
+            "cap_product_design": {
+              "activities": [
+                "Create user experience wireframes and mockups",
+                "Define product features and user stories",
+                "Conduct usability testing and iteration"
+              ],
+              "roleIds": [
+                "role_product_designer"
+              ],
+              "informationObjectIds": [
+                "info_product_specifications",
+                "info_design_artifacts"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_technical_architecture": {
+              "activities": [
+                "Design system architecture and components",
+                "Define technical requirements and constraints",
+                "Create development and deployment plans"
+              ],
+              "roleIds": [
+                "role_technical_architect"
+              ],
+              "informationObjectIds": [
+                "info_technical_architecture",
+                "info_development_plan"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_develop_and_test_product_functionality": {
+          "id": "act_develop_and_test_product_functionality",
+          "elementType": "Activity",
+          "name": "Develop and test product functionality",
+          "preOutcomeId": "outcome_design_completed",
+          "postOutcomeId": "outcome_product_tested",
+          "performedByRoleIds": [
+            "role_software_developer"
+          ],
+          "requiresCapabilityIds": [
+            "cap_software_development",
+            "cap_quality_testing"
+          ],
+          "metricIds": [
+            "metric_development_velocity"
+          ],
+          "capabilityPPIT": {
+            "cap_software_development": {
+              "activities": [
+                "Write code according to specifications",
+                "Implement features and functionality",
+                "Conduct code reviews and integration"
+              ],
+              "roleIds": [
+                "role_software_developer"
+              ],
+              "informationObjectIds": [
+                "info_source_code",
+                "info_development_documentation"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_quality_testing": {
+              "activities": [
+                "Create and execute test cases",
+                "Perform functional and performance testing",
+                "Identify and fix defects and issues"
+              ],
+              "roleIds": [
+                "role_software_developer"
+              ],
+              "informationObjectIds": [
+                "info_test_results",
+                "info_defect_reports"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_launch_product_to_market_with_support_materials": {
+          "id": "act_launch_product_to_market_with_support_materials",
+          "elementType": "Activity",
+          "name": "Launch product to market with support materials",
+          "preOutcomeId": "outcome_product_tested",
+          "postOutcomeId": "outcome_product_launched",
+          "performedByRoleIds": [
+            "role_product_manager",
+            "role_marketing_manager"
+          ],
+          "requiresCapabilityIds": [
+            "cap_product_launch",
+            "cap_marketing_execution"
+          ],
+          "metricIds": [
+            "metric_product_adoption_rate"
+          ],
+          "capabilityPPIT": {
+            "cap_product_launch": {
+              "activities": [
+                "Coordinate launch activities and timeline",
+                "Prepare sales and support teams",
+                "Monitor launch metrics and feedback"
+              ],
+              "roleIds": [
+                "role_product_manager"
+              ],
+              "informationObjectIds": [
+                "info_launch_plan",
+                "info_product_documentation"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_marketing_execution": {
+              "activities": [
+                "Create marketing campaigns and materials",
+                "Execute go-to-market strategy",
+                "Generate awareness and demand"
+              ],
+              "roleIds": [
+                "role_marketing_manager"
+              ],
+              "informationObjectIds": [
+                "info_marketing_materials",
+                "info_campaign_results"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        }
+      },
+      "outcomes": {
+        "outcome_lead_received": {
+          "id": "outcome_lead_received",
+          "elementType": "Outcome",
+          "name": "Lead Received",
+          "description": "Potential customer inquiry received"
+        },
+        "outcome_lead_qualified": {
+          "id": "outcome_lead_qualified",
+          "elementType": "Outcome",
+          "name": "Lead Qualified",
+          "description": "Lead meets qualification criteria"
+        },
+        "outcome_requirements_understood": {
+          "id": "outcome_requirements_understood",
+          "elementType": "Outcome",
+          "name": "Requirements Understood",
+          "description": "Customer needs and requirements documented"
+        },
+        "outcome_proposal_presented": {
+          "id": "outcome_proposal_presented",
+          "elementType": "Outcome",
+          "name": "Proposal Presented",
+          "description": "Customized proposal delivered to customer"
+        },
+        "outcome_contract_signed": {
+          "id": "outcome_contract_signed",
+          "elementType": "Outcome",
+          "name": "Contract Signed",
+          "description": "Agreement finalized and signed"
+        },
+        "outcome_order_received": {
+          "id": "outcome_order_received",
+          "elementType": "Outcome",
+          "name": "Order Received",
+          "description": "Customer order received for processing"
+        },
+        "outcome_order_validated": {
+          "id": "outcome_order_validated",
+          "elementType": "Outcome",
+          "name": "Order Validated",
+          "description": "Order requirements validated and confirmed"
+        },
+        "outcome_resources_allocated": {
+          "id": "outcome_resources_allocated",
+          "elementType": "Outcome",
+          "name": "Resources Allocated",
+          "description": "Project team and resources assigned"
+        },
+        "outcome_delivery_completed": {
+          "id": "outcome_delivery_completed",
+          "elementType": "Outcome",
+          "name": "Delivery Completed",
+          "description": "Solution delivered according to specifications"
+        },
+        "outcome_customer_accepted": {
+          "id": "outcome_customer_accepted",
+          "elementType": "Outcome",
+          "name": "Customer Accepted",
+          "description": "Customer accepts delivery and signs off"
+        },
+        "outcome_issue_reported": {
+          "id": "outcome_issue_reported",
+          "elementType": "Outcome",
+          "name": "Issue Reported",
+          "description": "Customer reports problem or issue"
+        },
+        "outcome_issue_categorized": {
+          "id": "outcome_issue_categorized",
+          "elementType": "Outcome",
+          "name": "Issue Categorized",
+          "description": "Support request logged and categorized"
+        },
+        "outcome_root_cause_identified": {
+          "id": "outcome_root_cause_identified",
+          "elementType": "Outcome",
+          "name": "Root Cause Identified",
+          "description": "Issue diagnosed and root cause determined"
+        },
+        "outcome_solution_implemented": {
+          "id": "outcome_solution_implemented",
+          "elementType": "Outcome",
+          "name": "Solution Implemented",
+          "description": "Fix applied and tested"
+        },
+        "outcome_issue_resolved": {
+          "id": "outcome_issue_resolved",
+          "elementType": "Outcome",
+          "name": "Issue Resolved",
+          "description": "Customer confirms issue resolution"
+        },
+        "outcome_planning_cycle_initiated": {
+          "id": "outcome_planning_cycle_initiated",
+          "elementType": "Outcome",
+          "name": "Planning Cycle Initiated",
+          "description": "Strategic planning process begins"
+        },
+        "outcome_market_analysis_completed": {
+          "id": "outcome_market_analysis_completed",
+          "elementType": "Outcome",
+          "name": "Market Analysis Completed",
+          "description": "Market research and competitive analysis finished"
+        },
+        "outcome_strategy_developed": {
+          "id": "outcome_strategy_developed",
+          "elementType": "Outcome",
+          "name": "Strategy Developed",
+          "description": "Strategic plan and initiatives defined"
+        },
+        "outcome_strategy_communicated": {
+          "id": "outcome_strategy_communicated",
+          "elementType": "Outcome",
+          "name": "Strategy Communicated",
+          "description": "Strategy shared with stakeholders"
+        },
+        "outcome_strategy_executed": {
+          "id": "outcome_strategy_executed",
+          "elementType": "Outcome",
+          "name": "Strategy Executed",
+          "description": "Strategic initiatives implemented"
+        },
+        "outcome_hiring_need_identified": {
+          "id": "outcome_hiring_need_identified",
+          "elementType": "Outcome",
+          "name": "Hiring Need Identified",
+          "description": "Staffing requirement identified"
+        },
+        "outcome_job_posted": {
+          "id": "outcome_job_posted",
+          "elementType": "Outcome",
+          "name": "Job Posted",
+          "description": "Job description created and posted"
+        },
+        "outcome_candidates_screened": {
+          "id": "outcome_candidates_screened",
+          "elementType": "Outcome",
+          "name": "Candidates Screened",
+          "description": "Initial candidate screening completed"
+        },
+        "outcome_candidate_selected": {
+          "id": "outcome_candidate_selected",
+          "elementType": "Outcome",
+          "name": "Candidate Selected",
+          "description": "Hiring decision made and offer extended"
+        },
+        "outcome_employee_productive": {
+          "id": "outcome_employee_productive",
+          "elementType": "Outcome",
+          "name": "Employee Productive",
+          "description": "New employee onboarded and productive"
+        },
+        "outcome_idea_generated": {
+          "id": "outcome_idea_generated",
+          "elementType": "Outcome",
+          "name": "Idea Generated",
+          "description": "Product concept or idea identified"
+        },
+        "outcome_concept_validated": {
+          "id": "outcome_concept_validated",
+          "elementType": "Outcome",
+          "name": "Concept Validated",
+          "description": "Product concept validated against market"
+        },
+        "outcome_design_completed": {
+          "id": "outcome_design_completed",
+          "elementType": "Outcome",
+          "name": "Design Completed",
+          "description": "Product design and architecture finalized"
+        },
+        "outcome_product_tested": {
+          "id": "outcome_product_tested",
+          "elementType": "Outcome",
+          "name": "Product Tested",
+          "description": "Product development and testing completed"
+        },
+        "outcome_product_launched": {
+          "id": "outcome_product_launched",
+          "elementType": "Outcome",
+          "name": "Product Launched",
+          "description": "Product successfully launched to market"
+        }
+      },
+      "roles": {},
+      "capabilities": {},
+      "controls": {},
+      "constraints": {},
+      "directives": {},
+      "deonticLogic": {},
+      "flowLogic": {},
+      "concepts": {},
+      "properties": {},
+      "metrics": {
+        "metric_lead_qualification_rate": {
+          "id": "metric_lead_qualification_rate",
+          "elementType": "Metric",
+          "name": "Lead Qualification Rate",
+          "current": "65%",
+          "target": "75%"
+        },
+        "metric_proposal_win_rate": {
+          "id": "metric_proposal_win_rate",
+          "elementType": "Metric",
+          "name": "Proposal Win Rate",
+          "current": "35%",
+          "target": "45%"
+        },
+        "metric_order_processing_time": {
+          "id": "metric_order_processing_time",
+          "elementType": "Metric",
+          "name": "Order Processing Time",
+          "current": "5 days",
+          "target": "3 days"
+        },
+        "metric_on_time_delivery_rate": {
+          "id": "metric_on_time_delivery_rate",
+          "elementType": "Metric",
+          "name": "On-time Delivery Rate",
+          "current": "85%",
+          "target": "95%"
+        },
+        "metric_customer_satisfaction_score": {
+          "id": "metric_customer_satisfaction_score",
+          "elementType": "Metric",
+          "name": "Customer Satisfaction Score",
+          "current": "4.2/5",
+          "target": "4.5/5"
+        },
+        "metric_first_response_time": {
+          "id": "metric_first_response_time",
+          "elementType": "Metric",
+          "name": "First Response Time",
+          "current": "4 hours",
+          "target": "2 hours"
+        },
+        "metric_resolution_time": {
+          "id": "metric_resolution_time",
+          "elementType": "Metric",
+          "name": "Resolution Time",
+          "current": "24 hours",
+          "target": "16 hours"
+        },
+        "metric_strategy_alignment_score": {
+          "id": "metric_strategy_alignment_score",
+          "elementType": "Metric",
+          "name": "Strategy Alignment Score",
+          "current": "3.8/5",
+          "target": "4.2/5"
+        },
+        "metric_strategic_initiative_completion_rate": {
+          "id": "metric_strategic_initiative_completion_rate",
+          "elementType": "Metric",
+          "name": "Strategic Initiative Completion Rate",
+          "current": "70%",
+          "target": "85%"
+        },
+        "metric_time_to_fill": {
+          "id": "metric_time_to_fill",
+          "elementType": "Metric",
+          "name": "Time to Fill",
+          "current": "45 days",
+          "target": "30 days"
+        },
+        "metric_hiring_manager_satisfaction": {
+          "id": "metric_hiring_manager_satisfaction",
+          "elementType": "Metric",
+          "name": "Hiring Manager Satisfaction",
+          "current": "4.0/5",
+          "target": "4.3/5"
+        },
+        "metric_new_hire_satisfaction": {
+          "id": "metric_new_hire_satisfaction",
+          "elementType": "Metric",
+          "name": "New Hire Satisfaction",
+          "current": "4.1/5",
+          "target": "4.4/5"
+        },
+        "metric_development_velocity": {
+          "id": "metric_development_velocity",
+          "elementType": "Metric",
+          "name": "Development Velocity",
+          "current": "25 points/sprint",
+          "target": "35 points/sprint"
+        },
+        "metric_product_adoption_rate": {
+          "id": "metric_product_adoption_rate",
+          "elementType": "Metric",
+          "name": "Product Adoption Rate",
+          "current": "15%",
+          "target": "25%"
+        }
+      },
+      "measures": {},
+      "conditions": {},
+      "informationObjects": {
+        "info_lead_profile": {
+          "id": "info_lead_profile",
+          "elementType": "InformationObject",
+          "name": "Lead Profile",
+          "description": "Contact and company information for potential customer"
+        },
+        "info_qualification_criteria": {
+          "id": "info_qualification_criteria",
+          "elementType": "InformationObject",
+          "name": "Qualification Criteria",
+          "description": "Standards for evaluating lead quality and fit"
+        },
+        "info_customer_requirements": {
+          "id": "info_customer_requirements",
+          "elementType": "InformationObject",
+          "name": "Customer Requirements",
+          "description": "Documented customer needs and specifications"
+        },
+        "info_meeting_notes": {
+          "id": "info_meeting_notes",
+          "elementType": "InformationObject",
+          "name": "Meeting Notes",
+          "description": "Record of customer interactions and discussions"
+        },
+        "info_proposal_document": {
+          "id": "info_proposal_document",
+          "elementType": "InformationObject",
+          "name": "Proposal Document",
+          "description": "Formal proposal with solution and pricing"
+        },
+        "info_solution_design": {
+          "id": "info_solution_design",
+          "elementType": "InformationObject",
+          "name": "Solution Design",
+          "description": "Technical architecture and implementation plan"
+        },
+        "info_pricing_model": {
+          "id": "info_pricing_model",
+          "elementType": "InformationObject",
+          "name": "Pricing Model",
+          "description": "Cost structure and pricing options"
+        },
+        "info_contract_agreement": {
+          "id": "info_contract_agreement",
+          "elementType": "InformationObject",
+          "name": "Contract Agreement",
+          "description": "Legal contract terms and conditions"
+        },
+        "info_customer_order": {
+          "id": "info_customer_order",
+          "elementType": "InformationObject",
+          "name": "Customer Order",
+          "description": "Formal order with specifications and requirements"
+        },
+        "info_project_charter": {
+          "id": "info_project_charter",
+          "elementType": "InformationObject",
+          "name": "Project Charter",
+          "description": "Project scope, objectives, and governance"
+        },
+        "info_technical_specifications": {
+          "id": "info_technical_specifications",
+          "elementType": "InformationObject",
+          "name": "Technical Specifications",
+          "description": "Detailed technical requirements and constraints"
+        },
+        "info_project_plan": {
+          "id": "info_project_plan",
+          "elementType": "InformationObject",
+          "name": "Project Plan",
+          "description": "Detailed schedule, milestones, and deliverables"
+        },
+        "info_resource_allocation": {
+          "id": "info_resource_allocation",
+          "elementType": "InformationObject",
+          "name": "Resource Allocation",
+          "description": "Team assignments and resource planning"
+        },
+        "info_delivery_documentation": {
+          "id": "info_delivery_documentation",
+          "elementType": "InformationObject",
+          "name": "Delivery Documentation",
+          "description": "Implementation guides and delivery artifacts"
+        },
+        "info_quality_checklist": {
+          "id": "info_quality_checklist",
+          "elementType": "InformationObject",
+          "name": "Quality Checklist",
+          "description": "Quality standards and validation criteria"
+        },
+        "info_acceptance_criteria": {
+          "id": "info_acceptance_criteria",
+          "elementType": "InformationObject",
+          "name": "Acceptance Criteria",
+          "description": "Customer requirements for delivery acceptance"
+        },
+        "info_training_materials": {
+          "id": "info_training_materials",
+          "elementType": "InformationObject",
+          "name": "Training Materials",
+          "description": "User guides and training documentation"
+        },
+        "info_support_documentation": {
+          "id": "info_support_documentation",
+          "elementType": "InformationObject",
+          "name": "Support Documentation",
+          "description": "Ongoing support and maintenance guides"
+        },
+        "info_support_ticket": {
+          "id": "info_support_ticket",
+          "elementType": "InformationObject",
+          "name": "Support Ticket",
+          "description": "Customer issue record and tracking information"
+        },
+        "info_issue_classification": {
+          "id": "info_issue_classification",
+          "elementType": "InformationObject",
+          "name": "Issue Classification",
+          "description": "Problem categorization and priority framework"
+        },
+        "info_customer_communication": {
+          "id": "info_customer_communication",
+          "elementType": "InformationObject",
+          "name": "Customer Communication",
+          "description": "Customer correspondence and status updates"
+        },
+        "info_diagnostic_data": {
+          "id": "info_diagnostic_data",
+          "elementType": "InformationObject",
+          "name": "Diagnostic Data",
+          "description": "System logs, error messages, and troubleshooting information"
+        },
+        "info_technical_documentation": {
+          "id": "info_technical_documentation",
+          "elementType": "InformationObject",
+          "name": "Technical Documentation",
+          "description": "System configuration and technical reference materials"
+        },
+        "info_solution_knowledge": {
+          "id": "info_solution_knowledge",
+          "elementType": "InformationObject",
+          "name": "Solution Knowledge",
+          "description": "Knowledge base and solution repository"
+        },
+        "info_solution_documentation": {
+          "id": "info_solution_documentation",
+          "elementType": "InformationObject",
+          "name": "Solution Documentation",
+          "description": "Fix procedures and implementation guides"
+        },
+        "info_change_record": {
+          "id": "info_change_record",
+          "elementType": "InformationObject",
+          "name": "Change Record",
+          "description": "Documentation of system changes and modifications"
+        },
+        "info_test_results": {
+          "id": "info_test_results",
+          "elementType": "InformationObject",
+          "name": "Test Results",
+          "description": "Validation testing outcomes and evidence"
+        },
+        "info_customer_feedback": {
+          "id": "info_customer_feedback",
+          "elementType": "InformationObject",
+          "name": "Customer Feedback",
+          "description": "Customer satisfaction and experience feedback"
+        },
+        "info_resolution_summary": {
+          "id": "info_resolution_summary",
+          "elementType": "InformationObject",
+          "name": "Resolution Summary",
+          "description": "Final resolution details and lessons learned"
+        },
+        "info_market_analysis": {
+          "id": "info_market_analysis",
+          "elementType": "InformationObject",
+          "name": "Market Analysis",
+          "description": "Market trends, opportunities, and customer insights"
+        },
+        "info_industry_data": {
+          "id": "info_industry_data",
+          "elementType": "InformationObject",
+          "name": "Industry Data",
+          "description": "Industry reports, statistics, and benchmarks"
+        },
+        "info_competitive_analysis": {
+          "id": "info_competitive_analysis",
+          "elementType": "InformationObject",
+          "name": "Competitive Analysis",
+          "description": "Competitor intelligence and positioning analysis"
+        },
+        "info_strategic_plan": {
+          "id": "info_strategic_plan",
+          "elementType": "InformationObject",
+          "name": "Strategic Plan",
+          "description": "Strategic objectives, initiatives, and roadmap"
+        },
+        "info_initiative_portfolio": {
+          "id": "info_initiative_portfolio",
+          "elementType": "InformationObject",
+          "name": "Initiative Portfolio",
+          "description": "Collection of strategic initiatives and projects"
+        },
+        "info_resource_plan": {
+          "id": "info_resource_plan",
+          "elementType": "InformationObject",
+          "name": "Resource Plan",
+          "description": "Resource requirements and allocation strategy"
+        },
+        "info_communication_materials": {
+          "id": "info_communication_materials",
+          "elementType": "InformationObject",
+          "name": "Communication Materials",
+          "description": "Strategy presentations and messaging materials"
+        },
+        "info_stakeholder_feedback": {
+          "id": "info_stakeholder_feedback",
+          "elementType": "InformationObject",
+          "name": "Stakeholder Feedback",
+          "description": "Stakeholder input and concerns on strategy"
+        },
+        "info_governance_framework": {
+          "id": "info_governance_framework",
+          "elementType": "InformationObject",
+          "name": "Governance Framework",
+          "description": "Decision-making structure and accountability model"
+        },
+        "info_performance_dashboard": {
+          "id": "info_performance_dashboard",
+          "elementType": "InformationObject",
+          "name": "Performance Dashboard",
+          "description": "Key metrics and performance indicators"
+        },
+        "info_progress_reports": {
+          "id": "info_progress_reports",
+          "elementType": "InformationObject",
+          "name": "Progress Reports",
+          "description": "Initiative status and milestone updates"
+        },
+        "info_adjustment_decisions": {
+          "id": "info_adjustment_decisions",
+          "elementType": "InformationObject",
+          "name": "Adjustment Decisions",
+          "description": "Strategic course corrections and changes"
+        },
+        "info_workforce_plan": {
+          "id": "info_workforce_plan",
+          "elementType": "InformationObject",
+          "name": "Workforce Plan",
+          "description": "Staffing strategy and resource requirements"
+        },
+        "info_staffing_requirements": {
+          "id": "info_staffing_requirements",
+          "elementType": "InformationObject",
+          "name": "Staffing Requirements",
+          "description": "Specific role needs and skill requirements"
+        },
+        "info_job_description": {
+          "id": "info_job_description",
+          "elementType": "InformationObject",
+          "name": "Job Description",
+          "description": "Role responsibilities and qualification requirements"
+        },
+        "info_compensation_framework": {
+          "id": "info_compensation_framework",
+          "elementType": "InformationObject",
+          "name": "Compensation Framework",
+          "description": "Salary ranges and benefits structure"
+        },
+        "info_candidate_pipeline": {
+          "id": "info_candidate_pipeline",
+          "elementType": "InformationObject",
+          "name": "Candidate Pipeline",
+          "description": "Pool of potential candidates and prospects"
+        },
+        "info_sourcing_channels": {
+          "id": "info_sourcing_channels",
+          "elementType": "InformationObject",
+          "name": "Sourcing Channels",
+          "description": "Recruitment platforms and talent sources"
+        },
+        "info_candidate_profiles": {
+          "id": "info_candidate_profiles",
+          "elementType": "InformationObject",
+          "name": "Candidate Profiles",
+          "description": "Candidate resumes and qualification summaries"
+        },
+        "info_screening_notes": {
+          "id": "info_screening_notes",
+          "elementType": "InformationObject",
+          "name": "Screening Notes",
+          "description": "Initial interview feedback and assessments"
+        },
+        "info_interview_feedback": {
+          "id": "info_interview_feedback",
+          "elementType": "InformationObject",
+          "name": "Interview Feedback",
+          "description": "Detailed interview evaluations and ratings"
+        },
+        "info_candidate_assessments": {
+          "id": "info_candidate_assessments",
+          "elementType": "InformationObject",
+          "name": "Candidate Assessments",
+          "description": "Skills tests and competency evaluations"
+        },
+        "info_hiring_decision": {
+          "id": "info_hiring_decision",
+          "elementType": "InformationObject",
+          "name": "Hiring Decision",
+          "description": "Final candidate selection and rationale"
+        },
+        "info_offer_package": {
+          "id": "info_offer_package",
+          "elementType": "InformationObject",
+          "name": "Offer Package",
+          "description": "Employment offer terms and conditions"
+        },
+        "info_onboarding_checklist": {
+          "id": "info_onboarding_checklist",
+          "elementType": "InformationObject",
+          "name": "Onboarding Checklist",
+          "description": "New hire setup and orientation tasks"
+        },
+        "info_employee_handbook": {
+          "id": "info_employee_handbook",
+          "elementType": "InformationObject",
+          "name": "Employee Handbook",
+          "description": "Company policies and procedures guide"
+        },
+        "info_training_curriculum": {
+          "id": "info_training_curriculum",
+          "elementType": "InformationObject",
+          "name": "Training Curriculum",
+          "description": "Role-specific training program and materials"
+        },
+        "info_performance_goals": {
+          "id": "info_performance_goals",
+          "elementType": "InformationObject",
+          "name": "Performance Goals",
+          "description": "Initial objectives and success metrics"
+        },
+        "info_market_research": {
+          "id": "info_market_research",
+          "elementType": "InformationObject",
+          "name": "Market Research",
+          "description": "Customer insights and market opportunity analysis"
+        },
+        "info_business_case": {
+          "id": "info_business_case",
+          "elementType": "InformationObject",
+          "name": "Business Case",
+          "description": "Product justification and investment rationale"
+        },
+        "info_financial_projections": {
+          "id": "info_financial_projections",
+          "elementType": "InformationObject",
+          "name": "Financial Projections",
+          "description": "Revenue forecasts and cost estimates"
+        },
+        "info_product_specifications": {
+          "id": "info_product_specifications",
+          "elementType": "InformationObject",
+          "name": "Product Specifications",
+          "description": "Detailed product requirements and features"
+        },
+        "info_design_artifacts": {
+          "id": "info_design_artifacts",
+          "elementType": "InformationObject",
+          "name": "Design Artifacts",
+          "description": "Wireframes, mockups, and design documentation"
+        },
+        "info_technical_architecture": {
+          "id": "info_technical_architecture",
+          "elementType": "InformationObject",
+          "name": "Technical Architecture",
+          "description": "System design and technology specifications"
+        },
+        "info_development_plan": {
+          "id": "info_development_plan",
+          "elementType": "InformationObject",
+          "name": "Development Plan",
+          "description": "Implementation timeline and resource plan"
+        },
+        "info_source_code": {
+          "id": "info_source_code",
+          "elementType": "InformationObject",
+          "name": "Source Code",
+          "description": "Product software code and components"
+        },
+        "info_development_documentation": {
+          "id": "info_development_documentation",
+          "elementType": "InformationObject",
+          "name": "Development Documentation",
+          "description": "Technical documentation and code comments"
+        },
+        "info_defect_reports": {
+          "id": "info_defect_reports",
+          "elementType": "InformationObject",
+          "name": "Defect Reports",
+          "description": "Bug reports and issue tracking information"
+        },
+        "info_launch_plan": {
+          "id": "info_launch_plan",
+          "elementType": "InformationObject",
+          "name": "Launch Plan",
+          "description": "Go-to-market strategy and launch timeline"
+        },
+        "info_product_documentation": {
+          "id": "info_product_documentation",
+          "elementType": "InformationObject",
+          "name": "Product Documentation",
+          "description": "User guides and product support materials"
+        },
+        "info_marketing_materials": {
+          "id": "info_marketing_materials",
+          "elementType": "InformationObject",
+          "name": "Marketing Materials",
+          "description": "Promotional content and sales enablement tools"
+        },
+        "info_campaign_results": {
+          "id": "info_campaign_results",
+          "elementType": "InformationObject",
+          "name": "Campaign Results",
+          "description": "Marketing campaign performance and metrics"
+        }
+      }
+    },
+    "_discoveryPainPoints": "1. [TechnologyIntegrationFriction] NetSuite integration project delayed from 3 months to 9+ months with no resolution (intensity 9/10, stage: Product Fulfillment Lifecycle → Order Processing) ← flagged as binding\n2. [TechnologyIntegrationFriction] 90+ Salesforce customizations making standard implementations difficult (intensity 8/10, stage: Territory Sales Execution → Customer Engagement) ← flagged as binding\n3. [ProcessHandoffFriction] Sales team loses 3 days per week to admin and meetings instead of selling (intensity 8/10, stage: Territory Sales Execution → Customer Engagement)\n4. [DataSignalFriction] Lack of pre-visit customer intelligence requiring manual information gathering (intensity 7/10, stage: Territory Sales Execution → Pre Visit Intelligence)\n5. [IncentiveCapacityFriction] Distributors becoming order takers rather than proactive sellers (intensity 7/10, stage: Partner Distribution Management → Sales Enablement)\n6. [GovernanceRiskFriction] Cannot enforce CRM usage due to system instability and user frustration (intensity 6/10, stage: Sales Performance Management → Activity Tracking)"
+  },
+  "heatmaps": []
+}
