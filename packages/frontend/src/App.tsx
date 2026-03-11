@@ -1,12 +1,19 @@
+import { useEffect } from "react";
 import { useCanvasStore } from "./store/canvas-store.ts";
+import { useAuthStore } from "./store/auth-store.ts";
+import { useProjectStore } from "./store/project-store.ts";
 import { FileLoader } from "./components/FileLoader.tsx";
 import { CanvasView } from "./components/CanvasView.tsx";
 import { StageWizard } from "./components/StageWizard.tsx";
 import { UserGuidePanel } from "./components/UserGuidePanel.tsx";
 import { NetworkView } from "./components/NetworkView.tsx";
-import  DiscoveryIntake  from "./components/DiscoveryIntake.tsx";
+import DiscoveryIntake from "./components/DiscoveryIntake.tsx";
+import { LoginPage } from "./components/LoginPage.tsx";
+import { ProjectList } from "./components/ProjectList.tsx";
 
 export default function App() {
+  const { user, loading: authLoading, isLocalMode, initialize: initAuth, signOut } = useAuthStore();
+  const { currentProjectId, saving } = useProjectStore();
   const {
     scaffoldData,
     canvasViewModel,
@@ -19,28 +26,67 @@ export default function App() {
     loadHeatmap,
   } = useCanvasStore();
 
+  // Initialize auth on mount
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
+
   const isLoaded = !!scaffoldData;
   const isNetwork = viewMode === "network";
   const isStage = viewMode === "stage" && !!canvasViewModel;
   const isIntake = viewMode === "intake";
+
+  // Auth gate: show login page if not authenticated and not local mode
+  if (authLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="text-sm text-gray-400">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isLocalMode && !user) {
+    return <LoginPage />;
+  }
+
+  // Project list: show when authenticated but no project/scaffold loaded
+  // In local mode, skip project list and show original landing page
+  const showProjectList = !isLocalMode && !isLoaded && !isIntake;
 
   // Get selected VS name for breadcrumb
   const selectedVsName = selectedVsId && scaffoldData
     ? ((scaffoldData.elements.valueStreams[selectedVsId] as { name?: string })?.name ?? selectedVsId)
     : null;
 
+  // Navigate back to project list
+  const goToProjects = () => {
+    useCanvasStore.getState().reset();
+    useProjectStore.getState().setCurrentProject(null);
+  };
+
   return (
     <div className="flex h-screen flex-col">
       {/* Header */}
       <header className="flex items-center justify-between border-b border-gray-200 bg-vcc-900 px-6 py-3">
         <div className="flex items-center gap-4">
-          <h1 className="text-base font-semibold tracking-tight text-white">
+          <h1
+            className="cursor-pointer text-base font-semibold tracking-tight text-white"
+            onClick={!isLocalMode ? goToProjects : undefined}
+          >
             Value Cognition Canvas
           </h1>
 
           {/* Mode switch */}
           {isLoaded && (
             <div className="flex items-center rounded-lg bg-white/10 p-0.5">
+              {!isLocalMode && (
+                <button
+                  onClick={goToProjects}
+                  className="rounded-md px-3 py-1 text-[11px] font-medium text-white/50 transition-all hover:text-white/80"
+                >
+                  Projects
+                </button>
+              )}
               <button
                 onClick={backToNetwork}
                 className={`rounded-md px-3 py-1 text-[11px] font-medium transition-all ${
@@ -86,21 +132,50 @@ export default function App() {
               <span className="font-medium text-white/90">New Discovery</span>
             </nav>
           )}
+
+          {/* Project list breadcrumb */}
+          {showProjectList && !isLocalMode && (
+            <nav className="flex items-center gap-1.5 text-[11px]">
+              <span className="font-medium text-white/90">Projects</span>
+            </nav>
+          )}
         </div>
 
         <div className="flex items-center gap-3">
-          {/* New Discovery button — always visible */}
-          <button
-            onClick={goToIntake}
-            className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
-              isIntake
-                ? "border-white/30 bg-white/20 text-white"
-                : "border-white/20 text-white/60 hover:border-white/30 hover:bg-white/10 hover:text-white"
-            }`}
-          >
-            + New Discovery
-          </button>
-          <span className="text-xs text-vcc-300">v0.2.0</span>
+          {/* Save indicator */}
+          {saving && (
+            <span className="text-[10px] text-white/40">Saving...</span>
+          )}
+
+          {/* Current project name */}
+          {currentProjectId && isLoaded && (
+            <span className="text-[10px] text-white/40">
+              Project saved
+            </span>
+          )}
+
+          {/* New Discovery button — always visible when in canvas/network */}
+          {(isLoaded || isIntake) && (
+            <button
+              onClick={goToIntake}
+              className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
+                isIntake
+                  ? "border-white/30 bg-white/20 text-white"
+                  : "border-white/20 text-white/60 hover:border-white/30 hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              + New Discovery
+            </button>
+          )}
+
+          {/* User info & sign out */}
+          {!isLocalMode && user && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-white/40">{user.email}</span>
+            </div>
+          )}
+
+          <span className="text-xs text-vcc-300">v0.3.0</span>
         </div>
       </header>
 
@@ -110,7 +185,7 @@ export default function App() {
       {/* Main content */}
       <main className="flex-1 overflow-auto">
         {/* Errors — only show outside intake view */}
-        {!isIntake && error && !isLoaded && (
+        {!isIntake && error && !isLoaded && !showProjectList && (
           <div className="m-6 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {error}
           </div>
@@ -128,6 +203,9 @@ export default function App() {
           </div>
         )}
 
+        {/* Project list (authenticated, no project loaded) */}
+        {showProjectList && <ProjectList />}
+
         {/* Views — DiscoveryIntake stays mounted (hidden) to preserve form state */}
         <div style={{ display: isIntake ? undefined : "none" }}>
           <DiscoveryIntake
@@ -140,7 +218,8 @@ export default function App() {
           />
         </div>
 
-        {!isIntake && !isLoaded && (
+        {/* Landing page — local mode only (no project list) */}
+        {isLocalMode && !isIntake && !isLoaded && (
           <div className="flex h-full flex-col items-center justify-center gap-8 p-6">
             <div className="max-w-md text-center">
               <div className="mb-4 flex justify-center">

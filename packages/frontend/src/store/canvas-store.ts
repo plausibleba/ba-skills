@@ -100,6 +100,9 @@ interface CanvasState {
 
   // Bundle save/load (D-092)
   saveFullBundle: () => Promise<void>;
+
+  // Backend persistence (D-108: Supabase integration)
+  saveToProject: () => Promise<void>;
 }
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
@@ -1113,7 +1116,51 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     URL.revokeObjectURL(url);
     set({ scaffoldDirty: false });
   },
+
+  // Save current scaffold + heatmaps to the active Supabase project (D-108)
+  saveToProject: async () => {
+    // Lazy import to avoid circular dependency
+    const { useProjectStore } = await import("./project-store.ts");
+    const projectStore = useProjectStore.getState();
+    const { currentProjectId } = projectStore;
+    if (!currentProjectId) return;
+
+    const { scaffoldData, heatmapsByVs, userStoriesByActivity } = get();
+    if (!scaffoldData) return;
+
+    const bundle = {
+      bundleVersion: "2.0",
+      updatedAt: new Date().toISOString(),
+      scaffold: scaffoldData,
+      heatmaps: Array.from(heatmapsByVs.values()),
+      userStoriesByActivity,
+    };
+
+    const result = await projectStore.saveProject(currentProjectId, bundle);
+    if (result.ok) {
+      set({ scaffoldDirty: false });
+    }
+  },
 }));
+
+// ── Auto-save: debounced save to Supabase when scaffold changes ─────────
+let _autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
+let _prevDirty = false;
+useCanvasStore.subscribe((state) => {
+  const dirty = state.scaffoldDirty;
+  if (dirty && !_prevDirty) {
+    // Scaffold just became dirty — schedule auto-save
+    import("./project-store.ts").then(({ useProjectStore }) => {
+      const { currentProjectId } = useProjectStore.getState();
+      if (!currentProjectId) return;
+      if (_autoSaveTimer) clearTimeout(_autoSaveTimer);
+      _autoSaveTimer = setTimeout(() => {
+        useCanvasStore.getState().saveToProject();
+      }, 2000);
+    });
+  }
+  _prevDirty = dirty;
+});
 
 // ── Helper: refresh network nodes after scaffold mutation ──────────────────
 function _refreshNetworkNodes(

@@ -566,3 +566,55 @@ Additional lenses can be defined without modifying the foundation. Simulations c
 
 **Lens assignment:** GSM simulation is the core of the Authority Governance lens (D-100). The 3×3 grid, decision table, kernel status panel, and step-by-step narrative are Authority Governance lens components.
 **Rationale:** The decision table evaluation is pure logic that doesn't require a graph store. Building it now delivers immediate demonstration value (Eric Broda conversation, paper PoC evolution) while the type design ensures clean migration when graph infrastructure arrives.
+## D-108: Backend Architecture — Option C (Hybrid, API-First)
+**Date:** 2026-03-11
+**Context:** Field demand for multi-user access from Puretec engagement. Six requirements (R1-R6). One-person + AI team constraint. Target: Salesforce sales team trial (~20-30 users, ~12-15 client projects).
+
+**Governing constraints:**
+1. No messaging platform lock-in. Web app is primary client. Messaging integrations are pluggable adapters.
+2. Success = sales team trial, not a single customer demo.
+3. One person + AI builds everything. Managed services only. Zero custom DevOps.
+4. Go/no-go based on trial outcomes. Production features post-trial.
+
+**Decision:** Option C — API-first backend for state/auth (Supabase), edge for LLM compute (Vercel Edge Runtime). Web frontend is primary client. Messaging integrations (Slack first, then Teams/others) are thin adapters behind the same API.
+- Supabase: Postgres + Auth + Row Level Security. Managed.
+- LLM pipeline: Vercel Edge Runtime (unchanged). Passes A1-A5 stay edge-side.
+- Bundle format: JSONB in Supabase Postgres. Same schema for storage, API, and export.
+**Rationale:** Supabase provides auth, database, RLS, and realtime out of the box. A solo developer can have multi-user persistence working in days. Edge-resident LLM pipeline stays intact. API-first design ensures messaging integrations plug in later without refactoring.
+
+## D-109: Minimum Backend Schema for Sales Team Trial
+**Date:** 2026-03-11
+**Context:** Trial requires ~20-30 users across ~12-15 projects. Need auth, project isolation, shared access.
+**Decision:** Three tables: `users` (Supabase Auth), `projects`, `project_access`. Supabase Auth handles sign-in (Google OAuth, magic link). RLS policies enforce project isolation at database level. Optimistic locking via `revision` counter. `module` field on projects (default 'sales-discovery').
+**Rationale:** Supabase RLS eliminates need for custom API layer for basic CRUD. Frontend talks directly to Postgres through Supabase client. Fastest path to multi-user persistence for solo developer.
+
+## D-110: Bundle as Canonical Format
+**Date:** 2026-03-11
+**Context:** Bundle is currently a JSON file on user's filesystem. Backend requires deciding role of bundle format.
+**Decision:** Bundle JSON schema is single source of truth for persistence, API exchange, and export. JSONB in Postgres stores bundle as-is. No normalisation. Single canonical schema version enforced. Old bundles auto-migrated on read. Export produces JSON file. Import accepts and migrates.
+**Rationale:** Aligns with D-095. No impedance mismatch. Bundle remains portable.
+
+## D-111: Module System — Explicit Choice, Soft Boundary
+**Date:** 2026-03-11
+**Context:** Different users need different features. Must be simple for one person to build.
+**Decision:** Module set at project creation (dropdown: Sales Discovery, Board Diagnostic, Transformation Planning). Controls which pipeline passes are available and which UI panels render. Can be changed later via project settings (soft boundary). Existing data preserved when switching. No progressive disclosure in MVP.
+**Rationale:** Explicit choice is simpler to build, test, and explain than context inference. Can evolve to progressive disclosure post-trial if user feedback warrants it.
+
+## D-112: Editing Architecture — Structured Now, Conversational Later
+**Date:** 2026-03-11
+**Context:** R2 (structured editing) and R5 (conversational LLM editing) both needed. Both spar challengers agreed they should be separate pipelines.
+**Decision:** Phase 1 (trial): Structured editing only. Edit mode on canvas. Direct field manipulation. Mutations save to backend via Supabase. Phase 2 (post-trial): Conversational editing via Pass 5 (Revision). Separate endpoint. Returns proposed delta. User approves before applying. Provenance tracked.
+**Rationale:** Structured editing is deterministic, auditable, sufficient for trial. Conversational editing requires Pass 5 prompt design, delta logic, approval UX — too much scope for initial trial.
+
+## D-113: Messaging Integration — Pluggable Adapters, No Lock-In
+**Date:** 2026-03-11
+**Context:** Slack is immediate opportunity (Salesforce owns Slack). But no platform lock-in.
+**Decision:** Backend API is messaging-platform-agnostic. Messaging integrations are thin adapters (~200-300 lines each). Slack adapter first. Architecture supports Teams, WhatsApp Business, standalone chat, any future platform. Slack levels staged: Level 0 (inbound transcript, trial), Level 1 (copilot, post-trial), Level 2 (outbound feed, future).
+**Rationale:** Adapter pattern ensures no platform is architecturally privileged. VCC API is the product; adapters are distribution channels.
+
+## D-114: Build Sequence — Four Phases for Sales Team Trial
+**Date:** 2026-03-11
+**Context:** One person + AI. Target: sales team trial with ~12 clients.
+**Decision:** Phase 1 (Weeks 1-3): Multi-user web app — Supabase auth, project CRUD, edit mode, module selection. Phase 2 (Weeks 3-5): Trial readiness — sharing, polish, concurrent access. Phase 3 (Weeks 5-7): Slack adapter Level 0. Phase 4 (Weeks 7+): Feedback-driven.
+**Explicitly not in trial scope:** Conversational editing (Pass 5), multi-content ingest, multi-tenant isolation, audit trails, real-time co-editing, RBAC beyond view/edit, offline-first, graph storage.
+**Rationale:** Phases 1-2 get trial running. Phase 3 adds Slack story. Phase 4 is feedback-driven. Solo developer + AI can deliver Phases 1-3 in 5-7 weeks.
