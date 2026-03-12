@@ -1140,6 +1140,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     if (result.ok) {
       set({ scaffoldDirty: false });
     }
+    // On conflict, auto-save will be paused until user resolves it
+    // (the subscription checks conflict flag before scheduling)
   },
 }));
 
@@ -1151,8 +1153,11 @@ useCanvasStore.subscribe((state) => {
   if (dirty && !_prevDirty) {
     // Scaffold just became dirty — schedule auto-save
     import("./project-store.ts").then(({ useProjectStore }) => {
-      const { currentProjectId } = useProjectStore.getState();
+      const projectState = useProjectStore.getState();
+      const { currentProjectId } = projectState;
       if (!currentProjectId) return;
+      // Don't auto-save while a conflict is unresolved
+      if (projectState.conflict) return;
       if (_autoSaveTimer) clearTimeout(_autoSaveTimer);
       _autoSaveTimer = setTimeout(() => {
         useCanvasStore.getState().saveToProject();

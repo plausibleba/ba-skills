@@ -639,7 +639,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
                 className="w-full h-48 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-300 resize-none"
                 placeholder="Or paste here…
 
-Example: 'We met with the head of tech at Puretec. They have 4000+ SKUs and 12-month cartridge replacement revenue. Main problem is reps going into customer visits with no consolidated account brief — spending 3 days a week on admin. NetSuite and Salesforce don't talk to each other properly, 9-month overrun on the integration…'"
+Example: 'We met with the head of tech at Acme Corp. They have 4000+ SKUs and recurring subscription revenue. Main problem is reps going into customer visits with no consolidated account brief — spending 3 days a week on admin. Their ERP and CRM don't talk to each other properly, 9-month overrun on the integration…'"
                 value={transcript}
                 onChange={e => setTranscript(e.target.value)}
               />
@@ -681,7 +681,7 @@ Example: 'We met with the head of tech at Puretec. They have 4000+ SKUs and 12-m
                 <Field label="Company name" required
                   confidence={form.extractionMeta && form.org.name ? (form.org.confidence ?? "high") : undefined}>
                   <input className={inputCls} value={form.org.name}
-                    onChange={e => setOrg({ name: e.target.value })} placeholder="Puretec Water Filtration" />
+                    onChange={e => setOrg({ name: e.target.value })} placeholder="e.g. Acme Corp" />
                 </Field>
                 <Field label="Industry" required>
                   <select className={inputCls} value={form.org.industry}

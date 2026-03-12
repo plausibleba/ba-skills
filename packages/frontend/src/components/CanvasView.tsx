@@ -14,6 +14,7 @@ import { StageColumn } from "./canvas/StageColumn.tsx";
 import { FlowChevron } from "./canvas/FlowChevron.tsx";
 import { CanvasToolbar } from "./canvas/CanvasToolbar.tsx";
 import { ConstraintDAGOverlay } from "./canvas/ConstraintDAGOverlay.tsx";
+import { ConflictBanner } from "./ConflictBanner.tsx";
 import { useCanvasControls } from "./canvas/useCanvasControls.ts";
 
 /* ── Canvas View — orchestrator ────────────────────────────────────── */
@@ -109,6 +110,9 @@ export function CanvasView() {
   return (
     <div className="flex h-full gap-0">
       <div className="flex h-full flex-1 flex-col gap-4 overflow-hidden pl-6 pt-4">
+        {/* Conflict banner — optimistic lock failure */}
+        <ConflictBanner />
+
         {/* Stub banner */}
         {isStub && (
           <div className="flex flex-shrink-0 items-center gap-2 rounded-lg border border-vcc-100 bg-vcc-50/50 px-4 py-2">

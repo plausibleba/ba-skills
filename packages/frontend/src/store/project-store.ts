@@ -15,12 +15,14 @@ interface ProjectState {
   loading: boolean;
   saving: boolean;
   error: string | null;
+  conflict: boolean;            // true when optimistic lock fails
 
   // CRUD
   fetchProjects: () => Promise<void>;
   createProject: (name: string, module: ProjectModule, bundle: Record<string, unknown>) => Promise<string | null>;
   loadProject: (id: string) => Promise<ProjectRow | null>;
-  saveProject: (id: string, bundle: Record<string, unknown>) => Promise<{ ok: boolean; error?: string }>;
+  saveProject: (id: string, bundle: Record<string, unknown>, opts?: { force?: boolean }) => Promise<{ ok: boolean; error?: string }>;
+  reloadProject: () => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
 
   // Sharing
@@ -29,6 +31,7 @@ interface ProjectState {
   // State management
   setCurrentProject: (id: string | null, revision?: number) => void;
   clearError: () => void;
+  clearConflict: () => void;
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -38,6 +41,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   loading: false,
   saving: false,
   error: null,
+  conflict: false,
 
   fetchProjects: async () => {
     if (!isSupabaseConfigured) return;
@@ -102,35 +106,65 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     return data as ProjectRow;
   },
 
-  saveProject: async (id, bundle) => {
+  saveProject: async (id, bundle, opts) => {
     if (!isSupabaseConfigured) return { ok: false, error: "Not configured" };
     set({ saving: true, error: null });
 
     const knownRevision = get().currentRevision;
 
-    // Optimistic lock check: only update if revision matches
-    const { data, error } = await supabase
+    // Force-save bypasses the optimistic lock (used after user confirms overwrite)
+    let query = supabase
       .from("projects")
       .update({ bundle })
-      .eq("id", id)
-      .eq("revision", knownRevision)  // optimistic lock
+      .eq("id", id);
+
+    if (!opts?.force) {
+      query = query.eq("revision", knownRevision);  // optimistic lock
+    }
+
+    const { data, error } = await query
       .select("revision")
       .single();
 
     if (error) {
-      // Could be a conflict (revision mismatch) or other error
+      // Could be a conflict (revision mismatch returns no rows → error) or other error
+      const isConflict = error.code === "PGRST116"; // PostgREST: "JSON object requested, multiple (or no) rows returned"
+      if (isConflict) {
+        set({ saving: false, conflict: true, error: "Another user modified this project. Reload to get their changes, or overwrite with yours." });
+        return { ok: false, error: "conflict" };
+      }
       set({ saving: false, error: error.message });
       return { ok: false, error: error.message };
     }
 
-    if (!data) {
-      // No rows updated — revision mismatch (conflict)
-      set({ saving: false, error: "Conflict: project was modified by another user. Please reload." });
-      return { ok: false, error: "conflict" };
+    set({ saving: false, conflict: false, currentRevision: data.revision });
+    return { ok: true };
+  },
+
+  reloadProject: async () => {
+    const id = get().currentProjectId;
+    if (!id) return;
+
+    const project = await get().loadProject(id);
+    if (!project) return;
+
+    // Reload the bundle into the canvas store
+    const bundle = project.bundle as any;
+    const { useCanvasStore } = await import("./canvas-store.ts");
+    const canvasStore = useCanvasStore.getState();
+
+    if (bundle.scaffold) {
+      await canvasStore.loadScaffold(bundle.scaffold);
+      if (bundle.heatmaps) {
+        for (const hm of bundle.heatmaps) {
+          await canvasStore.loadHeatmap(hm);
+        }
+      }
+    } else if (bundle.elements) {
+      await canvasStore.loadScaffold(bundle);
     }
 
-    set({ saving: false, currentRevision: data.revision });
-    return { ok: true };
+    set({ conflict: false, error: null });
   },
 
   deleteProject: async (id) => {
@@ -161,4 +195,5 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   },
 
   clearError: () => set({ error: null }),
+  clearConflict: () => set({ conflict: false, error: null }),
 }));
