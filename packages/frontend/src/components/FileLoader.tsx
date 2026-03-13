@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import type { ScaffoldData, HeatmapData } from "../types.ts";
 import type { CardRegistry } from "../types/cards.ts";
+import { isPlausibleBABundle, normaliseBundle } from "../utils/bundle-import.ts";
 import PURETEC_CARDS from "../../fixtures/cards/puretec-cards.json";
 
 export function FileLoader() {
@@ -38,6 +39,11 @@ export function FileLoader() {
           } else {
             useCanvasStore.getState().loadCards(PURETEC_CARDS as unknown as CardRegistry);
           }
+        } else if (isPlausibleBABundle(json)) {
+          // PlausibleBA ba-skills-bundle — normalise naming then load
+          const scaffold = normaliseBundle(json);
+          await loadScaffold(scaffold);
+          useCanvasStore.getState().loadCards(PURETEC_CARDS as unknown as CardRegistry);
         } else if ("scaffoldId" in json && "elements" in json) {
           await loadScaffold(json as unknown as ScaffoldData);
           // Auto-load demo card fixture for standalone scaffolds
