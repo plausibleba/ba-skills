@@ -1,0 +1,1526 @@
+{
+  "$schema": "https://plausibleba.com/schemas/ba-skills-bundle/1.0.0",
+  "meta": {
+    "bundleVersion": "1.0.0",
+    "createdAt": "2026-03-13T02:33:26.484800+00:00",
+    "client": "PortfolioProp",
+    "skillVersions": {
+      "capabilityMap": "1.0.0",
+      "conceptModel": "1.0.0",
+      "valueStream": "1.0.0",
+      "ppitMapping": null
+    },
+    "capsicumVersion": "1.0.0"
+  },
+  "scaffoldId": "scaffold_portfolioprop",
+  "name": "PortfolioProp — Operating Model",
+  "description": "Rental property portfolio management platform covering short-stay and long-term rental operations, owner client management, and compliance.",
+  "elements": {
+    "capabilities": {
+      "cap_l1_portfolio_mgmt": {
+        "id": "cap_l1_portfolio_mgmt",
+        "elementType": "Capability",
+        "name": "Portfolio Management",
+        "level": 1,
+        "parentId": null,
+        "businessObject": "Portfolio",
+        "description": "Ability to manage the aggregate collection of properties under ownership on behalf of clients."
+      },
+      "cap_l2_portfolio_strategy": {
+        "id": "cap_l2_portfolio_strategy",
+        "elementType": "Capability",
+        "name": "Portfolio Strategy",
+        "level": 2,
+        "parentId": "cap_l1_portfolio_mgmt",
+        "businessObject": "Portfolio",
+        "description": "Ability to define and maintain the strategic direction for a client portfolio."
+      },
+      "cap_l3_portfolio_strategy_define": {
+        "id": "cap_l3_portfolio_strategy_define",
+        "elementType": "Capability",
+        "name": "Define Portfolio Strategy",
+        "level": 3,
+        "parentId": "cap_l2_portfolio_strategy",
+        "businessObject": "Portfolio",
+        "description": "Ability to define investment objectives, target mix and growth plan for a client portfolio."
+      },
+      "cap_l3_portfolio_mix_manage": {
+        "id": "cap_l3_portfolio_mix_manage",
+        "elementType": "Capability",
+        "name": "Manage Portfolio Mix",
+        "level": 3,
+        "parentId": "cap_l2_portfolio_strategy",
+        "businessObject": "Portfolio",
+        "description": "Ability to manage the balance of short-stay and long-term properties across a client portfolio."
+      },
+      "cap_l3_portfolio_lifecycle_manage": {
+        "id": "cap_l3_portfolio_lifecycle_manage",
+        "elementType": "Capability",
+        "name": "Manage Portfolio Lifecycle",
+        "level": 3,
+        "parentId": "cap_l2_portfolio_strategy",
+        "businessObject": "Portfolio",
+        "description": "Ability to manage the onboarding, transition and exit of properties within a client portfolio."
+      },
+      "cap_l2_portfolio_performance": {
+        "id": "cap_l2_portfolio_performance",
+        "elementType": "Capability",
+        "name": "Portfolio Performance",
+        "level": 2,
+        "parentId": "cap_l1_portfolio_mgmt",
+        "businessObject": "Yield Performance",
+        "description": "Ability to measure and report on the financial and operational performance of a client portfolio."
+      },
+      "cap_l3_yield_track": {
+        "id": "cap_l3_yield_track",
+        "elementType": "Capability",
+        "name": "Track Yield Performance",
+        "level": 3,
+        "parentId": "cap_l2_portfolio_performance",
+        "businessObject": "Yield Performance",
+        "description": "Ability to calculate and track rental yield and occupancy rate across properties in a portfolio."
+      },
+      "cap_l3_benchmark_performance": {
+        "id": "cap_l3_benchmark_performance",
+        "elementType": "Capability",
+        "name": "Benchmark Portfolio Performance",
+        "level": 3,
+        "parentId": "cap_l2_portfolio_performance",
+        "businessObject": "Yield Performance",
+        "description": "Ability to benchmark portfolio performance against market comparables and targets."
+      },
+      "cap_l3_performance_report": {
+        "id": "cap_l3_performance_report",
+        "elementType": "Capability",
+        "name": "Report Portfolio Performance",
+        "level": 3,
+        "parentId": "cap_l2_portfolio_performance",
+        "businessObject": "Financial Report",
+        "description": "Ability to produce consolidated portfolio performance reports for owner clients."
+      },
+      "cap_l1_property_mgmt": {
+        "id": "cap_l1_property_mgmt",
+        "elementType": "Capability",
+        "name": "Property Management",
+        "level": 1,
+        "parentId": null,
+        "businessObject": "Property",
+        "description": "Ability to manage individual properties across their operational lifecycle."
+      },
+      "cap_l2_property_onboarding": {
+        "id": "cap_l2_property_onboarding",
+        "elementType": "Capability",
+        "name": "Property Onboarding",
+        "level": 2,
+        "parentId": "cap_l1_property_mgmt",
+        "businessObject": "Property",
+        "description": "Ability to onboard new properties into the management portfolio."
+      },
+      "cap_l3_property_intake": {
+        "id": "cap_l3_property_intake",
+        "elementType": "Capability",
+        "name": "Manage Property Intake",
+        "level": 3,
+        "parentId": "cap_l2_property_onboarding",
+        "businessObject": "Property",
+        "description": "Ability to assess, document and onboard a new property into the management system."
+      },
+      "cap_l3_property_setup": {
+        "id": "cap_l3_property_setup",
+        "elementType": "Capability",
+        "name": "Manage Property Setup",
+        "level": 3,
+        "parentId": "cap_l2_property_onboarding",
+        "businessObject": "Property",
+        "description": "Ability to configure property profiles, access arrangements and listing readiness."
+      },
+      "cap_l3_property_compliance_setup": {
+        "id": "cap_l3_property_compliance_setup",
+        "elementType": "Capability",
+        "name": "Manage Compliance Setup",
+        "level": 3,
+        "parentId": "cap_l2_property_onboarding",
+        "businessObject": "Compliance Obligation",
+        "description": "Ability to identify and configure compliance obligations for a newly onboarded property."
+      },
+      "cap_l2_rental_strategy": {
+        "id": "cap_l2_rental_strategy",
+        "elementType": "Capability",
+        "name": "Rental Strategy",
+        "level": 2,
+        "parentId": "cap_l1_property_mgmt",
+        "businessObject": "Property",
+        "description": "Ability to define and maintain the rental mode and pricing strategy for each property."
+      },
+      "cap_l3_mode_manage": {
+        "id": "cap_l3_mode_manage",
+        "elementType": "Capability",
+        "name": "Manage Rental Mode",
+        "level": 3,
+        "parentId": "cap_l2_rental_strategy",
+        "businessObject": "Property",
+        "description": "Ability to determine and switch a property between short-stay and long-term rental modes."
+      },
+      "cap_l3_pricing_manage": {
+        "id": "cap_l3_pricing_manage",
+        "elementType": "Capability",
+        "name": "Manage Pricing Strategy",
+        "level": 3,
+        "parentId": "cap_l2_rental_strategy",
+        "businessObject": "Booking",
+        "description": "Ability to set and dynamically adjust nightly or periodic pricing based on demand signals."
+      },
+      "cap_l3_availability_manage": {
+        "id": "cap_l3_availability_manage",
+        "elementType": "Capability",
+        "name": "Manage Availability",
+        "level": 3,
+        "parentId": "cap_l2_rental_strategy",
+        "businessObject": "Booking",
+        "description": "Ability to manage property availability calendars across all channels."
+      },
+      "cap_l2_tenancy_mgmt": {
+        "id": "cap_l2_tenancy_mgmt",
+        "elementType": "Capability",
+        "name": "Tenancy Management",
+        "level": 2,
+        "parentId": "cap_l1_property_mgmt",
+        "businessObject": "Tenancy",
+        "description": "Ability to manage long-term tenancy agreements and tenant relationships."
+      },
+      "cap_l3_tenancy_onboard": {
+        "id": "cap_l3_tenancy_onboard",
+        "elementType": "Capability",
+        "name": "Manage Tenant Onboarding",
+        "level": 3,
+        "parentId": "cap_l2_tenancy_mgmt",
+        "businessObject": "Tenancy",
+        "description": "Ability to screen, approve and onboard tenants into a long-term tenancy agreement."
+      },
+      "cap_l3_tenancy_lifecycle": {
+        "id": "cap_l3_tenancy_lifecycle",
+        "elementType": "Capability",
+        "name": "Manage Tenancy Lifecycle",
+        "level": 3,
+        "parentId": "cap_l2_tenancy_mgmt",
+        "businessObject": "Tenancy",
+        "description": "Ability to manage the active tenancy including rent collection, renewals and notices."
+      },
+      "cap_l3_tenancy_exit": {
+        "id": "cap_l3_tenancy_exit",
+        "elementType": "Capability",
+        "name": "Manage Tenancy Exit",
+        "level": 3,
+        "parentId": "cap_l2_tenancy_mgmt",
+        "businessObject": "Tenancy",
+        "description": "Ability to manage the end of a tenancy including final inspection, bond return and handback."
+      },
+      "cap_l1_booking_occupancy": {
+        "id": "cap_l1_booking_occupancy",
+        "elementType": "Capability",
+        "name": "Booking & Occupancy",
+        "level": 1,
+        "parentId": null,
+        "businessObject": "Booking",
+        "description": "Ability to manage the full booking lifecycle and guest experience for short-stay properties."
+      },
+      "cap_l2_booking_mgmt": {
+        "id": "cap_l2_booking_mgmt",
+        "elementType": "Capability",
+        "name": "Booking Management",
+        "level": 2,
+        "parentId": "cap_l1_booking_occupancy",
+        "businessObject": "Booking",
+        "description": "Ability to manage the intake, confirmation and amendment of guest bookings."
+      },
+      "cap_l3_booking_intake": {
+        "id": "cap_l3_booking_intake",
+        "elementType": "Capability",
+        "name": "Manage Booking Intake",
+        "level": 3,
+        "parentId": "cap_l2_booking_mgmt",
+        "businessObject": "Booking",
+        "description": "Ability to receive, assess and confirm guest booking requests across channels."
+      },
+      "cap_l3_booking_calendar": {
+        "id": "cap_l3_booking_calendar",
+        "elementType": "Capability",
+        "name": "Manage Availability Calendar",
+        "level": 3,
+        "parentId": "cap_l2_booking_mgmt",
+        "businessObject": "Booking",
+        "description": "Ability to maintain accurate availability calendars across all distribution channels."
+      },
+      "cap_l3_booking_amendments": {
+        "id": "cap_l3_booking_amendments",
+        "elementType": "Capability",
+        "name": "Manage Booking Amendments",
+        "level": 3,
+        "parentId": "cap_l2_booking_mgmt",
+        "businessObject": "Booking",
+        "description": "Ability to process booking modifications, cancellations and rebooking requests."
+      },
+      "cap_l2_guest_intake": {
+        "id": "cap_l2_guest_intake",
+        "elementType": "Capability",
+        "name": "Guest Intake & Pre-Arrival",
+        "level": 2,
+        "parentId": "cap_l1_booking_occupancy",
+        "businessObject": "Guest",
+        "description": "Ability to verify guest identity and prepare guests for arrival."
+      },
+      "cap_l3_guest_verify": {
+        "id": "cap_l3_guest_verify",
+        "elementType": "Capability",
+        "name": "Manage Guest Verification",
+        "level": 3,
+        "parentId": "cap_l2_guest_intake",
+        "businessObject": "Guest",
+        "description": "Ability to verify guest identity and screen for platform compliance prior to arrival."
+      },
+      "cap_l3_pre_arrival_comms": {
+        "id": "cap_l3_pre_arrival_comms",
+        "elementType": "Capability",
+        "name": "Manage Pre-Arrival Communication",
+        "level": 3,
+        "parentId": "cap_l2_guest_intake",
+        "businessObject": "Guest",
+        "description": "Ability to communicate arrival instructions, access details and local information to guests."
+      },
+      "cap_l3_arrival_scheduling": {
+        "id": "cap_l3_arrival_scheduling",
+        "elementType": "Capability",
+        "name": "Manage Arrival Scheduling",
+        "level": 3,
+        "parentId": "cap_l2_guest_intake",
+        "businessObject": "Guest",
+        "description": "Ability to coordinate guest arrival timing and access arrangements."
+      },
+      "cap_l3_guest_guide": {
+        "id": "cap_l3_guest_guide",
+        "elementType": "Capability",
+        "name": "Manage Digital Guest Guide",
+        "level": 3,
+        "parentId": "cap_l2_guest_intake",
+        "businessObject": "Guest",
+        "description": "Ability to produce and deliver a digital property guide to guests prior to arrival."
+      },
+      "cap_l2_guest_relations": {
+        "id": "cap_l2_guest_relations",
+        "elementType": "Capability",
+        "name": "Guest & Tenant Relations",
+        "level": 2,
+        "parentId": "cap_l1_booking_occupancy",
+        "businessObject": "Guest",
+        "description": "Ability to support guests during their stay and manage checkout and dispute resolution."
+      },
+      "cap_l3_instay_support": {
+        "id": "cap_l3_instay_support",
+        "elementType": "Capability",
+        "name": "Manage In-Stay Support",
+        "level": 3,
+        "parentId": "cap_l2_guest_relations",
+        "businessObject": "Guest",
+        "description": "Ability to respond to guest requests and issues during an active stay."
+      },
+      "cap_l3_checkout": {
+        "id": "cap_l3_checkout",
+        "elementType": "Capability",
+        "name": "Manage Checkout Process",
+        "level": 3,
+        "parentId": "cap_l2_guest_relations",
+        "businessObject": "Guest",
+        "description": "Ability to manage guest checkout including damage assessment and deposit release."
+      },
+      "cap_l3_dispute": {
+        "id": "cap_l3_dispute",
+        "elementType": "Capability",
+        "name": "Manage Dispute Resolution",
+        "level": 3,
+        "parentId": "cap_l2_guest_relations",
+        "businessObject": "Guest",
+        "description": "Ability to resolve guest disputes and platform claims on behalf of property owners."
+      },
+      "cap_l1_maintenance_ops": {
+        "id": "cap_l1_maintenance_ops",
+        "elementType": "Capability",
+        "name": "Maintenance & Operations",
+        "level": 1,
+        "parentId": null,
+        "businessObject": "Maintenance Request",
+        "description": "Ability to manage property maintenance, cleaning and contractor operations."
+      },
+      "cap_l2_maintenance_delivery": {
+        "id": "cap_l2_maintenance_delivery",
+        "elementType": "Capability",
+        "name": "Maintenance Delivery",
+        "level": 2,
+        "parentId": "cap_l1_maintenance_ops",
+        "businessObject": "Maintenance Request",
+        "description": "Ability to manage maintenance requests from lodgement through to completion."
+      },
+      "cap_l3_maint_request": {
+        "id": "cap_l3_maint_request",
+        "elementType": "Capability",
+        "name": "Manage Maintenance Requests",
+        "level": 3,
+        "parentId": "cap_l2_maintenance_delivery",
+        "businessObject": "Maintenance Request",
+        "description": "Ability to receive, triage and assign maintenance requests for managed properties."
+      },
+      "cap_l3_maint_scheduling": {
+        "id": "cap_l3_maint_scheduling",
+        "elementType": "Capability",
+        "name": "Manage Maintenance Scheduling",
+        "level": 3,
+        "parentId": "cap_l2_maintenance_delivery",
+        "businessObject": "Maintenance Request",
+        "description": "Ability to schedule maintenance work to minimise impact on bookings and tenancies."
+      },
+      "cap_l3_maint_quality": {
+        "id": "cap_l3_maint_quality",
+        "elementType": "Capability",
+        "name": "Manage Maintenance Quality",
+        "level": 3,
+        "parentId": "cap_l2_maintenance_delivery",
+        "businessObject": "Maintenance Request",
+        "description": "Ability to inspect and verify the quality of completed maintenance work."
+      },
+      "cap_l2_cleaning_turnover": {
+        "id": "cap_l2_cleaning_turnover",
+        "elementType": "Capability",
+        "name": "Cleaning & Turnover",
+        "level": 2,
+        "parentId": "cap_l1_maintenance_ops",
+        "businessObject": "Property",
+        "description": "Ability to manage property cleaning, inspection and restocking between guest stays."
+      },
+      "cap_l3_turnover_scheduling": {
+        "id": "cap_l3_turnover_scheduling",
+        "elementType": "Capability",
+        "name": "Manage Turnover Scheduling",
+        "level": 3,
+        "parentId": "cap_l2_cleaning_turnover",
+        "businessObject": "Property",
+        "description": "Ability to schedule cleaning and turnover operations between bookings."
+      },
+      "cap_l3_cleaning_standards": {
+        "id": "cap_l3_cleaning_standards",
+        "elementType": "Capability",
+        "name": "Manage Cleaning Standards",
+        "level": 3,
+        "parentId": "cap_l2_cleaning_turnover",
+        "businessObject": "Property",
+        "description": "Ability to define and enforce property cleaning standards and inspection protocols."
+      },
+      "cap_l3_linen_consumables": {
+        "id": "cap_l3_linen_consumables",
+        "elementType": "Capability",
+        "name": "Manage Linen & Consumables",
+        "level": 3,
+        "parentId": "cap_l2_cleaning_turnover",
+        "businessObject": "Property",
+        "description": "Ability to manage linen inventory, replenishment and consumables restocking."
+      },
+      "cap_l3_turnover_inspection": {
+        "id": "cap_l3_turnover_inspection",
+        "elementType": "Capability",
+        "name": "Manage Turnover Inspection",
+        "level": 3,
+        "parentId": "cap_l2_cleaning_turnover",
+        "businessObject": "Property",
+        "description": "Ability to conduct and record property condition inspections following each turnover."
+      },
+      "cap_l2_contractor_network": {
+        "id": "cap_l2_contractor_network",
+        "elementType": "Capability",
+        "name": "Contractor Network",
+        "level": 2,
+        "parentId": "cap_l1_maintenance_ops",
+        "businessObject": "Contractor",
+        "description": "Ability to build and manage a network of vetted contractors and service providers."
+      },
+      "cap_l3_contractor_onboarding": {
+        "id": "cap_l3_contractor_onboarding",
+        "elementType": "Capability",
+        "name": "Manage Contractor Onboarding",
+        "level": 3,
+        "parentId": "cap_l2_contractor_network",
+        "businessObject": "Contractor",
+        "description": "Ability to vet, onboard and configure contractors into the operations network."
+      },
+      "cap_l3_contractor_performance": {
+        "id": "cap_l3_contractor_performance",
+        "elementType": "Capability",
+        "name": "Manage Contractor Performance",
+        "level": 3,
+        "parentId": "cap_l2_contractor_network",
+        "businessObject": "Contractor",
+        "description": "Ability to track contractor performance, quality ratings and compliance status."
+      },
+      "cap_l3_contractor_bulk": {
+        "id": "cap_l3_contractor_bulk",
+        "elementType": "Capability",
+        "name": "Manage Bulk Contracting",
+        "level": 3,
+        "parentId": "cap_l2_contractor_network",
+        "businessObject": "Contractor",
+        "description": "Ability to negotiate and manage bulk service agreements with high-volume contractors."
+      },
+      "cap_l1_marketing": {
+        "id": "cap_l1_marketing",
+        "elementType": "Capability",
+        "name": "Marketing & Promotion",
+        "level": 1,
+        "parentId": null,
+        "businessObject": "Property",
+        "description": "Ability to market properties, manage channel distribution and build reputation."
+      },
+      "cap_l2_listing_mgmt": {
+        "id": "cap_l2_listing_mgmt",
+        "elementType": "Capability",
+        "name": "Listing Management",
+        "level": 2,
+        "parentId": "cap_l1_marketing",
+        "businessObject": "Property",
+        "description": "Ability to create, optimise and maintain property listings across platforms."
+      },
+      "cap_l3_listing_create": {
+        "id": "cap_l3_listing_create",
+        "elementType": "Capability",
+        "name": "Manage Listing Creation",
+        "level": 3,
+        "parentId": "cap_l2_listing_mgmt",
+        "businessObject": "Property",
+        "description": "Ability to produce compelling property listings with photography, copy and amenity detail."
+      },
+      "cap_l3_listing_optimise": {
+        "id": "cap_l3_listing_optimise",
+        "elementType": "Capability",
+        "name": "Manage Listing Optimisation",
+        "level": 3,
+        "parentId": "cap_l2_listing_mgmt",
+        "businessObject": "Property",
+        "description": "Ability to continuously optimise listing content and search ranking performance."
+      },
+      "cap_l3_listing_compliance": {
+        "id": "cap_l3_listing_compliance",
+        "elementType": "Capability",
+        "name": "Manage Listing Compliance",
+        "level": 3,
+        "parentId": "cap_l2_listing_mgmt",
+        "businessObject": "Compliance Obligation",
+        "description": "Ability to ensure listings comply with platform terms, local regulations and advertising standards."
+      },
+      "cap_l2_channel_mgmt": {
+        "id": "cap_l2_channel_mgmt",
+        "elementType": "Capability",
+        "name": "Channel Management",
+        "level": 2,
+        "parentId": "cap_l1_marketing",
+        "businessObject": "Booking",
+        "description": "Ability to manage distribution across booking platforms and direct channels."
+      },
+      "cap_l3_channel_setup": {
+        "id": "cap_l3_channel_setup",
+        "elementType": "Capability",
+        "name": "Manage Channel Setup",
+        "level": 3,
+        "parentId": "cap_l2_channel_mgmt",
+        "businessObject": "Booking",
+        "description": "Ability to configure and connect property listings across OTA and direct booking channels."
+      },
+      "cap_l3_channel_distribution": {
+        "id": "cap_l3_channel_distribution",
+        "elementType": "Capability",
+        "name": "Manage Channel Distribution",
+        "level": 3,
+        "parentId": "cap_l2_channel_mgmt",
+        "businessObject": "Booking",
+        "description": "Ability to manage rate parity, availability and content consistency across channels."
+      },
+      "cap_l3_channel_performance": {
+        "id": "cap_l3_channel_performance",
+        "elementType": "Capability",
+        "name": "Manage Channel Performance",
+        "level": 3,
+        "parentId": "cap_l2_channel_mgmt",
+        "businessObject": "Booking",
+        "description": "Ability to track and optimise booking conversion and revenue per channel."
+      },
+      "cap_l2_reviews_reputation": {
+        "id": "cap_l2_reviews_reputation",
+        "elementType": "Capability",
+        "name": "Guest Reviews & Reputation",
+        "level": 2,
+        "parentId": "cap_l1_marketing",
+        "businessObject": "Guest Review",
+        "description": "Ability to manage guest reviews and maintain platform reputation scores."
+      },
+      "cap_l3_review_generation": {
+        "id": "cap_l3_review_generation",
+        "elementType": "Capability",
+        "name": "Manage Review Generation",
+        "level": 3,
+        "parentId": "cap_l2_reviews_reputation",
+        "businessObject": "Guest Review",
+        "description": "Ability to encourage and facilitate guest review submission following each stay."
+      },
+      "cap_l3_review_responses": {
+        "id": "cap_l3_review_responses",
+        "elementType": "Capability",
+        "name": "Manage Review Responses",
+        "level": 3,
+        "parentId": "cap_l2_reviews_reputation",
+        "businessObject": "Guest Review",
+        "description": "Ability to respond professionally to guest reviews on behalf of property owners."
+      },
+      "cap_l3_reputation_monitoring": {
+        "id": "cap_l3_reputation_monitoring",
+        "elementType": "Capability",
+        "name": "Manage Reputation Monitoring",
+        "level": 3,
+        "parentId": "cap_l2_reviews_reputation",
+        "businessObject": "Guest Review",
+        "description": "Ability to monitor platform reputation scores and flag emerging issues."
+      },
+      "cap_l1_financial_mgmt": {
+        "id": "cap_l1_financial_mgmt",
+        "elementType": "Capability",
+        "name": "Financial Management",
+        "level": 1,
+        "parentId": null,
+        "businessObject": "Financial Report",
+        "description": "Ability to manage rental income, financial reporting and fee management for owners."
+      },
+      "cap_l2_revenue_mgmt": {
+        "id": "cap_l2_revenue_mgmt",
+        "elementType": "Capability",
+        "name": "Revenue Management",
+        "level": 2,
+        "parentId": "cap_l1_financial_mgmt",
+        "businessObject": "Financial Report",
+        "description": "Ability to manage rental income, reconciliation and cash flow visibility."
+      },
+      "cap_l3_rental_income": {
+        "id": "cap_l3_rental_income",
+        "elementType": "Capability",
+        "name": "Manage Rental Income",
+        "level": 3,
+        "parentId": "cap_l2_revenue_mgmt",
+        "businessObject": "Financial Report",
+        "description": "Ability to reconcile and disburse rental income from OTA platforms and direct bookings."
+      },
+      "cap_l3_maintenance_margin": {
+        "id": "cap_l3_maintenance_margin",
+        "elementType": "Capability",
+        "name": "Manage Maintenance Margin",
+        "level": 3,
+        "parentId": "cap_l2_revenue_mgmt",
+        "businessObject": "Financial Report",
+        "description": "Ability to track and manage the financial margin on maintenance and cleaning services."
+      },
+      "cap_l3_cashflow_visibility": {
+        "id": "cap_l3_cashflow_visibility",
+        "elementType": "Capability",
+        "name": "Manage Cash Flow Visibility",
+        "level": 3,
+        "parentId": "cap_l2_revenue_mgmt",
+        "businessObject": "Financial Report",
+        "description": "Ability to provide owners with real-time visibility of cash flow and projected income."
+      },
+      "cap_l2_financial_reporting": {
+        "id": "cap_l2_financial_reporting",
+        "elementType": "Capability",
+        "name": "Financial Reporting",
+        "level": 2,
+        "parentId": "cap_l1_financial_mgmt",
+        "businessObject": "Financial Report",
+        "description": "Ability to produce accurate financial statements and owner reports."
+      },
+      "cap_l3_owner_statements": {
+        "id": "cap_l3_owner_statements",
+        "elementType": "Capability",
+        "name": "Manage Owner Statements",
+        "level": 3,
+        "parentId": "cap_l2_financial_reporting",
+        "businessObject": "Financial Report",
+        "description": "Ability to produce monthly and annual income statements for owner clients."
+      },
+      "cap_l3_tax_reporting": {
+        "id": "cap_l3_tax_reporting",
+        "elementType": "Capability",
+        "name": "Manage Tax Reporting",
+        "level": 3,
+        "parentId": "cap_l2_financial_reporting",
+        "businessObject": "Financial Report",
+        "description": "Ability to produce tax-compliant income reports for owner clients and their advisors."
+      },
+      "cap_l3_financial_audit": {
+        "id": "cap_l3_financial_audit",
+        "elementType": "Capability",
+        "name": "Manage Financial Audit Trail",
+        "level": 3,
+        "parentId": "cap_l2_financial_reporting",
+        "businessObject": "Financial Report",
+        "description": "Ability to maintain an auditable trail of all financial transactions per property."
+      },
+      "cap_l2_fee_billing": {
+        "id": "cap_l2_fee_billing",
+        "elementType": "Capability",
+        "name": "Fee & Billing Management",
+        "level": 2,
+        "parentId": "cap_l1_financial_mgmt",
+        "businessObject": "Subscription/Fee",
+        "description": "Ability to calculate, invoice and collect management fees from owner clients."
+      },
+      "cap_l3_fee_calculation": {
+        "id": "cap_l3_fee_calculation",
+        "elementType": "Capability",
+        "name": "Manage Fee Calculation",
+        "level": 3,
+        "parentId": "cap_l2_fee_billing",
+        "businessObject": "Subscription/Fee",
+        "description": "Ability to calculate management fees, performance bonuses and ancillary charges."
+      },
+      "cap_l3_billing_collections": {
+        "id": "cap_l3_billing_collections",
+        "elementType": "Capability",
+        "name": "Manage Billing & Collections",
+        "level": 3,
+        "parentId": "cap_l2_fee_billing",
+        "businessObject": "Subscription/Fee",
+        "description": "Ability to invoice owners and manage fee collection and reconciliation."
+      },
+      "cap_l1_client_mgmt": {
+        "id": "cap_l1_client_mgmt",
+        "elementType": "Capability",
+        "name": "Client Management",
+        "level": 1,
+        "parentId": null,
+        "businessObject": "Owner",
+        "description": "Ability to acquire, onboard and retain owner clients."
+      },
+      "cap_l2_client_acquisition": {
+        "id": "cap_l2_client_acquisition",
+        "elementType": "Capability",
+        "name": "Client Acquisition",
+        "level": 2,
+        "parentId": "cap_l1_client_mgmt",
+        "businessObject": "Owner",
+        "description": "Ability to identify, attract and convert prospective owner clients."
+      },
+      "cap_l3_proposition_marketing": {
+        "id": "cap_l3_proposition_marketing",
+        "elementType": "Capability",
+        "name": "Manage Proposition Marketing",
+        "level": 3,
+        "parentId": "cap_l2_client_acquisition",
+        "businessObject": "Owner",
+        "description": "Ability to market the PortfolioProp management proposition to prospective owner clients."
+      },
+      "cap_l3_prospect_qualification": {
+        "id": "cap_l3_prospect_qualification",
+        "elementType": "Capability",
+        "name": "Manage Prospect Qualification",
+        "level": 3,
+        "parentId": "cap_l2_client_acquisition",
+        "businessObject": "Owner",
+        "description": "Ability to qualify and assess prospective owner clients and their properties."
+      },
+      "cap_l3_client_onboarding": {
+        "id": "cap_l3_client_onboarding",
+        "elementType": "Capability",
+        "name": "Manage Client Onboarding",
+        "level": 3,
+        "parentId": "cap_l2_client_acquisition",
+        "businessObject": "Owner",
+        "description": "Ability to onboard new owner clients including agreement execution and account setup."
+      },
+      "cap_l2_client_relationship": {
+        "id": "cap_l2_client_relationship",
+        "elementType": "Capability",
+        "name": "Client Relationship",
+        "level": 2,
+        "parentId": "cap_l1_client_mgmt",
+        "businessObject": "Owner",
+        "description": "Ability to maintain and grow long-term relationships with owner clients."
+      },
+      "cap_l3_relationship_mgmt": {
+        "id": "cap_l3_relationship_mgmt",
+        "elementType": "Capability",
+        "name": "Manage Owner Relationship",
+        "level": 3,
+        "parentId": "cap_l2_client_relationship",
+        "businessObject": "Owner",
+        "description": "Ability to manage ongoing communication, satisfaction and retention of owner clients."
+      },
+      "cap_l3_portfolio_review": {
+        "id": "cap_l3_portfolio_review",
+        "elementType": "Capability",
+        "name": "Manage Portfolio Review",
+        "level": 3,
+        "parentId": "cap_l2_client_relationship",
+        "businessObject": "Owner",
+        "description": "Ability to conduct periodic portfolio reviews with owner clients to assess performance and strategy."
+      },
+      "cap_l3_client_reporting": {
+        "id": "cap_l3_client_reporting",
+        "elementType": "Capability",
+        "name": "Manage Client Reporting",
+        "level": 3,
+        "parentId": "cap_l2_client_relationship",
+        "businessObject": "Owner",
+        "description": "Ability to deliver regular performance reporting and insights to owner clients."
+      },
+      "cap_l1_compliance_risk": {
+        "id": "cap_l1_compliance_risk",
+        "elementType": "Capability",
+        "name": "Compliance & Risk",
+        "level": 1,
+        "parentId": null,
+        "businessObject": "Compliance Obligation",
+        "description": "Ability to manage regulatory compliance and operational risk across the portfolio."
+      },
+      "cap_l2_regulatory_compliance": {
+        "id": "cap_l2_regulatory_compliance",
+        "elementType": "Capability",
+        "name": "Regulatory Compliance",
+        "level": 2,
+        "parentId": "cap_l1_compliance_risk",
+        "businessObject": "Compliance Obligation",
+        "description": "Ability to identify, monitor and meet regulatory obligations across all managed properties."
+      },
+      "cap_l3_compliance_identification": {
+        "id": "cap_l3_compliance_identification",
+        "elementType": "Capability",
+        "name": "Manage Compliance Identification",
+        "level": 3,
+        "parentId": "cap_l2_regulatory_compliance",
+        "businessObject": "Compliance Obligation",
+        "description": "Ability to identify applicable regulatory, platform and legal obligations for each property."
+      },
+      "cap_l3_compliance_monitoring": {
+        "id": "cap_l3_compliance_monitoring",
+        "elementType": "Capability",
+        "name": "Manage Compliance Monitoring",
+        "level": 3,
+        "parentId": "cap_l2_regulatory_compliance",
+        "businessObject": "Compliance Obligation",
+        "description": "Ability to monitor compliance status and flag upcoming obligations and renewals."
+      },
+      "cap_l3_compliance_reporting": {
+        "id": "cap_l3_compliance_reporting",
+        "elementType": "Capability",
+        "name": "Manage Compliance Reporting",
+        "level": 3,
+        "parentId": "cap_l2_regulatory_compliance",
+        "businessObject": "Compliance Obligation",
+        "description": "Ability to produce compliance status reports for owner clients and regulators."
+      },
+      "cap_l2_risk_mgmt": {
+        "id": "cap_l2_risk_mgmt",
+        "elementType": "Capability",
+        "name": "Risk Management",
+        "level": 2,
+        "parentId": "cap_l1_compliance_risk",
+        "businessObject": "Compliance Obligation",
+        "description": "Ability to identify and manage operational and financial risks across the portfolio."
+      },
+      "cap_l3_risk_identification": {
+        "id": "cap_l3_risk_identification",
+        "elementType": "Capability",
+        "name": "Manage Risk Identification",
+        "level": 3,
+        "parentId": "cap_l2_risk_mgmt",
+        "businessObject": "Compliance Obligation",
+        "description": "Ability to identify operational, financial and reputational risks across managed properties."
+      },
+      "cap_l3_damage_assessment": {
+        "id": "cap_l3_damage_assessment",
+        "elementType": "Capability",
+        "name": "Manage Damage Assessment",
+        "level": 3,
+        "parentId": "cap_l2_risk_mgmt",
+        "businessObject": "Property",
+        "description": "Ability to assess and document property damage following guest stays or incidents."
+      },
+      "cap_l3_insurance_mgmt": {
+        "id": "cap_l3_insurance_mgmt",
+        "elementType": "Capability",
+        "name": "Manage Insurance Management",
+        "level": 3,
+        "parentId": "cap_l2_risk_mgmt",
+        "businessObject": "Property",
+        "description": "Ability to manage insurance coverage requirements and claims for managed properties."
+      }
+    },
+    "concepts": {
+      "concept_guest": {
+        "id": "concept_guest",
+        "elementType": "Concept",
+        "name": "Guest",
+        "type": "Party",
+        "definition": "A person who makes or holds a confirmed short-stay booking at a managed property.",
+        "lifecycleStates": [
+          "Enquiry",
+          "Verified",
+          "Confirmed",
+          "In-Stay",
+          "Checked Out",
+          "Reviewed"
+        ],
+        "relatedCapabilityIds": [
+          "cap_l3_guest_verify",
+          "cap_l3_pre_arrival_comms",
+          "cap_l3_arrival_scheduling",
+          "cap_l3_guest_guide",
+          "cap_l3_instay_support",
+          "cap_l3_checkout",
+          "cap_l3_dispute",
+          "cap_l3_review_generation",
+          "cap_l3_review_responses"
+        ]
+      },
+      "concept_owner": {
+        "id": "concept_owner",
+        "elementType": "Concept",
+        "name": "Owner",
+        "type": "Party",
+        "definition": "A property owner who has engaged PortfolioProp to manage one or more properties on their behalf.",
+        "lifecycleStates": [
+          "Prospect",
+          "Onboarded",
+          "Active",
+          "Reviewing",
+          "Exited"
+        ],
+        "relatedCapabilityIds": [
+          "cap_l3_proposition_marketing",
+          "cap_l3_prospect_qualification",
+          "cap_l3_client_onboarding",
+          "cap_l3_relationship_mgmt",
+          "cap_l3_portfolio_review",
+          "cap_l3_client_reporting",
+          "cap_l3_owner_statements"
+        ]
+      },
+      "concept_contractor": {
+        "id": "concept_contractor",
+        "elementType": "Concept",
+        "name": "Contractor",
+        "type": "Party",
+        "definition": "A third-party service provider engaged to perform maintenance, cleaning or specialist trade work.",
+        "lifecycleStates": [
+          "Prospective",
+          "Vetted",
+          "Active",
+          "Suspended",
+          "Deactivated"
+        ],
+        "relatedCapabilityIds": [
+          "cap_l3_contractor_onboarding",
+          "cap_l3_contractor_performance",
+          "cap_l3_contractor_bulk"
+        ]
+      },
+      "concept_tenant": {
+        "id": "concept_tenant",
+        "elementType": "Concept",
+        "name": "Tenant",
+        "type": "Party",
+        "definition": "A person or household holding a long-term tenancy agreement for a managed property.",
+        "lifecycleStates": [
+          "Applicant",
+          "Active",
+          "Notice Period",
+          "Vacated"
+        ],
+        "relatedCapabilityIds": [
+          "cap_l3_tenancy_onboard",
+          "cap_l3_tenancy_lifecycle",
+          "cap_l3_tenancy_exit"
+        ]
+      },
+      "concept_property": {
+        "id": "concept_property",
+        "elementType": "Concept",
+        "name": "Property",
+        "type": "Resource",
+        "definition": "A physical dwelling managed by PortfolioProp on behalf of an owner, in either short-stay or long-term rental mode.",
+        "lifecycleStates": [
+          "Onboarding",
+          "Active (Short-Stay)",
+          "Active (Long-Term)",
+          "Inactive",
+          "Offboarded"
+        ],
+        "relatedCapabilityIds": [
+          "cap_l3_property_intake",
+          "cap_l3_property_setup",
+          "cap_l3_mode_manage",
+          "cap_l3_listing_create",
+          "cap_l3_listing_optimise",
+          "cap_l3_turnover_scheduling",
+          "cap_l3_damage_assessment",
+          "cap_l3_insurance_mgmt"
+        ]
+      },
+      "concept_portfolio": {
+        "id": "concept_portfolio",
+        "elementType": "Concept",
+        "name": "Portfolio",
+        "type": "Resource",
+        "definition": "The aggregate collection of properties managed on behalf of a single owner client.",
+        "lifecycleStates": [
+          "Initiated",
+          "Growing",
+          "Stable",
+          "Contracting",
+          "Closed"
+        ],
+        "relatedCapabilityIds": [
+          "cap_l3_portfolio_strategy_define",
+          "cap_l3_portfolio_mix_manage",
+          "cap_l3_portfolio_lifecycle_manage",
+          "cap_l3_yield_track",
+          "cap_l3_benchmark_performance",
+          "cap_l3_performance_report",
+          "cap_l3_portfolio_review"
+        ]
+      },
+      "concept_booking": {
+        "id": "concept_booking",
+        "elementType": "Concept",
+        "name": "Booking",
+        "type": "Resource",
+        "definition": "A confirmed reservation by a Guest to occupy a Property for a defined short-stay period.",
+        "lifecycleStates": [
+          "Enquiry",
+          "Confirmed",
+          "Pre-Arrival",
+          "Active Stay",
+          "Checked Out",
+          "Settled"
+        ],
+        "relatedCapabilityIds": [
+          "cap_l3_booking_intake",
+          "cap_l3_booking_calendar",
+          "cap_l3_booking_amendments",
+          "cap_l3_pricing_manage",
+          "cap_l3_availability_manage",
+          "cap_l3_channel_distribution",
+          "cap_l3_channel_performance"
+        ]
+      },
+      "concept_tenancy": {
+        "id": "concept_tenancy",
+        "elementType": "Concept",
+        "name": "Tenancy",
+        "type": "Resource",
+        "definition": "A formal long-term lease agreement between an Owner and a Tenant for the occupation of a Property.",
+        "lifecycleStates": [
+          "Draft",
+          "Executed",
+          "Active",
+          "Notice",
+          "Expired"
+        ],
+        "relatedCapabilityIds": [
+          "cap_l3_tenancy_onboard",
+          "cap_l3_tenancy_lifecycle",
+          "cap_l3_tenancy_exit"
+        ]
+      },
+      "concept_financial_report": {
+        "id": "concept_financial_report",
+        "elementType": "Concept",
+        "name": "Financial Report",
+        "type": "Record",
+        "definition": "A structured financial summary produced for an owner covering income, expenses, fees and net return for a defined period.",
+        "lifecycleStates": [
+          "Draft",
+          "Reviewed",
+          "Issued",
+          "Archived"
+        ],
+        "relatedCapabilityIds": [
+          "cap_l3_rental_income",
+          "cap_l3_cashflow_visibility",
+          "cap_l3_owner_statements",
+          "cap_l3_tax_reporting",
+          "cap_l3_financial_audit",
+          "cap_l3_performance_report"
+        ]
+      },
+      "concept_maintenance_request": {
+        "id": "concept_maintenance_request",
+        "elementType": "Concept",
+        "name": "Maintenance Request",
+        "type": "Record",
+        "definition": "A recorded need for repair, servicing or remediation work at a managed property.",
+        "lifecycleStates": [
+          "Raised",
+          "Triaged",
+          "Assigned",
+          "In Progress",
+          "Completed",
+          "Closed"
+        ],
+        "relatedCapabilityIds": [
+          "cap_l3_maint_request",
+          "cap_l3_maint_scheduling",
+          "cap_l3_maint_quality"
+        ]
+      },
+      "concept_guest_review": {
+        "id": "concept_guest_review",
+        "elementType": "Concept",
+        "name": "Guest Review",
+        "type": "Record",
+        "definition": "A guest-submitted rating and commentary about their stay, published on a booking platform.",
+        "lifecycleStates": [
+          "Submitted",
+          "Published",
+          "Responded To",
+          "Aggregated"
+        ],
+        "relatedCapabilityIds": [
+          "cap_l3_review_generation",
+          "cap_l3_review_responses",
+          "cap_l3_reputation_monitoring"
+        ]
+      },
+      "concept_compliance_obligation": {
+        "id": "concept_compliance_obligation",
+        "elementType": "Concept",
+        "name": "Compliance Obligation",
+        "type": "Record",
+        "definition": "A regulatory, legal or platform requirement that must be met for a property or tenancy to operate lawfully.",
+        "lifecycleStates": [
+          "Identified",
+          "Active",
+          "Due",
+          "Met",
+          "Breached",
+          "Archived"
+        ],
+        "relatedCapabilityIds": [
+          "cap_l3_property_compliance_setup",
+          "cap_l3_compliance_identification",
+          "cap_l3_compliance_monitoring",
+          "cap_l3_compliance_reporting",
+          "cap_l3_listing_compliance"
+        ]
+      },
+      "concept_yield_performance": {
+        "id": "concept_yield_performance",
+        "elementType": "Concept",
+        "name": "Yield Performance",
+        "type": "Record",
+        "definition": "A calculated measure of rental income return relative to property value and occupancy rate across a defined period.",
+        "lifecycleStates": [
+          "Calculated",
+          "Reported",
+          "Benchmarked",
+          "Actioned"
+        ],
+        "relatedCapabilityIds": [
+          "cap_l3_yield_track",
+          "cap_l3_benchmark_performance",
+          "cap_l3_performance_report"
+        ]
+      },
+      "concept_subscription_fee": {
+        "id": "concept_subscription_fee",
+        "elementType": "Concept",
+        "name": "Subscription/Fee",
+        "type": "Record",
+        "definition": "The management fee agreement between PortfolioProp and an Owner, specifying fee structure, performance bonuses and billing cycle.",
+        "lifecycleStates": [
+          "Proposed",
+          "Agreed",
+          "Active",
+          "Under Review",
+          "Renegotiated"
+        ],
+        "relatedCapabilityIds": [
+          "cap_l3_fee_calculation",
+          "cap_l3_billing_collections"
+        ]
+      }
+    },
+    "valueStreams": {
+      "vs_short_stay_guest_experience": {
+        "id": "vs_short_stay_guest_experience",
+        "elementType": "ValueStream",
+        "name": "Short-Stay Guest Experience",
+        "description": "End-to-end flow from guest booking request through to stay completion, income settlement and review publication.",
+        "stageIds": [
+          "stage_booking_confirmed",
+          "stage_guest_intake_complete",
+          "stage_property_prepared",
+          "stage_stay_active",
+          "stage_stay_completed",
+          "stage_income_settled",
+          "stage_review_published"
+        ],
+        "trigger": "Guest submits a booking enquiry or reservation request via OTA or direct channel",
+        "terminalOutcome": "Guest completes their stay, income is settled, and a verified review is published",
+        "layoutZone": "ecosystem",
+        "accountableStakeholder": "role_property_manager"
+      }
+    },
+    "valueStreamStages": {
+      "stage_booking_confirmed": {
+        "id": "stage_booking_confirmed",
+        "elementType": "ValueStreamStage",
+        "name": "Booking Confirmed",
+        "preOutcomeId": "outcome_booking_enquiry_received",
+        "postOutcomeId": "outcome_booking_confirmed",
+        "requiresCapabilityIds": [
+          "cap_l3_booking_intake",
+          "cap_l3_booking_calendar",
+          "cap_l3_channel_distribution",
+          "cap_l3_pricing_manage"
+        ],
+        "performedByRoleIds": [
+          "role_property_manager"
+        ],
+        "informationObjectIds": [
+          "io_booking",
+          "io_property"
+        ],
+        "metricIds": [
+          "metric_booking_conversion"
+        ],
+        "capabilityPPIT": {}
+      },
+      "stage_guest_intake_complete": {
+        "id": "stage_guest_intake_complete",
+        "elementType": "ValueStreamStage",
+        "name": "Guest Intake Complete",
+        "preOutcomeId": "outcome_booking_confirmed",
+        "postOutcomeId": "outcome_guest_intake_complete",
+        "requiresCapabilityIds": [
+          "cap_l3_guest_verify",
+          "cap_l3_pre_arrival_comms",
+          "cap_l3_arrival_scheduling",
+          "cap_l3_guest_guide"
+        ],
+        "performedByRoleIds": [
+          "role_property_manager",
+          "role_guest"
+        ],
+        "informationObjectIds": [
+          "io_booking",
+          "io_property"
+        ],
+        "metricIds": [],
+        "capabilityPPIT": {}
+      },
+      "stage_property_prepared": {
+        "id": "stage_property_prepared",
+        "elementType": "ValueStreamStage",
+        "name": "Property Prepared",
+        "preOutcomeId": "outcome_booking_confirmed",
+        "postOutcomeId": "outcome_property_prepared",
+        "requiresCapabilityIds": [
+          "cap_l3_turnover_scheduling",
+          "cap_l3_cleaning_standards",
+          "cap_l3_linen_consumables",
+          "cap_l3_turnover_inspection",
+          "cap_l3_contractor_onboarding",
+          "cap_l3_contractor_performance"
+        ],
+        "performedByRoleIds": [
+          "role_operations_coordinator",
+          "role_contractor"
+        ],
+        "informationObjectIds": [
+          "io_property",
+          "io_maintenance_request"
+        ],
+        "metricIds": [
+          "metric_turnover_completion_time"
+        ],
+        "capabilityPPIT": {}
+      },
+      "stage_stay_active": {
+        "id": "stage_stay_active",
+        "elementType": "ValueStreamStage",
+        "name": "Stay Active",
+        "preOutcomeId": "outcome_stay_commenced",
+        "postOutcomeId": "outcome_stay_completed",
+        "requiresCapabilityIds": [
+          "cap_l3_instay_support",
+          "cap_l3_maint_request",
+          "cap_l3_maint_scheduling"
+        ],
+        "performedByRoleIds": [
+          "role_property_manager",
+          "role_guest",
+          "role_contractor"
+        ],
+        "informationObjectIds": [
+          "io_booking",
+          "io_property",
+          "io_maintenance_request"
+        ],
+        "metricIds": [],
+        "capabilityPPIT": {}
+      },
+      "stage_stay_completed": {
+        "id": "stage_stay_completed",
+        "elementType": "ValueStreamStage",
+        "name": "Stay Completed",
+        "preOutcomeId": "outcome_stay_completed",
+        "postOutcomeId": "outcome_income_settled",
+        "requiresCapabilityIds": [
+          "cap_l3_checkout",
+          "cap_l3_dispute",
+          "cap_l3_damage_assessment"
+        ],
+        "performedByRoleIds": [
+          "role_property_manager",
+          "role_guest"
+        ],
+        "informationObjectIds": [
+          "io_booking",
+          "io_property"
+        ],
+        "metricIds": [],
+        "capabilityPPIT": {}
+      },
+      "stage_income_settled": {
+        "id": "stage_income_settled",
+        "elementType": "ValueStreamStage",
+        "name": "Income Settled",
+        "preOutcomeId": "outcome_stay_completed",
+        "postOutcomeId": "outcome_income_settled",
+        "requiresCapabilityIds": [
+          "cap_l3_rental_income",
+          "cap_l3_maintenance_margin",
+          "cap_l3_cashflow_visibility",
+          "cap_l3_fee_calculation",
+          "cap_l3_owner_statements"
+        ],
+        "performedByRoleIds": [
+          "role_property_manager",
+          "role_owner"
+        ],
+        "informationObjectIds": [
+          "io_financial_report",
+          "io_booking",
+          "io_subscription_fee"
+        ],
+        "metricIds": [
+          "metric_income_per_booking"
+        ],
+        "capabilityPPIT": {}
+      },
+      "stage_review_published": {
+        "id": "stage_review_published",
+        "elementType": "ValueStreamStage",
+        "name": "Review Published",
+        "preOutcomeId": "outcome_income_settled",
+        "postOutcomeId": "outcome_review_published",
+        "requiresCapabilityIds": [
+          "cap_l3_review_generation",
+          "cap_l3_review_responses",
+          "cap_l3_reputation_monitoring"
+        ],
+        "performedByRoleIds": [
+          "role_property_manager",
+          "role_guest"
+        ],
+        "informationObjectIds": [
+          "io_guest_review",
+          "io_property"
+        ],
+        "metricIds": [
+          "metric_review_score"
+        ],
+        "capabilityPPIT": {}
+      }
+    },
+    "outcomes": {
+      "outcome_booking_enquiry_received": {
+        "id": "outcome_booking_enquiry_received",
+        "elementType": "Outcome",
+        "name": "Guest submits booking request via channel"
+      },
+      "outcome_booking_confirmed": {
+        "id": "outcome_booking_confirmed",
+        "elementType": "Outcome",
+        "name": "Booking confirmed, guest notified, availability calendar updated"
+      },
+      "outcome_guest_intake_complete": {
+        "id": "outcome_guest_intake_complete",
+        "elementType": "Outcome",
+        "name": "Guest identity verified, arrival instructions delivered, digital guide sent"
+      },
+      "outcome_property_prepared": {
+        "id": "outcome_property_prepared",
+        "elementType": "Outcome",
+        "name": "Property cleaned, inspected, restocked and confirmed guest-ready"
+      },
+      "outcome_stay_commenced": {
+        "id": "outcome_stay_commenced",
+        "elementType": "Outcome",
+        "name": "Guest has arrived and property access confirmed"
+      },
+      "outcome_stay_completed": {
+        "id": "outcome_stay_completed",
+        "elementType": "Outcome",
+        "name": "Guest has departed, property damage assessed, deposit released or claim raised"
+      },
+      "outcome_income_settled": {
+        "id": "outcome_income_settled",
+        "elementType": "Outcome",
+        "name": "Rental income reconciled, management fee calculated, owner statement updated"
+      },
+      "outcome_review_published": {
+        "id": "outcome_review_published",
+        "elementType": "Outcome",
+        "name": "Guest review received and responded to, reputation score updated"
+      }
+    },
+    "roles": {
+      "role_guest": {
+        "id": "role_guest",
+        "elementType": "Role",
+        "name": "Guest",
+        "conceptId": "concept_guest"
+      },
+      "role_owner": {
+        "id": "role_owner",
+        "elementType": "Role",
+        "name": "Owner",
+        "conceptId": "concept_owner"
+      },
+      "role_contractor": {
+        "id": "role_contractor",
+        "elementType": "Role",
+        "name": "Contractor",
+        "conceptId": "concept_contractor"
+      },
+      "role_tenant": {
+        "id": "role_tenant",
+        "elementType": "Role",
+        "name": "Tenant",
+        "conceptId": "concept_tenant"
+      },
+      "role_property_manager": {
+        "id": "role_property_manager",
+        "elementType": "Role",
+        "name": "Property Manager",
+        "conceptId": null
+      },
+      "role_operations_coordinator": {
+        "id": "role_operations_coordinator",
+        "elementType": "Role",
+        "name": "Operations Coordinator",
+        "conceptId": null
+      },
+      "role_client_manager": {
+        "id": "role_client_manager",
+        "elementType": "Role",
+        "name": "Client Manager",
+        "conceptId": null
+      }
+    },
+    "metrics": {
+      "metric_booking_conversion": {
+        "id": "metric_booking_conversion",
+        "elementType": "Metric",
+        "name": "Booking Conversion Rate",
+        "unit": "%",
+        "direction": "Increase"
+      },
+      "metric_turnover_completion_time": {
+        "id": "metric_turnover_completion_time",
+        "elementType": "Metric",
+        "name": "Turnover Completion Time",
+        "unit": "hours",
+        "direction": "Decrease"
+      },
+      "metric_income_per_booking": {
+        "id": "metric_income_per_booking",
+        "elementType": "Metric",
+        "name": "Net Income Per Booking",
+        "unit": "AUD",
+        "direction": "Increase"
+      },
+      "metric_review_score": {
+        "id": "metric_review_score",
+        "elementType": "Metric",
+        "name": "Average Guest Review Score",
+        "unit": "stars",
+        "direction": "Maintain"
+      }
+    },
+    "informationObjects": {
+      "io_property": {
+        "id": "io_property",
+        "elementType": "InformationObject",
+        "name": "Property",
+        "conceptId": "concept_property"
+      },
+      "io_portfolio": {
+        "id": "io_portfolio",
+        "elementType": "InformationObject",
+        "name": "Portfolio",
+        "conceptId": "concept_portfolio"
+      },
+      "io_booking": {
+        "id": "io_booking",
+        "elementType": "InformationObject",
+        "name": "Booking",
+        "conceptId": "concept_booking"
+      },
+      "io_tenancy": {
+        "id": "io_tenancy",
+        "elementType": "InformationObject",
+        "name": "Tenancy",
+        "conceptId": "concept_tenancy"
+      },
+      "io_financial_report": {
+        "id": "io_financial_report",
+        "elementType": "InformationObject",
+        "name": "Financial Report",
+        "conceptId": "concept_financial_report"
+      },
+      "io_maintenance_request": {
+        "id": "io_maintenance_request",
+        "elementType": "InformationObject",
+        "name": "Maintenance Request",
+        "conceptId": "concept_maintenance_request"
+      },
+      "io_guest_review": {
+        "id": "io_guest_review",
+        "elementType": "InformationObject",
+        "name": "Guest Review",
+        "conceptId": "concept_guest_review"
+      },
+      "io_compliance_obligation": {
+        "id": "io_compliance_obligation",
+        "elementType": "InformationObject",
+        "name": "Compliance Obligation",
+        "conceptId": "concept_compliance_obligation"
+      },
+      "io_yield_performance": {
+        "id": "io_yield_performance",
+        "elementType": "InformationObject",
+        "name": "Yield Performance",
+        "conceptId": "concept_yield_performance"
+      },
+      "io_subscription_fee": {
+        "id": "io_subscription_fee",
+        "elementType": "InformationObject",
+        "name": "Subscription/Fee",
+        "conceptId": "concept_subscription_fee"
+      }
+    }
+  }
+}

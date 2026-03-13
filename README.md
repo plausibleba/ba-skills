@@ -1,180 +1,180 @@
 # PlausibleBA — BA Skills for Claude
 
-> Institutional-grade Business Analysis skills for Claude.  
-> Methodology-grade outputs. BABOK-grounded. XLSX artefacts you can hand to a board.
+**Just enough business architecture. For every BA, on every project.**
 
-[![Skills](https://img.shields.io/badge/skills-1%20live-2E75B6)](https://github.com/plausibleba/ba-skills/tree/main/ba-capability-mapping)
-[![Standard](https://img.shields.io/badge/standard-PlausibleBA%20Taxonomy%20v1.0-1F3864)](https://github.com/plausibleba/ba-skills/tree/main/ba-capability-mapping/skills/ba-taxonomy-standard)
-[![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
-[![Website](https://img.shields.io/badge/website-plausibleba.com-2E75B6)](https://www.plausibleba.com)
+PlausibleBA gives business analysts the business architecture techniques they need
+to ground their work — capability mapping, concept modelling, value stream design —
+without requiring a business architecture practice or a BIZBOK certification.
 
----
-
-## What this is
-
-PlausibleBA is a Claude skills marketplace for Business Analysts, enterprise architects, and BA practice leads.
-
-Each skill packages a BA methodology — capability mapping, concept modelling, value stream analysis — into a Claude command that produces a professional, validated XLSX artefact. Not a chat response you still need to format. An artefact you can open in a board presentation.
-
-**The difference from a prompt library:** every PlausibleBA skill shares a common taxonomy standard. One numbering system (`1.2.3` positional format). One MECE rule. One XLSX colour palette. One branding standard. Outputs from different skills reference the same business objects — so capabilities, concept models and value streams all cross-validate each other.
+Each skill encodes a proven methodology, walks you through it step by step, and
+produces a professional artefact your stakeholders will recognise. The result is
+architecture-quality thinking delivered at BA speed.
 
 ---
 
-## Install
+## Why business architecture for BAs?
 
-### Claude Cowork / Claude desktop app
+Business architects have a toolkit that BAs have largely left on the table:
+capability maps that ground requirements in what the organisation actually does,
+concept models that eliminate ambiguity about what terms mean, value streams that
+show how capabilities orchestrate to deliver outcomes.
 
-```
-Plugins → Browse → Personal → +
-→ Add marketplace from GitHub
-→ plausibleba/ba-skills
-```
+These aren't enterprise architecture exercises. Used at project scope, they make
+every other BA technique more rigorous — stakeholder analysis, requirements
+elicitation, gap analysis, solution design. PlausibleBA makes them accessible.
+
+---
+
+## Installation
+
+### Claude Cowork (recommended)
+
+1. Open Cowork → Plugins → Browse → Personal → **+**
+2. Select **Add marketplace from GitHub**
+3. Enter: `plausibleba/ba-skills`
+4. Install the plugins you need
 
 ### Claude Code (CLI)
 
 ```bash
 claude plugin marketplace add plausibleba/ba-skills
 claude plugin install ba-capability-mapping@ba-skills
+claude plugin install ba-concept-model@ba-skills
+claude plugin install ba-value-streams@ba-skills
 ```
 
-Once installed, run your first command:
+### Other AI assistants
 
-```
-/capability-map
-```
-
-Claude will guide you through two validation checkpoints and produce a fully formatted, pre-sorted XLSX capability map.
+The `skills/*/SKILL.md` files follow the universal skill format and work with any
+tool that supports skill files. The `/slash-commands` are Claude-specific.
 
 ---
 
-## Skills
+## Available skills
 
-### ✅ ba-capability-mapping — v1.0.0
+### `ba-capability-mapping` — v1.0.0 ✅
+
+Map what the business can do. Produce a MECE, investment-relevant capability map
+from any input — transcripts, charters, existing spreadsheets, or industry reference
+models. Grounded in BIZBOK principles and validated against BABOK technique standards.
 
 **Command:** `/capability-map`
 
-Produces a BABOK-grounded Business Capability Map from any business description, transcript, charter, or verbal input.
+**What you get:**
+- Two-checkpoint elicitation: L1/L2 confirmed before L3 derivation
+- MECE validation at every level with Execution/Governance split
+- Hierarchical numbering (`1.2.3`) — sort column A to see the full structure
+- 4-tab XLSX: Summary, Capability Register, Validation, Legend
+- JSON for VCC pipeline integration
+
+**Example output:** [`examples/portfolioprop_capability_map_v2.xlsx`](examples/portfolioprop_capability_map_v2.xlsx)
+
+---
+
+### `ba-concept-model` — v1.0.0 ✅
+
+Name and define the things the business manages. Produce a typed taxonomy of core
+business objects — cross-validated against the Capability Map to confirm every
+capability is grounded and every object is covered.
+
+Uses the **Capsicum Triad** (Party / Record / Resource) — a principled three-type
+classification consistent with REA (McCarthy 1982) and Bunge's ontology for
+information systems. A custom hierarchy option is also offered.
+
+**Command:** `/concept-model`
 
 **What you get:**
-- 4-level MECE hierarchy (L1 Business Area → L2 Domain → L3 Capability → L4 optional)
-- Execution / Governance split at L3
-- Every capability grounded in a named business object
-- XLSX artefact with 4 tabs: Capability Summary, Capability Register, Validation Summary, Legend
-- Pre-sorted by taxonomy number — hierarchy visible on open
-- Validation layer: 10 MECE and quality checks with PASS / NOTE / FAIL
+- Classification Checkpoint: choose Capsicum Triad or custom hierarchy
+- Object Register with type, definition, lifecycle states, and related capabilities
+- Cross-validation: object ↔ capability coverage confirmed both directions
+- 4-tab XLSX: Summary, Object Register, Validation, Legend
+- JSON for VCC pipeline integration
 
-**Example output:** [PortfolioProp Capability Map](examples/portfolioprop_capability_map.xlsx) — 8 Business Areas, 21 Domains, 64 Capabilities across a rental property management platform.
-
-[→ Full skill documentation](ba-capability-mapping/skills/ba-capability-mapping/SKILL.md)
+**Example output:** [`examples/portfolioprop_concept_model_v1.xlsx`](examples/portfolioprop_concept_model_v1.xlsx)
 
 ---
 
-### 🔜 ba-concept-model — coming soon
+### `ba-value-streams` — v1.0.0 ✅
 
-Business Object Taxonomy. Grounds capability definitions, cross-validates capability map coverage. Objects with no corresponding capability reveal gaps.
+Map how the business delivers value. Decompose a value stream into 4–8 stages,
+each with entry/exit criteria, participating capabilities, and business objects in
+play. Cross-validates both the Capability Map and Concept Model.
 
-### 📋 ba-value-streams — planned
+**Command:** `/value-stream`
 
-Value Stream Analysis. Orchestrates capabilities into stages, surfaces gaps and unused capabilities.
+**What you get:**
+- Recipient-centric stage naming (state reached, not activity performed)
+- Entry/exit criteria at every stage
+- Capability cross-reference: unused capabilities flagged, gaps identified
+- Layout zone assignment for VCC network view (auto-inferred from Recipient type)
+- 4-tab XLSX: Summary, Stage Register, Validation, Legend
+- `ba-skills-bundle.json` for VCC import
 
-### 📋 ba-requirements — planned
-
-Requirements elicitation and classification aligned to BABOK knowledge areas.
-
----
-
-## Example output
-
-The `/capability-map` command applied to **PortfolioProp** — a rental property management startup managing short-stay and long-term properties:
-
-| | Count |
-|---|---|
-| Business Areas (L1) | 8 |
-| Business Domains (L2) | 21 |
-| Capabilities (L3) | 64 |
-| Execution capabilities | 44 |
-| Governance capabilities | 20 |
-
-**L1 structure:**
-```
-1. Portfolio Management
-2. Property Management
-3. Booking & Occupancy
-4. Maintenance & Operations
-5. Marketing & Promotion
-6. Financial Management
-7. Client Management
-8. Compliance & Risk
-```
-
-All 64 L3 capabilities pass MECE validation. Every capability is grounded in one of 11 named business objects. Pre-sorted on open — hierarchy visible without filtering.
+**Example output:** [`examples/portfolioprop_value_stream_v1.xlsx`](examples/portfolioprop_value_stream_v1.xlsx)
 
 ---
 
-## The taxonomy standard
+## The full pipeline
 
-All PlausibleBA skills share the **ba-taxonomy-standard** — a common set of conventions that makes every output consistent and cross-referenceable:
-
-- **Numbering:** `1.2.3` positional format — sort column A to reproduce the hierarchy at any time
-- **MECE:** Mutually Exclusive + Collectively Exhaustive enforced at every level
-- **Naming:** Verb–Noun at L3 (`Manage [Object]`) — managerial verbs only
-- **XLSX colours:** Dark blue headers, mid-blue L1, light-blue L2, pale-blue Execution, yellow Governance
-- **Branding:** Every output includes `Generated by the PlausibleBA Skills Library | www.plausibleba.com`
-
-[→ Full taxonomy standard](ba-capability-mapping/skills/ba-taxonomy-standard/SKILL.md)
-
----
-
-## Repository structure
+Run all three skills in sequence on the same engagement and you get a complete,
+cross-validated operating model slice:
 
 ```
-plausible-ba/
-├── README.md                          ← you are here
-├── marketplace.json                   ← marketplace catalogue
-└── ba-capability-mapping/
-    ├── .claude-plugin/
-    │   └── plugin.json                ← plugin manifest
-    ├── commands/
-    │   └── capability-map.md          ← /capability-map command
-    └── skills/
-        ├── ba-capability-mapping/
-        │   └── SKILL.md               ← capability mapping methodology
-        └── ba-taxonomy-standard/
-            └── SKILL.md               ← shared taxonomy conventions
+/capability-map    What the organisation can do
+      ↓
+/concept-model     What the organisation manages
+      ↓
+/value-stream      How the organisation delivers value
+      ↓
+ba-skills-bundle.json   →   VCC session
 ```
 
----
+The `ba-skills-bundle.json` is the handoff to the
+[Value Cognition Canvas](https://www.plausibleba.com/vcc) — a facilitated session
+tool for operating model assessment, friction identification, and investment
+prioritisation.
 
-## Contributing
-
-PlausibleBA welcomes contributions from BA practitioners and enterprise architects.
-
-**To suggest a skill:** Open a [Discussion](https://github.com/plausibleba/ba-skills/discussions) describing the BA technique, the BABOK reference, and the output artefact you'd expect.
-
-**To contribute a skill:** Read the [skill creation process](https://www.plausibleba.com/contributing) (coming soon) and open a PR. The quality bar: if the XLSX output couldn't go to a board, the skill isn't ready.
-
-**To report an issue:** Open an [Issue](https://github.com/plausibleba/ba-skills/issues) with the business domain you were mapping and the specific problem with the output.
+**Example bundle:** [`examples/portfolioprop_ba-skills-bundle_v1.json`](examples/portfolioprop_ba-skills-bundle_v1.json)
 
 ---
 
-## Grounded in practice
+## The PlausibleBA Taxonomy Standard
 
-PlausibleBA draws from:
+All skills share a common standard ensuring artefacts from the same engagement
+fit together:
 
-- **BABOK v3 Section 10.6** — Business Capability Analysis
-- **Value Cognition Canvas (VCC)** — a formal framework for organisational value stream analysis
-- Real delivery experience across enterprise architecture and BA practice
+- **Numbering:** `1.2.3` positional format; sort by Number to see the hierarchy
+- **Column order:** consistent across all XLSX outputs
+- **MECE:** mutually exclusive and collectively exhaustive at every level
+- **Cross-taxonomy traceability:** Business Objects as the shared thread
+- **Branding:** consistent PlausibleBA header on all XLSX outputs
 
-Each skill is tested end-to-end on real business domains before publication. The PortfolioProp example is a real discovery-call output, not a fabricated demo.
+See [`ba-capability-mapping/skills/ba-taxonomy-standard/SKILL.md`](ba-capability-mapping/skills/ba-taxonomy-standard/SKILL.md)
 
 ---
 
-## Links
+## Coming next
 
-- 🌐 [www.plausibleba.com](https://www.plausibleba.com)
-- 📖 [Blog / Substack](https://plausibleba.substack.com)
-- 💼 [LinkedIn](https://www.linkedin.com/company/plausibleba)
-- 💬 [GitHub Discussions](https://github.com/plausibleba/ba-skills/discussions)
+| Skill | What it answers | Status |
+|-------|----------------|--------|
+| `ba-ppit-mapping` | How well do we do it? (People/Process/Information/Technology) | In development |
+| `ba-requirements` | What do we need to change? | Planned |
+| `ba-stakeholder-analysis` | Who is affected and how? | Planned |
+
+---
+
+## About
+
+PlausibleBA is built on the [Capsicum Framework](https://www.plausibleba.com) —
+a formal approach to business architecture grounded in real delivery experience.
+The skills encode practitioner judgment: not just what to produce, but how to
+think through it.
+
+The name is intentional. *Plausible BA* — the business analyst who does just enough
+architecture to make the work rigorous. *Plausible Business Architecture* — formal
+enough to be defensible, accessible enough to be used on any project.
+
+Questions, issues, contributions: [open an issue](https://github.com/plausibleba/ba-skills/issues).
 
 ---
 

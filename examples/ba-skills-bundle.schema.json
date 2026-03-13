@@ -1,0 +1,389 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plausibleba.com/schemas/ba-skills-bundle/1.0.0",
+  "title": "ba-skills-bundle",
+  "description": "Versioned contract between PlausibleBA skills and VCC. PlausibleBA writes this; VCC consumes it.",
+  "type": "object",
+  "required": ["meta", "scaffoldId", "name", "elements"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["bundleVersion", "createdAt", "client"],
+      "properties": {
+        "bundleVersion": {
+          "type": "string",
+          "description": "Semver version of the bundle schema (e.g. '1.0.0')"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp"
+        },
+        "client": {
+          "type": "string",
+          "description": "Organisation name"
+        },
+        "skillVersions": {
+          "type": "object",
+          "description": "Version of each contributing skill",
+          "properties": {
+            "capabilityMap": { "type": "string" },
+            "conceptModel": { "type": "string" },
+            "valueStream": { "type": "string" },
+            "ppitMapping": { "type": "string" }
+          },
+          "additionalProperties": { "type": "string" }
+        },
+        "capsicumVersion": {
+          "type": "string",
+          "description": "Capsicum Framework version used for concept typing"
+        }
+      }
+    },
+    "scaffoldId": {
+      "type": "string",
+      "description": "Deterministic identifier for this scaffold instance"
+    },
+    "name": {
+      "type": "string",
+      "description": "Model name (e.g. 'PortfolioProp Operating Model')"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional narrative description of the operating model"
+    },
+    "elements": {
+      "type": "object",
+      "description": "All element registries. Each is a Record<id, Element>.",
+      "required": ["capabilities", "concepts", "valueStreams", "valueStreamStages", "outcomes"],
+      "properties": {
+
+        "capabilities": {
+          "type": "object",
+          "description": "L1/L2/L3 capability hierarchy from /capability-map",
+          "additionalProperties": {
+            "$ref": "#/$defs/Capability"
+          }
+        },
+
+        "concepts": {
+          "type": "object",
+          "description": "Business objects typed with Capsicum Triad (Party/Record/Resource) from /concept-model",
+          "additionalProperties": {
+            "$ref": "#/$defs/Concept"
+          }
+        },
+
+        "valueStreams": {
+          "type": "object",
+          "description": "Value streams from /value-stream. Each contains ordered stageIds referencing the valueStreamStages registry.",
+          "additionalProperties": {
+            "$ref": "#/$defs/ValueStream"
+          }
+        },
+
+        "valueStreamStages": {
+          "type": "object",
+          "description": "Value stream stages from /value-stream. Each is a subclass of Capsicum Activity Cell. Ordered by ValueStream.stageIds.",
+          "additionalProperties": {
+            "$ref": "#/$defs/ValueStreamStage"
+          }
+        },
+
+        "outcomes": {
+          "type": "object",
+          "description": "Entry/exit criteria referenced by ValueStreamStage preOutcomeId/postOutcomeId",
+          "additionalProperties": {
+            "$ref": "#/$defs/Element"
+          }
+        },
+
+        "roles": {
+          "type": "object",
+          "description": "Derived from Party-typed concepts. Each role optionally links to a concept via conceptId.",
+          "additionalProperties": {
+            "$ref": "#/$defs/Role"
+          }
+        },
+
+        "metrics": {
+          "type": "object",
+          "description": "Optional metrics. PlausibleBA may populate names; VCC adds measures.",
+          "additionalProperties": {
+            "$ref": "#/$defs/Metric"
+          }
+        },
+
+        "informationObjects": {
+          "type": "object",
+          "description": "Derived from Record/Resource-typed concepts. Optional conceptId backref.",
+          "additionalProperties": {
+            "$ref": "#/$defs/InformationObject"
+          }
+        }
+      },
+      "additionalProperties": {
+        "type": "object",
+        "description": "VCC may add additional registries (controls, frictionObservations, solutions, etc.)"
+      }
+    }
+  },
+
+  "$defs": {
+    "Element": {
+      "type": "object",
+      "required": ["id", "elementType", "name"],
+      "properties": {
+        "id": { "type": "string" },
+        "elementType": { "type": "string" },
+        "name": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+
+    "Capability": {
+      "type": "object",
+      "required": ["id", "elementType", "name", "level"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique ID (e.g. 'cap_manage_trade_partner_orders')"
+        },
+        "elementType": {
+          "type": "string",
+          "const": "Capability"
+        },
+        "name": {
+          "type": "string",
+          "description": "Verb-Noun at L3, domain name at L2, area name at L1"
+        },
+        "level": {
+          "type": "integer",
+          "enum": [1, 2, 3],
+          "description": "Hierarchy level. L3 = operational capability."
+        },
+        "parentId": {
+          "type": "string",
+          "description": "ID of parent capability (L3→L2, L2→L1, L1 has no parent)"
+        },
+        "businessObject": {
+          "type": "string",
+          "description": "Core business object this capability operates on"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "Concept": {
+      "type": "object",
+      "required": ["id", "elementType", "name", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique ID (e.g. 'concept_guest', 'concept_booking')"
+        },
+        "elementType": {
+          "type": "string",
+          "const": "Concept"
+        },
+        "name": {
+          "type": "string",
+          "description": "Canonical name (e.g. 'Guest', 'Booking', 'Financial Report')"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["Party", "Record", "Resource"],
+          "description": "Capsicum Triad classification"
+        },
+        "definition": {
+          "type": "string",
+          "description": "Business definition"
+        },
+        "lifecycleStates": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Ordered lifecycle states (e.g. ['Prospect', 'Qualified', 'Active', 'Churned'])"
+        },
+        "relatedCapabilityIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Capabilities that operate on this concept"
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "ValueStream": {
+      "type": "object",
+      "required": ["id", "elementType", "name", "stageIds"],
+      "properties": {
+        "id": { "type": "string" },
+        "elementType": {
+          "type": "string",
+          "const": "ValueStream"
+        },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "stageIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Ordered list of ValueStreamStage IDs defining the stage sequence"
+        },
+        "trigger": {
+          "type": "string",
+          "description": "What initiates this value stream"
+        },
+        "terminalOutcome": {
+          "type": "string",
+          "description": "What successful completion looks like"
+        },
+        "layoutZone": {
+          "type": "string",
+          "description": "Zone for network view stratification (e.g. 'ecosystem', 'knowledge')"
+        },
+        "accountableStakeholder": {
+          "type": "string",
+          "description": "Role or person accountable for this value stream"
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "ValueStreamStage": {
+      "type": "object",
+      "description": "A stage within a value stream. Subclass of Capsicum Activity Cell. Contains entry/exit criteria (outcomes) and capability requirements. ProcessActivities are partOf each stage via capabilityPPIT.",
+      "required": ["id", "elementType", "name", "preOutcomeId", "postOutcomeId"],
+      "properties": {
+        "id": { "type": "string" },
+        "elementType": {
+          "type": "string",
+          "const": "ValueStreamStage"
+        },
+        "name": { "type": "string" },
+        "preOutcomeId": {
+          "type": "string",
+          "description": "Entry criteria (reference to outcomes registry)"
+        },
+        "postOutcomeId": {
+          "type": "string",
+          "description": "Exit criteria (reference to outcomes registry)"
+        },
+        "requiresCapabilityIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "L3 capabilities required at this stage"
+        },
+        "performedByRoleIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Roles performing this stage"
+        },
+        "informationObjectIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Information objects in play at this stage"
+        },
+        "metricIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "capabilityPPIT": {
+          "type": "object",
+          "description": "PPIT decomposition per capability at this stage. Keyed by capability ID.",
+          "additionalProperties": {
+            "$ref": "#/$defs/PPITEntry"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "PPITEntry": {
+      "type": "object",
+      "description": "People/Process/Information/Technology decomposition for one capability at one ValueStreamStage",
+      "properties": {
+        "roleIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "People: references to roles registry"
+        },
+        "processActivities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Process: verb-noun process activities that are partOf this ValueStreamStage. Free-text in v1; may be promoted to first-class elements in future versions."
+        },
+        "informationObjectIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Information: references to informationObjects registry"
+        },
+        "technologyAppIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Technology: references to applicationFunctions or technologyApps"
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "Role": {
+      "type": "object",
+      "required": ["id", "elementType", "name"],
+      "properties": {
+        "id": { "type": "string" },
+        "elementType": {
+          "type": "string",
+          "const": "Role"
+        },
+        "name": { "type": "string" },
+        "conceptId": {
+          "type": "string",
+          "description": "Optional link to Party-typed concept in concepts registry"
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "InformationObject": {
+      "type": "object",
+      "required": ["id", "elementType", "name"],
+      "properties": {
+        "id": { "type": "string" },
+        "elementType": {
+          "type": "string",
+          "const": "InformationObject"
+        },
+        "name": { "type": "string" },
+        "conceptId": {
+          "type": "string",
+          "description": "Optional link to Record/Resource-typed concept in concepts registry"
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "Metric": {
+      "type": "object",
+      "required": ["id", "elementType", "name"],
+      "properties": {
+        "id": { "type": "string" },
+        "elementType": {
+          "type": "string",
+          "const": "Metric"
+        },
+        "name": { "type": "string" },
+        "unit": { "type": "string" },
+        "direction": {
+          "type": "string",
+          "enum": ["Increase", "Decrease", "Attain", "Maintain"]
+        },
+        "currentMeasure": { "type": "number" },
+        "targetMeasure": { "type": "number" }
+      },
+      "additionalProperties": true
+    }
+  }
+}
