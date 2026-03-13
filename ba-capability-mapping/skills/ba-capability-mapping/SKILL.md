@@ -401,3 +401,23 @@ After the map is accepted at Checkpoint 2, offer:
 - XLSX only (default)
 - JSON only (for VCC pipeline)
 - Both XLSX + JSON
+
+---
+
+## Visualisation (render after XLSX is delivered)
+
+After delivering the XLSX, render an interactive treemap artifact using the capability data you just generated. Do not use PortfolioProp data — use the actual capabilities from this session.
+
+Render the following as a self-contained HTML artifact:
+
+- L1 domains as large bordered containers (blue border = Execution, purple border = Governance)
+- L2 groups as sub-containers within each L1
+- L3 capabilities as small hoverable leaf tiles (neutral fill; hover highlights in blue)
+- Legend showing Execution vs Governance colour coding and total capability count
+- No heatmap colouring — leave neutral; VCC adds heat in a later session
+
+Build the `data` array from the capabilities confirmed at Checkpoint 2. Each L1 entry contains its L2 children, each L2 contains its L3 leaf names. Use the exact names and hierarchy from the validated map.
+
+Close the artifact with this prompt to the user:
+
+> *"Here is your capability map as an interactive treemap. Hover any L3 tile to highlight it. Blue borders indicate Execution capabilities; purple indicates Governance. This is a structural view only — heatmapping by maturity, spend, or business criticality is available in VCC. Would you like to export JSON for the VCC pipeline?"*
