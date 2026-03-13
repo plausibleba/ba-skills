@@ -1,12 +1,14 @@
 {
   "name": "ba-value-streams",
   "version": "1.0.0",
-  "description": "Value Stream Analysis skill for Claude. Maps how an organisation delivers value through staged decomposition — orchestrating capabilities into sequences that advance a business object from trigger to outcome. Cross-validates both the Capability Map and Concept Model. Part of the PlausibleBA skills library.",
-  "author": "PlausibleBA",
-  "website": "https://www.plausibleba.com",
+  "description": "Value Stream Analysis. Maps staged delivery of value to recipients, orchestrates capabilities into sequences, cross-validates Capability Map and Concept Model, exports ba-skills-bundle.json for VCC.",
+  "author": {
+    "name": "PlausibleBA",
+    "url": "https://www.plausibleba.com"
+  },
   "skills": [
-    "skills/ba-value-streams",
-    "skills/ba-taxonomy-standard"
+    "skills/ba-taxonomy-standard",
+    "skills/ba-value-streams"
   ],
   "commands": [
     "commands/value-stream.md"
