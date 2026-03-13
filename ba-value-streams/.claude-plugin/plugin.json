@@ -1,6 +1,6 @@
 {
   "name": "ba-value-streams",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "description": "Value Stream Analysis. Maps staged delivery of value, orchestrates capabilities, exports ba-skills-bundle.json for VCC.",
   "author": {
     "name": "PlausibleBA"

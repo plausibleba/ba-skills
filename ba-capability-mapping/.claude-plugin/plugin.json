@@ -1,6 +1,6 @@
 {
   "name": "ba-capability-mapping",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "description": "Produce rigorous Capability Maps from any input. MECE hierarchy, BIZBOK-grounded, XLSX export.",
   "author": {
     "name": "PlausibleBA"
