@@ -263,6 +263,28 @@ Present the Object Register inline and ask:
 
 ---
 
+### Step 8 — Render the interactive concept graph (PRIMARY deliverable)
+
+Immediately after the Object Register is validated, render an interactive concept graph as an HTML artifact. Do NOT wait for the user to ask. Do NOT generate the XLSX first. The graph IS the deliverable — XLSX is a download option offered beneath it.
+
+Render the following as a self-contained HTML artifact:
+
+- Nodes typed by Capsicum Triad: Party = teal circle, Resource = blue circle, Record = pink rectangle
+- Edges drawn between related objects with relationship label in small text at midpoint
+- Click any node to reveal its definition and lifecycle states in a detail card below the graph
+- Legend showing Party / Resource / Record colour coding
+- Layout: Party nodes left column, Resource nodes centre, Record nodes right — arrange vertically by count
+
+Build all node and edge data from the Object Register confirmed in this session. Use exact names, definitions, lifecycle states, and relationships from the validated model. Do NOT use PortfolioProp example data.
+
+After rendering the graph, say:
+
+> *"Here is your concept model. Click any node to see its definition and lifecycle states. Parties are teal, Resources are blue, Records are pink. Would you like to download this as an XLSX, or export JSON for the VCC pipeline?"*
+
+Then generate the XLSX only if the user asks for it.
+
+---
+
 ## Inline Preview Format
 
 **Classification Checkpoint 0 — hierarchy choice (present before any classification):**
@@ -408,25 +430,7 @@ A good Concept Model for a single business domain:
 
 ---
 
-## Visualisation (render after XLSX is delivered)
-
-After delivering the XLSX, render an interactive concept graph artifact using the object data you just generated. Do not use PortfolioProp data — use the actual objects from this session.
-
-Render the following as a self-contained HTML artifact:
-
-- Nodes typed by Capsicum Triad: Party = teal circle, Resource = blue circle, Record = pink rectangle
-- Edges drawn between related objects with relationship label in small text at midpoint
-- Click any node to reveal its definition and lifecycle states in a detail card below the graph
-- Legend showing Party / Resource / Record colour coding
-- Layout: Party nodes left column, Resource nodes centre, Record nodes right — arrange vertically by count
-
-Build the node and edge arrays from the Object Register confirmed in the session. Use exact names, definitions, lifecycle states, and relationships from the validated model.
-
-Close the artifact with this prompt to the user:
-
-> *"Here is your concept model as an interactive graph. Click any node to see its definition and lifecycle states. Parties are teal, Resources are blue, Records are pink. This structural view is ready to import into VCC where relationship analytics and gap detection are available. Would you like to export JSON for the VCC pipeline?"*
-
-## Next Steps (offer after validation)
+## Next Steps (offer after the graph is delivered)
 
 After the Concept Model is accepted:
 - **Value Stream Analysis** — use the Concept Model objects as the thread through each value stream stage

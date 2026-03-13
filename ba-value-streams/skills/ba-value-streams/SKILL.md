@@ -138,6 +138,28 @@ Present the stage list inline and ask:
 
 ---
 
+### Step 7 — Render the interactive stage view (PRIMARY deliverable)
+
+Immediately after the stage list is validated, render an interactive value stream as an HTML artifact. Do NOT wait for the user to ask. Do NOT generate the XLSX first. The stage view IS the deliverable — XLSX is a download option offered beneath it.
+
+Render the following as a self-contained HTML artifact:
+
+- Outcome chain above the stage row: each entry/exit outcome as a small labelled box with › arrows between; terminal outcome highlighted in light blue
+- Stage cards in a horizontal row: stage number, stage name, accountable actor, top 3 capabilities as tags (+N if more), PPIT dots (People=blue, Process=green, Information=pink, Technology=amber; greyed if absent)
+- Click any stage card to reveal full capability list, information objects, entry/exit outcomes in a detail panel below
+- Stream trigger and terminal outcome shown in subtitle above the diagram
+- layoutZone badge (ecosystem or knowledge) shown top-right
+
+Build all data from the value stream confirmed in this session. Use exact stage names, outcomes, capabilities, actors, and PPIT assignments. Do NOT use PortfolioProp example data.
+
+After rendering the stage view, say:
+
+> *"Here is your value stream. Click any stage to see its full capability breakdown, information objects, and entry/exit outcomes. PPIT dots show which dimensions are active at each stage. Would you like to download this as an XLSX, or export JSON for the VCC pipeline?"*
+
+Then generate the XLSX only if the user asks for it.
+
+---
+
 ## Inline Preview Format
 
 **Checkpoint — Stage preview:**
@@ -294,25 +316,7 @@ which capabilities serve multiple streams (high-reuse capabilities are strategic
 
 ---
 
-## Visualisation (render after XLSX is delivered)
-
-After delivering the XLSX, render an interactive value stream artifact using the stage data you just generated. Do not use PortfolioProp data — use the actual stages from this session.
-
-Render the following as a self-contained HTML artifact:
-
-- Outcome chain above the stage row: each entry/exit outcome as a small labelled box with › arrows between them; terminal outcome highlighted in light blue
-- Stage cards in a horizontal row: stage number, stage name, accountable actor, top 3 capabilities as tags (+N more if applicable), PPIT dots (People=blue, Process=green, Information=pink, Technology=amber; greyed out if not present in stage)
-- Click any stage card to reveal full capability list, information objects, entry and exit outcomes in a detail panel below
-- Stream trigger and terminal outcome shown in subtitle above the diagram
-- layoutZone badge (ecosystem or knowledge) shown top-right
-
-Build all data from the value stream confirmed in the session. Use exact stage names, outcomes, capabilities, actors, and PPIT assignments from the validated stream.
-
-Close the artifact with this prompt to the user:
-
-> *"Here is your value stream as an interactive stage view. Click any stage to see its full capability breakdown, information objects, and entry/exit outcomes. PPIT indicators show which dimensions are active in each stage. This view is ready to import into VCC where friction analysis, solution mapping, and throughput metrics are available. Would you like to export JSON for the VCC pipeline?"*
-
-## Next Steps (offer after validation)
+## Next Steps (offer after the stage view is delivered)
 
 After the Value Stream is accepted:
 - **Additional value streams** — map remaining streams; identify shared capabilities
