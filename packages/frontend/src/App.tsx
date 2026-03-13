@@ -88,6 +88,16 @@ export default function App() {
                 </button>
               )}
               <button
+                onClick={goToIntake}
+                className={`rounded-md px-3 py-1 text-[11px] font-medium transition-all ${
+                  isIntake
+                    ? "bg-white/20 text-white shadow-sm"
+                    : "text-white/50 hover:text-white/80"
+                }`}
+              >
+                Discovery
+              </button>
+              <button
                 onClick={backToNetwork}
                 className={`rounded-md px-3 py-1 text-[11px] font-medium transition-all ${
                   isNetwork
@@ -129,7 +139,22 @@ export default function App() {
           {/* Intake breadcrumb */}
           {isIntake && (
             <nav className="flex items-center gap-1.5 text-[11px]">
-              <span className="font-medium text-white/90">New Discovery</span>
+              {isLoaded && (
+                <>
+                  <button
+                    onClick={backToNetwork}
+                    className="text-white/50 transition-colors hover:text-white/80"
+                  >
+                    {scaffoldData?.name ?? "Network"}
+                  </button>
+                  <svg className="h-3 w-3 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </>
+              )}
+              <span className="font-medium text-white/90">
+                {isLoaded ? "Edit Discovery" : "New Discovery"}
+              </span>
             </nav>
           )}
 

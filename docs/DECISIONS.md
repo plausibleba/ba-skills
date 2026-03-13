@@ -628,3 +628,46 @@ Additional lenses can be defined without modifying the foundation. Simulations c
 **Rationale:** Every demo is dramatically more impressive when the Network View shows domain-aware structure rather than a flat graph. Multiple lens support means the same model can be viewed through different strategic frames without changing the underlying data. Low schema cost (additive), high visual impact.
 **Depends on:** Current two-zone implementation (working), intake form zone selector (working).
 **Not in scope:** 3D or nested zone layouts, animated transitions between lenses, per-zone colour theming (nice-to-have later).
+
+## D-116: Single Repository — Views as Projections, Not Owners
+**Date:** 2026-03-12
+**Status:** Approved — implementation pending
+**Context:** The current architecture has two independent state trees: (1) `DiscoveryIntake` owns its own `FormState` via React `useState` (org, value streams, roles, tech, pain points, metrics), and (2) `canvas-store` owns `scaffoldData` (the canonical operating model). These are only connected at generation time — the pipeline transforms form → scaffold. After generation, they diverge: canvas edits mutate `scaffoldData` but never flow back to the form. This means round-tripping (editing the form after canvas edits) would silently discard canvas-level changes — renamed activities, added capabilities, reordered stages, etc. The root issue is that the form and canvas are both *owners* of state rather than *projections* of a shared repository.
+
+**Decision:** Refactor so that a single source of truth (the Zustand store) holds the operating model, and both the Discovery Form and the Canvas/Network views are read-only projections that dispatch mutations to the store. Specifically:
+
+1. **Extract form state into a `discovery-store`** (or extend `canvas-store`) so the pre-generation representation (org metadata, transcript, extraction state) lives alongside `scaffoldData` as a peer, not in component-local state.
+
+2. **Build `scaffoldToForm()` hydration** — a reverse-mapping function that projects a scaffold back into `FormState`. When navigating to the Discovery tab, the form reads from the *current* scaffold, including any canvas edits. Fields that don't exist in the scaffold (e.g. transcript text, extraction metadata, pain point intensity) are preserved separately in the discovery store.
+
+3. **Generation replaces the scaffold** as today, but the form stays synchronised because it's derived from the same store. Re-opening the form after generation shows the generated model's actual state, not the pre-generation input.
+
+4. **Canvas edits continue to mutate `scaffoldData`** as today (D-092/093/094). The form simply re-derives on open.
+
+**Migration path:** This is a refactor, not a rewrite. The DiscoveryIntake component keeps its UI and layout; only its state source changes from `useState(EMPTY_FORM)` to a Zustand selector. The existing `setOrg()`, `setVS()`, etc. updaters become store actions. The pipeline orchestrator writes to the store instead of returning a bundle to a callback.
+
+**Why not just warn and block?** We considered adding a "you have unsaved canvas edits" warning when navigating to Discovery, but this treats the symptom (data loss) rather than the cause (two sources of truth). The warning would also be confusing — the user didn't think they had "unsaved" changes because they were editing directly on the canvas. The single-repository pattern is the correct long-term fix.
+
+**Rationale:** Every view should be a dumb projection of the repository. This is the standard pattern for collaborative editing tools (Figma, Google Docs, Notion) and aligns with how Supabase persistence already works — `saveToProject()` serialises `scaffoldData`, not form state. Making the form a projection of the same data that the canvas projects eliminates an entire class of sync bugs.
+
+**Depends on:** D-092 (editable canvas mutations), D-108 (Supabase persistence), D-112 (editing architecture).
+**Not in scope (yet):** Real-time collaborative editing (CRDT/OT), undo/redo stack across views, form ↔ scaffold diff preview.
+
+## D-117: Phase 2 Status — Session 25 Checkpoint
+**Date:** 2026-03-12
+**Status:** Progress note
+
+**Completed this session:**
+- Conflict detection UI (`ConflictBanner.tsx`) — amber banner with Reload / Overwrite options, auto-save pauses during unresolved conflicts (commit `612b178`)
+- Placeholder cleanup — Puretec → Acme Corp in DiscoveryIntake (committed with conflict UI)
+- Round-trip navigation — Discovery tab added to header mode switch; breadcrumb shows scaffold name when editing; intake form accessible from any view (uncommitted, in progress)
+
+**Blocked / deferred:**
+- Conflict testing — cannot simulate revision clash without two browser tabs on the same project. Currently no way to load a scaffold from a Supabase project in a second tab (discovery is the only scaffold entry point). Will be testable once project-load round-trip is working or after sharing is implemented.
+- Round-trip form editing — safe to navigate back, but regenerating from the form would overwrite canvas edits. Requires D-116 (single repository) to fix properly. The Discovery tab is wired up but should show a warning until D-116 is implemented.
+
+**Remaining Phase 2 items (priority order):**
+1. D-116 implementation — single repository refactor (form state → store)
+2. Project sharing — invite by email using `project_access` table
+3. Module-specific panel visibility — show/hide UI sections based on selected module
+4. Vercel deployment — env vars, edge function, production build
