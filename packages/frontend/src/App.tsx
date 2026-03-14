@@ -7,6 +7,7 @@ import { CanvasView } from "./components/CanvasView.tsx";
 import { StageWizard } from "./components/StageWizard.tsx";
 import { UserGuidePanel } from "./components/UserGuidePanel.tsx";
 import { NetworkView } from "./components/NetworkView.tsx";
+import { CapabilityMapView } from "./components/CapabilityMapView.tsx";
 import DiscoveryIntake from "./components/DiscoveryIntake.tsx";
 import { LoginPage } from "./components/LoginPage.tsx";
 import { ProjectList } from "./components/ProjectList.tsx";
@@ -22,6 +23,8 @@ export default function App() {
     error,
     backToNetwork,
     goToIntake,
+    goToCapabilityMap,
+    goToConceptGraph,
     loadScaffold,
     loadHeatmap,
   } = useCanvasStore();
@@ -35,6 +38,8 @@ export default function App() {
   const isNetwork = viewMode === "network";
   const isStage = viewMode === "stage" && !!canvasViewModel;
   const isIntake = viewMode === "intake";
+  const isCapabilityMap = viewMode === "capabilityMap";
+  const isConceptGraph = viewMode === "conceptGraph";
 
   // Auth gate: show login page if not authenticated and not local mode
   if (authLoading) {
@@ -115,7 +120,27 @@ export default function App() {
                     : "text-white/30"
                 }`}
               >
-                Stage
+                Value Stream
+              </button>
+              <button
+                onClick={goToCapabilityMap}
+                className={`rounded-md px-3 py-1 text-[11px] font-medium transition-all ${
+                  isCapabilityMap
+                    ? "bg-white/20 text-white shadow-sm"
+                    : "text-white/50 hover:text-white/80"
+                }`}
+              >
+                Capabilities
+              </button>
+              <button
+                onClick={goToConceptGraph}
+                className={`rounded-md px-3 py-1 text-[11px] font-medium transition-all ${
+                  isConceptGraph
+                    ? "bg-white/20 text-white shadow-sm"
+                    : "text-white/50 hover:text-white/80"
+                }`}
+              >
+                Concepts
               </button>
             </div>
           )}
@@ -296,6 +321,7 @@ export default function App() {
 
         {!isIntake && isLoaded && isNetwork && <NetworkView />}
         {!isIntake && isStage && <CanvasView />}
+        {!isIntake && isLoaded && isCapabilityMap && <CapabilityMapView />}
       </main>
       <UserGuidePanel />
     </div>

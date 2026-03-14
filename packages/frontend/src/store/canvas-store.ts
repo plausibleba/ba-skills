@@ -20,7 +20,7 @@ import {
   deriveTopologyView,
 } from "./network-derivation.ts";
 
-type ViewMode = "network" | "stage" | "intake";
+type ViewMode = "network" | "stage" | "intake" | "capabilityMap" | "conceptGraph";
 
 interface CanvasState {
   // View navigation
@@ -60,6 +60,8 @@ interface CanvasState {
   selectVs: (vsId: string) => void;
   backToNetwork: () => void;
   goToIntake: () => void;
+  goToCapabilityMap: () => void;
+  goToConceptGraph: () => void;
   reset: () => void;
   saveUserStory: (activityId: string, story: TransformationUserStory) => void;
   setActivityStories: (activityId: string, stories: TransformationUserStory[]) => void;
@@ -410,6 +412,14 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   goToIntake: () => {
     set({ viewMode: "intake" });
+  },
+
+  goToCapabilityMap: () => {
+    set({ viewMode: "capabilityMap" });
+  },
+
+  goToConceptGraph: () => {
+    set({ viewMode: "conceptGraph" });
   },
 
   reset: () => {
