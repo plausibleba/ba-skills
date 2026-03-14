@@ -42,7 +42,8 @@ export function AddItemInput({ label, onAdd, className = "" }: AddItemInputProps
     return (
       <button
         onClick={() => setOpen(true)}
-        className={`flex items-center gap-1 rounded border border-dashed border-gray-300 px-2 py-1 text-[10px] font-medium text-gray-400 hover:border-vcc-400 hover:text-vcc-600 transition-colors ${className}`}
+        className={`flex items-center gap-1 rounded border border-dashed px-2 py-1 text-[10px] font-medium transition-colors ${className}`}
+        style={{ borderColor: "#2e3f5c", color: "#94a3b8" }}
       >
         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -65,7 +66,8 @@ export function AddItemInput({ label, onAdd, className = "" }: AddItemInputProps
         }}
         onBlur={submit}
         placeholder={`New ${label.toLowerCase()} name…`}
-        className="flex-1 rounded border border-vcc-300 px-2 py-0.5 text-[11px] text-gray-700 focus:outline-none focus:ring-1 focus:ring-vcc-400"
+        className="flex-1 rounded px-2 py-0.5 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-400"
+        style={{ border: "1px solid #2e3f5c", background: "#1a2236", color: "#cbd5e1" }}
       />
     </div>
   );

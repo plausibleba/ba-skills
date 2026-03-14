@@ -8,6 +8,7 @@ import { StageWizard } from "./components/StageWizard.tsx";
 import { UserGuidePanel } from "./components/UserGuidePanel.tsx";
 import { NetworkView } from "./components/NetworkView.tsx";
 import { CapabilityMapView } from "./components/CapabilityMapView.tsx";
+import { ConceptGraphView } from "./components/ConceptGraphView.tsx";
 import DiscoveryIntake from "./components/DiscoveryIntake.tsx";
 import { LoginPage } from "./components/LoginPage.tsx";
 import { ProjectList } from "./components/ProjectList.tsx";
@@ -328,6 +329,7 @@ export default function App() {
         {!isIntake && isLoaded && isNetwork && <NetworkView />}
         {!isIntake && isStage && <CanvasView />}
         {!isIntake && isLoaded && isCapabilityMap && <CapabilityMapView />}
+        {!isIntake && isLoaded && isConceptGraph && <ConceptGraphView />}
       </main>
       <UserGuidePanel />
     </div>

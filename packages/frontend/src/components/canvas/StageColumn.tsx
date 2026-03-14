@@ -71,8 +71,9 @@ export function StageColumn({
         className={`rounded-t-lg border border-b-0 ${
           hasBinding
             ? "border-status-binding bg-status-binding"
-            : "border-[#2D4A6B] bg-[#2D4A6B]"
+            : ""
         }`}
+        style={hasBinding ? {} : { borderColor: "#2e3f5c", background: "#1e2d4a" }}
       >
         <div className="flex items-center justify-between px-4 py-2">
           <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">
@@ -135,9 +136,10 @@ export function StageColumn({
       <div
         className={`flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto rounded-b-lg border border-t-0 p-2.5 ${
           hasBinding
-            ? "border-status-binding/40 bg-status-bindingLight/30"
-            : "border-vcc-200 bg-white"
+            ? "border-status-binding/40"
+            : ""
         }`}
+        style={hasBinding ? { background: "rgba(124,45,45,0.15)" } : { borderColor: "#2e3f5c", background: "#243352" }}
       >
         {column.activityIds.map((actId) => (
           <StageCard

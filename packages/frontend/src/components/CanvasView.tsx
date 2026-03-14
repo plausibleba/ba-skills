@@ -108,18 +108,18 @@ export function CanvasView() {
   const isStub = isEnterpriseScaffold && vsActivities.length <= 5 && totalMetrics <= 2;
 
   return (
-    <div className="flex h-full gap-0">
+    <div className="flex h-full gap-0" style={{ background: "#1a2236", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <div className="flex h-full flex-1 flex-col gap-4 overflow-hidden pl-6 pt-4">
         {/* Conflict banner — optimistic lock failure */}
         <ConflictBanner />
 
         {/* Stub banner */}
         {isStub && (
-          <div className="flex flex-shrink-0 items-center gap-2 rounded-lg border border-vcc-100 bg-vcc-50/50 px-4 py-2">
-            <svg className="h-4 w-4 flex-shrink-0 text-vcc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex flex-shrink-0 items-center gap-2 rounded-lg px-4 py-2" style={{ border: "1px solid #2e3f5c", background: "#243352" }}>
+            <svg className="h-4 w-4 flex-shrink-0" style={{ color: "#4a9eda" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p className="text-[11px] text-vcc-600">
+            <p className="text-[11px]" style={{ color: "#94a3b8" }}>
               Enterprise topology view — {vsActivities.length} stages modelled. For full stream diagnostics with friction analysis and throughput projections, load the dedicated stream scaffold.
             </p>
           </div>
@@ -128,29 +128,29 @@ export function CanvasView() {
         {/* ── Narrative header ── */}
         <div className="flex flex-shrink-0 flex-wrap items-start justify-between gap-4">
           <div className="min-w-[280px] flex-1 space-y-2">
-            <h2 className="text-lg font-semibold text-vcc-900">
+            <h2 className="text-lg font-semibold text-white">
               <InlineEdit
                 value={vsName}
                 onSave={(name) => updateVsName(canvasViewModel.valueStreamId, name)}
-                className="text-lg font-semibold text-vcc-900"
-                inputClassName="text-lg font-semibold text-vcc-900"
+                className="text-lg font-semibold text-white"
+                inputClassName="text-lg font-semibold text-gray-900 bg-white"
               />
             </h2>
-            <div className="min-w-[200px] max-w-4xl rounded-md bg-gray-50 px-3 py-2">
+            <div className="min-w-[200px] max-w-4xl rounded-md px-3 py-2" style={{ background: "#243352" }}>
               <InlineEdit
                 value={vsDescription ?? ""}
                 onSave={(desc) => updateVsDescription(canvasViewModel.valueStreamId, desc)}
-                className="text-xs leading-relaxed text-gray-500"
-                inputClassName="text-xs text-gray-600"
+                className="text-xs leading-relaxed text-[#94a3b8]"
+                inputClassName="text-xs text-gray-900 bg-white"
                 placeholder="Add a description…"
                 multiline
               />
             </div>
             <div className="flex items-center gap-3 pt-1 text-xs">
-              <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+              <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: "#94a3b8" }}>
                 Accountable Stakeholder
               </span>
-              <span className="rounded-full border border-vcc-200 bg-vcc-50 px-2.5 py-0.5 text-[11px] font-medium text-vcc-700">
+              <span className="rounded-full px-2.5 py-0.5 text-[11px] font-medium text-white" style={{ background: "#243352", border: "1px solid #2e3f5c" }}>
                 {accountableStakeholder}
               </span>
             </div>
@@ -235,7 +235,8 @@ export function CanvasView() {
                 const afterId = lastCol?.activityIds[0];
                 addActivity(canvasViewModel.valueStreamId, "New Stage", afterId);
               }}
-              className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-6 text-gray-400 hover:border-vcc-400 hover:text-vcc-600 transition-colors"
+              className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed px-4 py-6 transition-colors"
+              style={{ borderColor: "#2e3f5c", color: "#94a3b8" }}
               title="Add a new stage"
             >
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -248,14 +249,14 @@ export function CanvasView() {
 
         {/* ── Validation findings ── */}
         {validationReport && validationReport.findings.length > 0 && (
-          <details className="flex-shrink-0 rounded-lg border border-yellow-100 bg-yellow-50/40 p-3">
-            <summary className="cursor-pointer text-sm font-medium text-yellow-600">
+          <details className="flex-shrink-0 rounded-lg p-3" style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)" }}>
+            <summary className="cursor-pointer text-sm font-medium" style={{ color: "#fbbf24" }}>
               {validationReport.findings.length} validation finding
               {validationReport.findings.length !== 1 ? "s" : ""}
             </summary>
             <ul className="mt-2 space-y-1">
               {validationReport.findings.map((f, i) => (
-                <li key={i} className="text-xs text-yellow-500">
+                <li key={i} className="text-xs" style={{ color: "rgba(251,191,36,0.7)" }}>
                   <span className="font-mono font-medium">[{f.ruleId}]</span>{" "}
                   {f.message}
                 </li>
@@ -332,7 +333,8 @@ function ExportStoriesButton({
     <button
       onClick={handleExport}
       title={`Export ${stories.length} user stor${stories.length !== 1 ? "ies" : "y"} to Jira CSV`}
-      className="flex items-center gap-1.5 rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-[11px] font-medium text-indigo-600 transition-colors hover:bg-indigo-100"
+      className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium transition-colors"
+      style={{ border: "1px solid rgba(74,158,218,0.3)", background: "rgba(74,158,218,0.15)", color: "#4a9eda" }}
     >
       <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -354,19 +356,19 @@ function DiagnosisSummary({
   onBindingClick: () => void;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-lg border border-gray-100 bg-white px-5 py-2.5">
+    <div className="flex items-center gap-4 rounded-lg px-5 py-2.5" style={{ background: "#243352", border: "1px solid #2e3f5c" }}>
       <div className="flex items-center gap-2">
         <div className="h-2 w-2 rounded-full bg-red-500" />
-        <span className="text-xs font-medium text-gray-700">
+        <span className="text-xs font-medium" style={{ color: "#cbd5e1" }}>
           {heatmapData.observations.length} friction observations
         </span>
       </div>
       {bindingActivityName && (
         <>
-          <div className="h-4 w-px bg-gray-200" />
+          <div className="h-4 w-px" style={{ background: "#2e3f5c" }} />
           <div className="flex items-center gap-1.5">
             <svg
-              className="h-3.5 w-3.5 text-red-500"
+              className="h-3.5 w-3.5 text-red-400"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -376,11 +378,11 @@ function DiagnosisSummary({
                 clipRule="evenodd"
               />
             </svg>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs" style={{ color: "#94a3b8" }}>
               Binding:{" "}
               <button
                 onClick={onBindingClick}
-                className="font-medium text-red-700 underline decoration-red-200 underline-offset-2 hover:text-red-900"
+                className="font-medium text-red-400 underline decoration-red-400/30 underline-offset-2 hover:text-red-300"
               >
                 {bindingActivityName}
               </button>
@@ -388,8 +390,8 @@ function DiagnosisSummary({
           </div>
           {heatmapData.bindingConstraint.confidence != null && (
             <>
-              <div className="h-4 w-px bg-gray-200" />
-              <span className="font-mono text-[10px] text-gray-400">
+              <div className="h-4 w-px" style={{ background: "#2e3f5c" }} />
+              <span className="font-mono text-[10px]" style={{ color: "#94a3b8" }}>
                 Confidence:{" "}
                 {(heatmapData.bindingConstraint.confidence * 100).toFixed(0)}%
               </span>

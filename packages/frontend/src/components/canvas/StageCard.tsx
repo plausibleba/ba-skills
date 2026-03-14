@@ -62,12 +62,11 @@ export function StageCard({
         hasHeatmap && frictionObs.length > 0
           ? "cursor-pointer hover:shadow-md"
           : ""
-      } ${isSelected ? "ring-2 ring-vcc-500 ring-offset-2" : ""} ${
-        isBinding ? "border-red-200 bg-red-50/10" : "border-gray-200 bg-white"
-      }`}
+      } ${isSelected ? "ring-2 ring-vcc-500 ring-offset-2" : ""}`}
+      style={isBinding ? { borderColor: "rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)" } : { borderColor: "#2e3f5c", background: "#1e2d4a" }}
     >
       {isBinding && (
-        <div className="flex items-center gap-1.5 bg-red-50/60 px-3 py-1.5">
+        <div className="flex items-center gap-1.5 px-3 py-1.5" style={{ background: "rgba(239,68,68,0.1)" }}>
           <svg
             className="h-3 w-3 text-red-500"
             fill="currentColor"
@@ -79,7 +78,7 @@ export function StageCard({
               clipRule="evenodd"
             />
           </svg>
-          <span className="text-[9px] font-semibold uppercase tracking-wider text-red-600">
+          <span className="text-[9px] font-semibold uppercase tracking-wider text-red-400">
             Binding Constraint
           </span>
         </div>
@@ -91,7 +90,8 @@ export function StageCard({
           {showConceptBadge && (
             <button
               onClick={(e) => { e.stopPropagation(); onCardClick?.(activityId); }}
-              className="flex items-center gap-1 rounded border border-sky-200 bg-sky-50 px-1.5 py-0.5 text-[9px] font-medium text-sky-700 hover:bg-sky-100 transition-colors"
+              className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-medium transition-colors"
+              style={{ border: "1px solid rgba(74,158,218,0.3)", background: "rgba(74,158,218,0.15)", color: "#4a9eda" }}
               title={`${cardCounts!.concepts.length} Concept Card${cardCounts!.concepts.length !== 1 ? "s" : ""}`}
             >
               <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 20 20">
@@ -103,7 +103,8 @@ export function StageCard({
           {showPolicyBadge && (
             <button
               onClick={(e) => { e.stopPropagation(); onCardClick?.(activityId); }}
-              className="flex items-center gap-1 rounded border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[9px] font-medium text-rose-700 hover:bg-rose-100 transition-colors"
+              className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-medium transition-colors"
+              style={{ border: "1px solid rgba(224,91,138,0.3)", background: "rgba(224,91,138,0.15)", color: "#e05b8a" }}
               title={`${cardCounts!.policies.length} Policy Card${cardCounts!.policies.length !== 1 ? "s" : ""}`}
             >
               <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 20 20">

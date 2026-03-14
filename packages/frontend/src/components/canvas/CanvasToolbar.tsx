@@ -20,13 +20,14 @@ function ToggleBtn({
       onClick={onToggle}
       className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all ${
         isOpen
-          ? "bg-vcc-100 text-vcc-700 shadow-sm"
-          : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"
+          ? "shadow-sm"
+          : ""
       }`}
+      style={isOpen ? { background: "rgba(74,158,218,0.15)", color: "#4a9eda" } : { color: "#94a3b8" }}
     >
       <ChevronIcon
         open={isOpen}
-        className={isOpen ? "text-vcc-400" : "text-gray-300"}
+        className={isOpen ? "text-blue-400" : "text-gray-500"}
       />
       {label}
     </button>
@@ -36,10 +37,10 @@ function ToggleBtn({
 /* ── Layer colour map ──────────────────────────────────────────────── */
 
 const LAYER_COLORS: Record<PPITLayer, { on: string }> = {
-  roles: { on: "bg-blue-100 text-blue-600" },
-  activities: { on: "bg-violet-100 text-violet-600" },
-  concepts: { on: "bg-amber-100 text-amber-700" },
-  applications: { on: "bg-emerald-100 text-emerald-600" },
+  roles: { on: "bg-blue-500/15 text-blue-300" },
+  activities: { on: "bg-violet-500/15 text-violet-300" },
+  concepts: { on: "bg-amber-500/15 text-amber-300" },
+  applications: { on: "bg-emerald-500/15 text-emerald-300" },
 };
 
 /* ── Canvas Toolbar ────────────────────────────────────────────────── */
@@ -74,7 +75,7 @@ export function CanvasToolbar({
   return (
     <div className="flex flex-shrink-0 items-center gap-3">
       {/* View controls */}
-      <div className="flex items-center gap-1 rounded-lg border border-gray-100 bg-white px-1.5 py-1 shadow-sm">
+      <div className="flex items-center gap-1 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: "1px solid #2e3f5c", background: "#243352" }}>
         <ToggleBtn
           label="Structure"
           isOpen={structureOpen}
@@ -93,8 +94,8 @@ export function CanvasToolbar({
       </div>
 
       {/* Layer toggles */}
-      <div className="flex items-center gap-0.5 rounded-lg border border-gray-100 bg-white px-1.5 py-1 shadow-sm">
-        <span className="px-1 text-[9px] font-medium uppercase tracking-wider text-gray-300">
+      <div className="flex items-center gap-0.5 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: "1px solid #2e3f5c", background: "#243352" }}>
+        <span className="px-1 text-[9px] font-medium uppercase tracking-wider" style={{ color: "#94a3b8" }}>
           Layers
         </span>
         {PPIT_LAYERS.map((layer) => (
@@ -104,8 +105,9 @@ export function CanvasToolbar({
             className={`rounded px-2 py-0.5 text-[10px] font-medium transition-all ${
               ppitToggles[layer]
                 ? LAYER_COLORS[layer].on
-                : "text-gray-400 hover:bg-gray-50 hover:text-gray-500"
+                : ""
             }`}
+            style={ppitToggles[layer] ? {} : { color: "#94a3b8" }}
           >
             {PPIT_LABELS[layer].short}
           </button>
@@ -113,17 +115,18 @@ export function CanvasToolbar({
       </div>
 
       {/* MVC Card toggles */}
-      <div className="flex items-center gap-0.5 rounded-lg border border-gray-100 bg-white px-1.5 py-1 shadow-sm">
-        <span className="px-1 text-[9px] font-medium uppercase tracking-wider text-gray-300">
+      <div className="flex items-center gap-0.5 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: "1px solid #2e3f5c", background: "#243352" }}>
+        <span className="px-1 text-[9px] font-medium uppercase tracking-wider" style={{ color: "#94a3b8" }}>
           Cards
         </span>
         <button
           onClick={() => onToggleCard("concepts")}
           className={`rounded px-2 py-0.5 text-[10px] font-medium transition-all ${
             cardToggles.concepts
-              ? "bg-sky-100 text-sky-700"
-              : "text-gray-400 hover:bg-gray-50 hover:text-gray-500"
+              ? "bg-sky-500/15 text-sky-300"
+              : ""
           }`}
+          style={cardToggles.concepts ? {} : { color: "#94a3b8" }}
           title="Concept Cards (MVC)"
         >
           C
@@ -132,9 +135,10 @@ export function CanvasToolbar({
           onClick={() => onToggleCard("policies")}
           className={`rounded px-2 py-0.5 text-[10px] font-medium transition-all ${
             cardToggles.policies
-              ? "bg-rose-100 text-rose-700"
-              : "text-gray-400 hover:bg-gray-50 hover:text-gray-500"
+              ? "bg-rose-500/15 text-rose-300"
+              : ""
           }`}
+          style={cardToggles.policies ? {} : { color: "#94a3b8" }}
           title="Policy Cards (MVC)"
         >
           P
@@ -145,23 +149,24 @@ export function CanvasToolbar({
       <div className="flex items-center gap-2">
         {heatmapData && (
           <div className="flex gap-1 text-[9px]">
-            <span className="rounded bg-amber-50 px-1.5 py-0.5 text-amber-500">
+            <span className="rounded px-1.5 py-0.5" style={{ background: "rgba(245,158,11,0.15)", color: "#fbbf24" }}>
               Execution
             </span>
-            <span className="rounded bg-red-50 px-1.5 py-0.5 text-red-400">
+            <span className="rounded px-1.5 py-0.5" style={{ background: "rgba(239,68,68,0.15)", color: "#f87171" }}>
               Governing
             </span>
           </div>
         )}
         {validationReport && (
           <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+            className="rounded-full px-2 py-0.5 text-[10px] font-medium"
+            style={
               validationReport.status === "Valid"
-                ? "bg-green-50 text-green-600"
+                ? { background: "rgba(34,197,94,0.15)", color: "#4ade80" }
                 : validationReport.status === "ValidWithWarnings"
-                  ? "bg-yellow-50 text-yellow-600"
-                  : "bg-red-50 text-red-500"
-            }`}
+                  ? { background: "rgba(234,179,8,0.15)", color: "#facc15" }
+                  : { background: "rgba(239,68,68,0.15)", color: "#f87171" }
+            }
           >
             {validationReport.status}
           </span>

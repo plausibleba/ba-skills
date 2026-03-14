@@ -56,7 +56,8 @@ function MiniAddButton({ placeholder, chipClass, onAdd }: {
         setValue(""); setOpen(false);
       }}
       placeholder={placeholder}
-      className="rounded-full border border-gray-300 px-1.5 py-0.5 text-[9px] text-gray-700 w-20 focus:outline-none focus:ring-1 focus:ring-vcc-300"
+      className="rounded-full px-1.5 py-0.5 text-[9px] w-20 focus:outline-none focus:ring-1 focus:ring-blue-400"
+      style={{ border: "1px solid #2e3f5c", background: "#1a2236", color: "#cbd5e1" }}
     />
   );
 }
@@ -66,10 +67,10 @@ function MiniAddButton({ placeholder, chipClass, onAdd }: {
 function CapabilityBadgeCounts({ ppit }: { ppit: CapPPIT | null }) {
   if (!ppit) return null;
   const counts: { b: string; n: number; c: string }[] = [
-    { b: "R", n: ppit.roleIds?.length ?? 0, c: "text-blue-500 bg-blue-50" },
-    { b: "A", n: ppit.activities?.length ?? 0, c: "text-violet-500 bg-violet-50" },
-    { b: "I", n: ppit.informationObjectIds?.length ?? 0, c: "text-amber-600 bg-amber-50" },
-    { b: "T", n: ppit.technologyAppIds?.length ?? 0, c: "text-emerald-500 bg-emerald-50" },
+    { b: "R", n: ppit.roleIds?.length ?? 0, c: "text-blue-300 bg-blue-500/15" },
+    { b: "A", n: ppit.activities?.length ?? 0, c: "text-violet-300 bg-violet-500/15" },
+    { b: "I", n: ppit.informationObjectIds?.length ?? 0, c: "text-amber-300 bg-amber-500/15" },
+    { b: "T", n: ppit.technologyAppIds?.length ?? 0, c: "text-emerald-300 bg-emerald-500/15" },
   ];
   return (
     <div className="flex gap-0.5">
@@ -167,28 +168,29 @@ export function CapabilityBlock({
   const capDescription = (cap as Record<string, unknown> | undefined)?.description as string | undefined;
 
   return (
-    <div className="relative rounded border border-gray-200 bg-white px-2.5 py-1.5">
+    <div className="relative rounded px-2.5 py-1.5" style={{ border: "1px solid #2e3f5c", background: "rgba(255,255,255,0.04)" }}>
       {/* Capability name + badge counts */}
       <div className="flex items-start justify-between gap-1.5">
-        <p className="min-w-0 text-xs font-medium text-gray-700">
+        <p className="min-w-0 text-xs font-medium" style={{ color: "#cbd5e1" }}>
           <InlineEdit
             value={cap?.name ?? humanizeId(capabilityId)}
             onSave={(name) => updateCapabilityName(capabilityId, name)}
-            className="text-xs font-medium text-gray-700"
-            inputClassName="text-xs font-medium text-gray-900"
+            className="text-xs font-medium"
+            inputClassName="text-xs font-medium text-gray-900 bg-white"
+            style={{ color: "#cbd5e1" }}
           />
         </p>
         <div className="flex flex-shrink-0 items-center gap-1">
           {capDescription && (
             <div className="group/tip">
-              <svg className="h-3 w-3 cursor-help text-gray-300 transition-colors group-hover/tip:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-3 w-3 cursor-help transition-colors" style={{ color: "#94a3b8" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               {/* Tooltip: below for first cap, above for others */}
               <div className={`pointer-events-none absolute inset-x-0 z-50 px-1 opacity-0 transition-opacity group-hover/tip:pointer-events-auto group-hover/tip:opacity-100 ${
                 isFirst ? "top-full mt-1" : "bottom-full mb-1"
               }`}>
-                <div className="rounded-md bg-blue-50 px-3 py-2 text-[10px] leading-relaxed text-blue-800 shadow-lg ring-1 ring-blue-200">
+                <div className="rounded-md px-3 py-2 text-[10px] leading-relaxed shadow-lg" style={{ background: "#1e2d4a", border: "1px solid #2e3f5c", color: "#cbd5e1" }}>
                   {capDescription}
                 </div>
               </div>
@@ -205,7 +207,7 @@ export function CapabilityBlock({
             <div className="space-y-0.5">
               {activities.map((a, i) => (
                 <div key={i} className="group/act flex items-start gap-1.5">
-                  <span className="mt-[3px] h-1 w-1 flex-shrink-0 rounded-full bg-violet-300" />
+                  <span className="mt-[3px] h-1 w-1 flex-shrink-0 rounded-full bg-violet-400" />
                   {activitiesEditable ? (
                     <>
                       <InlineEdit
@@ -221,14 +223,14 @@ export function CapabilityBlock({
                       >×</button>
                     </>
                   ) : (
-                    <span className="text-[10px] leading-tight text-violet-600">{a}</span>
+                    <span className="text-[10px] leading-tight text-violet-300">{a}</span>
                   )}
                 </div>
               ))}
               {activitiesEditable && (
                 <MiniAddButton
                   placeholder="Activity…"
-                  chipClass="bg-violet-50 text-violet-600 border-violet-200"
+                  chipClass="text-violet-300 border-violet-500/30"
                   onAdd={(text) => addPpitActivity(activityId, capabilityId, text)}
                 />
               )}
@@ -239,7 +241,7 @@ export function CapabilityBlock({
           {ppitToggles.roles && (
             <div className="flex flex-wrap gap-1">
               {roleIds.map((rid) => (
-                <span key={rid} className="group/role inline-flex items-center gap-0.5 rounded-full bg-blue-50 px-1.5 py-0.5 text-[9px] text-blue-600">
+                <span key={rid} className="group/role inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px]" style={{ background: "rgba(74,158,218,0.18)", color: "#4a9eda" }}>
                   {resolveRoleName(rid)}
                   {rolesEditable && (
                     <button
@@ -253,7 +255,7 @@ export function CapabilityBlock({
               {rolesEditable && (
                 <MiniAddButton
                   placeholder="Role…"
-                  chipClass="bg-blue-50 text-blue-600 border-blue-200"
+                  chipClass="text-blue-300 border-blue-500/30"
                   onAdd={(name) => {
                     // Reuse existing role by name or create new
                     const existing = scaffoldData ? Object.entries(scaffoldData.elements.roles).find(([, r]) => (r as any).name?.toLowerCase() === name.toLowerCase()) : null;
@@ -269,7 +271,7 @@ export function CapabilityBlock({
           {ppitToggles.concepts && (
             <div className="flex flex-wrap gap-1">
               {infoObjIds.map((iid) => (
-                <span key={iid} className="group/io inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] text-amber-700">
+                <span key={iid} className="group/io inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px]" style={{ background: "rgba(245,158,11,0.18)", color: "#fbbf24" }}>
                   {resolveInfoName(iid)}
                   <button
                     onClick={(e) => { e.stopPropagation(); removeInfoObjectFromCapability(activityId, capabilityId, iid); }}
@@ -280,7 +282,7 @@ export function CapabilityBlock({
               ))}
               <MiniAddButton
                 placeholder="Info object…"
-                chipClass="bg-amber-50 text-amber-600 border-amber-200"
+                chipClass="text-amber-300 border-amber-500/30"
                 onAdd={(name) => addInfoObjectToCapability(activityId, capabilityId, name)}
               />
             </div>
@@ -290,7 +292,7 @@ export function CapabilityBlock({
           {ppitToggles.applications && (
             <div className="flex flex-wrap gap-1">
               {techAppIds.map((tid) => (
-                <span key={tid} className="group/tech inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] text-emerald-600">
+                <span key={tid} className="group/tech inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px]" style={{ background: "rgba(34,197,94,0.18)", color: "#4ade80" }}>
                   {resolveTechName(tid)}
                   <button
                     onClick={(e) => { e.stopPropagation(); removeTechAppFromCapability(activityId, capabilityId, tid); }}
@@ -301,7 +303,7 @@ export function CapabilityBlock({
               ))}
               <MiniAddButton
                 placeholder="Tech app…"
-                chipClass="bg-emerald-50 text-emerald-600 border-emerald-200"
+                chipClass="text-emerald-300 border-emerald-500/30"
                 onAdd={(name) => addTechAppToCapability(activityId, capabilityId, name)}
               />
             </div>

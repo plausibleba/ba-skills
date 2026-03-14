@@ -11,14 +11,12 @@ export function FlowChevron() {
       >
         <path
           d="M0 0 L18 44 L0 88"
-          fill="currentColor"
-          className="text-vcc-500/25"
+          fill="rgba(46,63,92,0.4)"
         />
         <path
           d="M0 0 L18 44 L0 88"
-          stroke="currentColor"
+          stroke="rgba(46,63,92,0.6)"
           strokeWidth="0.5"
-          className="text-vcc-400/40"
           fill="none"
         />
       </svg>
