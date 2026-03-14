@@ -1,8 +1,16 @@
 {
   "name": "ba-capability-mapping",
-  "version": "1.3.0",
-  "description": "Produce rigorous Capability Maps from any input. MECE hierarchy, BIZBOK-grounded, XLSX export.",
+  "version": "1.5.0",
+  "description": "Produce rigorous, reusable Capability Maps from any input \u2014 transcripts, charters, spreadsheets, or industry reference models. Guided two-checkpoint elicitation, MECE validation, hierarchical taxonomy numbering, and XLSX + JSON export.",
   "author": {
-    "name": "PlausibleBA"
-  }
+    "name": "PlausibleBA",
+    "url": "https://www.plausibleba.com"
+  },
+  "skills": [
+    "skills/ba-taxonomy-standard",
+    "skills/ba-capability-mapping"
+  ],
+  "commands": [
+    "commands/capability-map.md"
+  ]
 }

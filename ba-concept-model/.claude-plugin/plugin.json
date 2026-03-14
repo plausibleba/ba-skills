@@ -1,8 +1,16 @@
 {
   "name": "ba-concept-model",
-  "version": "1.3.0",
-  "description": "Business Object Taxonomy using the Capsicum Triad (Party/Record/Resource). Cross-validates Capability Map coverage.",
+  "version": "1.5.0",
+  "description": "Business Object Taxonomy using the Capsicum Triad (Party/Record/Resource). Names and defines core business concepts, lifecycle states, and relationships. Cross-validates Capability Map coverage.",
   "author": {
-    "name": "PlausibleBA"
-  }
+    "name": "PlausibleBA",
+    "url": "https://www.plausibleba.com"
+  },
+  "skills": [
+    "skills/ba-taxonomy-standard",
+    "skills/ba-concept-model"
+  ],
+  "commands": [
+    "commands/concept-model.md"
+  ]
 }
