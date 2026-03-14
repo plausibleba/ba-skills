@@ -113,11 +113,17 @@ export default function App() {
                 Network
               </button>
               <button
-                disabled={!isStage}
+                onClick={() => {
+                  // Navigate to last-viewed VS, or first available
+                  const store = useCanvasStore.getState();
+                  const vsId = store.selectedVsId
+                    || Object.keys(store.scaffoldData?.elements?.valueStreams ?? {})[0];
+                  if (vsId) store.selectVs(vsId);
+                }}
                 className={`rounded-md px-3 py-1 text-[11px] font-medium transition-all ${
                   isStage
                     ? "bg-white/20 text-white shadow-sm"
-                    : "text-white/30"
+                    : "text-white/50 hover:text-white/80"
                 }`}
               >
                 Value Stream
