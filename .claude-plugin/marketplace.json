@@ -8,17 +8,14 @@
   "plugins": [
     {
       "name": "ba-capability-mapping",
-      "path": "ba-capability-mapping",
       "description": "BIZBOK-grounded Business Capability Map. MECE hierarchy, Execution/Governance split, validated XLSX artefact."
     },
     {
       "name": "ba-concept-model",
-      "path": "ba-concept-model",
       "description": "Business Object Taxonomy using the Capsicum Triad (Party/Record/Resource). Cross-validates Capability Map coverage."
     },
     {
       "name": "ba-value-streams",
-      "path": "ba-value-streams",
       "description": "Value Stream Analysis. Maps staged delivery of value, orchestrates capabilities, exports ba-skills-bundle.json for VCC."
     }
   ]
