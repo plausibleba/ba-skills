@@ -27,7 +27,6 @@ function colFor(type: string) {
 
 /* ── Inline SVG Icon paths (from jalapeno icons, 24×24 viewBox) ── */
 
-/** role.svg — person in badge frame (Party) */
 function PartyIcon({ x, y, size, color }: { x: number; y: number; size: number; color: string }) {
   const s = size / 24;
   return (
@@ -38,7 +37,6 @@ function PartyIcon({ x, y, size, color }: { x: number; y: number; size: number; 
   );
 }
 
-/** product.svg — box with wrench (Resource) */
 function ResourceIcon({ x, y, size, color }: { x: number; y: number; size: number; color: string }) {
   const s = size / 24;
   return (
@@ -49,7 +47,6 @@ function ResourceIcon({ x, y, size, color }: { x: number; y: number; size: numbe
   );
 }
 
-/** result.svg — document with checkmarks (Record) */
 function RecordIcon({ x, y, size, color }: { x: number; y: number; size: number; color: string }) {
   const s = size / 24;
   return (
@@ -72,41 +69,30 @@ function TypeIcon({ type, x, y, size, color }: { type: string; x: number; y: num
 
 const VOWELS = new Set("aeiouyAEIOUY".split(""));
 
-/** Split a single word at roughly syllable boundaries */
 function syllableSplit(word: string): string[] {
   if (word.length <= 8) return [word];
-  // Find reasonable break points: between consonant+vowel boundaries
   const breakPoints: number[] = [];
   for (let i = 2; i < word.length - 2; i++) {
     const prev = VOWELS.has(word[i - 1]);
     const curr = VOWELS.has(word[i]);
-    // Break before a consonant followed by a vowel (common syllable boundary)
-    if (prev && !curr) {
-      breakPoints.push(i);
-    }
+    if (prev && !curr) breakPoints.push(i);
   }
   if (breakPoints.length === 0) {
-    // Fallback: split in half
     const mid = Math.ceil(word.length / 2);
     return [word.slice(0, mid) + "-", word.slice(mid)];
   }
-  // Pick the break point closest to the middle
   const mid = word.length / 2;
   const best = breakPoints.reduce((a, b) => Math.abs(a - mid) < Math.abs(b - mid) ? a : b);
   return [word.slice(0, best) + "-", word.slice(best)];
 }
 
-/** Wrap text into lines that fit within maxChars, using syllable breaks for long words */
 function wrapText(text: string, maxChars: number): string[] {
   const words = text.split(" ");
   const lines: string[] = [];
   let current = "";
-
   for (const word of words) {
     if (word.length > maxChars) {
-      // Flush current line
       if (current) { lines.push(current.trim()); current = ""; }
-      // Syllable-split the long word
       const parts = syllableSplit(word);
       for (const part of parts) {
         if (current && (current + " " + part).length > maxChars) {
@@ -131,7 +117,7 @@ function wrapText(text: string, maxChars: number): string[] {
 interface ConceptNode {
   id: string;
   name: string;
-  type: string; // Party | Record | Resource
+  type: string;
   definition?: string;
   description?: string;
   lifecycleStates?: string[];
@@ -154,7 +140,7 @@ interface ConceptAttribute {
 
 interface EnrichedProperties {
   relationships: ConceptEdge[];
-  attributes: Record<string, ConceptAttribute[]>; // conceptId → attributes
+  attributes: Record<string, ConceptAttribute[]>;
 }
 
 /* ── Node dimensions ──────────────────────────────────────── */
@@ -165,7 +151,6 @@ const ICON_SIZE = 14;
 /* ── Layout: position concepts in 3 columns by type ───────── */
 function layoutConcepts(concepts: Record<string, any>): ConceptNode[] {
   const all = Object.values(concepts) as any[];
-
   const parties   = all.filter((c) => c.type === "Party");
   const resources = all.filter((c) => c.type === "Resource");
   const records   = all.filter((c) => c.type === "Record");
@@ -194,102 +179,250 @@ function layoutConcepts(concepts: Record<string, any>): ConceptNode[] {
   ];
 }
 
-/* ── Heuristic enrichment — suggests relationships & attributes ── */
+/* ── Enrichment — aggressively infer relationships & attributes ── */
 
-const RELATIONSHIP_TYPES: ConceptRelationship["type"][] = [
-  "has-a", "is-a", "part-of", "consumes", "produces", "governs", "relates-to",
-];
+/**
+ * Semantic affinity: score how likely two concepts are related
+ * based on their names and definitions, not just exact name matches.
+ */
+function semanticAffinity(a: ConceptNode, b: ConceptNode): number {
+  const aWords = new Set([
+    ...a.name.toLowerCase().split(/\s+/),
+    ...(a.definition ?? "").toLowerCase().split(/\s+/).filter(w => w.length > 3),
+  ]);
+  const bWords = new Set([
+    ...b.name.toLowerCase().split(/\s+/),
+    ...(b.definition ?? "").toLowerCase().split(/\s+/).filter(w => w.length > 3),
+  ]);
+  const aName = a.name.toLowerCase();
+  const bName = b.name.toLowerCase();
+
+  let score = 0;
+
+  // Direct name containment (strongest signal)
+  if (bName.includes(aName) || aName.includes(bName)) score += 5;
+
+  // Word overlap between names and definitions
+  const shared = [...aWords].filter(w => bWords.has(w));
+  score += shared.length;
+
+  return score;
+}
+
+/** Pick the best relationship verb for a cross-type pair */
+function inferRelVerb(from: ConceptNode, to: ConceptNode): { label: string; type: ConceptRelationship["type"] } {
+  const ft = from.type;
+  const tt = to.type;
+
+  if (ft === "Party" && tt === "Resource")
+    return { label: `uses`, type: "consumes" };
+  if (ft === "Party" && tt === "Record")
+    return { label: `creates`, type: "produces" };
+  if (ft === "Resource" && tt === "Record")
+    return { label: `generates`, type: "produces" };
+  if (ft === "Resource" && tt === "Party")
+    return { label: `assigned to`, type: "relates-to" };
+  if (ft === "Record" && tt === "Resource")
+    return { label: `references`, type: "relates-to" };
+  if (ft === "Record" && tt === "Party")
+    return { label: `involves`, type: "relates-to" };
+  // Same type
+  if (ft === tt)
+    return { label: `associated with`, type: "relates-to" };
+
+  return { label: `relates to`, type: "relates-to" };
+}
 
 function suggestEnrichment(nodes: ConceptNode[]): EnrichedProperties {
   const relationships: ConceptEdge[] = [];
   const attributes: Record<string, ConceptAttribute[]> = {};
 
-  // Build name map for cross-referencing
-  const nameMap = new Map(nodes.map(n => [n.name.toLowerCase(), n]));
+  // ── Infer relationships across ALL cross-type pairs ──
+  // Score each potential pair and keep the best connections
+  const candidates: { from: ConceptNode; to: ConceptNode; score: number }[] = [];
 
+  for (const a of nodes) {
+    for (const b of nodes) {
+      if (a.id >= b.id) continue; // avoid dupes and self
+      if (a.type === b.type) continue; // skip intra-type for now
+      const score = semanticAffinity(a, b);
+      candidates.push({ from: a, to: b, score });
+    }
+  }
+
+  // Sort by score descending
+  candidates.sort((a, b) => b.score - a.score);
+
+  // Ensure every concept has at least 1 relationship, and high-scoring pairs
+  // always get included. Track how many edges each node has.
+  const edgeCount = new Map<string, number>();
+  nodes.forEach(n => edgeCount.set(n.id, 0));
+
+  const usedPairs = new Set<string>();
+
+  for (const { from, to, score } of candidates) {
+    const key = `${from.id}|${to.id}`;
+    if (usedPairs.has(key)) continue;
+
+    const fromEdges = edgeCount.get(from.id) ?? 0;
+    const toEdges = edgeCount.get(to.id) ?? 0;
+
+    // Include if: high affinity, or one of the nodes still has no edges
+    const needsEdge = fromEdges === 0 || toEdges === 0;
+    const highAffinity = score >= 1;
+
+    if (needsEdge || highAffinity) {
+      // Cap edges per node at 3 to avoid visual clutter
+      if (fromEdges >= 3 && toEdges >= 3) continue;
+
+      const verb = inferRelVerb(from, to);
+      relationships.push({
+        from: from.id,
+        to: to.id,
+        label: verb.label,
+        type: verb.type,
+      });
+      usedPairs.add(key);
+      edgeCount.set(from.id, fromEdges + 1);
+      edgeCount.set(to.id, toEdges + 1);
+    }
+  }
+
+  // If any node still has 0 edges, connect to its nearest neighbour by type priority
   for (const node of nodes) {
+    if ((edgeCount.get(node.id) ?? 0) > 0) continue;
+    // Find nearest cross-type neighbour
+    let bestOther: ConceptNode | null = null;
+    let bestScore = -1;
+    for (const other of nodes) {
+      if (other.id === node.id || other.type === node.type) continue;
+      const s = semanticAffinity(node, other);
+      if (s > bestScore || bestOther === null) { bestScore = s; bestOther = other; }
+    }
+    if (bestOther) {
+      const verb = inferRelVerb(node, bestOther);
+      relationships.push({
+        from: node.id,
+        to: bestOther.id,
+        label: verb.label,
+        type: verb.type,
+      });
+      edgeCount.set(node.id, (edgeCount.get(node.id) ?? 0) + 1);
+      edgeCount.set(bestOther.id, (edgeCount.get(bestOther.id) ?? 0) + 1);
+    }
+  }
+
+  // ── Suggest attributes based on concept type + name ──
+  for (const node of nodes) {
+    const attrs: ConceptAttribute[] = [];
     const nameLower = node.name.toLowerCase();
 
-    // ── Suggest relationships ──
-    for (const other of nodes) {
-      if (node.id === other.id) continue;
-      const otherLower = other.name.toLowerCase();
+    // Universal attributes
+    attrs.push({ name: "id", dataType: "uuid" });
+    attrs.push({ name: "name", dataType: "string" });
 
-      // Pattern: Party "manages" / "governs" Records
-      if (node.type === "Party" && other.type === "Record") {
-        if (otherLower.includes(nameLower) || nameLower.includes(otherLower.split(" ")[0])) {
-          relationships.push({ from: node.id, to: other.id, label: `manages ${other.name}`, type: "governs" });
-        }
-      }
-      // Pattern: Party "uses" Resources
-      if (node.type === "Party" && other.type === "Resource") {
-        if (otherLower.includes(nameLower) || nameLower.includes(otherLower.split(" ")[0])) {
-          relationships.push({ from: node.id, to: other.id, label: `uses ${other.name}`, type: "consumes" });
-        }
-      }
-      // Pattern: Record "relates-to" Resource if name overlap
-      if (node.type === "Record" && other.type === "Resource") {
-        const nodeWords = new Set(nameLower.split(/\s+/));
-        const otherWords = new Set(otherLower.split(/\s+/));
-        const shared = [...nodeWords].filter(w => otherWords.has(w) && w.length > 3);
-        if (shared.length > 0) {
-          relationships.push({ from: node.id, to: other.id, label: `references ${other.name}`, type: "relates-to" });
-        }
-      }
-      // Pattern: Resource "produces" Record if name overlap
-      if (node.type === "Resource" && other.type === "Record") {
-        const nodeWords = new Set(nameLower.split(/\s+/));
-        const otherWords = new Set(otherLower.split(/\s+/));
-        const shared = [...nodeWords].filter(w => otherWords.has(w) && w.length > 3);
-        if (shared.length > 0) {
-          relationships.push({ from: node.id, to: other.id, label: `produces ${other.name}`, type: "produces" });
-        }
-      }
-    }
-
-    // ── Suggest attributes based on concept type ──
-    const attrs: ConceptAttribute[] = [];
     if (node.type === "Party") {
       attrs.push(
-        { name: "name", dataType: "string" },
-        { name: "identifier", dataType: "string" },
+        { name: "type", dataType: "enum" },
         { name: "status", dataType: "enum" },
-        { name: "contactInfo", dataType: "string" },
+        { name: "contactEmail", dataType: "string" },
+        { name: "phone", dataType: "string" },
       );
+      // Context-specific party attributes
+      if (nameLower.includes("guest") || nameLower.includes("tenant")) {
+        attrs.push({ name: "checkInDate", dataType: "date" });
+        attrs.push({ name: "preferences", dataType: "json" });
+      }
+      if (nameLower.includes("owner")) {
+        attrs.push({ name: "portfolioCount", dataType: "integer" });
+      }
+      if (nameLower.includes("contractor")) {
+        attrs.push({ name: "specialty", dataType: "string" });
+        attrs.push({ name: "licenseNumber", dataType: "string" });
+      }
     } else if (node.type === "Resource") {
       attrs.push(
-        { name: "name", dataType: "string" },
-        { name: "identifier", dataType: "string" },
         { name: "status", dataType: "enum" },
         { name: "description", dataType: "text" },
-        { name: "category", dataType: "string" },
       );
+      if (nameLower.includes("property")) {
+        attrs.push(
+          { name: "address", dataType: "string" },
+          { name: "propertyType", dataType: "enum" },
+          { name: "bedrooms", dataType: "integer" },
+          { name: "marketValue", dataType: "decimal" },
+        );
+      }
+      if (nameLower.includes("portfolio")) {
+        attrs.push(
+          { name: "propertyCount", dataType: "integer" },
+          { name: "totalValue", dataType: "decimal" },
+        );
+      }
+      if (nameLower.includes("booking")) {
+        attrs.push(
+          { name: "checkIn", dataType: "date" },
+          { name: "checkOut", dataType: "date" },
+          { name: "totalAmount", dataType: "decimal" },
+        );
+      }
+      if (nameLower.includes("tenancy")) {
+        attrs.push(
+          { name: "startDate", dataType: "date" },
+          { name: "endDate", dataType: "date" },
+          { name: "monthlyRent", dataType: "decimal" },
+        );
+      }
     } else {
       // Record
       attrs.push(
         { name: "recordId", dataType: "string" },
         { name: "createdDate", dataType: "datetime" },
         { name: "status", dataType: "enum" },
-        { name: "lastModified", dataType: "datetime" },
         { name: "createdBy", dataType: "reference" },
       );
+      if (nameLower.includes("financial") || nameLower.includes("yield")) {
+        attrs.push(
+          { name: "period", dataType: "string" },
+          { name: "amount", dataType: "decimal" },
+          { name: "currency", dataType: "string" },
+        );
+      }
+      if (nameLower.includes("maintenance")) {
+        attrs.push(
+          { name: "priority", dataType: "enum" },
+          { name: "assignedTo", dataType: "reference" },
+          { name: "resolvedDate", dataType: "datetime" },
+        );
+      }
+      if (nameLower.includes("review")) {
+        attrs.push(
+          { name: "rating", dataType: "integer" },
+          { name: "comment", dataType: "text" },
+        );
+      }
+      if (nameLower.includes("compliance") || nameLower.includes("obligation")) {
+        attrs.push(
+          { name: "regulation", dataType: "string" },
+          { name: "dueDate", dataType: "date" },
+          { name: "complianceStatus", dataType: "enum" },
+        );
+      }
+      if (nameLower.includes("subscription") || nameLower.includes("fee")) {
+        attrs.push(
+          { name: "amount", dataType: "decimal" },
+          { name: "frequency", dataType: "enum" },
+          { name: "nextDueDate", dataType: "date" },
+        );
+      }
     }
     attributes[node.id] = attrs;
   }
 
-  // Deduplicate relationships
-  const seen = new Set<string>();
-  const deduped = relationships.filter(r => {
-    const key = `${r.from}→${r.to}:${r.type}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-
-  return { relationships: deduped, attributes };
+  return { relationships, attributes };
 }
 
-/* ── Relationship type colours & styles ───────────────────── */
+/* ── Relationship type colours ────────────────────────────── */
 const REL_COLORS: Record<string, string> = {
   "has-a":      "#4a9eda",
   "is-a":       "#a78bfa",
@@ -300,18 +433,80 @@ const REL_COLORS: Record<string, string> = {
   "relates-to": "#94a3b8",
 };
 
+const RELATIONSHIP_TYPES: ConceptRelationship["type"][] = [
+  "has-a", "is-a", "part-of", "consumes", "produces", "governs", "relates-to",
+];
+
+/* ── Compute edge path between two nodes (box boundary → box boundary) ── */
+function computeEdgePath(
+  a: ConceptNode,
+  b: ConceptNode,
+  edgeIndex: number,
+  totalEdgesForPair: number,
+) {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist === 0) return null;
+
+  // Clip to box edges
+  const hw = NODE_W / 2 + 2;
+  const hh = NODE_H / 2 + 2;
+
+  // Use actual angle-based box clipping
+  const angle = Math.atan2(dy, dx);
+  const clipToBox = (cx: number, cy: number, ang: number) => {
+    const absCos = Math.abs(Math.cos(ang));
+    const absSin = Math.abs(Math.sin(ang));
+    let r: number;
+    if (absCos * hh > absSin * hw) {
+      r = hw / absCos;
+    } else {
+      r = hh / absSin;
+    }
+    return { x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang) };
+  };
+
+  const start = clipToBox(a.x, a.y, angle);
+  const end = clipToBox(b.x, b.y, angle + Math.PI);
+
+  // Curve offset for readability — spread parallel edges slightly
+  const offsetFactor = (edgeIndex - (totalEdgesForPair - 1) / 2) * 12;
+  const perpX = -(end.y - start.y) / dist;
+  const perpY = (end.x - start.x) / dist;
+  const midX = (start.x + end.x) / 2 + perpX * (15 + offsetFactor);
+  const midY = (start.y + end.y) / 2 + perpY * (15 + offsetFactor);
+
+  return {
+    d: `M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`,
+    labelX: midX,
+    labelY: midY,
+  };
+}
+
 /* ── Component ────────────────────────────────────────────── */
 export function ConceptGraphView() {
   const scaffoldData = useCanvasStore((s) => s.scaffoldData);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [enriched, setEnriched] = useState<EnrichedProperties | null>(null);
   const [showRelLabels, setShowRelLabels] = useState(true);
+  const [nodePositions, setNodePositions] = useState<Record<string, { x: number; y: number }>>({});
+  const [dragState, setDragState] = useState<{ nodeId: string; startX: number; startY: number; origX: number; origY: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const nodes = useMemo(() => {
+  const baseNodes = useMemo(() => {
     if (!scaffoldData?.elements?.concepts) return [];
     return layoutConcepts(scaffoldData.elements.concepts as Record<string, any>);
   }, [scaffoldData]);
+
+  // Merge layout positions with drag overrides
+  const nodes = useMemo(() => {
+    return baseNodes.map(n => ({
+      ...n,
+      x: nodePositions[n.id]?.x ?? n.x,
+      y: nodePositions[n.id]?.y ?? n.y,
+    }));
+  }, [baseNodes, nodePositions]);
 
   const selected = nodes.find((n) => n.id === selectedId) ?? null;
 
@@ -323,16 +518,42 @@ export function ConceptGraphView() {
   }, [nodes]);
 
   const handleEnrich = useCallback(() => {
-    const result = suggestEnrichment(nodes);
-    setEnriched(result);
+    setEnriched(suggestEnrichment(nodes));
   }, [nodes]);
 
   const handleClearEnrichment = useCallback(() => {
     setEnriched(null);
   }, []);
 
+  const handleResetLayout = useCallback(() => {
+    setNodePositions({});
+  }, []);
+
   // Edges from enrichment
   const edges = enriched?.relationships ?? [];
+
+  // Count parallel edges per node pair for offset calculation
+  const pairEdgeCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    const indices = new Map<string, number>();
+    for (const e of edges) {
+      const key = [e.from, e.to].sort().join("|");
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return { counts, indices };
+  }, [edges]);
+
+  // Track edge indices for parallel offset
+  const edgeWithIndex = useMemo(() => {
+    const indexTracker = new Map<string, number>();
+    return edges.map(e => {
+      const key = [e.from, e.to].sort().join("|");
+      const idx = indexTracker.get(key) ?? 0;
+      indexTracker.set(key, idx + 1);
+      const total = pairEdgeCounts.counts.get(key) ?? 1;
+      return { ...e, edgeIndex: idx, totalForPair: total };
+    });
+  }, [edges, pairEdgeCounts]);
 
   // Calculate viewBox dynamically
   const maxY = Math.max(...nodes.map((n) => n.y), 200) + NODE_H;
@@ -346,15 +567,69 @@ export function ConceptGraphView() {
     return m;
   }, [nodes]);
 
+  // ── Drag handlers ──
+  const getSVGPoint = useCallback((clientX: number, clientY: number) => {
+    const svg = svgRef.current;
+    if (!svg) return { x: 0, y: 0 };
+    const pt = svg.createSVGPoint();
+    pt.x = clientX;
+    pt.y = clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+    return { x: svgP.x, y: svgP.y };
+  }, []);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent, nodeId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const svgPt = getSVGPoint(e.clientX, e.clientY);
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+    setDragState({
+      nodeId,
+      startX: svgPt.x,
+      startY: svgPt.y,
+      origX: node.x,
+      origY: node.y,
+    });
+  }, [getSVGPoint, nodes]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!dragState) return;
+    const svgPt = getSVGPoint(e.clientX, e.clientY);
+    const dx = svgPt.x - dragState.startX;
+    const dy = svgPt.y - dragState.startY;
+    setNodePositions(prev => ({
+      ...prev,
+      [dragState.nodeId]: {
+        x: dragState.origX + dx,
+        y: dragState.origY + dy,
+      },
+    }));
+  }, [dragState, getSVGPoint]);
+
+  const handleMouseUp = useCallback(() => {
+    if (dragState) {
+      // If barely moved, treat as click (select)
+      const node = nodes.find(n => n.id === dragState.nodeId);
+      if (node) {
+        const dx = Math.abs(node.x - dragState.origX);
+        const dy = Math.abs(node.y - dragState.origY);
+        if (dx < 3 && dy < 3) {
+          setSelectedId(dragState.nodeId);
+        }
+      }
+    }
+    setDragState(null);
+  }, [dragState, nodes]);
+
   if (!scaffoldData) return null;
+
+  const hasMovedNodes = Object.keys(nodePositions).length > 0;
 
   return (
     <div
       className="h-full overflow-auto"
-      style={{
-        background: "#1a2236",
-        fontFamily: "'DM Sans', system-ui, sans-serif",
-      }}
+      style={{ background: "#1a2236", fontFamily: "'DM Sans', system-ui, sans-serif" }}
     >
       <div className="mx-auto max-w-[1100px] p-5">
         {/* Header */}
@@ -370,13 +645,12 @@ export function ConceptGraphView() {
           </div>
         </div>
 
-        {/* Legend + Enrichment Controls */}
+        {/* Legend + Controls */}
         <div className="mb-3 flex flex-wrap items-center gap-4">
-          {/* Type legend */}
           {([
-            { type: "Party", icon: "party", color: COLORS.party },
-            { type: "Resource", icon: "resource", color: COLORS.resource },
-            { type: "Record", icon: "record", color: COLORS.record },
+            { type: "Party", color: COLORS.party },
+            { type: "Resource", color: COLORS.resource },
+            { type: "Record", color: COLORS.record },
           ] as const).map(({ type, color }) => (
             <div key={type} className="flex items-center gap-1.5 text-[10px]" style={{ color: "#94a3b8" }}>
               <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: color }} />
@@ -385,6 +659,15 @@ export function ConceptGraphView() {
           ))}
 
           <div className="ml-auto flex items-center gap-2">
+            {hasMovedNodes && (
+              <button
+                onClick={handleResetLayout}
+                className="rounded px-2 py-0.5 text-[10px] font-medium"
+                style={{ color: "#94a3b8", border: "1px solid #2e3f5c" }}
+              >
+                Reset layout
+              </button>
+            )}
             {enriched && (
               <>
                 <button
@@ -421,27 +704,15 @@ export function ConceptGraphView() {
           </div>
         </div>
 
-        {/* Relationship legend (when enriched) */}
-        {enriched && edges.length > 0 && (
-          <div className="mb-3 flex flex-wrap items-center gap-3">
-            <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: "#94a3b8" }}>
-              Edge types:
-            </span>
-            {[...new Set(edges.map(e => e.type))].map(t => (
-              <div key={t} className="flex items-center gap-1 text-[9px]" style={{ color: REL_COLORS[t] ?? "#94a3b8" }}>
-                <svg width={16} height={6}><line x1={0} y1={3} x2={16} y2={3} stroke={REL_COLORS[t] ?? "#94a3b8"} strokeWidth={1.5} /></svg>
-                {t}
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* SVG Graph */}
         <svg
           ref={svgRef}
           viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
           className="w-full rounded-lg"
           style={{ background: "#243352", border: "1px solid #2e3f5c" }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
         >
           {/* Arrow marker defs */}
           <defs>
@@ -461,8 +732,8 @@ export function ConceptGraphView() {
             ))}
           </defs>
 
-          {/* Column labels */}
-          {([
+          {/* Column labels (only when layout hasn't been moved) */}
+          {!hasMovedNodes && ([
             { type: "Party", x: 110 },
             { type: "Resource", x: 340 },
             { type: "Record", x: 570 },
@@ -483,73 +754,73 @@ export function ConceptGraphView() {
           ))}
 
           {/* Directed edges */}
-          {edges.map((e, i) => {
+          {edgeWithIndex.map((e, i) => {
             const a = nodeById.get(e.from);
             const b = nodeById.get(e.to);
             if (!a || !b) return null;
 
-            // Compute edge start/end at box boundaries
-            const dx = b.x - a.x;
-            const dy = b.y - a.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist === 0) return null;
-
-            // Offset from center to box edge
-            const hw = NODE_W / 2 + 2;
-            const hh = NODE_H / 2 + 2;
-            const angleToB = Math.atan2(dy, dx);
-            const x1 = a.x + hw * Math.cos(angleToB);
-            const y1 = a.y + hh * Math.sin(angleToB);
-            const x2 = b.x - hw * Math.cos(angleToB);
-            const y2 = b.y - hh * Math.sin(angleToB);
+            const path = computeEdgePath(a, b, e.edgeIndex, e.totalForPair);
+            if (!path) return null;
 
             const color = REL_COLORS[e.type] ?? "#94a3b8";
-            const midX = (x1 + x2) / 2;
-            const midY = (y1 + y2) / 2;
-
-            // Curved path for better readability
-            const cx = midX + (y2 - y1) * 0.15;
-            const cy = midY - (x2 - x1) * 0.15;
 
             return (
               <g key={i}>
                 <path
-                  d={`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`}
+                  d={path.d}
                   stroke={color}
                   strokeWidth={1.2}
                   fill="none"
-                  opacity={0.7}
+                  opacity={0.65}
                   markerEnd={`url(#arrow-${e.type})`}
                 />
                 {showRelLabels && (
-                  <text
-                    x={cx}
-                    y={cy - 4}
-                    textAnchor="middle"
-                    fontSize={7}
-                    fill={color}
-                    opacity={0.8}
-                    fontFamily="DM Sans, sans-serif"
-                  >
-                    {e.label}
-                  </text>
+                  <>
+                    {/* Background for readability */}
+                    <text
+                      x={path.labelX}
+                      y={path.labelY + 1}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fontSize={7}
+                      fill="#243352"
+                      stroke="#243352"
+                      strokeWidth={3}
+                      fontFamily="DM Sans, sans-serif"
+                      paintOrder="stroke"
+                    >
+                      {e.label}
+                    </text>
+                    <text
+                      x={path.labelX}
+                      y={path.labelY + 1}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fontSize={7}
+                      fill={color}
+                      fontFamily="DM Sans, sans-serif"
+                    >
+                      {e.label}
+                    </text>
+                  </>
                 )}
               </g>
             );
           })}
 
-          {/* Nodes — all boxes */}
+          {/* Nodes — all boxes, draggable */}
           {nodes.map((node) => {
             const col = colFor(node.type);
             const isSelected = selectedId === node.id;
+            const isDragging = dragState?.nodeId === node.id;
             const lines = wrapText(node.name, 14);
             const lineCount = lines.length;
 
             return (
               <g
                 key={node.id}
-                style={{ cursor: "pointer" }}
-                onClick={() => setSelectedId(node.id)}
+                style={{ cursor: isDragging ? "grabbing" : "grab" }}
+                onMouseDown={(e) => handleMouseDown(e, node.id)}
               >
                 {/* Box */}
                 <rect
@@ -582,6 +853,7 @@ export function ConceptGraphView() {
                     fontWeight={600}
                     fill={col.text}
                     fontFamily="DM Sans, sans-serif"
+                    style={{ pointerEvents: "none" }}
                   >
                     {line}
                   </text>
@@ -603,7 +875,7 @@ export function ConceptGraphView() {
           {selected ? (
             <div className="flex gap-6">
               {/* Left: basic info */}
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="mb-1 flex items-center gap-2">
                   <div className="text-[15px] font-bold text-white">{selected.name}</div>
                   <span
@@ -660,15 +932,15 @@ export function ConceptGraphView() {
                           return (
                             <div key={i} className="flex items-center gap-1 text-[10px]">
                               <span
-                                className="rounded px-1 py-0.5 text-[8px] font-bold uppercase"
+                                className="rounded px-1 py-0.5 text-[8px] font-bold"
                                 style={{ color: REL_COLORS[r.type] ?? "#94a3b8", background: "rgba(255,255,255,0.05)" }}
                               >
-                                {r.type}
+                                {r.label}
                               </span>
                               <span style={{ color: "#94a3b8" }}>{isSource ? "→" : "←"}</span>
                               <span
                                 style={{ color: otherNode ? colFor(otherNode.type).accent : "#cbd5e1", cursor: "pointer" }}
-                                onClick={(e) => { e.stopPropagation(); if (otherNode) setSelectedId(otherNode.id); }}
+                                onClick={() => { if (otherNode) setSelectedId(otherNode.id); }}
                               >
                                 {otherNode?.name ?? otherId}
                               </span>
@@ -683,7 +955,7 @@ export function ConceptGraphView() {
 
               {/* Right: Attributes (when enriched) */}
               {enriched && enriched.attributes[selected.id] && (
-                <div className="w-[220px] flex-shrink-0 rounded-md p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid #2e3f5c" }}>
+                <div className="w-[240px] flex-shrink-0 rounded-md p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid #2e3f5c" }}>
                   <div className="mb-2 text-[9px] font-bold uppercase tracking-wider" style={{ color: "#94a3b8" }}>
                     Attributes
                   </div>
@@ -711,6 +983,7 @@ export function ConceptGraphView() {
             <p className="text-[12px]" style={{ color: "#94a3b8" }}>
               Select a concept node to inspect its definition, lifecycle, and properties.
               {!enriched && " Click \"Enrich Properties\" to suggest relationships and attributes."}
+              {" Drag nodes to rearrange the layout."}
             </p>
           )}
         </div>
