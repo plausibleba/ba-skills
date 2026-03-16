@@ -5,12 +5,5 @@
   "author": {
     "name": "PlausibleBA",
     "url": "https://www.plausibleba.com"
-  },
-  "skills": [
-    "skills/ba-taxonomy-standard",
-    "skills/ba-capability-mapping"
-  ],
-  "commands": [
-    "commands/capability-map.md"
-  ]
+  }
 }

@@ -5,12 +5,5 @@
   "author": {
     "name": "PlausibleBA",
     "url": "https://www.plausibleba.com"
-  },
-  "skills": [
-    "skills/ba-taxonomy-standard",
-    "skills/ba-concept-model"
-  ],
-  "commands": [
-    "commands/concept-model.md"
-  ]
+  }
 }
