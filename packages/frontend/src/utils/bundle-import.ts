@@ -123,6 +123,45 @@ function normaliseConceptRegistry(flat: Record<string, any>): Record<string, any
   return concepts;
 }
 
+// ─── Capability map mapping ──────────────────────────────────────────────────
+
+/**
+ * Parse a PlausibleBA level string ("L1", "L2", "L3") or number into a numeric level.
+ * VCC's CapabilityMapView.buildHierarchy() requires `typeof level === "number"`.
+ */
+function parseLevel(level: unknown): number | undefined {
+  if (typeof level === "number") return level;
+  if (typeof level === "string") {
+    // "L1" → 1, "L2" → 2, "L3" → 3
+    const match = level.match(/^L?(\d+)$/i);
+    if (match) return parseInt(match[1], 10);
+  }
+  return undefined;
+}
+
+/**
+ * Normalise a flat capability registry so that:
+ * - level: "L1"/"L2"/"L3" → level: 1/2/3 (number)
+ * - type: "Governance"/"Execution" is preserved for optional downstream use
+ * - parentId references are preserved
+ */
+function normaliseCapabilityRegistry(flat: Record<string, any>): Record<string, any> {
+  const capabilities: Record<string, any> = {};
+
+  for (const [id, cap] of Object.entries(flat)) {
+    const numLevel = parseLevel(cap.level);
+    capabilities[id] = {
+      ...cap,
+      id: cap.id ?? id,
+      elementType: "Capability",
+      // Convert string levels to numbers for VCC hierarchy rendering
+      level: numLevel ?? cap.level,
+    };
+  }
+
+  return capabilities;
+}
+
 // ─── Value stream mapping ───────────────────────────────────────────────────
 
 /**
@@ -237,7 +276,7 @@ export function normaliseCapabilityMapArtifact(json: Record<string, unknown>): S
   const name = (json.name as string) ?? deriveNameFromElements(flat, "Capability Map");
 
   const scaffold = emptyScaffold(name);
-  (scaffold.elements as any).capabilities = { ...flat };
+  (scaffold.elements as any).capabilities = normaliseCapabilityRegistry(flat);
   return scaffold;
 }
 
@@ -386,7 +425,12 @@ export function normaliseBundle(bundle: Record<string, unknown>): ScaffoldData {
     elements.concepts = normalised;
   }
 
-  // 4. Ensure registries that VCC expects exist (even if empty)
+  // 4. Normalise capability levels: "L1"/"L2"/"L3" → 1/2/3
+  if (elements.capabilities && Object.keys(elements.capabilities).length > 0) {
+    elements.capabilities = normaliseCapabilityRegistry(elements.capabilities);
+  }
+
+  // 5½. Ensure registries that VCC expects exist (even if empty)
   elements.controls = elements.controls ?? {};
   elements.constraints = elements.constraints ?? {};
   elements.metrics = elements.metrics ?? {};
