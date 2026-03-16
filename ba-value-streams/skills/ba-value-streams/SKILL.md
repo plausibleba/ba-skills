@@ -144,14 +144,15 @@ Immediately after the stage list is validated, render an interactive value strea
 
 **Visual design — match VCC exactly using this palette:**
 ```
-navy:      #1a2236   (page background)
-navyLight: #1e2d4a   (card header background)
-navyMid:   #243352   (card body background)
-border:    #2e3f5c   (all borders)
-blue:      #4a9eda   (active/accent)
-textDim:   #94a3b8   (labels, secondary)
-textMed:   #cbd5e1   (body text)
-white:     #ffffff   (headings)
+background:  #0f172a   (page background — darker than before)
+navyLight:   #1e293b   (card header background)
+navyMid:     #111827   (card body / capability list background)
+border:      #1e293b   (all borders)
+borderCard:  #1e3a5f   (card outer border)
+blue:        #3b82f6   (active/accent)
+textDim:     #64748b   (labels, secondary)
+textMed:     #94a3b8   (body text)
+white:       #f1f5f9   (headings)
 ```
 
 **Stage card structure (dark navy, scrolls horizontally):**

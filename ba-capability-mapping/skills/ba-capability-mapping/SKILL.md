@@ -196,22 +196,28 @@ After Checkpoint 2 is confirmed, add L4 sub-capabilities only when:
 Immediately after Checkpoint 2 is accepted, render an interactive treemap as a self-contained HTML artifact. Do NOT wait for the user to ask. Do NOT generate the XLSX first. The treemap IS the deliverable — XLSX is a download option offered beneath it.
 
 **Visual design — match VCC exactly:**
-- Background: `#1a2236` (navy)
-- L1 blocks: `background:#243352`, `border-radius:8px`
-- Execution L1 border: `rgba(74,158,218,0.5)` (blue tint); Governance L1 border: `rgba(124,110,224,0.5)` (purple tint)
-- Execution L1 header background: `rgba(74,158,218,0.08)`; Governance: `rgba(124,110,224,0.08)`
-- L1 title: `font-size:10px`, `font-weight:700`, `color:#cbd5e1`, `text-transform:uppercase`
-- L2 blocks: `background:rgba(255,255,255,0.04)`, `border:1px solid #2e3f5c`
-- L2 title: `font-size:9px`, `font-weight:600`, `color:#94a3b8`
-- L3 tiles: `background:rgba(255,255,255,0.04)`, `border:0.5px solid #2e3f5c`, `color:#94a3b8`, `font-size:8px`
-- L3 hover (exec): `background:rgba(74,158,218,0.15)`, `color:#4a9eda`
-- L3 hover (gov): `background:rgba(124,110,224,0.15)`, `color:#a89ef0`
+- Page background: `#0f172a`; L1 body: `#111827`; L1 header exec: `rgba(59,130,246,0.08)`; gov: `rgba(99,102,241,0.08)`
+- L1 border exec: `#1e3a5f`; gov: `#3730a3`; `border-radius:8px`
+- L1 title: `font-size:9px`, `font-weight:700`, `color:#94a3b8`, `text-transform:uppercase`, `letter-spacing:0.5px`
+- L1 meta line: `font-size:8px`, `color:#475569` — "N domains · N capabilities"
+- L2 blocks: `background:rgba(255,255,255,0.03)`, `border:1px solid rgba(255,255,255,0.06)`, `border-radius:5px`
+- L2 title: `font-size:9px`, `font-weight:600`, `color:#64748b`
+- L3 tiles: `background:rgba(255,255,255,0.04)`, `border:0.5px solid rgba(255,255,255,0.07)`, `color:#64748b`, `font-size:8px`, `border-radius:3px`, `padding:2px 6px`
+- L3 hover/selected exec: `background:rgba(59,130,246,0.15)`, `color:#93c5fd`, `border-color:rgba(59,130,246,0.3)`
+- L3 hover/selected gov: `background:rgba(99,102,241,0.15)`, `color:#a5b4fc`, `border-color:rgba(99,102,241,0.3)`
 - Font: `'DM Sans', system-ui, sans-serif`
 
-Build the `data` array from the capabilities confirmed at Checkpoint 2. Each L1 entry contains its L2 children, each L2 contains its L3 leaf names. Detect Governance L1s by keywords: governance, compliance, risk, audit, regulatory, data, privacy. Do NOT use PortfolioProp example data.
+**Inspector panel (opens on L3 click — matches VCC):**
+- `background:#1e293b`, `border:1.5px solid #3b82f6` (exec) or `#6366f1` (gov), `border-radius:8px`
+- Capability name: `font-size:14px`, `font-weight:700`, `color:#f1f5f9`
+- Business object label: `font-size:9px`, `font-weight:700`, `text-transform:uppercase`, `color:#3b82f6` — "BUSINESS OBJECT: [name]"
+- Description: `font-size:12px`, `color:#94a3b8`
 
-Include header showing: eyebrow "CAPABILITY MAP", client/domain name, capability count summary.
-Include legend: blue swatch = Execution, purple swatch = Governance.
+**Legend row above grid:** "Click any L3 tile to inspect · Double-click to rename" hint in `color:#475569`
+
+Build the `data` array from capabilities confirmed at Checkpoint 2. Each L1 entry has name, L2 children, each L2 has name and L3 array. Each L3 has: name, business object reference, description. Detect Governance L1s by keywords: governance, compliance, risk, audit, regulatory, data, privacy. Do NOT use PortfolioProp example data.
+
+Include header: eyebrow "CAPABILITY MAP", full title "[Client] — Operating Capabilities", subtitle "N business areas · N domains · N capabilities".
 
 **Footer (required on every rendered artifact):**
 Include a footer row at the bottom of the artifact, styled `font-size:10px; color:#94a3b8; padding:10px 0 2px; border-top:1px solid #2e3f5c; margin-top:12px`:

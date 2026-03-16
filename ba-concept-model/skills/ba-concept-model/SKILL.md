@@ -268,20 +268,30 @@ Present the Object Register inline and ask:
 Immediately after the Object Register is validated, render an interactive concept graph as a self-contained HTML artifact. Do NOT wait for the user to ask. Do NOT generate the XLSX first. The graph IS the deliverable — XLSX is a download option offered beneath it.
 
 **Visual design — match VCC exactly:**
-- Background: `#1a2236` (navy); SVG canvas: `background:#243352`, `border:1px solid #2e3f5c`
-- Party nodes: circle, `fill:rgba(45,212,191,0.15)`, `stroke:rgba(45,212,191,0.6)`, label color `#e0fdf9`
-- Resource nodes: circle, `fill:rgba(74,158,218,0.15)`, `stroke:rgba(74,158,218,0.6)`, label color `#e0f2fe`
-- Record nodes: rectangle `rx:4`, `fill:rgba(224,91,138,0.15)`, `stroke:rgba(224,91,138,0.6)`, label color `#fce7f3`
-- Edge lines: `stroke:rgba(46,63,92,0.8)`, `stroke-width:1`
+- Page background: `#0f172a`; SVG canvas: `background:#111827`, `border:1px solid #1e293b`
+- Party nodes: circle r=28, `fill:rgba(45,212,191,0.12)`, `stroke:rgba(45,212,191,0.5)`, label `color:#ccfbf1`
+- Resource nodes: circle r=28, `fill:rgba(59,130,246,0.12)`, `stroke:rgba(59,130,246,0.5)`, label `color:#bfdbfe`
+- Record nodes: rounded rect 72×36 rx=5, `fill:rgba(236,72,153,0.12)`, `stroke:rgba(236,72,153,0.5)`, label `color:#fce7f3`
+- **Icons inside nodes** (small, 50% opacity, same color as node stroke):
+  - Party: person silhouette (circle head + body arc)
+  - Resource: plus-in-square icon
+  - Record: document lines icon
+- Edge lines: `stroke-dasharray:4 3`, `stroke:rgba(30,41,59,0.9)`, `stroke-width:1`
 - Selected node: `stroke-width:3`
-- Detail panel: `background:#243352`, `border:1.5px solid #4a9eda`, `border-radius:8px`
-- Detail name: `font-size:15px`, `font-weight:700`, `color:#ffffff`
-- Detail type label: color matches node stroke color, `text-transform:uppercase`, `letter-spacing:0.4px`
-- Detail definition: `color:#cbd5e1`
-- Lifecycle states: `color:#94a3b8`, monospace font
+- Column labels at top: Party / Resource / Record in `font-size:9px`, `font-weight:700`, uppercase, matching node color
+- **Graph/Table tab toggle** above legend (Graph tab active)
 - Font: `'DM Sans', system-ui, sans-serif`
 
-Layout: Party nodes left column (~x:90), Resource nodes centre (~x:290), Record nodes right (~x:560–620). Space vertically by count. Include column type labels at top in matching colors. Draw edges between related objects inferred from shared capabilities or explicit relationships.
+**Detail panel (click to reveal — matches VCC):**
+- `background:#1e293b`, `border:1.5px solid [node color]`, `border-radius:8px`
+- Object name: `font-size:15px`, `font-weight:700`, `color:#f1f5f9`
+- Type badge: `font-size:10px`, `font-weight:700`, `text-transform:uppercase`, `letter-spacing:0.5px`, color matches node
+- Definition: `font-size:12px`, `color:#94a3b8`, `line-height:1.55`
+- Lifecycle label: `font-size:9px`, `font-weight:700`, `text-transform:uppercase`, `color:#475569`
+- **Lifecycle pills** (not plain text): each state as `background:rgba(255,255,255,0.06)`, `color:#94a3b8`, `border:1px solid rgba(255,255,255,0.08)`, `border-radius:4px`, `padding:3px 10px`, `font-size:10px`
+- NO attributes table — that is VCC-only territory
+
+Layout: Party nodes left column (~x:90), Resource nodes centre (~x:290), Record nodes split right (~x:530 and ~x:660). Space vertically by count. Draw dashed edges between related objects.
 
 Build all node and edge data from the Object Register confirmed in this session. Do NOT use PortfolioProp example data.
 
