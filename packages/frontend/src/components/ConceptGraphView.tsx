@@ -365,11 +365,13 @@ function computeEdgePath(a: ConceptNode, b: ConceptNode, edgeIndex: number, tota
    Editable Table View
    ═══════════════════════════════════════════════════════════════ */
 function ConceptTableView({
-  concepts, enriched, onUpdateConcept,
+  concepts, enriched, onUpdateConcept, onAddConcept, onDeleteConcept,
 }: {
   concepts: Record<string, any>;
   enriched: EnrichedProperties | null;
   onUpdateConcept: (id: string, field: string, value: string) => void;
+  onAddConcept: (type: string) => void;
+  onDeleteConcept: (id: string) => void;
 }) {
   const all = Object.values(concepts) as any[];
   const sorted = [...all].sort((a, b) => {
@@ -377,67 +379,126 @@ function ConceptTableView({
     return (order[a.type] ?? 3) - (order[b.type] ?? 3) || a.name.localeCompare(b.name);
   });
 
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
   return (
-    <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid #2e3f5c" }}>
-      <table className="w-full text-left text-[11px]" style={{ borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ background: "#1e2d4a" }}>
-            {["Type", "Name", "Definition", "Lifecycle States"].map(h => (
-              <th key={h} className="px-3 py-2 font-semibold" style={{ color: "#94a3b8", borderBottom: "1px solid #2e3f5c" }}>{h}</th>
-            ))}
-            {enriched && <th className="px-3 py-2 font-semibold" style={{ color: "#94a3b8", borderBottom: "1px solid #2e3f5c" }}>Attributes</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.map((c) => (
-            <tr key={c.id} style={{ borderBottom: "1px solid #2e3f5c" }}>
-              <td className="px-3 py-2">
-                <span className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase"
-                  style={{ background: colFor(c.type).fill, color: colFor(c.type).accent, border: `1px solid ${colFor(c.type).stroke}` }}>
-                  {c.type}
-                </span>
-              </td>
-              <td className="px-3 py-2">
-                <input
-                  defaultValue={c.name}
-                  onBlur={(e) => onUpdateConcept(c.id, "name", e.target.value)}
-                  className="w-full rounded px-1.5 py-0.5 text-[11px] font-semibold"
-                  style={{ background: "rgba(255,255,255,0.05)", color: "#fff", border: "1px solid transparent", outline: "none" }}
-                  onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
-                  onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
-                />
-              </td>
-              <td className="px-3 py-2">
-                <input
-                  defaultValue={c.definition ?? c.description ?? ""}
-                  onBlur={(e) => onUpdateConcept(c.id, "definition", e.target.value)}
-                  className="w-full rounded px-1.5 py-0.5 text-[11px]"
-                  style={{ background: "rgba(255,255,255,0.05)", color: "#cbd5e1", border: "1px solid transparent", outline: "none" }}
-                  onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
-                  onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
-                />
-              </td>
-              <td className="px-3 py-2">
-                <input
-                  defaultValue={(c.lifecycleStates ?? []).join(", ")}
-                  onBlur={(e) => onUpdateConcept(c.id, "lifecycleStates", e.target.value)}
-                  className="w-full rounded px-1.5 py-0.5 text-[11px]"
-                  style={{ background: "rgba(255,255,255,0.05)", color: "#4a9eda", border: "1px solid transparent", outline: "none", fontFamily: "'DM Mono', monospace" }}
-                  onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
-                  onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
-                  placeholder="state1, state2, ..."
-                />
-              </td>
-              {enriched && enriched.attributes[c.id] && (
-                <td className="px-3 py-2 text-[10px]" style={{ color: "#94a3b8" }}>
-                  {enriched.attributes[c.id].slice(0, 4).map(a => a.name).join(", ")}
-                  {enriched.attributes[c.id].length > 4 && ` +${enriched.attributes[c.id].length - 4}`}
-                </td>
-              )}
+    <div>
+      <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid #2e3f5c" }}>
+        <table className="w-full text-left text-[11px]" style={{ borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ background: "#1e2d4a" }}>
+              {["Type", "Name", "Definition", "Lifecycle States"].map(h => (
+                <th key={h} className="px-3 py-2 font-semibold" style={{ color: "#94a3b8", borderBottom: "1px solid #2e3f5c" }}>{h}</th>
+              ))}
+              {enriched && <th className="px-3 py-2 font-semibold" style={{ color: "#94a3b8", borderBottom: "1px solid #2e3f5c" }}>Attributes</th>}
+              <th className="px-3 py-2 font-semibold w-[60px]" style={{ color: "#94a3b8", borderBottom: "1px solid #2e3f5c" }}></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {sorted.map((c) => (
+              <tr key={c.id} style={{ borderBottom: "1px solid #2e3f5c" }}>
+                <td className="px-3 py-2">
+                  <select
+                    defaultValue={c.type}
+                    onChange={(e) => onUpdateConcept(c.id, "type", e.target.value)}
+                    className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase"
+                    style={{ background: colFor(c.type).fill, color: colFor(c.type).accent, border: `1px solid ${colFor(c.type).stroke}`, outline: "none", cursor: "pointer" }}
+                  >
+                    <option value="Party">Party</option>
+                    <option value="Resource">Resource</option>
+                    <option value="Record">Record</option>
+                  </select>
+                </td>
+                <td className="px-3 py-2">
+                  <input
+                    defaultValue={c.name}
+                    onBlur={(e) => onUpdateConcept(c.id, "name", e.target.value)}
+                    className="w-full rounded px-1.5 py-0.5 text-[11px] font-semibold"
+                    style={{ background: "rgba(255,255,255,0.05)", color: "#fff", border: "1px solid transparent", outline: "none" }}
+                    onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
+                    onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
+                  />
+                </td>
+                <td className="px-3 py-2">
+                  <input
+                    defaultValue={c.definition ?? c.description ?? ""}
+                    onBlur={(e) => onUpdateConcept(c.id, "definition", e.target.value)}
+                    className="w-full rounded px-1.5 py-0.5 text-[11px]"
+                    style={{ background: "rgba(255,255,255,0.05)", color: "#cbd5e1", border: "1px solid transparent", outline: "none" }}
+                    onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
+                    onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
+                  />
+                </td>
+                <td className="px-3 py-2">
+                  <input
+                    defaultValue={(c.lifecycleStates ?? []).join(", ")}
+                    onBlur={(e) => onUpdateConcept(c.id, "lifecycleStates", e.target.value)}
+                    className="w-full rounded px-1.5 py-0.5 text-[11px]"
+                    style={{ background: "rgba(255,255,255,0.05)", color: "#4a9eda", border: "1px solid transparent", outline: "none", fontFamily: "'DM Mono', monospace" }}
+                    onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
+                    onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
+                    placeholder="state1, state2, ..."
+                  />
+                </td>
+                {enriched && enriched.attributes[c.id] && (
+                  <td className="px-3 py-2 text-[10px]" style={{ color: "#94a3b8" }}>
+                    {enriched.attributes[c.id].slice(0, 4).map(a => a.name).join(", ")}
+                    {enriched.attributes[c.id].length > 4 && ` +${enriched.attributes[c.id].length - 4}`}
+                  </td>
+                )}
+                <td className="px-3 py-2 text-center">
+                  {confirmDelete === c.id ? (
+                    <span className="flex items-center gap-1">
+                      <button
+                        onClick={() => { onDeleteConcept(c.id); setConfirmDelete(null); }}
+                        className="rounded px-1.5 py-0.5 text-[9px] font-bold"
+                        style={{ background: "rgba(239,68,68,0.15)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)" }}
+                      >
+                        Yes
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(null)}
+                        className="rounded px-1.5 py-0.5 text-[9px]"
+                        style={{ color: "#94a3b8", border: "1px solid #2e3f5c" }}
+                      >
+                        No
+                      </button>
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmDelete(c.id)}
+                      className="rounded px-1.5 py-0.5 text-[9px]"
+                      style={{ color: "#94a3b8", border: "1px solid transparent" }}
+                      title="Delete concept"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Add concept buttons */}
+      <div className="mt-3 flex items-center gap-2">
+        <span className="text-[10px] font-medium" style={{ color: "#94a3b8" }}>Add:</span>
+        {(["Party", "Resource", "Record"] as const).map(type => (
+          <button
+            key={type}
+            onClick={() => onAddConcept(type)}
+            className="rounded px-2.5 py-1 text-[10px] font-semibold"
+            style={{
+              background: colFor(type).fill,
+              color: colFor(type).accent,
+              border: `1px solid ${colFor(type).stroke}`,
+            }}
+          >
+            + {type}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -572,7 +633,7 @@ export function ConceptGraphView() {
     setZoom(z => Math.min(3, Math.max(0.3, z * delta)));
   }, []);
 
-  // ── Table update handler ──
+  // ── Table handlers ──
   const handleUpdateConcept = useCallback((id: string, field: string, value: string) => {
     const state = useCanvasStore.getState();
     if (!state.scaffoldData?.elements?.concepts) return;
@@ -594,6 +655,45 @@ export function ConceptGraphView() {
       });
     }
   }, []);
+
+  const handleAddConcept = useCallback((type: string) => {
+    const state = useCanvasStore.getState();
+    if (!state.scaffoldData?.elements) return;
+    const concepts = { ...(state.scaffoldData.elements.concepts ?? {}) };
+    const newId = `concept-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    concepts[newId] = {
+      id: newId,
+      name: `New ${type}`,
+      type,
+      definition: "",
+      lifecycleStates: [],
+    };
+    useCanvasStore.setState({
+      scaffoldData: {
+        ...state.scaffoldData,
+        elements: { ...state.scaffoldData.elements, concepts },
+      },
+      scaffoldDirty: true,
+    });
+  }, []);
+
+  const handleDeleteConcept = useCallback((id: string) => {
+    const state = useCanvasStore.getState();
+    if (!state.scaffoldData?.elements?.concepts) return;
+    const concepts = { ...state.scaffoldData.elements.concepts };
+    delete concepts[id];
+    useCanvasStore.setState({
+      scaffoldData: {
+        ...state.scaffoldData,
+        elements: { ...state.scaffoldData.elements, concepts },
+      },
+      scaffoldDirty: true,
+    });
+    // Clear selection if deleted node was selected
+    if (selectedId === id) setSelectedId(null);
+    // Clear enrichment since graph changed
+    if (enriched) setEnriched(null);
+  }, [selectedId, enriched]);
 
   if (!scaffoldData) return null;
 
@@ -910,6 +1010,8 @@ export function ConceptGraphView() {
             concepts={scaffoldData.elements.concepts as Record<string, any>}
             enriched={enriched}
             onUpdateConcept={handleUpdateConcept}
+            onAddConcept={handleAddConcept}
+            onDeleteConcept={handleDeleteConcept}
           />
         )}
       </div>
