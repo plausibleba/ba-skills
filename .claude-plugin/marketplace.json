@@ -8,22 +8,22 @@
   "plugins": [
     {
       "name": "ba-capability-mapping",
-      "source": "./ba-capability-mapping",
-      "version": "1.0.0",
+      "source": "ba-capability-mapping",
+      "version": "1.6.0",
       "description": "BIZBOK-grounded Business Capability Map. MECE hierarchy, Execution/Governance split, validated XLSX artefact.",
       "category": "business-analysis"
     },
     {
       "name": "ba-concept-model",
-      "source": "./ba-concept-model",
-      "version": "1.0.0",
+      "source": "ba-concept-model",
+      "version": "1.6.0",
       "description": "Business Object Taxonomy using the Capsicum Triad (Party/Record/Resource). Cross-validates Capability Map coverage.",
       "category": "business-analysis"
     },
     {
       "name": "ba-value-streams",
-      "source": "./ba-value-streams",
-      "version": "1.0.0",
+      "source": "ba-value-streams",
+      "version": "1.6.0",
       "description": "Value Stream Analysis. Maps staged delivery of value, orchestrates capabilities, exports ba-skills-bundle.json for VCC.",
       "category": "business-analysis"
     }
