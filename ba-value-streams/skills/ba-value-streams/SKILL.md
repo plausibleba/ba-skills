@@ -95,6 +95,8 @@ Stage names describe the state the Value Object reaches, not the activities perf
 
 ## Elicitation Process
 
+> ⚠️ **Always run this skill in a fresh Cowork task.** Prior conversation context will cause Claude to reference previous outputs rather than eliciting from the current input. Open a new task, paste the business description, then type the slash command.
+
 ### Step 1 — Establish Scope
 Identify from input or by asking:
 - What **value stream** are we mapping? (What outcome is being delivered, to whom?)

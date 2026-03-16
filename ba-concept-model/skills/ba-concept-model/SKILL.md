@@ -197,6 +197,8 @@ Keep relationships at business level — avoid technical foreign-key thinking.
 
 ## Elicitation Process
 
+> ⚠️ **Always run this skill in a fresh Cowork task.** Prior conversation context will cause Claude to reference previous outputs rather than eliciting from the current input. Open a new task, paste the business description, then type the slash command.
+
 ### Step 1 — Establish Scope
 Identify from input or by asking:
 - What **business domain** does this cover?

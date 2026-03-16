@@ -126,6 +126,8 @@ finalising.
 
 ## Elicitation Process
 
+> ⚠️ **Always run this skill in a fresh Cowork task.** Prior conversation context will cause Claude to reference previous outputs rather than eliciting from the current input. Open a new task, paste the business description, then type the slash command.
+
 ### Step 1 — Establish Context
 Identify from input (or ask):
 - What **business domain** does this cover?
