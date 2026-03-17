@@ -162,8 +162,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       capabilityInstanceView,
     });
 
-    // Multi-VS → stay in network view; single-VS → generate canvas
+    // Route to the best view based on what data is available
     if (vsIds.length > 1) {
+      // Multi-VS → stay in network view
       // Validate in background (non-blocking for network view)
       try {
         await get().validate();
@@ -171,7 +172,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         // Validation failure doesn't block network view
       }
       set({ viewMode: "network", loading: false });
-    } else {
+    } else if (vsIds.length === 1) {
       // Single VS — validate then generate canvas
       try {
         await get().validate();
@@ -188,6 +189,19 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         });
       }
       set({ loading: false });
+    } else {
+      // No value streams — route to best available view
+      const capCount = Object.keys(resolved.elements.capabilities ?? {}).length;
+      const conceptCount = Object.keys((resolved.elements as any).concepts ?? {}).length;
+
+      if (capCount > 0) {
+        set({ viewMode: "capabilityMap", loading: false });
+      } else if (conceptCount > 0) {
+        set({ viewMode: "conceptGraph", loading: false });
+      } else {
+        // Bare scaffold with no renderable data yet — stay in discovery
+        set({ loading: false });
+      }
     }
   },
 
