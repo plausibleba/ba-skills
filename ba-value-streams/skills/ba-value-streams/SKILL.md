@@ -152,7 +152,7 @@ navyMid:     #111827   (card body / capability list background)
 border:      #1e293b   (all borders)
 borderCard:  #1e3a5f   (card outer border)
 blue:        #3b82f6   (active/accent)
-textDim:     #64748b   (labels, secondary)
+textDim:     #94a3b8   (labels, secondary)
 textMed:     #94a3b8   (body text)
 white:       #f1f5f9   (headings)
 ```
@@ -162,10 +162,10 @@ Each card has:
 1. **Card header** (`background:navyLight`, `border-bottom:1px solid border`):
    - Stage N of N label (`font-size:8px`, `color:textDim`, uppercase)
    - Stage name (`font-size:13px`, `font-weight:700`, `color:white`)
-   - Entry/Exit state boxes side by side (dark boxes, `background:rgba(255,255,255,0.05)`, with labels ENTRY STATE / EXIT STATE)
+   - Entry/Exit state boxes side by side (dark boxes, `background:rgba(255,255,255,0.09)`, with labels ENTRY STATE / EXIT STATE)
    - Participating stakeholders section with coloured pills (blue tint for managers, teal for guests/customers, amber for others)
    - Metrics badges if present
-2. **Capability list panel** (`background:rgba(255,255,255,0.03)`, below header, flex:1):
+2. **Capability list panel** (`background:rgba(255,255,255,0.06)`, below header, flex:1):
    - Each capability as a row with name + ⓘ icon
    - `+ Add Capability` dashed button at bottom
 3. **PPIT dot row** at card bottom (`border-top:1px solid border`):

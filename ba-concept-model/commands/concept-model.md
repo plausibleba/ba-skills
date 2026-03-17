@@ -1,6 +1,11 @@
 # /concept-model
 
-Produce a Business Concept Model for the current domain.
+Produce a Business Concept Model for the current domain. Maps business objects (what the
+organisation manages), classifies each as Party / Resource / Record, and cross-validates
+against a Capability Map if one exists.
+
+> **Tip:** If you want the full business architecture stack (Capability Map + Concept Model +
+> Value Stream) delivered as a single bundle, use `/plausibleba` instead.
 
 ## What this command does
 
@@ -8,28 +13,22 @@ Loads ba-taxonomy-standard and ba-concept-model, then guides you through:
 
 1. **Scope confirmation** — domain, existing Capability Map (if any), existing glossaries
 2. **Object identification** — mines input for business objects (nouns the business manages)
-3. **Classification** — types each object as Party, Asset, Event, Agreement, or Measure
+3. **Classification** — types each object as Party, Resource, or Record
 4. **Relationship mapping** — identifies key associations between objects
 5. **Cross-validation** — checks every object against the Capability Map and vice versa
-6. **Checkpoint** — pauses for your review before producing the XLSX
-7. **XLSX artefact** — four-tab output: Summary, Object Register, Validation, Legend
+6. **Checkpoint** — pauses for your review before rendering
+7. **Interactive concept graph** (primary deliverable) — XLSX on request
 
 ## Output
 
-- XLSX with four tabs following the PlausibleBA taxonomy standard
-- Optional JSON for VCC pipeline integration
-- Cross-validation table: which capabilities each object grounds
+- Interactive concept graph (inline, rendered after Checkpoint)
+- XLSX with four tabs following the PlausibleBA taxonomy standard (on request)
+- Optional JSON for VCC pipeline integration (on request)
 
 ## Works best when
 
 - A Capability Map has already been produced with `/capability-map` — cross-validation is then automatic
 - Input includes a business description, discovery transcript, or charter
-- You want to validate that your capabilities are grounded before building value streams
-
-## Next command
-
-After `/concept-model`, run `/value-stream` to orchestrate capabilities into stages using
-the business objects as the thread through each stage.
 
 ---
 

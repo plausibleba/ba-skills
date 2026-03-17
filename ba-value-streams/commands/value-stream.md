@@ -1,6 +1,10 @@
 # /value-stream
 
-Produce a Value Stream Map for the current domain.
+Produce a Value Stream Map for the current domain. Maps staged delivery of value,
+orchestrates capabilities into sequence, and validates coverage.
+
+> **Tip:** If you want the full business architecture stack (Capability Map + Concept Model +
+> Value Stream) delivered as a single bundle, use `/plausibleba` instead.
 
 ## What this command does
 
@@ -11,30 +15,20 @@ Loads ba-taxonomy-standard and ba-value-streams, then guides you through:
 3. **Stage drafting** — 4–8 stages with entry/exit criteria
 4. **Capability mapping** — which L3 capabilities participate in each stage
 5. **Cross-validation** — unused capabilities flagged, capability gaps identified
-6. **Checkpoint** — pauses for your review before producing the XLSX
-7. **XLSX artefact** — four-tab output: Summary, Stage Register, Validation, Legend
+6. **Checkpoint** — pauses for your review before rendering
+7. **Interactive stage view** (primary deliverable) — XLSX and bundle on request
 
 ## Output
 
-- XLSX with four tabs following the PlausibleBA taxonomy standard
-- Capability cross-reference matrix: used / unused / gaps
-- Optional JSON for VCC pipeline integration
+- Interactive stage view (inline, rendered after Checkpoint)
+- XLSX with four tabs following the PlausibleBA taxonomy standard (on request)
+- `[organisation]-ba-skills-bundle.json` for VCC import (on request)
 
 ## Works best when
 
 - A Capability Map (`/capability-map`) and Concept Model (`/concept-model`) already exist
   — cross-validation is then automatic and complete
-- You want to validate that your capabilities are sufficient before designing systems or
-  processes
 - You're preparing for a VCC session and need the full business architecture stack
-
-## The PlausibleBA stack
-
-```
-/capability-map   → What the organisation can do
-/concept-model    → What the organisation manages
-/value-stream     → How the organisation delivers value  ← you are here
-```
 
 ---
 

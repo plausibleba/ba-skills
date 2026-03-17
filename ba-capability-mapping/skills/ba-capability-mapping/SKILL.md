@@ -200,11 +200,11 @@ Immediately after Checkpoint 2 is accepted, render an interactive treemap as a s
 **Visual design — match VCC exactly:**
 - Page background: `#0f172a`; L1 body: `#111827`; L1 header exec: `rgba(59,130,246,0.08)`; gov: `rgba(99,102,241,0.08)`
 - L1 border exec: `#1e3a5f`; gov: `#3730a3`; `border-radius:8px`
-- L1 title: `font-size:9px`, `font-weight:700`, `color:#94a3b8`, `text-transform:uppercase`, `letter-spacing:0.5px`
-- L1 meta line: `font-size:8px`, `color:#475569` — "N domains · N capabilities"
-- L2 blocks: `background:rgba(255,255,255,0.03)`, `border:1px solid rgba(255,255,255,0.06)`, `border-radius:5px`
-- L2 title: `font-size:9px`, `font-weight:600`, `color:#64748b`
-- L3 tiles: `background:rgba(255,255,255,0.04)`, `border:0.5px solid rgba(255,255,255,0.07)`, `color:#64748b`, `font-size:8px`, `border-radius:3px`, `padding:2px 6px`
+- L1 title: `font-size:9px`, `font-weight:700`, `color:#cbd5e1`, `text-transform:uppercase`, `letter-spacing:0.5px`
+- L1 meta line: `font-size:8px`, `color:#94a3b8` — "N domains · N capabilities"
+- L2 blocks: `background:rgba(255,255,255,0.05)`, `border:1px solid rgba(255,255,255,0.10)`, `border-radius:5px`
+- L2 title: `font-size:9px`, `font-weight:600`, `color:#94a3b8`
+- L3 tiles: `background:rgba(255,255,255,0.07)`, `border:0.5px solid rgba(255,255,255,0.12)`, `color:#94a3b8`, `font-size:8px`, `border-radius:3px`, `padding:2px 6px`
 - L3 hover/selected exec: `background:rgba(59,130,246,0.15)`, `color:#93c5fd`, `border-color:rgba(59,130,246,0.3)`
 - L3 hover/selected gov: `background:rgba(99,102,241,0.15)`, `color:#a5b4fc`, `border-color:rgba(99,102,241,0.3)`
 - Font: `'DM Sans', system-ui, sans-serif`
@@ -215,7 +215,7 @@ Immediately after Checkpoint 2 is accepted, render an interactive treemap as a s
 - Business object label: `font-size:9px`, `font-weight:700`, `text-transform:uppercase`, `color:#3b82f6` — "BUSINESS OBJECT: [name]"
 - Description: `font-size:12px`, `color:#94a3b8`
 
-**Legend row above grid:** "Click any L3 tile to inspect · Double-click to rename" hint in `color:#475569`
+**Legend row above grid:** "Click any L3 tile to inspect · Double-click to rename" hint in `color:#94a3b8`
 
 Build the `data` array from capabilities confirmed at Checkpoint 2. Each L1 entry has name, L2 children, each L2 has name and L3 array. Each L3 has: name, business object reference, description. Detect Governance L1s by keywords: governance, compliance, risk, audit, regulatory, data, privacy. Do NOT use PortfolioProp example data.
 

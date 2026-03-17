@@ -289,8 +289,8 @@ Immediately after the Object Register is validated, render an interactive concep
 - Object name: `font-size:15px`, `font-weight:700`, `color:#f1f5f9`
 - Type badge: `font-size:10px`, `font-weight:700`, `text-transform:uppercase`, `letter-spacing:0.5px`, color matches node
 - Definition: `font-size:12px`, `color:#94a3b8`, `line-height:1.55`
-- Lifecycle label: `font-size:9px`, `font-weight:700`, `text-transform:uppercase`, `color:#475569`
-- **Lifecycle pills** (not plain text): each state as `background:rgba(255,255,255,0.06)`, `color:#94a3b8`, `border:1px solid rgba(255,255,255,0.08)`, `border-radius:4px`, `padding:3px 10px`, `font-size:10px`
+- Lifecycle label: `font-size:9px`, `font-weight:700`, `text-transform:uppercase`, `color:#94a3b8`
+- **Lifecycle pills** (not plain text): each state as `background:rgba(255,255,255,0.09)`, `color:#cbd5e1`, `border:1px solid rgba(255,255,255,0.14)`, `border-radius:4px`, `padding:3px 10px`, `font-size:10px`
 - NO attributes table — that is VCC-only territory
 
 Layout: Party nodes left column (~x:90), Resource nodes centre (~x:290), Record nodes split right (~x:530 and ~x:660). Space vertically by count. Draw dashed edges between related objects.
