@@ -15,7 +15,7 @@ import { LoginPage } from "./components/LoginPage.tsx";
 import { ProjectList } from "./components/ProjectList.tsx";
 
 export default function App() {
-  const { user, loading: authLoading, isLocalMode, initialize: initAuth, signOut } = useAuthStore();
+  const { user, loading: authLoading, isLocalMode, initialize: initAuth } = useAuthStore();
   const { currentProjectId, saving } = useProjectStore();
   const {
     scaffoldData,

@@ -31,19 +31,20 @@ export function ConflictBanner() {
 
     // Build the current bundle from canvas state
     const canvasState = useCanvasStore.getState();
-    const { scaffoldData, heatmapsByVs, userStoriesByActivity } = canvasState;
+    const { scaffoldData, heatmapsByVs, userStoriesByActivity, cardRegistry } = canvasState;
     if (!scaffoldData) {
       setBusy(null);
       return;
     }
 
-    const bundle = {
+    const bundle: Record<string, unknown> = {
       bundleVersion: "2.0",
       updatedAt: new Date().toISOString(),
       scaffold: scaffoldData,
       heatmaps: Array.from(heatmapsByVs.values()),
       userStoriesByActivity,
     };
+    if (cardRegistry) bundle.cardRegistry = cardRegistry;
 
     const result = await saveProject(currentProjectId, bundle, { force: true });
     if (result.ok) {

@@ -43,6 +43,7 @@ export interface Database {
           revision?: number;
           updated_at?: string;
         };
+        Relationships: [];
       };
       project_access: {
         Row: {
@@ -62,8 +63,20 @@ export interface Database {
         Update: {
           permission?: "view" | "edit";
         };
+        Relationships: [
+          {
+            foreignKeyName: "project_access_project_id_fkey";
+            columns: ["project_id"];
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 }
 

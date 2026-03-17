@@ -405,7 +405,7 @@ export interface ScaffoldData {
     // D-053: New reference registries (Session 11)
     applicationFunctions?: Record<string, ApplicationFunction>;
     recordClasses?: Record<string, RecordClass>;
-    [key: string]: Record<string, unknown>;
+    [key: string]: Record<string, unknown> | undefined;
   };
 }
 

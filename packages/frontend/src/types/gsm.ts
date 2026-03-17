@@ -23,8 +23,6 @@
 import type {
   DeonticOperator,
   Norm,
-  ApplicabilityResult,
-  TermValidationResult,
   TransitionRecord,
 } from "./capsicum.ts";
 

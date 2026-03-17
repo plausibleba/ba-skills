@@ -98,12 +98,13 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       return null;
     }
 
+    const row = data as unknown as ProjectRow;
     set({
       loading: false,
       currentProjectId: id,
-      currentRevision: data.revision,
+      currentRevision: row.revision,
     });
-    return data as ProjectRow;
+    return row;
   },
 
   saveProject: async (id, bundle, opts) => {
@@ -137,7 +138,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       return { ok: false, error: error.message };
     }
 
-    set({ saving: false, conflict: false, currentRevision: data.revision });
+    set({ saving: false, conflict: false, currentRevision: (data as unknown as { revision: number }).revision });
     return { ok: true };
   },
 
@@ -160,6 +161,16 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           await canvasStore.loadHeatmap(hm);
         }
       }
+      // Restore user stories if present in the bundle
+      if (bundle.userStoriesByActivity) {
+        for (const [actId, stories] of Object.entries(bundle.userStoriesByActivity)) {
+          canvasStore.setActivityStories(actId, stories as any[]);
+        }
+      }
+      // Restore MVC card registry if present
+      if (bundle.cardRegistry) {
+        canvasStore.loadCards(bundle.cardRegistry);
+      }
     } else if (bundle.elements) {
       await canvasStore.loadScaffold(bundle);
     }
@@ -180,7 +191,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }));
   },
 
-  shareProject: async (projectId, email, permission) => {
+  shareProject: async (_projectId, _email, _permission) => {
     if (!isSupabaseConfigured) return { error: "Not configured" };
 
     // Look up user by email — requires a Supabase edge function or RPC

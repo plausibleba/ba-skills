@@ -41,6 +41,10 @@ interface CanvasState {
   networkForwardEdges: NetworkEdge[];
   networkFeedbackEdges: NetworkEdge[];
   topologyView: any;
+  capabilityInstanceView: any;
+
+  // Enrichment tracking
+  enrichVersion: number;
 
   // Transformation layer
   userStoriesByActivity: Record<string, TransformationUserStory[]>;
@@ -1149,16 +1153,17 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const { currentProjectId } = projectStore;
     if (!currentProjectId) return;
 
-    const { scaffoldData, heatmapsByVs, userStoriesByActivity } = get();
+    const { scaffoldData, heatmapsByVs, userStoriesByActivity, cardRegistry } = get();
     if (!scaffoldData) return;
 
-    const bundle = {
+    const bundle: Record<string, unknown> = {
       bundleVersion: "2.0",
       updatedAt: new Date().toISOString(),
       scaffold: scaffoldData,
       heatmaps: Array.from(heatmapsByVs.values()),
       userStoriesByActivity,
     };
+    if (cardRegistry) bundle.cardRegistry = cardRegistry;
 
     const result = await projectStore.saveProject(currentProjectId, bundle);
     if (result.ok) {

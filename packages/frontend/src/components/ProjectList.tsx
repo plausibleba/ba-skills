@@ -31,7 +31,7 @@ const MODULE_INFO: Record<ProjectModule, { label: string; description: string; c
 
 export function ProjectList() {
   const { user, signOut } = useAuthStore();
-  const { projects, loading, error, fetchProjects, createProject, loadProject, deleteProject } = useProjectStore();
+  const { projects, loading, error, fetchProjects, createProject, loadProject } = useProjectStore();
   const { loadScaffold, loadHeatmap, backToNetwork, goToIntake } = useCanvasStore();
 
   const [showNewProject, setShowNewProject] = useState(false);
@@ -51,12 +51,22 @@ export function ProjectList() {
     const bundle = project.bundle as any;
 
     // The bundle might be a full export bundle or just a scaffold
+    const canvasStore = useCanvasStore.getState();
     if (bundle.scaffold) {
       await loadScaffold(bundle.scaffold);
       if (bundle.heatmaps) {
         for (const hm of bundle.heatmaps) {
           await loadHeatmap(hm);
         }
+      }
+      // Restore user stories and card registry from bundle
+      if (bundle.userStoriesByActivity) {
+        for (const [actId, stories] of Object.entries(bundle.userStoriesByActivity)) {
+          canvasStore.setActivityStories(actId, stories as any[]);
+        }
+      }
+      if (bundle.cardRegistry) {
+        canvasStore.loadCards(bundle.cardRegistry);
       }
     } else if (bundle.elements) {
       // It's a raw scaffold

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { tv } from "../theme.ts";
-import type { TransformationUserStory } from "../types.ts";
+import type { TransformationUserStory, ScaffoldElement, ScaffoldActivity } from "../types.ts";
 import { toJiraExport } from "../types.ts";
 import { humanizeId } from "../lib/humanize-id.ts";
 import { InlineEdit } from "./canvas/InlineEdit.tsx";

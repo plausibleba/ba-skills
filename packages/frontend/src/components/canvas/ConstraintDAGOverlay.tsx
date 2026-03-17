@@ -126,7 +126,7 @@ function resolveCapSharedInstances(
   const tgtInsts = capInstances.instances.filter(i => i.capabilityId === tgtCapId);
 
   const srcSet = (field: "roleIds" | "controlIds" | "applicationFunctionIds") =>
-    new Set(srcInsts.flatMap(i => (i as Record<string, unknown>)[field] as string[] ?? []));
+    new Set(srcInsts.flatMap(i => i[field] ?? []));
 
   switch (basis) {
     case "coDeployed": {
@@ -136,17 +136,17 @@ function resolveCapSharedInstances(
     }
     case "sharedRole": {
       const s = srcSet("roleIds");
-      const shared = [...new Set(tgtInsts.flatMap(i => (i as Record<string, unknown>).roleIds as string[] ?? []))].filter(id => s.has(id));
+      const shared = [...new Set(tgtInsts.flatMap(i => i.roleIds ?? []))].filter(id => s.has(id));
       return lookup(shared, scaffold.elements.roles);
     }
     case "sharedControl": {
       const s = srcSet("controlIds");
-      const shared = [...new Set(tgtInsts.flatMap(i => (i as Record<string, unknown>).controlIds as string[] ?? []))].filter(id => s.has(id));
+      const shared = [...new Set(tgtInsts.flatMap(i => i.controlIds ?? []))].filter(id => s.has(id));
       return lookup(shared, scaffold.elements.controls);
     }
     case "sharedApplicationFunction": {
       const s = srcSet("applicationFunctionIds");
-      const shared = [...new Set(tgtInsts.flatMap(i => (i as Record<string, unknown>).applicationFunctionIds as string[] ?? []))].filter(id => s.has(id));
+      const shared = [...new Set(tgtInsts.flatMap(i => i.applicationFunctionIds ?? []))].filter(id => s.has(id));
       return lookup(shared, scaffold.elements.applicationFunctions as Record<string, unknown> | undefined);
     }
     case "sharedPrimaryRecord": {
@@ -224,11 +224,12 @@ function buildCapabilityGraph(
   // Shared PPIT resources between capabilities
   const relevantInsts = capInstances.instances.filter(i => capSet.has(i.capabilityId));
 
-  const buildIndex = (field: string) => {
+  type CapInstField = "roleIds" | "controlIds" | "applicationFunctionIds";
+  const buildIndex = (field: CapInstField) => {
     const index = new Map<string, Set<string>>();
     for (const inst of relevantInsts) {
-      const ids = (inst as Record<string, unknown>)[field] as string[] | undefined;
-      for (const id of ids ?? []) {
+      const ids = inst[field] ?? [];
+      for (const id of ids) {
         const set = index.get(id) ?? new Set();
         set.add(inst.capabilityId);
         index.set(id, set);
@@ -237,7 +238,7 @@ function buildCapabilityGraph(
     return index;
   };
 
-  const sharedFields: Array<{ field: string; basis: CapBasis }> = [
+  const sharedFields: Array<{ field: CapInstField; basis: CapBasis }> = [
     { field: "roleIds", basis: "sharedRole" },
     { field: "controlIds", basis: "sharedControl" },
     { field: "applicationFunctionIds", basis: "sharedApplicationFunction" },
