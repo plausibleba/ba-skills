@@ -436,6 +436,8 @@ export function NetworkView() {
     topologyView,
     selectVs,
     loadHeatmap,
+    heatmapsByVs,
+    saveFullBundle,
   } = useCanvasStore();
 
   const isDark = useThemeStore((s) => s.mode) === "dark";
@@ -581,6 +583,14 @@ export function NetworkView() {
             style={{ borderColor: tv.borderSubtle, color: tv.textDim }}
           >
             + Load Assessment
+          </button>
+          <button
+            onClick={() => void saveFullBundle()}
+            className="rounded-full border px-3 py-1 transition-colors"
+            style={{ borderColor: tv.borderSubtle, color: tv.textDim }}
+            title="Download scaffold, heatmaps, and user stories as a VCC bundle JSON file"
+          >
+            ↓ Download Bundle
           </button>
           <input
             ref={heatmapInputRef}

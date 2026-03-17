@@ -463,12 +463,12 @@ export function StageWizard() {
               ? "bg-vcc-600 text-white hover:bg-vcc-700"
               : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
           } disabled:opacity-40 disabled:cursor-not-allowed`}
-          title="Save scaffold, heatmaps, and user stories as a VCC bundle"
+          title="Download scaffold, heatmaps, and user stories as a VCC bundle JSON file"
         >
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
           </svg>
-          {scaffoldDirty ? "Save Bundle*" : "Save Bundle"}
+          {scaffoldDirty ? "↓ Download Bundle*" : "↓ Download Bundle"}
         </button>
       </div>
 

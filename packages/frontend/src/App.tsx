@@ -340,11 +340,41 @@ export default function App() {
         {/* Views — DiscoveryIntake stays mounted (hidden) to preserve form state */}
         <div style={{ display: isIntake ? undefined : "none" }}>
           <DiscoveryIntake
-            onComplete={(bundle) => {
-              const { scaffold, heatmaps = [] } = bundle;
-              loadScaffold(scaffold ?? bundle);
-              heatmaps.forEach((hm: any) => loadHeatmap(hm));
+            onComplete={async (bundle) => {
+              const { scaffold, heatmaps = [], cardRegistry } = bundle;
+              // Load into canvas
+              await loadScaffold(scaffold ?? bundle);
+              for (const hm of heatmaps) await loadHeatmap(hm);
+              if (cardRegistry) useCanvasStore.getState().loadCards(cardRegistry);
               backToNetwork();
+
+              // Persist to Supabase project
+              if (!isLocalMode) {
+                const projectStore = useProjectStore.getState();
+                let projectId = projectStore.currentProjectId;
+
+                // Auto-create project if we came from "+ New Discovery" without one
+                if (!projectId) {
+                  const name = scaffold?.name ?? bundle?.scaffold?.name ?? "Untitled Discovery";
+                  const module = scaffold?.elements?.valueStreams
+                    ? (Object.keys(scaffold.elements.valueStreams).length > 2 ? "Transformation" : "Sales Discovery")
+                    : "Sales Discovery";
+                  projectId = await projectStore.createProject(name, module, {});
+                }
+
+                if (projectId) {
+                  const saveable: Record<string, unknown> = {
+                    bundleVersion: "2.0",
+                    updatedAt: new Date().toISOString(),
+                    scaffold: useCanvasStore.getState().scaffoldData,
+                    heatmaps: Array.from(useCanvasStore.getState().heatmapsByVs.values()),
+                  };
+                  if (cardRegistry) saveable.cardRegistry = cardRegistry;
+                  const cr = useCanvasStore.getState().cardRegistry;
+                  if (cr && !cardRegistry) saveable.cardRegistry = cr;
+                  await projectStore.saveProject(projectId, saveable);
+                }
+              }
             }}
           />
         </div>

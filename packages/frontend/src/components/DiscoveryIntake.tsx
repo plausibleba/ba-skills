@@ -635,7 +635,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
                 }
               }
             }} className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors">
-              ↓ Save Bundle
+              ↓ Download Bundle
             </button>
             <button
               onClick={() => onComplete?.(generatedBundle)}
