@@ -1,23 +1,34 @@
 // @ts-nocheck
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
+import { useThemeStore } from "../store/theme-store.ts";
+import { getTheme } from "../theme.ts";
 import type { ConceptRelationship } from "../types/cards.ts";
 
 /* ═══════════════════════════════════════════════════════════════
-   Colour palette & helpers
+   Colour palette & helpers — theme-aware
    ═══════════════════════════════════════════════════════════════ */
-const COLORS = {
-  party: "#2dd4bf", partyDim: "rgba(45,212,191,0.12)", partyBorder: "rgba(45,212,191,0.5)",
-  resource: "#4a9eda", resourceDim: "rgba(74,158,218,0.12)", resourceBorder: "rgba(74,158,218,0.5)",
-  record: "#e05b8a", recordDim: "rgba(224,91,138,0.12)", recordBorder: "rgba(224,91,138,0.5)",
-  border: "#2e3f5c", textDim: "#94a3b8", textMed: "#cbd5e1",
-  interaction: "#f59e0b", structural: "#a78bfa",
-};
+function getColors(mode: string) {
+  const t = getTheme(mode as any);
+  const isDark = mode === "dark";
+  return {
+    party: t.partyColor, partyDim: isDark ? "rgba(45,212,191,0.12)" : "rgba(13,148,136,0.08)", partyBorder: isDark ? "rgba(45,212,191,0.5)" : "rgba(13,148,136,0.4)",
+    resource: t.resourceColor, resourceDim: isDark ? "rgba(74,158,218,0.12)" : "rgba(37,99,235,0.08)", resourceBorder: isDark ? "rgba(74,158,218,0.5)" : "rgba(37,99,235,0.4)",
+    record: t.recordColor, recordDim: isDark ? "rgba(224,91,138,0.12)" : "rgba(219,39,119,0.08)", recordBorder: isDark ? "rgba(224,91,138,0.5)" : "rgba(219,39,119,0.4)",
+    border: t.borderDefault, textDim: t.textDim, textMed: t.textSecondary, textHi: t.textPrimary,
+    interaction: t.interactionColor, structural: t.structuralColor,
+    bgPrimary: t.bgPrimary, bgCard: t.bgCard, bgSurface: t.bgSurface, accent: t.accent,
+  };
+}
 
-function colFor(type: string) {
-  if (type === "Party") return { fill: COLORS.partyDim, stroke: COLORS.partyBorder, text: "#e0fdf9", accent: COLORS.party };
-  if (type === "Resource") return { fill: COLORS.resourceDim, stroke: COLORS.resourceBorder, text: "#e0f2fe", accent: COLORS.resource };
-  return { fill: COLORS.recordDim, stroke: COLORS.recordBorder, text: "#fce7f3", accent: COLORS.record };
+// Kept as fallback for file-level scope — actual usage should pass COLORS from component
+const COLORS = getColors("dark");
+
+function colFor(type: string, colors = COLORS) {
+  const isDark = colors.bgPrimary?.startsWith("#1") ?? true;
+  if (type === "Party") return { fill: colors.partyDim, stroke: colors.partyBorder, text: isDark ? "#e0fdf9" : "#134e4a", accent: colors.party };
+  if (type === "Resource") return { fill: colors.resourceDim, stroke: colors.resourceBorder, text: isDark ? "#e0f2fe" : "#1e3a5f", accent: colors.resource };
+  return { fill: colors.recordDim, stroke: colors.recordBorder, text: isDark ? "#fce7f3" : "#831843", accent: colors.record };
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -373,6 +384,8 @@ function ConceptTableView({
   onAddConcept: (type: string) => void;
   onDeleteConcept: (id: string) => void;
 }) {
+  const themeMode = useThemeStore((s) => s.mode);
+  const T = getTheme(themeMode);
   const all = Object.values(concepts) as any[];
   const sorted = [...all].sort((a, b) => {
     const order = { Party: 0, Resource: 1, Record: 2 };
@@ -383,20 +396,20 @@ function ConceptTableView({
 
   return (
     <div>
-      <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid #2e3f5c" }}>
+      <div className="overflow-x-auto rounded-lg" style={{ border: `1px solid ${T.borderSubtle}` }}>
         <table className="w-full text-left text-[11px]" style={{ borderCollapse: "collapse" }}>
           <thead>
-            <tr style={{ background: "#1e2d4a" }}>
+            <tr style={{ background: T.bgSurface }}>
               {["Type", "Name", "Definition", "Lifecycle States"].map(h => (
-                <th key={h} className="px-3 py-2 font-semibold" style={{ color: "#94a3b8", borderBottom: "1px solid #2e3f5c" }}>{h}</th>
+                <th key={h} className="px-3 py-2 font-semibold" style={{ color: T.textDim, borderBottom: `1px solid ${T.borderSubtle}` }}>{h}</th>
               ))}
-              {enriched && <th className="px-3 py-2 font-semibold" style={{ color: "#94a3b8", borderBottom: "1px solid #2e3f5c" }}>Attributes</th>}
-              <th className="px-3 py-2 font-semibold w-[60px]" style={{ color: "#94a3b8", borderBottom: "1px solid #2e3f5c" }}></th>
+              {enriched && <th className="px-3 py-2 font-semibold" style={{ color: T.textDim, borderBottom: `1px solid ${T.borderSubtle}` }}>Attributes</th>}
+              <th className="px-3 py-2 font-semibold w-[60px]" style={{ color: T.textDim, borderBottom: `1px solid ${T.borderSubtle}` }}></th>
             </tr>
           </thead>
           <tbody>
             {sorted.map((c) => (
-              <tr key={c.id} style={{ borderBottom: "1px solid #2e3f5c" }}>
+              <tr key={c.id} style={{ borderBottom: `1px solid ${T.borderSubtle}` }}>
                 <td className="px-3 py-2">
                   <select
                     defaultValue={c.type}
@@ -414,7 +427,7 @@ function ConceptTableView({
                     defaultValue={c.name}
                     onBlur={(e) => onUpdateConcept(c.id, "name", e.target.value)}
                     className="w-full rounded px-1.5 py-0.5 text-[11px] font-semibold"
-                    style={{ background: "rgba(255,255,255,0.05)", color: "#fff", border: "1px solid transparent", outline: "none" }}
+                    style={{ background: "rgba(255,255,255,0.05)", color: T.textPrimary, border: "1px solid transparent", outline: "none" }}
                     onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
                     onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
                   />
@@ -424,7 +437,7 @@ function ConceptTableView({
                     defaultValue={c.definition ?? c.description ?? ""}
                     onBlur={(e) => onUpdateConcept(c.id, "definition", e.target.value)}
                     className="w-full rounded px-1.5 py-0.5 text-[11px]"
-                    style={{ background: "rgba(255,255,255,0.05)", color: "#cbd5e1", border: "1px solid transparent", outline: "none" }}
+                    style={{ background: "rgba(255,255,255,0.05)", color: T.textSecondary, border: "1px solid transparent", outline: "none" }}
                     onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
                     onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
                   />
@@ -434,14 +447,14 @@ function ConceptTableView({
                     defaultValue={(c.lifecycleStates ?? []).join(", ")}
                     onBlur={(e) => onUpdateConcept(c.id, "lifecycleStates", e.target.value)}
                     className="w-full rounded px-1.5 py-0.5 text-[11px]"
-                    style={{ background: "rgba(255,255,255,0.05)", color: "#4a9eda", border: "1px solid transparent", outline: "none", fontFamily: "'DM Mono', monospace" }}
+                    style={{ background: "rgba(255,255,255,0.05)", color: T.accent, border: "1px solid transparent", outline: "none", fontFamily: "'DM Mono', monospace" }}
                     onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
                     onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
                     placeholder="state1, state2, ..."
                   />
                 </td>
                 {enriched && enriched.attributes[c.id] && (
-                  <td className="px-3 py-2 text-[10px]" style={{ color: "#94a3b8" }}>
+                  <td className="px-3 py-2 text-[10px]" style={{ color: T.textDim }}>
                     {enriched.attributes[c.id].slice(0, 4).map(a => a.name).join(", ")}
                     {enriched.attributes[c.id].length > 4 && ` +${enriched.attributes[c.id].length - 4}`}
                   </td>
@@ -459,7 +472,7 @@ function ConceptTableView({
                       <button
                         onClick={() => setConfirmDelete(null)}
                         className="rounded px-1.5 py-0.5 text-[9px]"
-                        style={{ color: "#94a3b8", border: "1px solid #2e3f5c" }}
+                        style={{ color: T.textDim, border: `1px solid ${T.borderSubtle}` }}
                       >
                         No
                       </button>
@@ -468,7 +481,7 @@ function ConceptTableView({
                     <button
                       onClick={() => setConfirmDelete(c.id)}
                       className="rounded px-1.5 py-0.5 text-[9px]"
-                      style={{ color: "#94a3b8", border: "1px solid transparent" }}
+                      style={{ color: T.textDim, border: "1px solid transparent" }}
                       title="Delete concept"
                     >
                       ✕
@@ -483,7 +496,7 @@ function ConceptTableView({
 
       {/* Add concept buttons */}
       <div className="mt-3 flex items-center gap-2">
-        <span className="text-[10px] font-medium" style={{ color: "#94a3b8" }}>Add:</span>
+        <span className="text-[10px] font-medium" style={{ color: T.textDim }}>Add:</span>
         {(["Party", "Resource", "Record"] as const).map(type => (
           <button
             key={type}
@@ -508,6 +521,9 @@ function ConceptTableView({
    ═══════════════════════════════════════════════════════════════ */
 export function ConceptGraphView() {
   const scaffoldData = useCanvasStore((s) => s.scaffoldData);
+  const themeMode = useThemeStore((s) => s.mode);
+  const TC = useMemo(() => getColors(themeMode), [themeMode]);
+  const T = useMemo(() => getTheme(themeMode), [themeMode]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [enriched, setEnriched] = useState<EnrichedProperties | null>(null);
   const [showRelLabels, setShowRelLabels] = useState(true);
@@ -702,19 +718,19 @@ export function ConceptGraphView() {
   const structuralCount = allEdges.filter(e => e.category === "structural").length;
 
   return (
-    <div style={{ background: "#1a2236", fontFamily: "'DM Sans', system-ui, sans-serif", minHeight: "100%" }}>
+    <div style={{ background: T.bgPrimary, fontFamily: "'DM Sans', system-ui, sans-serif", minHeight: "100%" }}>
       <div className="mx-auto max-w-[1100px] p-5">
         {/* Header */}
         <div className="mb-4">
-          <div className="mb-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: "#94a3b8" }}>Concept Model</div>
+          <div className="mb-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: T.textDim }}>Concept Model</div>
           <div className="mb-1 text-lg font-bold text-white">{scaffoldData.name} — Business Object Taxonomy</div>
-          <div className="text-[11px]" style={{ color: "#94a3b8" }}>
+          <div className="text-[11px]" style={{ color: T.textDim }}>
             Capsicum Triad · {stats.parties} parties · {stats.resources} resources · {stats.records} records
           </div>
         </div>
 
         {/* Tab bar: Graph | Table */}
-        <div className="mb-3 flex items-center gap-1" style={{ borderBottom: "1px solid #2e3f5c" }}>
+        <div className="mb-3 flex items-center gap-1" style={{ borderBottom: `1px solid ${T.borderSubtle}` }}>
           {(["graph", "table"] as const).map(tab => (
             <button
               key={tab}
@@ -738,7 +754,7 @@ export function ConceptGraphView() {
             { type: "Record", color: COLORS.record },
             { type: "Resource", color: COLORS.resource },
           ] as const).map(({ type, color }) => (
-            <div key={type} className="flex items-center gap-1.5 text-[10px]" style={{ color: "#94a3b8" }}>
+            <div key={type} className="flex items-center gap-1.5 text-[10px]" style={{ color: T.textDim }}>
               <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: color }} />
               {type}
             </div>
@@ -746,7 +762,7 @@ export function ConceptGraphView() {
 
           <div className="ml-auto flex flex-wrap items-center gap-2">
             {hasMovedNodes && (
-              <button onClick={handleResetLayout} className="rounded px-2 py-0.5 text-[10px] font-medium" style={{ color: "#94a3b8", border: "1px solid #2e3f5c" }}>
+              <button onClick={handleResetLayout} className="rounded px-2 py-0.5 text-[10px] font-medium" style={{ color: T.textDim, border: `1px solid ${T.borderSubtle}` }}>
                 Reset
               </button>
             )}
@@ -778,11 +794,11 @@ export function ConceptGraphView() {
                 <button
                   onClick={() => setShowRelLabels(!showRelLabels)}
                   className="rounded px-2 py-0.5 text-[10px] font-medium"
-                  style={{ background: showRelLabels ? "rgba(74,158,218,0.15)" : "transparent", color: showRelLabels ? "#4a9eda" : "#94a3b8", border: "1px solid #2e3f5c" }}
+                  style={{ background: showRelLabels ? "rgba(74,158,218,0.15)" : "transparent", color: showRelLabels ? "#4a9eda" : "#94a3b8", border: `1px solid ${T.borderSubtle}` }}
                 >
                   Labels
                 </button>
-                <button onClick={handleClearEnrichment} className="rounded px-2 py-0.5 text-[10px] font-medium" style={{ color: "#94a3b8", border: "1px solid #2e3f5c" }}>
+                <button onClick={handleClearEnrichment} className="rounded px-2 py-0.5 text-[10px] font-medium" style={{ color: T.textDim, border: `1px solid ${T.borderSubtle}` }}>
                   Clear
                 </button>
               </>
@@ -807,7 +823,7 @@ export function ConceptGraphView() {
             <div
               ref={containerRef}
               className="overflow-hidden rounded-lg"
-              style={{ border: "1px solid #2e3f5c", background: "#243352", position: "relative" }}
+              style={{ border: `1px solid ${T.borderSubtle}`, background: T.bgCard, position: "relative" }}
               onWheel={handleWheel}
             >
               <svg
@@ -863,7 +879,7 @@ export function ConceptGraphView() {
                       {showRelLabels && (
                         <>
                           <text x={path.labelX} y={path.labelY + 1} textAnchor="middle" dominantBaseline="middle"
-                            fontSize={7} fill="#243352" stroke="#243352" strokeWidth={3} fontFamily="DM Sans, sans-serif" paintOrder="stroke">
+                            fontSize={7} fill={T.bgCard} stroke={T.bgCard} strokeWidth={3} fontFamily="DM Sans, sans-serif" paintOrder="stroke">
                             {e.label}
                           </text>
                           <text x={path.labelX} y={path.labelY + 1} textAnchor="middle" dominantBaseline="middle"
@@ -903,7 +919,7 @@ export function ConceptGraphView() {
               {/* Zoom indicator */}
               {zoom !== 1 && (
                 <div className="absolute bottom-2 right-2 rounded px-2 py-0.5 text-[9px] font-medium"
-                  style={{ background: "rgba(26,34,54,0.8)", color: "#94a3b8", border: "1px solid #2e3f5c" }}>
+                  style={{ background: T.bgSurface, color: T.textDim, border: `1px solid ${T.borderSubtle}` }}>
                   {Math.round(zoom * 100)}%
                 </div>
               )}
@@ -911,7 +927,7 @@ export function ConceptGraphView() {
 
             {/* Inspector */}
             <div className="mt-3 rounded-lg p-4" style={{
-              background: "#243352",
+              background: T.bgCard,
               border: `1.5px solid ${selected ? colFor(selected.type).accent : "#4a9eda"}`,
               minHeight: 72,
             }}>
@@ -926,18 +942,18 @@ export function ConceptGraphView() {
                       </span>
                     </div>
                     {(selected.definition || selected.description) && (
-                      <div className="mb-2 text-[12px] leading-relaxed" style={{ color: "#cbd5e1" }}>
+                      <div className="mb-2 text-[12px] leading-relaxed" style={{ color: T.textSecondary }}>
                         {selected.definition || selected.description}
                       </div>
                     )}
                     {selected.lifecycleStates?.length > 0 && (
                       <div className="mb-2">
-                        <div className="mb-1 text-[9px] font-bold uppercase tracking-wider" style={{ color: "#94a3b8" }}>Lifecycle</div>
+                        <div className="mb-1 text-[9px] font-bold uppercase tracking-wider" style={{ color: T.textDim }}>Lifecycle</div>
                         <div className="flex flex-wrap gap-1">
                           {selected.lifecycleStates.map((s: string, i: number) => (
                             <span key={i} className="flex items-center gap-1">
                               <span className="rounded px-1.5 py-0.5 text-[10px] font-medium"
-                                style={{ background: "rgba(74,158,218,0.1)", color: "#4a9eda", border: "1px solid rgba(74,158,218,0.2)" }}>
+                                style={{ background: "rgba(74,158,218,0.1)", color: T.accent, border: "1px solid rgba(74,158,218,0.2)" }}>
                                 {s}
                               </span>
                               {i < selected.lifecycleStates!.length - 1 && <span className="text-[10px]" style={{ color: "#2e3f5c" }}>→</span>}
@@ -951,7 +967,7 @@ export function ConceptGraphView() {
                       if (!rels.length) return null;
                       return (
                         <div className="mb-2">
-                          <div className="mb-1 text-[9px] font-bold uppercase tracking-wider" style={{ color: "#94a3b8" }}>Relationships</div>
+                          <div className="mb-1 text-[9px] font-bold uppercase tracking-wider" style={{ color: T.textDim }}>Relationships</div>
                           <div className="space-y-0.5">
                             {rels.map((r, i) => {
                               const isSource = r.from === selected.id;
@@ -962,10 +978,10 @@ export function ConceptGraphView() {
                                   <span className="rounded px-1 py-0.5 text-[8px] font-bold" style={{ color: catCol, background: "rgba(255,255,255,0.05)" }}>
                                     {r.label}
                                   </span>
-                                  <span className="text-[8px] rounded px-1" style={{ color: "#94a3b8", background: "rgba(255,255,255,0.03)" }}>
+                                  <span className="text-[8px] rounded px-1" style={{ color: T.textDim, background: "rgba(255,255,255,0.03)" }}>
                                     {r.category}
                                   </span>
-                                  <span style={{ color: "#94a3b8" }}>{isSource ? "→" : "←"}</span>
+                                  <span style={{ color: T.textDim }}>{isSource ? "→" : "←"}</span>
                                   <span style={{ color: other ? colFor(other.type).accent : "#cbd5e1", cursor: "pointer" }}
                                     onClick={() => { if (other) setSelectedId(other.id); }}>
                                     {other?.name ?? (isSource ? r.to : r.from)}
@@ -979,13 +995,13 @@ export function ConceptGraphView() {
                     })()}
                   </div>
                   {enriched?.attributes[selected.id] && (
-                    <div className="w-[240px] flex-shrink-0 rounded-md p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid #2e3f5c" }}>
-                      <div className="mb-2 text-[9px] font-bold uppercase tracking-wider" style={{ color: "#94a3b8" }}>Attributes</div>
+                    <div className="w-[240px] flex-shrink-0 rounded-md p-3" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${T.borderSubtle}` }}>
+                      <div className="mb-2 text-[9px] font-bold uppercase tracking-wider" style={{ color: T.textDim }}>Attributes</div>
                       <div className="space-y-1">
                         {enriched.attributes[selected.id].map((attr, i) => (
                           <div key={i} className="flex items-center justify-between text-[10px]">
-                            <span style={{ color: "#cbd5e1" }}>{attr.name}</span>
-                            <span className="rounded px-1.5 py-0.5 text-[9px]" style={{ background: "rgba(74,158,218,0.1)", color: "#4a9eda", fontFamily: "'DM Mono', monospace" }}>
+                            <span style={{ color: T.textSecondary }}>{attr.name}</span>
+                            <span className="rounded px-1.5 py-0.5 text-[9px]" style={{ background: "rgba(74,158,218,0.1)", color: T.accent, fontFamily: "'DM Mono', monospace" }}>
                               {attr.dataType}
                             </span>
                           </div>
@@ -995,7 +1011,7 @@ export function ConceptGraphView() {
                   )}
                 </div>
               ) : (
-                <p className="text-[12px]" style={{ color: "#94a3b8" }}>
+                <p className="text-[12px]" style={{ color: T.textDim }}>
                   Select a concept to inspect. Drag nodes to rearrange. Scroll to zoom, drag background to pan.
                   {!enriched && " Click \"Enrich\" to suggest relationships and attributes."}
                 </p>

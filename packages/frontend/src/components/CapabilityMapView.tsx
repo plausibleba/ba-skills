@@ -1,5 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
+import { useThemeStore } from "../store/theme-store.ts";
+import { getTheme } from "../theme.ts";
 
 /* ── Governance detection ─────────────────────────────────── */
 const GOV_WORDS = [
@@ -9,6 +11,12 @@ const GOV_WORDS = [
 function isGov(name: string): boolean {
   const lower = name.toLowerCase();
   return GOV_WORDS.some((w) => lower.includes(w));
+}
+
+/** Also check the capability's own `type` field from PlausibleBA */
+function isGovCap(cap: CapNode): boolean {
+  if ((cap as any).type === "Governance") return true;
+  return false;
 }
 
 /* ── Hierarchy builder ────────────────────────────────────── */
@@ -48,7 +56,7 @@ function buildHierarchy(caps: Record<string, any>): L1Block[] {
     return l1s.map((l1) => ({
       id: l1.id,
       name: l1.name,
-      gov: isGov(l1.name),
+      gov: isGovCap(l1) || isGov(l1.name),
       l2s: l2s
         .filter((l2) => l2.parentId === l1.id)
         .map((l2) => ({
@@ -79,6 +87,8 @@ function buildHierarchy(caps: Record<string, any>): L1Block[] {
 /* ── Component ────────────────────────────────────────────── */
 export function CapabilityMapView() {
   const scaffoldData = useCanvasStore((s) => s.scaffoldData);
+  const mode = useThemeStore((s) => s.mode);
+  const t = getTheme(mode);
   const [selectedL3, setSelectedL3] = useState<CapNode | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
@@ -107,7 +117,6 @@ export function CapabilityMapView() {
     if (!editingId || !scaffoldData) return;
     const cap = (scaffoldData.elements.capabilities as Record<string, any>)[editingId];
     if (cap && editText.trim() && editText.trim() !== cap.name) {
-      // Mutate via store — shallow clone to trigger re-render
       const updatedCaps = {
         ...scaffoldData.elements.capabilities,
         [editingId]: { ...cap, name: editText.trim() },
@@ -128,7 +137,7 @@ export function CapabilityMapView() {
     <div
       className="h-full overflow-auto"
       style={{
-        background: "#1a2236",
+        background: t.bgPrimary,
         fontFamily: "'DM Sans', system-ui, sans-serif",
       }}
     >
@@ -137,14 +146,17 @@ export function CapabilityMapView() {
         <div className="mb-4">
           <div
             className="mb-1 text-[10px] font-bold uppercase tracking-wider"
-            style={{ color: "#94a3b8" }}
+            style={{ color: t.textDim }}
           >
             Capability Map
           </div>
-          <div className="mb-1 text-lg font-bold text-white">
+          <div
+            className="mb-1 text-lg font-bold"
+            style={{ color: t.textPrimary }}
+          >
             {scaffoldData.name} — Operating Capabilities
           </div>
-          <div className="text-[11px]" style={{ color: "#94a3b8" }}>
+          <div className="text-[11px]" style={{ color: t.textSecondary }}>
             {stats.l1} business areas · {stats.l2} domains · {stats.l3}{" "}
             capabilities
           </div>
@@ -154,27 +166,27 @@ export function CapabilityMapView() {
         <div className="mb-4 flex flex-wrap items-center gap-5">
           <div
             className="flex items-center gap-1.5 text-[10px]"
-            style={{ color: "#94a3b8" }}
+            style={{ color: t.textSecondary }}
           >
             <span
               className="inline-block h-2.5 w-2.5 rounded-sm"
-              style={{ background: "rgba(74,158,218,0.6)" }}
+              style={{ background: t.accent }}
             />
             Execution
           </div>
           <div
             className="flex items-center gap-1.5 text-[10px]"
-            style={{ color: "#94a3b8" }}
+            style={{ color: t.textSecondary }}
           >
             <span
               className="inline-block h-2.5 w-2.5 rounded-sm"
-              style={{ background: "rgba(124,110,224,0.6)" }}
+              style={{ background: t.govColor }}
             />
             Governance
           </div>
           <div
             className="ml-1 text-[9px]"
-            style={{ color: "#94a3b8" }}
+            style={{ color: t.textDim }}
           >
             Click any L3 tile to inspect · Double-click to rename
           </div>
@@ -198,6 +210,7 @@ export function CapabilityMapView() {
               onStartEdit={startEdit}
               onEditTextChange={setEditText}
               onCommitEdit={commitEdit}
+              t={t}
             />
           ))}
         </div>
@@ -206,20 +219,23 @@ export function CapabilityMapView() {
         <div
           className="mt-3 rounded-lg p-4"
           style={{
-            background: "#243352",
-            border: "1.5px solid #4a9eda",
+            background: t.bgCard,
+            border: `1.5px solid ${t.borderAccent}`,
             minHeight: 72,
           }}
         >
           {selectedL3 ? (
             <>
-              <div className="mb-1 text-[15px] font-bold text-white">
+              <div
+                className="mb-1 text-[15px] font-bold"
+                style={{ color: t.textPrimary }}
+              >
                 {selectedL3.name}
               </div>
               {selectedL3.businessObject && (
                 <div
                   className="mb-1.5 text-[10px] font-bold uppercase tracking-wider"
-                  style={{ color: "#4a9eda" }}
+                  style={{ color: t.accent }}
                 >
                   Business Object: {selectedL3.businessObject}
                 </div>
@@ -227,19 +243,19 @@ export function CapabilityMapView() {
               {selectedL3.description && (
                 <div
                   className="text-[12px] leading-relaxed"
-                  style={{ color: "#cbd5e1" }}
+                  style={{ color: t.textSecondary }}
                 >
                   {selectedL3.description}
                 </div>
               )}
               {!selectedL3.description && (
-                <div className="text-[12px]" style={{ color: "#94a3b8" }}>
+                <div className="text-[12px]" style={{ color: t.textDim }}>
                   No description available. Double-click the tile to edit.
                 </div>
               )}
             </>
           ) : (
-            <p className="text-[12px]" style={{ color: "#94a3b8" }}>
+            <p className="text-[12px]" style={{ color: t.textDim }}>
               Select a capability tile to see its definition, business object,
               and relationships.
             </p>
@@ -260,6 +276,7 @@ function L1Card({
   onStartEdit,
   onEditTextChange,
   onCommitEdit,
+  t,
 }: {
   block: L1Block;
   selectedL3: CapNode | null;
@@ -269,13 +286,10 @@ function L1Card({
   onStartEdit: (c: CapNode) => void;
   onEditTextChange: (t: string) => void;
   onCommitEdit: () => void;
+  t: import("../theme.ts").ThemeTokens;
 }) {
-  const borderColor = block.gov
-    ? "rgba(124,110,224,0.5)"
-    : "rgba(74,158,218,0.5)";
-  const headerBg = block.gov
-    ? "rgba(124,110,224,0.08)"
-    : "rgba(74,158,218,0.08)";
+  const borderColor = block.gov ? t.govColor : t.accentBorder;
+  const headerBg = block.gov ? t.govMuted : t.accentMuted;
   const l3Count = block.l2s.reduce((a, l2) => a + l2.l3s.length, 0);
 
   return (
@@ -283,22 +297,22 @@ function L1Card({
       className="overflow-hidden rounded-lg"
       style={{
         border: `1.5px solid ${borderColor}`,
-        background: "#243352",
+        background: t.bgCard,
       }}
     >
       {/* L1 header */}
       <div
         className="border-b px-2.5 py-2"
-        style={{ background: headerBg, borderColor: "#2e3f5c" }}
+        style={{ background: headerBg, borderColor: t.borderSubtle }}
       >
         <div
           className="overflow-hidden text-ellipsis whitespace-nowrap text-[10px] font-bold uppercase tracking-wider"
-          style={{ color: "#cbd5e1" }}
+          style={{ color: t.textPrimary }}
           title={block.name}
         >
           {block.name}
         </div>
-        <div className="mt-0.5 text-[9px]" style={{ color: "#94a3b8" }}>
+        <div className="mt-0.5 text-[9px]" style={{ color: t.textSecondary }}>
           {block.l2s.length} domains · {l3Count} capabilities
         </div>
       </div>
@@ -309,18 +323,18 @@ function L1Card({
           <div
             key={l2.id}
             className="mb-1 overflow-hidden rounded last:mb-0"
-            style={{ border: "1px solid #2e3f5c" }}
+            style={{ border: `1px solid ${t.borderSubtle}` }}
           >
             <div
               className="px-2 py-1"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                borderBottom: "1px solid rgba(255,255,255,0.04)",
+                background: t.bgSurface,
+                borderBottom: `1px solid ${t.borderSubtle}`,
               }}
             >
               <div
                 className="text-[9px] font-semibold"
-                style={{ color: "#94a3b8" }}
+                style={{ color: t.textSecondary }}
               >
                 {l2.name}
               </div>
@@ -338,6 +352,7 @@ function L1Card({
                   onStartEdit={() => onStartEdit(l3)}
                   onEditTextChange={onEditTextChange}
                   onCommitEdit={onCommitEdit}
+                  t={t}
                 />
               ))}
             </div>
@@ -359,6 +374,7 @@ function L3Tile({
   onStartEdit,
   onEditTextChange,
   onCommitEdit,
+  t,
 }: {
   cap: CapNode;
   gov: boolean;
@@ -369,14 +385,11 @@ function L3Tile({
   onStartEdit: () => void;
   onEditTextChange: (t: string) => void;
   onCommitEdit: () => void;
+  t: import("../theme.ts").ThemeTokens;
 }) {
-  const selectedBg = gov
-    ? "rgba(124,110,224,0.25)"
-    : "rgba(74,158,218,0.25)";
-  const selectedBorder = gov
-    ? "rgba(124,110,224,0.6)"
-    : "rgba(74,158,218,0.6)";
-  const selectedColor = gov ? "#a89ef0" : "#4a9eda";
+  const selectedBg = gov ? t.govMuted : t.tileSelectedBg;
+  const selectedBorder = gov ? t.govColor : t.tileSelectedBorder;
+  const selectedColor = gov ? t.govColor : t.accent;
 
   if (isEditing) {
     return (
@@ -391,9 +404,9 @@ function L3Tile({
         }}
         className="rounded px-1.5 py-0.5 text-[8px] leading-snug outline-none"
         style={{
-          background: "rgba(74,158,218,0.2)",
-          border: "1px solid rgba(74,158,218,0.6)",
-          color: "#fff",
+          background: t.bgInput,
+          border: `1px solid ${t.accentBorder}`,
+          color: t.textPrimary,
           minWidth: 60,
         }}
       />
@@ -406,11 +419,9 @@ function L3Tile({
       onDoubleClick={onStartEdit}
       className="cursor-pointer rounded px-1.5 py-0.5 text-[8px] leading-snug transition-colors"
       style={{
-        background: isSelected
-          ? selectedBg
-          : "rgba(255,255,255,0.04)",
-        border: `0.5px solid ${isSelected ? selectedBorder : "#2e3f5c"}`,
-        color: isSelected ? selectedColor : "#94a3b8",
+        background: isSelected ? selectedBg : t.tileBg,
+        border: `0.5px solid ${isSelected ? selectedBorder : t.borderSubtle}`,
+        color: isSelected ? selectedColor : t.textSecondary,
       }}
       title={cap.description || cap.name}
     >
