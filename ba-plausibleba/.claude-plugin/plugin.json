@@ -2,11 +2,14 @@
   "name": "ba-plausibleba",
   "version": "1.5.0",
   "description": "Full PlausibleBA session — Capability Map + Concept Model + Value Stream in one guided flow, delivering a single ba-skills-bundle.json at the end.",
+  "author": {
+    "name": "PlausibleBA",
+    "url": "https://www.plausibleba.com"
+  },
+  "skills": [
+    "skills/ba-plausibleba"
+  ],
   "commands": [
-    {
-      "name": "plausibleba",
-      "description": "Run the complete PlausibleBA stack in sequence. Produces a capability map, concept model, and value stream, then packages everything into a single bundle for VCC import.",
-      "file": "commands/plausibleba.md"
-    }
+    "commands/plausibleba.md"
   ]
 }
