@@ -1,0 +1,2833 @@
+{
+  "bundleVersion": "2.0",
+  "createdAt": "2026-03-17T20:10:22.554Z",
+  "scaffold": {
+    "schemaVersion": "1.0.0",
+    "scaffoldId": "scaffold_organic_food_delivery",
+    "name": "Organic Food Delivery — Operating Model",
+    "description": "Operating model for organic food delivery service with subscription and on-demand ordering",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "elements": {
+      "valueStreams": {
+        "vs_order_to_delivery": {
+          "name": "Order to Delivery",
+          "description": "End-to-end flow from customer order placement through delivery and experience closure",
+          "activityIds": [
+            "act_place_order",
+            "act_accept_order",
+            "act_prepare_order",
+            "act_dispatch_order",
+            "act_deliver_order",
+            "act_close_experience"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_customer_service_representative",
+          "elementType": "ValueStream"
+        },
+        "vs_subscription_to_fulfilment": {
+          "name": "Subscription to Fulfilment",
+          "description": "End-to-end flow from subscription creation through recurring meal kit delivery",
+          "activityIds": [
+            "act_create_subscription",
+            "act_schedule_kit",
+            "act_prepare_kit",
+            "act_deliver_kit"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_customer_service_representative",
+          "elementType": "ValueStream"
+        },
+        "vs_ingredient_to_stock": {
+          "name": "Ingredient to Stock",
+          "description": "End-to-end flow from ingredient sourcing through inventory management",
+          "activityIds": [
+            "act_specify_ingredient",
+            "act_source_supplier",
+            "act_order_ingredient",
+            "act_receive_ingredient",
+            "act_stock_available"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "role_supply_chain_manager",
+          "elementType": "ValueStream"
+        },
+        "vs_prospect_to_customer": {
+          "name": "Prospect to Customer",
+          "description": "End-to-end flow from marketing campaign through customer acquisition and loyalty enrollment",
+          "activityIds": [
+            "act_launch_campaign",
+            "act_engage_prospect",
+            "act_place_first_order",
+            "act_activate_customer"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_marketing_manager",
+          "elementType": "ValueStream"
+        },
+        "vs_feedback_to_improvement": {
+          "name": "Feedback to Improvement",
+          "description": "End-to-end flow from customer feedback collection through operational improvements",
+          "activityIds": [
+            "act_submit_feedback",
+            "act_acknowledge_feedback",
+            "act_analyse_issues",
+            "act_implement_improvements"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "role_customer_service_representative",
+          "elementType": "ValueStream"
+        }
+      },
+      "activities": {
+        "act_place_order": {
+          "name": "Place Order",
+          "preOutcomeId": "outcome_order_initiated",
+          "postOutcomeId": "outcome_order_placed",
+          "nextActivityId": "act_accept_order",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_order_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_service_representative"
+          ],
+          "informationObjectIds": [
+            "io_customer_order",
+            "io_menu_catalog"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Greet customer and identify preferences",
+                "Review order history and recommendations",
+                "Confirm customer contact details"
+              ],
+              "informationObjectIds": [
+                "io_customer_order"
+              ],
+              "technologyAppIds": [
+                "tech_order_system"
+              ]
+            },
+            "cap_order_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Capture order items and quantities",
+                "Calculate pricing and apply discounts",
+                "Generate order confirmation"
+              ],
+              "informationObjectIds": [
+                "io_customer_order",
+                "io_menu_catalog"
+              ],
+              "technologyAppIds": [
+                "tech_order_system"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Validate customer information",
+                "Update order database",
+                "Sync order data across systems"
+              ],
+              "informationObjectIds": [
+                "io_customer_order"
+              ],
+              "technologyAppIds": [
+                "tech_order_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_accept_order": {
+          "name": "Accept Order",
+          "preOutcomeId": "outcome_order_placed",
+          "postOutcomeId": "outcome_order_accepted",
+          "nextActivityId": "act_prepare_order",
+          "requiresCapabilityIds": [
+            "cap_order_management",
+            "cap_inventory_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_kitchen_manager"
+          ],
+          "informationObjectIds": [
+            "io_customer_order",
+            "io_inventory_status"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_order_management": {
+              "roleIds": [
+                "role_kitchen_manager"
+              ],
+              "activities": [
+                "Review order details and requirements",
+                "Validate order against capacity",
+                "Confirm order acceptance"
+              ],
+              "informationObjectIds": [
+                "io_customer_order"
+              ],
+              "technologyAppIds": [
+                "tech_kitchen_system"
+              ]
+            },
+            "cap_inventory_management": {
+              "roleIds": [
+                "role_kitchen_manager"
+              ],
+              "activities": [
+                "Check ingredient availability",
+                "Reserve required ingredients",
+                "Update inventory allocations"
+              ],
+              "informationObjectIds": [
+                "io_inventory_status"
+              ],
+              "technologyAppIds": [
+                "tech_inventory_system"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_kitchen_manager"
+              ],
+              "activities": [
+                "Update order status to accepted",
+                "Log acceptance timestamp",
+                "Trigger preparation workflow"
+              ],
+              "informationObjectIds": [
+                "io_customer_order"
+              ],
+              "technologyAppIds": [
+                "tech_kitchen_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_prepare_order": {
+          "name": "Prepare Order",
+          "preOutcomeId": "outcome_order_accepted",
+          "postOutcomeId": "outcome_order_prepared",
+          "nextActivityId": "act_dispatch_order",
+          "requiresCapabilityIds": [
+            "cap_food_production",
+            "cap_quality_management",
+            "cap_inventory_management"
+          ],
+          "performedByRoleIds": [
+            "role_kitchen_manager"
+          ],
+          "informationObjectIds": [
+            "io_production_schedule",
+            "io_quality_checklist"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_food_production": {
+              "roleIds": [
+                "role_kitchen_manager"
+              ],
+              "activities": [
+                "Execute recipe preparation steps",
+                "Coordinate kitchen staff assignments",
+                "Monitor cooking times and temperatures"
+              ],
+              "informationObjectIds": [
+                "io_production_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_kitchen_system"
+              ]
+            },
+            "cap_quality_management": {
+              "roleIds": [
+                "role_kitchen_manager"
+              ],
+              "activities": [
+                "Inspect ingredient freshness",
+                "Verify recipe compliance",
+                "Complete quality checklist"
+              ],
+              "informationObjectIds": [
+                "io_quality_checklist"
+              ],
+              "technologyAppIds": [
+                "tech_quality_system"
+              ]
+            },
+            "cap_inventory_management": {
+              "roleIds": [
+                "role_kitchen_manager"
+              ],
+              "activities": [
+                "Consume allocated ingredients",
+                "Update inventory levels",
+                "Track ingredient usage"
+              ],
+              "informationObjectIds": [
+                "io_production_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_inventory_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_dispatch_order": {
+          "name": "Dispatch Order",
+          "preOutcomeId": "outcome_order_prepared",
+          "postOutcomeId": "outcome_order_dispatched",
+          "nextActivityId": "act_deliver_order",
+          "requiresCapabilityIds": [
+            "cap_logistics_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_delivery_coordinator"
+          ],
+          "informationObjectIds": [
+            "io_delivery_schedule",
+            "io_route_plan"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_logistics_management": {
+              "roleIds": [
+                "role_delivery_coordinator"
+              ],
+              "activities": [
+                "Assign delivery driver",
+                "Optimize delivery route",
+                "Schedule delivery time"
+              ],
+              "informationObjectIds": [
+                "io_delivery_schedule",
+                "io_route_plan"
+              ],
+              "technologyAppIds": [
+                "tech_delivery_system"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_delivery_coordinator"
+              ],
+              "activities": [
+                "Update order status to dispatched",
+                "Log dispatch timestamp",
+                "Send tracking notification"
+              ],
+              "informationObjectIds": [
+                "io_delivery_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_delivery_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_deliver_order": {
+          "name": "Deliver Order",
+          "preOutcomeId": "outcome_order_dispatched",
+          "postOutcomeId": "outcome_order_delivered",
+          "nextActivityId": "act_close_experience",
+          "requiresCapabilityIds": [
+            "cap_logistics_management",
+            "cap_customer_relationship_management"
+          ],
+          "performedByRoleIds": [
+            "role_delivery_coordinator"
+          ],
+          "informationObjectIds": [
+            "io_delivery_confirmation",
+            "io_route_plan"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_logistics_management": {
+              "roleIds": [
+                "role_delivery_coordinator"
+              ],
+              "activities": [
+                "Execute delivery route",
+                "Confirm delivery location",
+                "Handle delivery completion"
+              ],
+              "informationObjectIds": [
+                "io_delivery_confirmation",
+                "io_route_plan"
+              ],
+              "technologyAppIds": [
+                "tech_delivery_system"
+              ]
+            },
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_delivery_coordinator"
+              ],
+              "activities": [
+                "Interact with customer at delivery",
+                "Confirm order satisfaction",
+                "Collect delivery feedback"
+              ],
+              "informationObjectIds": [
+                "io_delivery_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_delivery_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_close_experience": {
+          "name": "Close Experience",
+          "preOutcomeId": "outcome_order_delivered",
+          "postOutcomeId": "outcome_experience_closed",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_financial_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_service_representative"
+          ],
+          "informationObjectIds": [
+            "io_loyalty_record",
+            "io_payment_receipt"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Process customer feedback",
+                "Award loyalty points",
+                "Update customer profile"
+              ],
+              "informationObjectIds": [
+                "io_loyalty_record"
+              ],
+              "technologyAppIds": [
+                "tech_loyalty_system"
+              ]
+            },
+            "cap_financial_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Process payment transaction",
+                "Record revenue entry",
+                "Generate receipt"
+              ],
+              "informationObjectIds": [
+                "io_payment_receipt"
+              ],
+              "technologyAppIds": [
+                "tech_payment_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_create_subscription": {
+          "name": "Create Subscription",
+          "preOutcomeId": "outcome_subscription_initiated",
+          "postOutcomeId": "outcome_subscription_created",
+          "nextActivityId": "act_schedule_kit",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_subscription_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_service_representative"
+          ],
+          "informationObjectIds": [
+            "io_subscription_plan",
+            "io_customer_preferences"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Understand customer dietary preferences",
+                "Explain subscription benefits",
+                "Confirm customer commitment"
+              ],
+              "informationObjectIds": [
+                "io_customer_preferences"
+              ],
+              "technologyAppIds": [
+                "tech_subscription_system"
+              ]
+            },
+            "cap_subscription_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Configure subscription parameters",
+                "Set delivery frequency",
+                "Establish billing cycle"
+              ],
+              "informationObjectIds": [
+                "io_subscription_plan"
+              ],
+              "technologyAppIds": [
+                "tech_subscription_system"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Create subscription record",
+                "Store customer preferences",
+                "Initialize subscription workflow"
+              ],
+              "informationObjectIds": [
+                "io_subscription_plan",
+                "io_customer_preferences"
+              ],
+              "technologyAppIds": [
+                "tech_subscription_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_schedule_kit": {
+          "name": "Schedule Kit",
+          "preOutcomeId": "outcome_subscription_created",
+          "postOutcomeId": "outcome_kit_scheduled",
+          "nextActivityId": "act_prepare_kit",
+          "requiresCapabilityIds": [
+            "cap_subscription_management",
+            "cap_menu_planning",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_product_manager"
+          ],
+          "informationObjectIds": [
+            "io_kit_schedule",
+            "io_menu_plan"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_subscription_management": {
+              "roleIds": [
+                "role_product_manager"
+              ],
+              "activities": [
+                "Review subscription cadence",
+                "Calculate next delivery date",
+                "Validate subscription status"
+              ],
+              "informationObjectIds": [
+                "io_kit_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_subscription_system"
+              ]
+            },
+            "cap_menu_planning": {
+              "roleIds": [
+                "role_product_manager"
+              ],
+              "activities": [
+                "Select recipes for kit",
+                "Balance nutritional content",
+                "Consider seasonal ingredients"
+              ],
+              "informationObjectIds": [
+                "io_menu_plan"
+              ],
+              "technologyAppIds": [
+                "tech_menu_system"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_product_manager"
+              ],
+              "activities": [
+                "Update kit schedule",
+                "Log menu selections",
+                "Trigger preparation workflow"
+              ],
+              "informationObjectIds": [
+                "io_kit_schedule",
+                "io_menu_plan"
+              ],
+              "technologyAppIds": [
+                "tech_subscription_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_prepare_kit": {
+          "name": "Prepare Kit",
+          "preOutcomeId": "outcome_kit_scheduled",
+          "postOutcomeId": "outcome_kit_prepared",
+          "nextActivityId": "act_deliver_kit",
+          "requiresCapabilityIds": [
+            "cap_food_production",
+            "cap_quality_management",
+            "cap_inventory_management"
+          ],
+          "performedByRoleIds": [
+            "role_kitchen_manager"
+          ],
+          "informationObjectIds": [
+            "io_kit_contents",
+            "io_packaging_spec"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_food_production": {
+              "roleIds": [
+                "role_kitchen_manager"
+              ],
+              "activities": [
+                "Portion ingredients according to recipes",
+                "Package meal components",
+                "Include cooking instructions"
+              ],
+              "informationObjectIds": [
+                "io_kit_contents",
+                "io_packaging_spec"
+              ],
+              "technologyAppIds": [
+                "tech_kitchen_system"
+              ]
+            },
+            "cap_quality_management": {
+              "roleIds": [
+                "role_kitchen_manager"
+              ],
+              "activities": [
+                "Verify ingredient freshness dates",
+                "Check packaging integrity",
+                "Validate kit completeness"
+              ],
+              "informationObjectIds": [
+                "io_kit_contents"
+              ],
+              "technologyAppIds": [
+                "tech_quality_system"
+              ]
+            },
+            "cap_inventory_management": {
+              "roleIds": [
+                "role_kitchen_manager"
+              ],
+              "activities": [
+                "Allocate ingredients to kit",
+                "Update inventory consumption",
+                "Track ingredient usage patterns"
+              ],
+              "informationObjectIds": [
+                "io_kit_contents"
+              ],
+              "technologyAppIds": [
+                "tech_inventory_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_deliver_kit": {
+          "name": "Deliver Kit",
+          "preOutcomeId": "outcome_kit_prepared",
+          "postOutcomeId": "outcome_kit_delivered",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_logistics_management",
+            "cap_subscription_management"
+          ],
+          "performedByRoleIds": [
+            "role_delivery_coordinator"
+          ],
+          "informationObjectIds": [
+            "io_delivery_confirmation",
+            "io_subscription_record"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_logistics_management": {
+              "roleIds": [
+                "role_delivery_coordinator"
+              ],
+              "activities": [
+                "Schedule recurring delivery",
+                "Optimize subscription routes",
+                "Confirm kit delivery"
+              ],
+              "informationObjectIds": [
+                "io_delivery_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_delivery_system"
+              ]
+            },
+            "cap_subscription_management": {
+              "roleIds": [
+                "role_delivery_coordinator"
+              ],
+              "activities": [
+                "Update subscription delivery status",
+                "Schedule next kit delivery",
+                "Process subscription billing"
+              ],
+              "informationObjectIds": [
+                "io_subscription_record"
+              ],
+              "technologyAppIds": [
+                "tech_subscription_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_specify_ingredient": {
+          "name": "Specify Ingredient",
+          "preOutcomeId": "outcome_ingredient_need_identified",
+          "postOutcomeId": "outcome_ingredient_specified",
+          "nextActivityId": "act_source_supplier",
+          "requiresCapabilityIds": [
+            "cap_menu_planning",
+            "cap_quality_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_product_manager"
+          ],
+          "informationObjectIds": [
+            "io_ingredient_specification",
+            "io_quality_standards"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_menu_planning": {
+              "roleIds": [
+                "role_product_manager"
+              ],
+              "activities": [
+                "Define ingredient requirements",
+                "Specify quantity needs",
+                "Consider seasonal availability"
+              ],
+              "informationObjectIds": [
+                "io_ingredient_specification"
+              ],
+              "technologyAppIds": [
+                "tech_menu_system"
+              ]
+            },
+            "cap_quality_management": {
+              "roleIds": [
+                "role_product_manager"
+              ],
+              "activities": [
+                "Set organic certification requirements",
+                "Define freshness standards",
+                "Specify packaging requirements"
+              ],
+              "informationObjectIds": [
+                "io_quality_standards"
+              ],
+              "technologyAppIds": [
+                "tech_quality_system"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_product_manager"
+              ],
+              "activities": [
+                "Document ingredient specifications",
+                "Update ingredient database",
+                "Create sourcing requirements"
+              ],
+              "informationObjectIds": [
+                "io_ingredient_specification",
+                "io_quality_standards"
+              ],
+              "technologyAppIds": [
+                "tech_procurement_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_source_supplier": {
+          "name": "Source Supplier",
+          "preOutcomeId": "outcome_ingredient_specified",
+          "postOutcomeId": "outcome_supplier_sourced",
+          "nextActivityId": "act_order_ingredient",
+          "requiresCapabilityIds": [
+            "cap_supplier_management",
+            "cap_quality_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_supply_chain_manager"
+          ],
+          "informationObjectIds": [
+            "io_supplier_profile",
+            "io_certification_records"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_supplier_management": {
+              "roleIds": [
+                "role_supply_chain_manager"
+              ],
+              "activities": [
+                "Identify potential suppliers",
+                "Evaluate supplier capabilities",
+                "Negotiate supply terms"
+              ],
+              "informationObjectIds": [
+                "io_supplier_profile"
+              ],
+              "technologyAppIds": [
+                "tech_supplier_system"
+              ]
+            },
+            "cap_quality_management": {
+              "roleIds": [
+                "role_supply_chain_manager"
+              ],
+              "activities": [
+                "Verify organic certifications",
+                "Audit supplier quality processes",
+                "Validate compliance standards"
+              ],
+              "informationObjectIds": [
+                "io_certification_records"
+              ],
+              "technologyAppIds": [
+                "tech_quality_system"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_supply_chain_manager"
+              ],
+              "activities": [
+                "Create supplier records",
+                "Store certification data",
+                "Update supplier database"
+              ],
+              "informationObjectIds": [
+                "io_supplier_profile",
+                "io_certification_records"
+              ],
+              "technologyAppIds": [
+                "tech_supplier_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_order_ingredient": {
+          "name": "Order Ingredient",
+          "preOutcomeId": "outcome_supplier_sourced",
+          "postOutcomeId": "outcome_ingredient_ordered",
+          "nextActivityId": "act_receive_ingredient",
+          "requiresCapabilityIds": [
+            "cap_supplier_management",
+            "cap_inventory_management",
+            "cap_financial_management"
+          ],
+          "performedByRoleIds": [
+            "role_supply_chain_manager"
+          ],
+          "informationObjectIds": [
+            "io_purchase_order",
+            "io_delivery_schedule"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_supplier_management": {
+              "roleIds": [
+                "role_supply_chain_manager"
+              ],
+              "activities": [
+                "Generate purchase order",
+                "Communicate delivery requirements",
+                "Confirm order acceptance"
+              ],
+              "informationObjectIds": [
+                "io_purchase_order"
+              ],
+              "technologyAppIds": [
+                "tech_procurement_system"
+              ]
+            },
+            "cap_inventory_management": {
+              "roleIds": [
+                "role_supply_chain_manager"
+              ],
+              "activities": [
+                "Calculate order quantities",
+                "Schedule delivery timing",
+                "Reserve storage capacity"
+              ],
+              "informationObjectIds": [
+                "io_delivery_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_inventory_system"
+              ]
+            },
+            "cap_financial_management": {
+              "roleIds": [
+                "role_supply_chain_manager"
+              ],
+              "activities": [
+                "Approve purchase budget",
+                "Process payment terms",
+                "Track order costs"
+              ],
+              "informationObjectIds": [
+                "io_purchase_order"
+              ],
+              "technologyAppIds": [
+                "tech_financial_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_receive_ingredient": {
+          "name": "Receive Ingredient",
+          "preOutcomeId": "outcome_ingredient_ordered",
+          "postOutcomeId": "outcome_ingredient_received",
+          "nextActivityId": "act_stock_available",
+          "requiresCapabilityIds": [
+            "cap_inventory_management",
+            "cap_quality_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_supply_chain_manager"
+          ],
+          "informationObjectIds": [
+            "io_receiving_report",
+            "io_quality_inspection"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_inventory_management": {
+              "roleIds": [
+                "role_supply_chain_manager"
+              ],
+              "activities": [
+                "Verify delivery quantities",
+                "Check delivery documentation",
+                "Process goods receipt"
+              ],
+              "informationObjectIds": [
+                "io_receiving_report"
+              ],
+              "technologyAppIds": [
+                "tech_inventory_system"
+              ]
+            },
+            "cap_quality_management": {
+              "roleIds": [
+                "role_supply_chain_manager"
+              ],
+              "activities": [
+                "Inspect ingredient quality",
+                "Verify organic certification",
+                "Test freshness levels"
+              ],
+              "informationObjectIds": [
+                "io_quality_inspection"
+              ],
+              "technologyAppIds": [
+                "tech_quality_system"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_supply_chain_manager"
+              ],
+              "activities": [
+                "Update inventory records",
+                "Log receipt timestamp",
+                "Record quality results"
+              ],
+              "informationObjectIds": [
+                "io_receiving_report",
+                "io_quality_inspection"
+              ],
+              "technologyAppIds": [
+                "tech_inventory_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_stock_available": {
+          "name": "Stock Available",
+          "preOutcomeId": "outcome_ingredient_received",
+          "postOutcomeId": "outcome_stock_available",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_inventory_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_supply_chain_manager"
+          ],
+          "informationObjectIds": [
+            "io_inventory_status",
+            "io_stock_allocation"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_inventory_management": {
+              "roleIds": [
+                "role_supply_chain_manager"
+              ],
+              "activities": [
+                "Store ingredients properly",
+                "Update available quantities",
+                "Set reorder thresholds"
+              ],
+              "informationObjectIds": [
+                "io_inventory_status",
+                "io_stock_allocation"
+              ],
+              "technologyAppIds": [
+                "tech_inventory_system"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_supply_chain_manager"
+              ],
+              "activities": [
+                "Update stock availability",
+                "Notify production teams",
+                "Trigger menu availability"
+              ],
+              "informationObjectIds": [
+                "io_inventory_status"
+              ],
+              "technologyAppIds": [
+                "tech_inventory_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_launch_campaign": {
+          "name": "Launch Campaign",
+          "preOutcomeId": "outcome_campaign_planned",
+          "postOutcomeId": "outcome_campaign_launched",
+          "nextActivityId": "act_engage_prospect",
+          "requiresCapabilityIds": [
+            "cap_marketing_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_marketing_manager"
+          ],
+          "informationObjectIds": [
+            "io_campaign_plan",
+            "io_marketing_content"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_marketing_management": {
+              "roleIds": [
+                "role_marketing_manager"
+              ],
+              "activities": [
+                "Execute campaign across channels",
+                "Monitor campaign performance",
+                "Adjust targeting parameters"
+              ],
+              "informationObjectIds": [
+                "io_campaign_plan",
+                "io_marketing_content"
+              ],
+              "technologyAppIds": [
+                "tech_marketing_system"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_marketing_manager"
+              ],
+              "activities": [
+                "Track campaign metrics",
+                "Log campaign activities",
+                "Update prospect database"
+              ],
+              "informationObjectIds": [
+                "io_campaign_plan"
+              ],
+              "technologyAppIds": [
+                "tech_marketing_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_engage_prospect": {
+          "name": "Engage Prospect",
+          "preOutcomeId": "outcome_campaign_launched",
+          "postOutcomeId": "outcome_prospect_engaged",
+          "nextActivityId": "act_place_first_order",
+          "requiresCapabilityIds": [
+            "cap_marketing_management",
+            "cap_customer_relationship_management"
+          ],
+          "performedByRoleIds": [
+            "role_marketing_manager"
+          ],
+          "informationObjectIds": [
+            "io_prospect_profile",
+            "io_engagement_record"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_marketing_management": {
+              "roleIds": [
+                "role_marketing_manager"
+              ],
+              "activities": [
+                "Respond to prospect inquiries",
+                "Provide product information",
+                "Offer trial incentives"
+              ],
+              "informationObjectIds": [
+                "io_engagement_record"
+              ],
+              "technologyAppIds": [
+                "tech_marketing_system"
+              ]
+            },
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_marketing_manager"
+              ],
+              "activities": [
+                "Capture prospect information",
+                "Understand prospect needs",
+                "Build relationship rapport"
+              ],
+              "informationObjectIds": [
+                "io_prospect_profile"
+              ],
+              "technologyAppIds": [
+                "tech_crm_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_place_first_order": {
+          "name": "Place First Order",
+          "preOutcomeId": "outcome_prospect_engaged",
+          "postOutcomeId": "outcome_first_order_placed",
+          "nextActivityId": "act_activate_customer",
+          "requiresCapabilityIds": [
+            "cap_order_management",
+            "cap_customer_relationship_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_service_representative"
+          ],
+          "informationObjectIds": [
+            "io_first_order",
+            "io_customer_profile"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_order_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Guide first-time order process",
+                "Apply new customer discounts",
+                "Confirm order details"
+              ],
+              "informationObjectIds": [
+                "io_first_order"
+              ],
+              "technologyAppIds": [
+                "tech_order_system"
+              ]
+            },
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Create customer profile",
+                "Record customer preferences",
+                "Establish communication preferences"
+              ],
+              "informationObjectIds": [
+                "io_customer_profile"
+              ],
+              "technologyAppIds": [
+                "tech_crm_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_activate_customer": {
+          "name": "Activate Customer",
+          "preOutcomeId": "outcome_first_order_placed",
+          "postOutcomeId": "outcome_customer_activated",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_loyalty_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_service_representative"
+          ],
+          "informationObjectIds": [
+            "io_loyalty_account",
+            "io_welcome_package"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Welcome new customer",
+                "Explain service benefits",
+                "Set up communication channels"
+              ],
+              "informationObjectIds": [
+                "io_welcome_package"
+              ],
+              "technologyAppIds": [
+                "tech_crm_system"
+              ]
+            },
+            "cap_loyalty_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Create loyalty account",
+                "Award welcome points",
+                "Explain loyalty benefits"
+              ],
+              "informationObjectIds": [
+                "io_loyalty_account"
+              ],
+              "technologyAppIds": [
+                "tech_loyalty_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_submit_feedback": {
+          "name": "Submit Feedback",
+          "preOutcomeId": "outcome_feedback_triggered",
+          "postOutcomeId": "outcome_feedback_submitted",
+          "nextActivityId": "act_acknowledge_feedback",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_service_representative"
+          ],
+          "informationObjectIds": [
+            "io_feedback_form",
+            "io_customer_record"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Facilitate feedback collection",
+                "Encourage honest feedback",
+                "Clarify feedback details"
+              ],
+              "informationObjectIds": [
+                "io_feedback_form"
+              ],
+              "technologyAppIds": [
+                "tech_feedback_system"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Capture feedback data",
+                "Link feedback to customer",
+                "Store feedback record"
+              ],
+              "informationObjectIds": [
+                "io_feedback_form",
+                "io_customer_record"
+              ],
+              "technologyAppIds": [
+                "tech_feedback_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_acknowledge_feedback": {
+          "name": "Acknowledge Feedback",
+          "preOutcomeId": "outcome_feedback_submitted",
+          "postOutcomeId": "outcome_feedback_acknowledged",
+          "nextActivityId": "act_analyse_issues",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_communication_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_service_representative"
+          ],
+          "informationObjectIds": [
+            "io_acknowledgment_message",
+            "io_feedback_record"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Thank customer for feedback",
+                "Confirm feedback receipt",
+                "Set response expectations"
+              ],
+              "informationObjectIds": [
+                "io_acknowledgment_message"
+              ],
+              "technologyAppIds": [
+                "tech_communication_system"
+              ]
+            },
+            "cap_communication_management": {
+              "roleIds": [
+                "role_customer_service_representative"
+              ],
+              "activities": [
+                "Send acknowledgment message",
+                "Update communication log",
+                "Schedule follow-up actions"
+              ],
+              "informationObjectIds": [
+                "io_acknowledgment_message",
+                "io_feedback_record"
+              ],
+              "technologyAppIds": [
+                "tech_communication_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_analyse_issues": {
+          "name": "Analyse Issues",
+          "preOutcomeId": "outcome_feedback_acknowledged",
+          "postOutcomeId": "outcome_issues_analysed",
+          "nextActivityId": "act_implement_improvements",
+          "requiresCapabilityIds": [
+            "cap_data_analysis",
+            "cap_quality_management"
+          ],
+          "performedByRoleIds": [
+            "role_product_manager"
+          ],
+          "informationObjectIds": [
+            "io_analysis_report",
+            "io_trend_data"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_data_analysis": {
+              "roleIds": [
+                "role_product_manager"
+              ],
+              "activities": [
+                "Categorize feedback themes",
+                "Identify recurring issues",
+                "Quantify impact severity"
+              ],
+              "informationObjectIds": [
+                "io_analysis_report",
+                "io_trend_data"
+              ],
+              "technologyAppIds": [
+                "tech_analytics_system"
+              ]
+            },
+            "cap_quality_management": {
+              "roleIds": [
+                "role_product_manager"
+              ],
+              "activities": [
+                "Investigate root causes",
+                "Assess quality implications",
+                "Prioritize improvement areas"
+              ],
+              "informationObjectIds": [
+                "io_analysis_report"
+              ],
+              "technologyAppIds": [
+                "tech_quality_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_implement_improvements": {
+          "name": "Implement Improvements",
+          "preOutcomeId": "outcome_issues_analysed",
+          "postOutcomeId": "outcome_improvements_implemented",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_process_improvement",
+            "cap_change_management"
+          ],
+          "performedByRoleIds": [
+            "role_product_manager"
+          ],
+          "informationObjectIds": [
+            "io_improvement_plan",
+            "io_implementation_record"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_process_improvement": {
+              "roleIds": [
+                "role_product_manager"
+              ],
+              "activities": [
+                "Design process improvements",
+                "Test improvement solutions",
+                "Deploy process changes"
+              ],
+              "informationObjectIds": [
+                "io_improvement_plan"
+              ],
+              "technologyAppIds": [
+                "tech_process_system"
+              ]
+            },
+            "cap_change_management": {
+              "roleIds": [
+                "role_product_manager"
+              ],
+              "activities": [
+                "Communicate changes to teams",
+                "Train staff on new processes",
+                "Monitor implementation success"
+              ],
+              "informationObjectIds": [
+                "io_implementation_record"
+              ],
+              "technologyAppIds": [
+                "tech_training_system"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        }
+      },
+      "outcomes": {
+        "outcome_order_initiated": {
+          "name": "Order Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_order_placed": {
+          "name": "Order Placed",
+          "elementType": "Outcome"
+        },
+        "outcome_order_accepted": {
+          "name": "Order Accepted",
+          "elementType": "Outcome"
+        },
+        "outcome_order_prepared": {
+          "name": "Order Prepared",
+          "elementType": "Outcome"
+        },
+        "outcome_order_dispatched": {
+          "name": "Order Dispatched",
+          "elementType": "Outcome"
+        },
+        "outcome_order_delivered": {
+          "name": "Order Delivered",
+          "elementType": "Outcome"
+        },
+        "outcome_experience_closed": {
+          "name": "Experience Closed",
+          "elementType": "Outcome"
+        },
+        "outcome_subscription_initiated": {
+          "name": "Subscription Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_subscription_created": {
+          "name": "Subscription Created",
+          "elementType": "Outcome"
+        },
+        "outcome_kit_scheduled": {
+          "name": "Kit Scheduled",
+          "elementType": "Outcome"
+        },
+        "outcome_kit_prepared": {
+          "name": "Kit Prepared",
+          "elementType": "Outcome"
+        },
+        "outcome_kit_delivered": {
+          "name": "Kit Delivered",
+          "elementType": "Outcome"
+        },
+        "outcome_ingredient_need_identified": {
+          "name": "Ingredient Need Identified",
+          "elementType": "Outcome"
+        },
+        "outcome_ingredient_specified": {
+          "name": "Ingredient Specified",
+          "elementType": "Outcome"
+        },
+        "outcome_supplier_sourced": {
+          "name": "Supplier Sourced",
+          "elementType": "Outcome"
+        },
+        "outcome_ingredient_ordered": {
+          "name": "Ingredient Ordered",
+          "elementType": "Outcome"
+        },
+        "outcome_ingredient_received": {
+          "name": "Ingredient Received",
+          "elementType": "Outcome"
+        },
+        "outcome_stock_available": {
+          "name": "Stock Available",
+          "elementType": "Outcome"
+        },
+        "outcome_campaign_planned": {
+          "name": "Campaign Planned",
+          "elementType": "Outcome"
+        },
+        "outcome_campaign_launched": {
+          "name": "Campaign Launched",
+          "elementType": "Outcome"
+        },
+        "outcome_prospect_engaged": {
+          "name": "Prospect Engaged",
+          "elementType": "Outcome"
+        },
+        "outcome_first_order_placed": {
+          "name": "First Order Placed",
+          "elementType": "Outcome"
+        },
+        "outcome_customer_activated": {
+          "name": "Customer Activated",
+          "elementType": "Outcome"
+        },
+        "outcome_feedback_triggered": {
+          "name": "Feedback Triggered",
+          "elementType": "Outcome"
+        },
+        "outcome_feedback_submitted": {
+          "name": "Feedback Submitted",
+          "elementType": "Outcome"
+        },
+        "outcome_feedback_acknowledged": {
+          "name": "Feedback Acknowledged",
+          "elementType": "Outcome"
+        },
+        "outcome_issues_analysed": {
+          "name": "Issues Analysed",
+          "elementType": "Outcome"
+        },
+        "outcome_improvements_implemented": {
+          "name": "Improvements Implemented",
+          "elementType": "Outcome"
+        }
+      },
+      "roles": {
+        "role_kitchen_manager": {
+          "name": "Kitchen Manager",
+          "description": "Responsible for overseeing kitchen operations, production scheduling, and quality standards",
+          "elementType": "Role"
+        },
+        "role_delivery_coordinator": {
+          "name": "Delivery Coordinator",
+          "description": "Responsible for managing delivery logistics, driver coordination, and routing optimization",
+          "elementType": "Role"
+        },
+        "role_customer_service_representative": {
+          "name": "Customer Service Representative",
+          "description": "Responsible for handling customer inquiries, feedback, and loyalty programme management",
+          "elementType": "Role"
+        },
+        "role_supply_chain_manager": {
+          "name": "Supply Chain Manager",
+          "description": "Responsible for supplier relationships, ingredient sourcing, and inventory management",
+          "elementType": "Role"
+        },
+        "role_marketing_manager": {
+          "name": "Marketing Manager",
+          "description": "Responsible for campaign execution, community partnerships, and digital channel presence",
+          "elementType": "Role"
+        },
+        "role_financial_controller": {
+          "name": "Financial Controller",
+          "description": "Responsible for revenue tracking, cost control, and financial reporting",
+          "elementType": "Role"
+        },
+        "role_compliance_officer": {
+          "name": "Compliance Officer",
+          "description": "Responsible for food safety standards, regulatory compliance, and quality audits",
+          "elementType": "Role"
+        },
+        "role_product_manager": {
+          "name": "Product Manager",
+          "description": "Responsible for menu development, recipe management, and product portfolio decisions",
+          "elementType": "Role"
+        }
+      },
+      "capabilities": {
+        "cap_customer_relationship_management": {
+          "name": "Customer Relationship Management",
+          "description": "Ability to build, maintain, and enhance customer relationships throughout the customer lifecycle",
+          "elementType": "Capability"
+        },
+        "cap_order_management": {
+          "name": "Order Management",
+          "description": "Ability to capture, process, and fulfill customer orders efficiently and accurately",
+          "elementType": "Capability"
+        },
+        "cap_data_management": {
+          "name": "Data Management",
+          "description": "Ability to collect, store, validate, and maintain accurate business data across systems",
+          "elementType": "Capability"
+        },
+        "cap_inventory_management": {
+          "name": "Inventory Management",
+          "description": "Ability to track, control, and optimize inventory levels and stock availability",
+          "elementType": "Capability"
+        },
+        "cap_food_production": {
+          "name": "Food Production",
+          "description": "Ability to prepare, cook, and package food products according to recipes and quality standards",
+          "elementType": "Capability"
+        },
+        "cap_quality_management": {
+          "name": "Quality Management",
+          "description": "Ability to ensure products and processes meet quality standards and regulatory requirements",
+          "elementType": "Capability"
+        },
+        "cap_logistics_management": {
+          "name": "Logistics Management",
+          "description": "Ability to coordinate and optimize delivery operations, routing, and transportation",
+          "elementType": "Capability"
+        },
+        "cap_financial_management": {
+          "name": "Financial Management",
+          "description": "Ability to manage financial transactions, budgets, and revenue tracking",
+          "elementType": "Capability"
+        },
+        "cap_subscription_management": {
+          "name": "Subscription Management",
+          "description": "Ability to manage recurring customer subscriptions, billing cycles, and service delivery",
+          "elementType": "Capability"
+        },
+        "cap_menu_planning": {
+          "name": "Menu Planning",
+          "description": "Ability to design, plan, and optimize menu offerings based on ingredients and customer preferences",
+          "elementType": "Capability"
+        },
+        "cap_supplier_management": {
+          "name": "Supplier Management",
+          "description": "Ability to identify, evaluate, and manage supplier relationships and procurement processes",
+          "elementType": "Capability"
+        },
+        "cap_marketing_management": {
+          "name": "Marketing Management",
+          "description": "Ability to plan, execute, and optimize marketing campaigns and customer acquisition activities",
+          "elementType": "Capability"
+        },
+        "cap_loyalty_management": {
+          "name": "Loyalty Management",
+          "description": "Ability to design and manage customer loyalty programs and reward systems",
+          "elementType": "Capability"
+        },
+        "cap_communication_management": {
+          "name": "Communication Management",
+          "description": "Ability to manage customer communications across multiple channels and touchpoints",
+          "elementType": "Capability"
+        },
+        "cap_data_analysis": {
+          "name": "Data Analysis",
+          "description": "Ability to analyze data patterns, trends, and insights to support decision making",
+          "elementType": "Capability"
+        },
+        "cap_process_improvement": {
+          "name": "Process Improvement",
+          "description": "Ability to identify, design, and implement operational process improvements",
+          "elementType": "Capability"
+        },
+        "cap_change_management": {
+          "name": "Change Management",
+          "description": "Ability to plan, communicate, and implement organizational changes effectively",
+          "elementType": "Capability"
+        }
+      },
+      "informationObjects": {
+        "io_customer_order": {
+          "name": "Customer Order",
+          "elementType": "InformationObject"
+        },
+        "io_menu_catalog": {
+          "name": "Menu Catalog",
+          "elementType": "InformationObject"
+        },
+        "io_inventory_status": {
+          "name": "Inventory Status",
+          "elementType": "InformationObject"
+        },
+        "io_production_schedule": {
+          "name": "Production Schedule",
+          "elementType": "InformationObject"
+        },
+        "io_quality_checklist": {
+          "name": "Quality Checklist",
+          "elementType": "InformationObject"
+        },
+        "io_delivery_schedule": {
+          "name": "Delivery Schedule",
+          "elementType": "InformationObject"
+        },
+        "io_route_plan": {
+          "name": "Route Plan",
+          "elementType": "InformationObject"
+        },
+        "io_delivery_confirmation": {
+          "name": "Delivery Confirmation",
+          "elementType": "InformationObject"
+        },
+        "io_loyalty_record": {
+          "name": "Loyalty Record",
+          "elementType": "InformationObject"
+        },
+        "io_payment_receipt": {
+          "name": "Payment Receipt",
+          "elementType": "InformationObject"
+        },
+        "io_subscription_plan": {
+          "name": "Subscription Plan",
+          "elementType": "InformationObject"
+        },
+        "io_customer_preferences": {
+          "name": "Customer Preferences",
+          "elementType": "InformationObject"
+        },
+        "io_kit_schedule": {
+          "name": "Kit Schedule",
+          "elementType": "InformationObject"
+        },
+        "io_menu_plan": {
+          "name": "Menu Plan",
+          "elementType": "InformationObject"
+        },
+        "io_kit_contents": {
+          "name": "Kit Contents",
+          "elementType": "InformationObject"
+        },
+        "io_packaging_spec": {
+          "name": "Packaging Specification",
+          "elementType": "InformationObject"
+        },
+        "io_subscription_record": {
+          "name": "Subscription Record",
+          "elementType": "InformationObject"
+        },
+        "io_ingredient_specification": {
+          "name": "Ingredient Specification",
+          "elementType": "InformationObject"
+        },
+        "io_quality_standards": {
+          "name": "Quality Standards",
+          "elementType": "InformationObject"
+        },
+        "io_supplier_profile": {
+          "name": "Supplier Profile",
+          "elementType": "InformationObject"
+        },
+        "io_certification_records": {
+          "name": "Certification Records",
+          "elementType": "InformationObject"
+        },
+        "io_purchase_order": {
+          "name": "Purchase Order",
+          "elementType": "InformationObject"
+        },
+        "io_receiving_report": {
+          "name": "Receiving Report",
+          "elementType": "InformationObject"
+        },
+        "io_quality_inspection": {
+          "name": "Quality Inspection",
+          "elementType": "InformationObject"
+        },
+        "io_stock_allocation": {
+          "name": "Stock Allocation",
+          "elementType": "InformationObject"
+        },
+        "io_campaign_plan": {
+          "name": "Campaign Plan",
+          "elementType": "InformationObject"
+        },
+        "io_marketing_content": {
+          "name": "Marketing Content",
+          "elementType": "InformationObject"
+        },
+        "io_prospect_profile": {
+          "name": "Prospect Profile",
+          "elementType": "InformationObject"
+        },
+        "io_engagement_record": {
+          "name": "Engagement Record",
+          "elementType": "InformationObject"
+        },
+        "io_first_order": {
+          "name": "First Order",
+          "elementType": "InformationObject"
+        },
+        "io_customer_profile": {
+          "name": "Customer Profile",
+          "elementType": "InformationObject"
+        },
+        "io_loyalty_account": {
+          "name": "Loyalty Account",
+          "elementType": "InformationObject"
+        },
+        "io_welcome_package": {
+          "name": "Welcome Package",
+          "elementType": "InformationObject"
+        },
+        "io_feedback_form": {
+          "name": "Feedback Form",
+          "elementType": "InformationObject"
+        },
+        "io_customer_record": {
+          "name": "Customer Record",
+          "elementType": "InformationObject"
+        },
+        "io_acknowledgment_message": {
+          "name": "Acknowledgment Message",
+          "elementType": "InformationObject"
+        },
+        "io_feedback_record": {
+          "name": "Feedback Record",
+          "elementType": "InformationObject"
+        },
+        "io_analysis_report": {
+          "name": "Analysis Report",
+          "elementType": "InformationObject"
+        },
+        "io_trend_data": {
+          "name": "Trend Data",
+          "elementType": "InformationObject"
+        },
+        "io_improvement_plan": {
+          "name": "Improvement Plan",
+          "elementType": "InformationObject"
+        },
+        "io_implementation_record": {
+          "name": "Implementation Record",
+          "elementType": "InformationObject"
+        }
+      },
+      "controls": {},
+      "constraints": {},
+      "directives": {},
+      "deonticLogic": {},
+      "flowLogic": {},
+      "concepts": {},
+      "properties": {},
+      "metrics": {},
+      "measures": {},
+      "conditions": {}
+    }
+  },
+  "heatmaps": [],
+  "cardRegistry": {
+    "conceptCards": {
+      "cc_customer": {
+        "cardId": "cc_customer",
+        "canonicalName": "Customer",
+        "description": "An individual or entity that purchases food products or services from the business",
+        "owner": "role_customer_service_representative",
+        "senses": [
+          {
+            "senseName": "Active Customer",
+            "description": "A customer with an active account who has made at least one purchase",
+            "systemOfRecord": "Customer Relationship Management System",
+            "disambiguationCues": [
+              "active",
+              "purchased",
+              "account"
+            ]
+          },
+          {
+            "senseName": "Prospect",
+            "description": "A potential customer who has shown interest but not yet made a purchase",
+            "systemOfRecord": "Marketing Management System",
+            "disambiguationCues": [
+              "prospect",
+              "lead",
+              "potential"
+            ]
+          },
+          {
+            "senseName": "Subscriber",
+            "description": "A customer with an active subscription for recurring deliveries",
+            "systemOfRecord": "Subscription Management System",
+            "disambiguationCues": [
+              "subscription",
+              "recurring",
+              "subscriber"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "has-a",
+            "targetCardId": "cc_order",
+            "label": "places orders"
+          },
+          {
+            "type": "has-a",
+            "targetCardId": "cc_subscription",
+            "label": "may have subscription"
+          },
+          {
+            "type": "produces",
+            "targetCardId": "cc_feedback",
+            "label": "provides feedback"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_marketing_management",
+            "cap_loyalty_management"
+          ],
+          "roleIds": [
+            "role_customer_service_representative",
+            "role_marketing_manager"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query CRM system for customer records, subscription status, and purchase history",
+        "tokenBudget": 400
+      },
+      "cc_order": {
+        "cardId": "cc_order",
+        "canonicalName": "Order",
+        "description": "A request for food products or meal kits placed by a customer",
+        "owner": "role_customer_service_representative",
+        "senses": [
+          {
+            "senseName": "One-time Order",
+            "description": "A single purchase order for immediate fulfillment",
+            "systemOfRecord": "Order Management System",
+            "disambiguationCues": [
+              "one-time",
+              "single",
+              "immediate"
+            ]
+          },
+          {
+            "senseName": "First Order",
+            "description": "The initial order placed by a new customer",
+            "systemOfRecord": "Order Management System",
+            "disambiguationCues": [
+              "first",
+              "initial",
+              "new customer"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "consumes",
+            "targetCardId": "cc_ingredient",
+            "label": "requires ingredients"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_customer",
+            "label": "placed by customer"
+          },
+          {
+            "type": "produces",
+            "targetCardId": "cc_delivery",
+            "label": "results in delivery"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_order_management",
+            "cap_customer_relationship_management",
+            "cap_financial_management"
+          ],
+          "roleIds": [
+            "role_customer_service_representative",
+            "role_kitchen_manager"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query order management system for order details, status, and fulfillment data",
+        "tokenBudget": 350
+      },
+      "cc_subscription": {
+        "cardId": "cc_subscription",
+        "canonicalName": "Subscription",
+        "description": "A recurring service agreement for regular delivery of meal kits or food products",
+        "owner": "role_product_manager",
+        "senses": [
+          {
+            "senseName": "Active Subscription",
+            "description": "A subscription that is currently active and generating scheduled deliveries",
+            "systemOfRecord": "Subscription Management System",
+            "disambiguationCues": [
+              "active",
+              "current",
+              "scheduled"
+            ]
+          },
+          {
+            "senseName": "Paused Subscription",
+            "description": "A subscription temporarily suspended by customer request",
+            "systemOfRecord": "Subscription Management System",
+            "disambiguationCues": [
+              "paused",
+              "suspended",
+              "temporary"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_customer",
+            "label": "belongs to customer"
+          },
+          {
+            "type": "produces",
+            "targetCardId": "cc_kit",
+            "label": "generates scheduled kits"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_subscription_management",
+            "cap_customer_relationship_management",
+            "cap_data_management"
+          ],
+          "roleIds": [
+            "role_customer_service_representative",
+            "role_product_manager"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query subscription management system for subscription status, schedules, and customer preferences",
+        "tokenBudget": 300
+      },
+      "cc_kit": {
+        "cardId": "cc_kit",
+        "canonicalName": "Kit",
+        "description": "A pre-packaged collection of ingredients and instructions for preparing a meal",
+        "owner": "role_product_manager",
+        "senses": [
+          {
+            "senseName": "Meal Kit",
+            "description": "A complete kit containing all ingredients and recipe for a specific meal",
+            "systemOfRecord": "Menu Planning System",
+            "disambiguationCues": [
+              "meal",
+              "recipe",
+              "complete"
+            ]
+          },
+          {
+            "senseName": "Ingredient Kit",
+            "description": "A kit focused on specific ingredients or cooking techniques",
+            "systemOfRecord": "Menu Planning System",
+            "disambiguationCues": [
+              "ingredient",
+              "technique",
+              "focused"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "consumes",
+            "targetCardId": "cc_ingredient",
+            "label": "contains ingredients"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_subscription",
+            "label": "fulfills subscription"
+          },
+          {
+            "type": "produces",
+            "targetCardId": "cc_delivery",
+            "label": "results in delivery"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_menu_planning",
+            "cap_food_production",
+            "cap_subscription_management"
+          ],
+          "roleIds": [
+            "role_product_manager",
+            "role_kitchen_manager"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query menu planning system for kit specifications, ingredients, and production schedules",
+        "tokenBudget": 350
+      },
+      "cc_ingredient": {
+        "cardId": "cc_ingredient",
+        "canonicalName": "Ingredient",
+        "description": "Raw materials and food components used in meal preparation and kit assembly",
+        "owner": "role_supply_chain_manager",
+        "senses": [
+          {
+            "senseName": "Fresh Ingredient",
+            "description": "Perishable ingredients requiring refrigeration and quick turnover",
+            "systemOfRecord": "Inventory Management System",
+            "disambiguationCues": [
+              "fresh",
+              "perishable",
+              "refrigerated"
+            ]
+          },
+          {
+            "senseName": "Dry Ingredient",
+            "description": "Non-perishable ingredients with longer shelf life",
+            "systemOfRecord": "Inventory Management System",
+            "disambiguationCues": [
+              "dry",
+              "shelf-stable",
+              "non-perishable"
+            ]
+          },
+          {
+            "senseName": "Specialty Ingredient",
+            "description": "Unique or premium ingredients requiring special sourcing",
+            "systemOfRecord": "Supplier Management System",
+            "disambiguationCues": [
+              "specialty",
+              "premium",
+              "unique"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_supplier",
+            "label": "sourced from supplier"
+          },
+          {
+            "type": "part-of",
+            "targetCardId": "cc_kit",
+            "label": "included in kits"
+          },
+          {
+            "type": "part-of",
+            "targetCardId": "cc_order",
+            "label": "used in orders"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_inventory_management",
+            "cap_supplier_management",
+            "cap_menu_planning",
+            "cap_quality_management"
+          ],
+          "roleIds": [
+            "role_supply_chain_manager",
+            "role_product_manager",
+            "role_kitchen_manager"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query inventory and supplier systems for ingredient specifications, stock levels, and quality data",
+        "tokenBudget": 450
+      },
+      "cc_supplier": {
+        "cardId": "cc_supplier",
+        "canonicalName": "Supplier",
+        "description": "External vendors and producers who provide ingredients and materials to the business",
+        "owner": "role_supply_chain_manager",
+        "senses": [
+          {
+            "senseName": "Primary Supplier",
+            "description": "Main suppliers for core ingredients with established contracts",
+            "systemOfRecord": "Supplier Management System",
+            "disambiguationCues": [
+              "primary",
+              "main",
+              "contracted"
+            ]
+          },
+          {
+            "senseName": "Backup Supplier",
+            "description": "Alternative suppliers used for contingency or overflow capacity",
+            "systemOfRecord": "Supplier Management System",
+            "disambiguationCues": [
+              "backup",
+              "alternative",
+              "contingency"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "produces",
+            "targetCardId": "cc_ingredient",
+            "label": "supplies ingredients"
+          },
+          {
+            "type": "governs",
+            "targetCardId": "cc_quality_standard",
+            "label": "must meet quality standards"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_supplier_management",
+            "cap_quality_management",
+            "cap_financial_management"
+          ],
+          "roleIds": [
+            "role_supply_chain_manager",
+            "role_compliance_officer"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query supplier management system for vendor details, contracts, and performance metrics",
+        "tokenBudget": 300
+      },
+      "cc_delivery": {
+        "cardId": "cc_delivery",
+        "canonicalName": "Delivery",
+        "description": "The physical transportation and handoff of orders or kits to customers",
+        "owner": "role_delivery_coordinator",
+        "senses": [
+          {
+            "senseName": "Scheduled Delivery",
+            "description": "Planned delivery with specific time window and route optimization",
+            "systemOfRecord": "Logistics Management System",
+            "disambiguationCues": [
+              "scheduled",
+              "planned",
+              "time window"
+            ]
+          },
+          {
+            "senseName": "Express Delivery",
+            "description": "Expedited delivery for urgent or premium service requests",
+            "systemOfRecord": "Logistics Management System",
+            "disambiguationCues": [
+              "express",
+              "expedited",
+              "urgent"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_order",
+            "label": "fulfills order"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_kit",
+            "label": "delivers kit"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_customer",
+            "label": "delivered to customer"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_logistics_management",
+            "cap_customer_relationship_management"
+          ],
+          "roleIds": [
+            "role_delivery_coordinator"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query logistics system for delivery schedules, routes, and completion status",
+        "tokenBudget": 300
+      },
+      "cc_feedback": {
+        "cardId": "cc_feedback",
+        "canonicalName": "Feedback",
+        "description": "Customer input regarding product quality, service experience, or improvement suggestions",
+        "owner": "role_customer_service_representative",
+        "senses": [
+          {
+            "senseName": "Product Feedback",
+            "description": "Comments specifically about food quality, taste, or kit contents",
+            "systemOfRecord": "Customer Relationship Management System",
+            "disambiguationCues": [
+              "product",
+              "quality",
+              "taste"
+            ]
+          },
+          {
+            "senseName": "Service Feedback",
+            "description": "Comments about delivery, customer service, or overall experience",
+            "systemOfRecord": "Customer Relationship Management System",
+            "disambiguationCues": [
+              "service",
+              "delivery",
+              "experience"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_customer",
+            "label": "provided by customer"
+          },
+          {
+            "type": "produces",
+            "targetCardId": "cc_improvement",
+            "label": "leads to improvements"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_data_management",
+            "cap_communication_management"
+          ],
+          "roleIds": [
+            "role_customer_service_representative",
+            "role_product_manager"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query CRM system for customer feedback records, ratings, and sentiment analysis",
+        "tokenBudget": 300
+      },
+      "cc_improvement": {
+        "cardId": "cc_improvement",
+        "canonicalName": "Improvement",
+        "description": "Process, product, or service enhancements implemented based on analysis and feedback",
+        "owner": "role_product_manager",
+        "senses": [
+          {
+            "senseName": "Process Improvement",
+            "description": "Changes to operational workflows and procedures",
+            "systemOfRecord": "Process Management System",
+            "disambiguationCues": [
+              "process",
+              "workflow",
+              "operational"
+            ]
+          },
+          {
+            "senseName": "Product Improvement",
+            "description": "Enhancements to recipes, ingredients, or kit composition",
+            "systemOfRecord": "Menu Planning System",
+            "disambiguationCues": [
+              "product",
+              "recipe",
+              "ingredient"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "consumes",
+            "targetCardId": "cc_feedback",
+            "label": "based on feedback"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_quality_standard",
+            "label": "enhances quality standards"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_process_improvement",
+            "cap_change_management",
+            "cap_data_analysis"
+          ],
+          "roleIds": [
+            "role_product_manager"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query process management system for improvement initiatives, implementation status, and impact metrics",
+        "tokenBudget": 300
+      },
+      "cc_quality_standard": {
+        "cardId": "cc_quality_standard",
+        "canonicalName": "Quality Standard",
+        "description": "Defined criteria and requirements for food safety, ingredient quality, and service delivery",
+        "owner": "role_compliance_officer",
+        "senses": [
+          {
+            "senseName": "Food Safety Standard",
+            "description": "Requirements for safe food handling, storage, and preparation",
+            "systemOfRecord": "Quality Management System",
+            "disambiguationCues": [
+              "food safety",
+              "handling",
+              "preparation"
+            ]
+          },
+          {
+            "senseName": "Ingredient Quality Standard",
+            "description": "Specifications for ingredient freshness, sourcing, and composition",
+            "systemOfRecord": "Quality Management System",
+            "disambiguationCues": [
+              "ingredient",
+              "freshness",
+              "sourcing"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "governs",
+            "targetCardId": "cc_ingredient",
+            "label": "applies to ingredients"
+          },
+          {
+            "type": "governs",
+            "targetCardId": "cc_supplier",
+            "label": "required of suppliers"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_improvement",
+            "label": "enhanced by improvements"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_quality_management",
+            "cap_supplier_management",
+            "cap_food_production"
+          ],
+          "roleIds": [
+            "role_compliance_officer",
+            "role_kitchen_manager",
+            "role_supply_chain_manager"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query quality management system for standards documentation, compliance records, and audit results",
+        "tokenBudget": 350
+      }
+    },
+    "policyCards": {
+      "pc_food_safety_compliance": {
+        "cardId": "pc_food_safety_compliance",
+        "name": "Food Safety Compliance Policy",
+        "description": "Mandatory food safety standards and procedures must be followed throughout food production and handling",
+        "authorityTier": "policy",
+        "scope": {
+          "lifecycleStages": [
+            "act_prepare_order",
+            "act_prepare_kit",
+            "act_receive_ingredient",
+            "act_stock_available"
+          ],
+          "roles": [
+            "role_kitchen_manager",
+            "role_supply_chain_manager",
+            "role_compliance_officer"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_ingredient:Fresh Ingredient requires temperature control",
+            "referencedSenses": [
+              "cc_ingredient:Fresh Ingredient"
+            ]
+          },
+          {
+            "expression": "cc_quality_standard:Food Safety Standard is applicable",
+            "referencedSenses": [
+              "cc_quality_standard:Food Safety Standard"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must maintain cold chain for fresh ingredients"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must document temperature logs and quality checks"
+          },
+          {
+            "obligationType": "prohibit",
+            "description": "Cannot use ingredients past expiration date"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_compliance_officer",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_quality_management",
+            "cap_food_production",
+            "cap_inventory_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_compliance_officer",
+            "role_kitchen_manager"
+          ]
+        }
+      },
+      "pc_supplier_qualification": {
+        "cardId": "pc_supplier_qualification",
+        "name": "Supplier Qualification Requirements",
+        "description": "All suppliers must meet quality standards and certification requirements before being approved",
+        "authorityTier": "procedure",
+        "scope": {
+          "lifecycleStages": [
+            "act_source_supplier",
+            "act_order_ingredient"
+          ],
+          "roles": [
+            "role_supply_chain_manager",
+            "role_compliance_officer"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_supplier:Primary Supplier is being onboarded",
+            "referencedSenses": [
+              "cc_supplier:Primary Supplier"
+            ]
+          },
+          {
+            "expression": "cc_quality_standard:Ingredient Quality Standard must be verified",
+            "referencedSenses": [
+              "cc_quality_standard:Ingredient Quality Standard"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must verify supplier certifications and quality standards"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must conduct supplier audit before approval"
+          },
+          {
+            "obligationType": "prohibit",
+            "description": "Cannot source from unqualified suppliers"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_supply_chain_manager",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_supplier_management",
+            "cap_quality_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_supply_chain_manager",
+            "role_compliance_officer"
+          ]
+        }
+      },
+      "pc_customer_data_protection": {
+        "cardId": "pc_customer_data_protection",
+        "name": "Customer Data Protection Policy",
+        "description": "Customer personal information and preferences must be protected and used only for authorized purposes",
+        "authorityTier": "policy",
+        "scope": {
+          "lifecycleStages": [
+            "act_place_order",
+            "act_create_subscription",
+            "act_engage_prospect",
+            "act_submit_feedback"
+          ],
+          "roles": [
+            "role_customer_service_representative",
+            "role_marketing_manager"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_customer:Active Customer data is being processed",
+            "referencedSenses": [
+              "cc_customer:Active Customer"
+            ]
+          },
+          {
+            "expression": "cc_customer:Prospect information is being collected",
+            "referencedSenses": [
+              "cc_customer:Prospect"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must obtain explicit consent for data collection and use"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must encrypt and secure customer data in transit and at rest"
+          },
+          {
+            "obligationType": "prohibit",
+            "description": "Cannot share customer data with unauthorized third parties"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_compliance_officer",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_data_management",
+            "cap_marketing_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_compliance_officer",
+            "role_customer_service_representative"
+          ]
+        }
+      },
+      "pc_subscription_modification": {
+        "cardId": "pc_subscription_modification",
+        "name": "Subscription Modification Guidelines",
+        "description": "Customer subscription changes must be processed within defined timeframes and with proper notification",
+        "authorityTier": "procedure",
+        "scope": {
+          "lifecycleStages": [
+            "act_create_subscription",
+            "act_schedule_kit"
+          ],
+          "roles": [
+            "role_customer_service_representative",
+            "role_product_manager"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_subscription:Active Subscription is being modified",
+            "referencedSenses": [
+              "cc_subscription:Active Subscription"
+            ]
+          },
+          {
+            "expression": "cc_customer:Subscriber requests changes",
+            "referencedSenses": [
+              "cc_customer:Subscriber"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must process subscription changes within 24 hours"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must send confirmation notification to customer"
+          },
+          {
+            "obligationType": "permit",
+            "description": "May offer alternative options if requested change is not available"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_customer_service_representative",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_subscription_management",
+            "cap_customer_relationship_management",
+            "cap_communication_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_customer_service_representative",
+            "role_product_manager"
+          ]
+        }
+      },
+      "pc_feedback_response": {
+        "cardId": "pc_feedback_response",
+        "name": "Customer Feedback Response Requirements",
+        "description": "All customer feedback must be acknowledged and addressed according to severity and type",
+        "authorityTier": "procedure",
+        "scope": {
+          "lifecycleStages": [
+            "act_submit_feedback",
+            "act_acknowledge_feedback",
+            "act_analyse_issues"
+          ],
+          "roles": [
+            "role_customer_service_representative",
+            "role_product_manager"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_feedback:Product Feedback is received",
+            "referencedSenses": [
+              "cc_feedback:Product Feedback"
+            ]
+          },
+          {
+            "expression": "cc_feedback:Service Feedback is received",
+            "referencedSenses": [
+              "cc_feedback:Service Feedback"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must acknowledge feedback within 2 business hours"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must escalate quality issues to product management"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must track feedback resolution and customer satisfaction"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_customer_service_representative",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_communication_management",
+            "cap_data_analysis"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_customer_service_representative",
+            "role_product_manager"
+          ]
+        }
+      }
+    }
+  }
+}

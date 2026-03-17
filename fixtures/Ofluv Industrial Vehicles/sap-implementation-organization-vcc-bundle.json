@@ -1,0 +1,1345 @@
+{
+  "bundleVersion": "2.0",
+  "createdAt": "2026-03-17T21:22:38.524Z",
+  "scaffold": {
+    "schemaVersion": "1.0.0",
+    "scaffoldId": "scaffold_vehicle_manufacturing",
+    "name": "Vehicle Manufacturing — Operating Model",
+    "description": "Operating model for vehicle manufacturing order-to-delivery process",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "elements": {
+      "valueStreams": {
+        "vs_order_to_delivery": {
+          "name": "Order to Delivery",
+          "description": "End-to-end flow from customer order placement through vehicle delivery with serial number tracking",
+          "activityIds": [
+            "act_receive_order",
+            "act_assign_material",
+            "act_allocate_serial_number",
+            "act_complete_procurement",
+            "act_prepare_shipment",
+            "act_deliver_vehicle"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_sales_order_processor",
+          "elementType": "ValueStream"
+        }
+      },
+      "activities": {
+        "act_receive_order": {
+          "name": "Receive Order",
+          "preOutcomeId": "outcome_order_received_initiated",
+          "postOutcomeId": "outcome_order_received_complete",
+          "nextActivityId": "act_assign_material",
+          "requiresCapabilityIds": [
+            "cap_order_management",
+            "cap_customer_relationship_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_order_processor"
+          ],
+          "informationObjectIds": [
+            "io_customer_order",
+            "io_order_confirmation",
+            "io_customer_profile"
+          ],
+          "metricIds": [
+            "metric_order_processing_time"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_order_management": {
+              "roleIds": [
+                "role_sales_order_processor"
+              ],
+              "activities": [
+                "Validate order completeness and accuracy",
+                "Process order in SAP SD system",
+                "Generate order confirmation"
+              ],
+              "informationObjectIds": [
+                "io_customer_order",
+                "io_order_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            },
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_sales_order_processor"
+              ],
+              "activities": [
+                "Review customer history and credit status",
+                "Assess customer requirements",
+                "Update customer interaction records"
+              ],
+              "informationObjectIds": [
+                "io_customer_profile"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_sales_order_processor"
+              ],
+              "activities": [
+                "Consolidate order data from multiple sources",
+                "Validate data accuracy and completeness",
+                "Update central order records"
+              ],
+              "informationObjectIds": [
+                "io_customer_order",
+                "io_customer_profile"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_assign_material": {
+          "name": "Assign Material",
+          "preOutcomeId": "outcome_order_received_complete",
+          "postOutcomeId": "outcome_material_assigned_complete",
+          "nextActivityId": "act_allocate_serial_number",
+          "requiresCapabilityIds": [
+            "cap_material_planning",
+            "cap_inventory_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_material_planner"
+          ],
+          "informationObjectIds": [
+            "io_material_assignment",
+            "io_inventory_status",
+            "io_bill_of_materials"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_material_planning": {
+              "roleIds": [
+                "role_material_planner"
+              ],
+              "activities": [
+                "Analyze material requirements for order",
+                "Check material availability and lead times",
+                "Create material reservation plan"
+              ],
+              "informationObjectIds": [
+                "io_material_assignment",
+                "io_bill_of_materials"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            },
+            "cap_inventory_management": {
+              "roleIds": [
+                "role_material_planner"
+              ],
+              "activities": [
+                "Review current inventory levels",
+                "Assess material allocation priorities",
+                "Reserve materials for production"
+              ],
+              "informationObjectIds": [
+                "io_inventory_status",
+                "io_material_assignment"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_material_planner"
+              ],
+              "activities": [
+                "Update material assignment records",
+                "Synchronize inventory data across systems",
+                "Maintain material master data"
+              ],
+              "informationObjectIds": [
+                "io_material_assignment",
+                "io_inventory_status"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_allocate_serial_number": {
+          "name": "Allocate Serial Number",
+          "preOutcomeId": "outcome_material_assigned_complete",
+          "postOutcomeId": "outcome_serial_number_allocated_complete",
+          "nextActivityId": "act_complete_procurement",
+          "requiresCapabilityIds": [
+            "cap_serial_number_management",
+            "cap_traceability_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_serial_number_coordinator"
+          ],
+          "informationObjectIds": [
+            "io_serial_number_record",
+            "io_vin_assignment",
+            "io_traceability_document"
+          ],
+          "metricIds": [
+            "metric_serial_number_allocation_accuracy"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_serial_number_management": {
+              "roleIds": [
+                "role_serial_number_coordinator"
+              ],
+              "activities": [
+                "Generate unique serial number for vehicle",
+                "Assign VIN according to regulatory requirements",
+                "Register serial number in tracking system"
+              ],
+              "informationObjectIds": [
+                "io_serial_number_record",
+                "io_vin_assignment"
+              ],
+              "technologyAppIds": [
+                "tech_serial_number_management_system"
+              ]
+            },
+            "cap_traceability_management": {
+              "roleIds": [
+                "role_serial_number_coordinator"
+              ],
+              "activities": [
+                "Create traceability linkage to order",
+                "Establish component tracking relationships",
+                "Document serial number genealogy"
+              ],
+              "informationObjectIds": [
+                "io_traceability_document",
+                "io_serial_number_record"
+              ],
+              "technologyAppIds": [
+                "tech_serial_number_management_system"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_serial_number_coordinator"
+              ],
+              "activities": [
+                "Synchronize serial data across systems",
+                "Validate serial number uniqueness",
+                "Update central tracking records"
+              ],
+              "informationObjectIds": [
+                "io_serial_number_record",
+                "io_vin_assignment"
+              ],
+              "technologyAppIds": [
+                "tech_serial_number_management_system",
+                "tech_sap_sd_sales_distribution"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_complete_procurement": {
+          "name": "Complete Procurement",
+          "preOutcomeId": "outcome_serial_number_allocated_complete",
+          "postOutcomeId": "outcome_procurement_completed_complete",
+          "nextActivityId": "act_prepare_shipment",
+          "requiresCapabilityIds": [
+            "cap_procurement_management",
+            "cap_supplier_relationship_management",
+            "cap_quality_assurance"
+          ],
+          "performedByRoleIds": [
+            "role_procurement_specialist"
+          ],
+          "informationObjectIds": [
+            "io_purchase_order",
+            "io_supplier_confirmation",
+            "io_quality_certificate"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_procurement_management": {
+              "roleIds": [
+                "role_procurement_specialist"
+              ],
+              "activities": [
+                "Execute procurement plan for required materials",
+                "Coordinate supplier delivery schedules",
+                "Monitor procurement milestone completion"
+              ],
+              "informationObjectIds": [
+                "io_purchase_order",
+                "io_supplier_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            },
+            "cap_supplier_relationship_management": {
+              "roleIds": [
+                "role_procurement_specialist"
+              ],
+              "activities": [
+                "Communicate requirements to suppliers",
+                "Negotiate delivery terms and conditions",
+                "Manage supplier performance expectations"
+              ],
+              "informationObjectIds": [
+                "io_supplier_confirmation",
+                "io_purchase_order"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            },
+            "cap_quality_assurance": {
+              "roleIds": [
+                "role_procurement_specialist"
+              ],
+              "activities": [
+                "Verify supplier quality certifications",
+                "Conduct incoming material inspections",
+                "Document quality compliance records"
+              ],
+              "informationObjectIds": [
+                "io_quality_certificate",
+                "io_supplier_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_prepare_shipment": {
+          "name": "Prepare Shipment",
+          "preOutcomeId": "outcome_procurement_completed_complete",
+          "postOutcomeId": "outcome_shipment_prepared_complete",
+          "nextActivityId": "act_deliver_vehicle",
+          "requiresCapabilityIds": [
+            "cap_logistics_management",
+            "cap_packaging_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_shipping_coordinator"
+          ],
+          "informationObjectIds": [
+            "io_shipping_manifest",
+            "io_packaging_specification",
+            "io_transport_schedule"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_logistics_management": {
+              "roleIds": [
+                "role_shipping_coordinator"
+              ],
+              "activities": [
+                "Plan optimal shipping route and method",
+                "Coordinate with transportation providers",
+                "Schedule shipment pickup and delivery"
+              ],
+              "informationObjectIds": [
+                "io_shipping_manifest",
+                "io_transport_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            },
+            "cap_packaging_management": {
+              "roleIds": [
+                "role_shipping_coordinator"
+              ],
+              "activities": [
+                "Determine appropriate packaging requirements",
+                "Prepare protective packaging materials",
+                "Execute vehicle packaging procedures"
+              ],
+              "informationObjectIds": [
+                "io_packaging_specification",
+                "io_shipping_manifest"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_shipping_coordinator"
+              ],
+              "activities": [
+                "Generate shipping documentation and labels",
+                "Update shipment tracking information",
+                "Maintain logistics data records"
+              ],
+              "informationObjectIds": [
+                "io_shipping_manifest",
+                "io_transport_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_deliver_vehicle": {
+          "name": "Deliver Vehicle",
+          "preOutcomeId": "outcome_shipment_prepared_complete",
+          "postOutcomeId": "outcome_vehicle_delivered_complete",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_delivery_management",
+            "cap_customer_relationship_management",
+            "cap_quality_assurance"
+          ],
+          "performedByRoleIds": [
+            "role_delivery_manager"
+          ],
+          "informationObjectIds": [
+            "io_delivery_receipt",
+            "io_customer_handover_document",
+            "io_warranty_certificate"
+          ],
+          "metricIds": [
+            "metric_delivery_date_adherence"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_delivery_management": {
+              "roleIds": [
+                "role_delivery_manager"
+              ],
+              "activities": [
+                "Coordinate final delivery to customer location",
+                "Oversee vehicle inspection and handover",
+                "Complete delivery documentation"
+              ],
+              "informationObjectIds": [
+                "io_delivery_receipt",
+                "io_customer_handover_document"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            },
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_delivery_manager"
+              ],
+              "activities": [
+                "Conduct customer delivery orientation",
+                "Address customer questions and concerns",
+                "Establish post-delivery support relationship"
+              ],
+              "informationObjectIds": [
+                "io_customer_handover_document",
+                "io_warranty_certificate"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            },
+            "cap_quality_assurance": {
+              "roleIds": [
+                "role_delivery_manager"
+              ],
+              "activities": [
+                "Perform final quality inspection",
+                "Verify vehicle meets specifications",
+                "Document delivery quality compliance"
+              ],
+              "informationObjectIds": [
+                "io_delivery_receipt",
+                "io_warranty_certificate"
+              ],
+              "technologyAppIds": [
+                "tech_sap_sd_sales_distribution"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        }
+      },
+      "outcomes": {
+        "outcome_order_received_initiated": {
+          "name": "Order Received Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_order_received_complete": {
+          "name": "Order Received Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_material_assigned_complete": {
+          "name": "Material Assigned Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_serial_number_allocated_complete": {
+          "name": "Serial Number Allocated Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_procurement_completed_complete": {
+          "name": "Procurement Completed Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_shipment_prepared_complete": {
+          "name": "Shipment Prepared Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_vehicle_delivered_complete": {
+          "name": "Vehicle Delivered Complete",
+          "elementType": "Outcome"
+        }
+      },
+      "roles": {
+        "role_sales_order_processor": {
+          "name": "Sales Order Processor",
+          "description": "Responsible for processing and managing coach orders in SAP SD",
+          "elementType": "Role"
+        },
+        "role_material_planner": {
+          "name": "Material Planner",
+          "description": "Responsible for material assignment and availability planning",
+          "elementType": "Role"
+        },
+        "role_serial_number_coordinator": {
+          "name": "Serial Number Coordinator",
+          "description": "Responsible for allocating and managing vehicle serial numbers and VIN tracking",
+          "elementType": "Role"
+        },
+        "role_procurement_specialist": {
+          "name": "Procurement Specialist",
+          "description": "Responsible for completing procurement activities and supplier coordination",
+          "elementType": "Role"
+        },
+        "role_shipping_coordinator": {
+          "name": "Shipping Coordinator",
+          "description": "Responsible for shipment preparation and logistics coordination",
+          "elementType": "Role"
+        },
+        "role_delivery_manager": {
+          "name": "Delivery Manager",
+          "description": "Responsible for overseeing vehicle delivery and customer handover",
+          "elementType": "Role"
+        }
+      },
+      "capabilities": {
+        "cap_order_management": {
+          "name": "Order Management",
+          "description": "Ability to process, track, and manage customer orders throughout the fulfillment lifecycle",
+          "elementType": "Capability"
+        },
+        "cap_customer_relationship_management": {
+          "name": "Customer Relationship Management",
+          "description": "Ability to manage customer interactions, relationships, and service delivery",
+          "elementType": "Capability"
+        },
+        "cap_data_management": {
+          "name": "Data Management",
+          "description": "Ability to collect, validate, store, and maintain accurate business data across systems",
+          "elementType": "Capability"
+        },
+        "cap_material_planning": {
+          "name": "Material Planning",
+          "description": "Ability to plan, schedule, and coordinate material requirements for production",
+          "elementType": "Capability"
+        },
+        "cap_inventory_management": {
+          "name": "Inventory Management",
+          "description": "Ability to track, control, and optimize inventory levels and material availability",
+          "elementType": "Capability"
+        },
+        "cap_serial_number_management": {
+          "name": "Serial Number Management",
+          "description": "Ability to generate, assign, and track unique serial numbers and VINs for vehicles",
+          "elementType": "Capability"
+        },
+        "cap_traceability_management": {
+          "name": "Traceability Management",
+          "description": "Ability to establish and maintain complete traceability of products and components",
+          "elementType": "Capability"
+        },
+        "cap_procurement_management": {
+          "name": "Procurement Management",
+          "description": "Ability to source, purchase, and coordinate delivery of materials and services",
+          "elementType": "Capability"
+        },
+        "cap_supplier_relationship_management": {
+          "name": "Supplier Relationship Management",
+          "description": "Ability to manage supplier relationships, performance, and collaboration",
+          "elementType": "Capability"
+        },
+        "cap_quality_assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to ensure products and processes meet quality standards and requirements",
+          "elementType": "Capability"
+        },
+        "cap_logistics_management": {
+          "name": "Logistics Management",
+          "description": "Ability to plan, coordinate, and execute transportation and distribution activities",
+          "elementType": "Capability"
+        },
+        "cap_packaging_management": {
+          "name": "Packaging Management",
+          "description": "Ability to design, prepare, and execute appropriate packaging for product protection",
+          "elementType": "Capability"
+        },
+        "cap_delivery_management": {
+          "name": "Delivery Management",
+          "description": "Ability to coordinate and execute final delivery of products to customers",
+          "elementType": "Capability"
+        }
+      },
+      "informationObjects": {
+        "io_customer_order": {
+          "name": "Customer Order",
+          "elementType": "InformationObject"
+        },
+        "io_order_confirmation": {
+          "name": "Order Confirmation",
+          "elementType": "InformationObject"
+        },
+        "io_customer_profile": {
+          "name": "Customer Profile",
+          "elementType": "InformationObject"
+        },
+        "io_material_assignment": {
+          "name": "Material Assignment",
+          "elementType": "InformationObject"
+        },
+        "io_inventory_status": {
+          "name": "Inventory Status",
+          "elementType": "InformationObject"
+        },
+        "io_bill_of_materials": {
+          "name": "Bill of Materials",
+          "elementType": "InformationObject"
+        },
+        "io_serial_number_record": {
+          "name": "Serial Number Record",
+          "elementType": "InformationObject"
+        },
+        "io_vin_assignment": {
+          "name": "VIN Assignment",
+          "elementType": "InformationObject"
+        },
+        "io_traceability_document": {
+          "name": "Traceability Document",
+          "elementType": "InformationObject"
+        },
+        "io_purchase_order": {
+          "name": "Purchase Order",
+          "elementType": "InformationObject"
+        },
+        "io_supplier_confirmation": {
+          "name": "Supplier Confirmation",
+          "elementType": "InformationObject"
+        },
+        "io_quality_certificate": {
+          "name": "Quality Certificate",
+          "elementType": "InformationObject"
+        },
+        "io_shipping_manifest": {
+          "name": "Shipping Manifest",
+          "elementType": "InformationObject"
+        },
+        "io_packaging_specification": {
+          "name": "Packaging Specification",
+          "elementType": "InformationObject"
+        },
+        "io_transport_schedule": {
+          "name": "Transport Schedule",
+          "elementType": "InformationObject"
+        },
+        "io_delivery_receipt": {
+          "name": "Delivery Receipt",
+          "elementType": "InformationObject"
+        },
+        "io_customer_handover_document": {
+          "name": "Customer Handover Document",
+          "elementType": "InformationObject"
+        },
+        "io_warranty_certificate": {
+          "name": "Warranty Certificate",
+          "elementType": "InformationObject"
+        }
+      },
+      "controls": {},
+      "constraints": {},
+      "directives": {},
+      "deonticLogic": {},
+      "flowLogic": {},
+      "concepts": {},
+      "properties": {},
+      "metrics": {
+        "metric_order_processing_time": {
+          "name": "Order Processing Time",
+          "elementType": "Metric"
+        },
+        "metric_serial_number_allocation_accuracy": {
+          "name": "Serial Number Allocation Accuracy",
+          "elementType": "Metric"
+        },
+        "metric_delivery_date_adherence": {
+          "name": "Delivery Date Adherence",
+          "elementType": "Metric"
+        }
+      },
+      "measures": {},
+      "conditions": {}
+    },
+    "_discoveryPainPoints": "1. [TechnologyIntegrationFriction] S/4HANA migration risk for serial number logic and VIN tracking integration (intensity 8/10, stage: Serial Number Allocated) ← flagged as binding\n2. [ProcessHandoffFriction] Manual serial number allocation process per order line requiring popup interface (intensity 6/10, stage: Serial Number Allocated)"
+  },
+  "heatmaps": [],
+  "cardRegistry": {
+    "conceptCards": {
+      "cc_order": {
+        "cardId": "cc_order",
+        "canonicalName": "Order",
+        "description": "A customer request for products or services that initiates the order-to-delivery value stream",
+        "owner": "role_sales_order_processor",
+        "senses": [
+          {
+            "senseName": "Sales Order",
+            "description": "Customer purchase request with commercial terms and delivery requirements",
+            "systemOfRecord": "Order Management System",
+            "disambiguationCues": [
+              "purchase",
+              "commercial",
+              "pricing",
+              "terms"
+            ]
+          },
+          {
+            "senseName": "Production Order",
+            "description": "Internal manufacturing instruction derived from customer order",
+            "systemOfRecord": "Material Planning System",
+            "disambiguationCues": [
+              "manufacturing",
+              "production",
+              "build",
+              "assembly"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "has-a",
+            "targetCardId": "cc_customer",
+            "label": "placed by"
+          },
+          {
+            "type": "has-a",
+            "targetCardId": "cc_material",
+            "label": "requires"
+          },
+          {
+            "type": "produces",
+            "targetCardId": "cc_vehicle",
+            "label": "results in"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_order_management",
+            "cap_material_planning"
+          ],
+          "roleIds": [
+            "role_sales_order_processor",
+            "role_material_planner"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query Order Management System for order records, join with customer and product data",
+        "tokenBudget": 350
+      },
+      "cc_customer": {
+        "cardId": "cc_customer",
+        "canonicalName": "Customer",
+        "description": "Entity that purchases vehicles and receives delivery services",
+        "owner": "role_sales_order_processor",
+        "senses": [
+          {
+            "senseName": "Account",
+            "description": "Established business relationship with credit terms and history",
+            "systemOfRecord": "CRM System",
+            "disambiguationCues": [
+              "account",
+              "credit",
+              "history",
+              "relationship"
+            ]
+          },
+          {
+            "senseName": "Delivery Recipient",
+            "description": "End recipient of vehicle delivery with location and contact details",
+            "systemOfRecord": "Delivery Management System",
+            "disambiguationCues": [
+              "recipient",
+              "delivery",
+              "location",
+              "contact"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "has-a",
+            "targetCardId": "cc_order",
+            "label": "places"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_vehicle",
+            "label": "receives"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_delivery_management"
+          ],
+          "roleIds": [
+            "role_sales_order_processor",
+            "role_delivery_manager"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Extract customer records from CRM, merge with delivery address data",
+        "tokenBudget": 300
+      },
+      "cc_material": {
+        "cardId": "cc_material",
+        "canonicalName": "Material",
+        "description": "Physical components and parts required for vehicle assembly and delivery",
+        "owner": "role_material_planner",
+        "senses": [
+          {
+            "senseName": "Inventory Item",
+            "description": "Stockable component with quantity on hand and location",
+            "systemOfRecord": "Inventory Management System",
+            "disambiguationCues": [
+              "stock",
+              "quantity",
+              "location",
+              "warehouse"
+            ]
+          },
+          {
+            "senseName": "Procurement Item",
+            "description": "Component sourced from suppliers with lead times and quality specs",
+            "systemOfRecord": "Procurement System",
+            "disambiguationCues": [
+              "supplier",
+              "sourced",
+              "lead time",
+              "specification"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "part-of",
+            "targetCardId": "cc_vehicle",
+            "label": "assembles into"
+          },
+          {
+            "type": "has-a",
+            "targetCardId": "cc_supplier",
+            "label": "sourced from"
+          },
+          {
+            "type": "has-a",
+            "targetCardId": "cc_serial_number",
+            "label": "tracked by"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_material_planning",
+            "cap_inventory_management",
+            "cap_procurement_management"
+          ],
+          "roleIds": [
+            "role_material_planner",
+            "role_procurement_specialist"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query inventory system for material records, join with procurement and supplier data",
+        "tokenBudget": 400
+      },
+      "cc_vehicle": {
+        "cardId": "cc_vehicle",
+        "canonicalName": "Vehicle",
+        "description": "Finished product delivered to customers through the order-to-delivery process",
+        "owner": "role_delivery_manager",
+        "senses": [
+          {
+            "senseName": "Assembled Unit",
+            "description": "Completed vehicle ready for quality inspection and delivery",
+            "systemOfRecord": "Production System",
+            "disambiguationCues": [
+              "assembled",
+              "completed",
+              "finished",
+              "unit"
+            ]
+          },
+          {
+            "senseName": "Delivery Item",
+            "description": "Packaged vehicle prepared for shipment with delivery documentation",
+            "systemOfRecord": "Logistics System",
+            "disambiguationCues": [
+              "packaged",
+              "shipment",
+              "delivery",
+              "documentation"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "consumes",
+            "targetCardId": "cc_material",
+            "label": "assembled from"
+          },
+          {
+            "type": "has-a",
+            "targetCardId": "cc_serial_number",
+            "label": "identified by"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_customer",
+            "label": "delivered to"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_delivery_management",
+            "cap_packaging_management",
+            "cap_quality_assurance"
+          ],
+          "roleIds": [
+            "role_delivery_manager",
+            "role_shipping_coordinator"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Extract vehicle records from production system, join with delivery and quality data",
+        "tokenBudget": 350
+      },
+      "cc_serial_number": {
+        "cardId": "cc_serial_number",
+        "canonicalName": "Serial Number",
+        "description": "Unique identifier enabling traceability of materials and vehicles throughout the supply chain",
+        "owner": "role_serial_number_coordinator",
+        "senses": [
+          {
+            "senseName": "Component Serial",
+            "description": "Unique identifier for individual material components enabling part-level traceability",
+            "systemOfRecord": "Serial Number Management System",
+            "disambiguationCues": [
+              "component",
+              "part",
+              "material",
+              "traceability"
+            ]
+          },
+          {
+            "senseName": "Vehicle VIN",
+            "description": "Vehicle identification number providing complete vehicle traceability and registration",
+            "systemOfRecord": "Vehicle Registry",
+            "disambiguationCues": [
+              "VIN",
+              "vehicle",
+              "registration",
+              "identification"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "governs",
+            "targetCardId": "cc_material",
+            "label": "tracks"
+          },
+          {
+            "type": "governs",
+            "targetCardId": "cc_vehicle",
+            "label": "identifies"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_serial_number_management",
+            "cap_traceability_management"
+          ],
+          "roleIds": [
+            "role_serial_number_coordinator"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query serial number management system for all assigned serials, link to materials and vehicles",
+        "tokenBudget": 300
+      },
+      "cc_supplier": {
+        "cardId": "cc_supplier",
+        "canonicalName": "Supplier",
+        "description": "External organization providing materials and components for vehicle production",
+        "owner": "role_procurement_specialist",
+        "senses": [
+          {
+            "senseName": "Vendor",
+            "description": "Commercial supplier with contracts, pricing, and payment terms",
+            "systemOfRecord": "Procurement System",
+            "disambiguationCues": [
+              "vendor",
+              "contract",
+              "pricing",
+              "payment"
+            ]
+          },
+          {
+            "senseName": "Quality Partner",
+            "description": "Supplier evaluated and certified for quality standards and compliance",
+            "systemOfRecord": "Quality Management System",
+            "disambiguationCues": [
+              "certified",
+              "quality",
+              "standards",
+              "compliance"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "produces",
+            "targetCardId": "cc_material",
+            "label": "supplies"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_procurement_specialist",
+            "label": "managed by"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_supplier_relationship_management",
+            "cap_procurement_management",
+            "cap_quality_assurance"
+          ],
+          "roleIds": [
+            "role_procurement_specialist"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Extract supplier records from procurement system, merge with quality certification data",
+        "tokenBudget": 300
+      },
+      "cc_shipment": {
+        "cardId": "cc_shipment",
+        "canonicalName": "Shipment",
+        "description": "Packaged and prepared vehicles ready for logistics and delivery to customers",
+        "owner": "role_shipping_coordinator",
+        "senses": [
+          {
+            "senseName": "Logistics Package",
+            "description": "Prepared shipment with routing, carrier assignment, and tracking information",
+            "systemOfRecord": "Logistics Management System",
+            "disambiguationCues": [
+              "routing",
+              "carrier",
+              "tracking",
+              "logistics"
+            ]
+          },
+          {
+            "senseName": "Delivery Package",
+            "description": "Final packaged vehicle with delivery documentation and customer instructions",
+            "systemOfRecord": "Delivery Management System",
+            "disambiguationCues": [
+              "delivery",
+              "documentation",
+              "instructions",
+              "final"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "has-a",
+            "targetCardId": "cc_vehicle",
+            "label": "contains"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_customer",
+            "label": "destined for"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_logistics_management",
+            "cap_packaging_management",
+            "cap_delivery_management"
+          ],
+          "roleIds": [
+            "role_shipping_coordinator",
+            "role_delivery_manager"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query logistics system for shipment records, join with packaging and delivery data",
+        "tokenBudget": 250
+      }
+    },
+    "policyCards": {
+      "pc_data_integrity": {
+        "cardId": "pc_data_integrity",
+        "name": "Data Integrity Policy",
+        "description": "Ensures data consistency and accuracy across all order-to-delivery activities",
+        "authorityTier": "procedure",
+        "scope": {
+          "lifecycleStages": [
+            "act_receive_order",
+            "act_assign_material",
+            "act_allocate_serial_number",
+            "act_complete_procurement",
+            "act_prepare_shipment",
+            "act_deliver_vehicle"
+          ],
+          "roles": [
+            "role_sales_order_processor",
+            "role_material_planner",
+            "role_serial_number_coordinator",
+            "role_procurement_specialist",
+            "role_shipping_coordinator",
+            "role_delivery_manager"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "Data modification occurs in any system",
+            "referencedSenses": []
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must validate data accuracy before system updates"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must maintain audit trail of all data changes"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_sales_order_processor",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_data_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_sales_order_processor",
+            "role_material_planner",
+            "role_serial_number_coordinator"
+          ]
+        }
+      },
+      "pc_serial_traceability": {
+        "cardId": "pc_serial_traceability",
+        "name": "Serial Number Traceability Policy",
+        "description": "Mandates complete traceability of all serialized components and vehicles",
+        "authorityTier": "policy",
+        "scope": {
+          "lifecycleStages": [
+            "act_allocate_serial_number",
+            "act_complete_procurement",
+            "act_prepare_shipment"
+          ],
+          "roles": [
+            "role_serial_number_coordinator",
+            "role_procurement_specialist",
+            "role_shipping_coordinator"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_material:Component Serial is assigned",
+            "referencedSenses": [
+              "cc_material:Component Serial"
+            ]
+          },
+          {
+            "expression": "cc_vehicle:Vehicle VIN is generated",
+            "referencedSenses": [
+              "cc_vehicle:Vehicle VIN"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must record complete component genealogy for each vehicle"
+          },
+          {
+            "obligationType": "prohibit",
+            "description": "Cannot ship vehicle without complete serial number documentation"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_serial_number_coordinator",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_serial_number_management",
+            "cap_traceability_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_serial_number_coordinator"
+          ]
+        }
+      },
+      "pc_quality_assurance": {
+        "cardId": "pc_quality_assurance",
+        "name": "Quality Assurance Policy",
+        "description": "Ensures quality standards are met throughout procurement and delivery processes",
+        "authorityTier": "procedure",
+        "scope": {
+          "lifecycleStages": [
+            "act_complete_procurement",
+            "act_deliver_vehicle"
+          ],
+          "roles": [
+            "role_procurement_specialist",
+            "role_delivery_manager"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_supplier:Quality Partner certification is required",
+            "referencedSenses": [
+              "cc_supplier:Quality Partner"
+            ]
+          },
+          {
+            "expression": "cc_vehicle:Assembled Unit is ready for delivery",
+            "referencedSenses": [
+              "cc_vehicle:Assembled Unit"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must verify supplier quality certification before procurement approval"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must complete quality inspection before vehicle delivery"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_procurement_specialist",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_quality_assurance",
+            "cap_procurement_management",
+            "cap_delivery_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_procurement_specialist",
+            "role_delivery_manager"
+          ]
+        }
+      },
+      "pc_customer_communication": {
+        "cardId": "pc_customer_communication",
+        "name": "Customer Communication Policy",
+        "description": "Governs customer interaction and information sharing throughout the order lifecycle",
+        "authorityTier": "guidance",
+        "scope": {
+          "lifecycleStages": [
+            "act_receive_order",
+            "act_deliver_vehicle"
+          ],
+          "roles": [
+            "role_sales_order_processor",
+            "role_delivery_manager"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_customer:Account relationship is established",
+            "referencedSenses": [
+              "cc_customer:Account"
+            ]
+          },
+          {
+            "expression": "Order status changes occur",
+            "referencedSenses": []
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must provide order confirmation within 24 hours of receipt"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must notify customer of delivery schedule 48 hours in advance"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_sales_order_processor",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_order_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_sales_order_processor",
+            "role_delivery_manager"
+          ]
+        }
+      }
+    }
+  }
+}

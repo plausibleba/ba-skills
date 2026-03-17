@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useCanvasStore } from "./store/canvas-store.ts";
 import { useAuthStore } from "./store/auth-store.ts";
 import { useProjectStore } from "./store/project-store.ts";
@@ -35,6 +35,58 @@ export default function App() {
   useEffect(() => {
     initAuth();
   }, [initAuth]);
+
+  // Global drag-drop interceptor: prevent browser from opening dropped files
+  // and route .json files to the bundle import logic
+  const handleGlobalDrop = useCallback((e: DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files[0];
+    if (!file) return;
+    if (file.name.endsWith(".json")) {
+      void (async () => {
+        try {
+          const text = await file.text();
+          const json = JSON.parse(text);
+          const { isPlausibleBABundle, normaliseBundle } = await import("./utils/bundle-import.ts");
+          const store = useCanvasStore.getState();
+          if (json.bundleVersion && json.scaffold) {
+            await store.loadScaffold(json.scaffold);
+            if (json.heatmaps) for (const hm of json.heatmaps) await store.loadHeatmap(hm);
+            if (json.userStoriesByActivity) {
+              for (const [actId, stories] of Object.entries(json.userStoriesByActivity)) {
+                store.setActivityStories(actId, stories as any[]);
+              }
+            }
+            if (json.cardRegistry) store.loadCards(json.cardRegistry);
+          } else if (isPlausibleBABundle(json)) {
+            const scaffold = normaliseBundle(json);
+            await store.loadScaffold(scaffold);
+          } else if (json.scaffoldId && json.elements) {
+            await store.loadScaffold(json);
+          } else {
+            console.warn("[App] Unrecognized JSON file dropped");
+            return;
+          }
+          store.backToNetwork();
+        } catch (err) {
+          console.error("[App] Drop import error:", err);
+        }
+      })();
+    }
+  }, []);
+
+  const handleGlobalDragOver = useCallback((e: DragEvent) => {
+    e.preventDefault();
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("drop", handleGlobalDrop);
+    document.addEventListener("dragover", handleGlobalDragOver);
+    return () => {
+      document.removeEventListener("drop", handleGlobalDrop);
+      document.removeEventListener("dragover", handleGlobalDragOver);
+    };
+  }, [handleGlobalDrop, handleGlobalDragOver]);
 
   const isLoaded = !!scaffoldData;
   const isNetwork = viewMode === "network";

@@ -4,7 +4,7 @@
  * Shows user's projects. Create new project with module selection.
  * Opens a project by loading its bundle into the canvas store.
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useProjectStore } from "../store/project-store.ts";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { useAuthStore } from "../store/auth-store.ts";
@@ -40,6 +40,7 @@ export function ProjectList() {
   const [newModule, setNewModule] = useState<ProjectModule>("sales-discovery");
   const [creating, setCreating] = useState(false);
   const [shareTarget, setShareTarget] = useState<{ id: string; name: string } | null>(null);
+  const bundleInputRef = useRef<HTMLInputElement>(null);
 
   // Split projects into owned and shared-with-me
   const ownedProjects = projects.filter((p) => p.owner_id === user?.id);
@@ -55,6 +56,13 @@ export function ProjectList() {
     if (!project) return;
 
     const bundle = project.bundle as any;
+
+    // Guard: empty project (no bundle saved yet)
+    if (!bundle || (typeof bundle === "object" && Object.keys(bundle).length === 0)) {
+      useProjectStore.getState().setCurrentProject(id, project.revision);
+      goToIntake();
+      return;
+    }
 
     // The bundle might be a full export bundle or just a scaffold
     const canvasStore = useCanvasStore.getState();
@@ -294,6 +302,69 @@ export function ProjectList() {
                   </svg>
                   <span className="text-xs font-medium text-gray-500">Quick Discovery</span>
                   <span className="text-[10px] text-gray-400">No project — just run</span>
+                </button>
+
+                {/* Import Bundle */}
+                <button
+                  onClick={() => bundleInputRef.current?.click()}
+                  className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 p-4 text-center transition-all hover:border-emerald-300 hover:bg-emerald-50/50"
+                >
+                  <svg className="mb-1 h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  <span className="text-xs font-medium text-gray-500">Import Bundle</span>
+                  <span className="text-[10px] text-gray-400">PlausibleBA or VCC JSON</span>
+                  <input
+                    ref={bundleInputRef}
+                    type="file"
+                    accept=".json"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files ?? []);
+                      if (files.length > 0) {
+                        // Delegate to FileLoader's logic via a temporary mount
+                        // Simpler: trigger FileLoader directly by reading the file and passing to canvas store
+                        void (async () => {
+                          for (const file of files) {
+                            const text = await file.text();
+                            try {
+                              const json = JSON.parse(text);
+                              // Use FileLoader component — but we need the same logic inline
+                              // Import the bundle-import utilities directly
+                              const { isPlausibleBABundle, normaliseBundle } = await import("../utils/bundle-import.ts");
+                              const canvasStore = useCanvasStore.getState();
+                              if (json.bundleVersion && json.scaffold) {
+                                await canvasStore.loadScaffold(json.scaffold);
+                                if (json.heatmaps) {
+                                  for (const hm of json.heatmaps) await canvasStore.loadHeatmap(hm);
+                                }
+                                if (json.userStoriesByActivity) {
+                                  for (const [actId, stories] of Object.entries(json.userStoriesByActivity)) {
+                                    canvasStore.setActivityStories(actId, stories as any[]);
+                                  }
+                                }
+                                if (json.cardRegistry) canvasStore.loadCards(json.cardRegistry);
+                              } else if (isPlausibleBABundle(json)) {
+                                const scaffold = normaliseBundle(json);
+                                await canvasStore.loadScaffold(scaffold);
+                              } else if (json.scaffoldId && json.elements) {
+                                await canvasStore.loadScaffold(json);
+                              } else {
+                                alert("Unrecognized JSON file. Expected a VCC Bundle or PlausibleBA bundle.");
+                                return;
+                              }
+                              canvasStore.backToNetwork();
+                            } catch (err) {
+                              console.error("[ImportBundle] parse error:", err);
+                              alert("Failed to parse JSON file.");
+                            }
+                          }
+                        })();
+                      }
+                      e.target.value = "";
+                    }}
+                  />
                 </button>
               </div>
             </>

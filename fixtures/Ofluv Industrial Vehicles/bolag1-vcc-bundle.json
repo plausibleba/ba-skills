@@ -1,0 +1,1341 @@
+{
+  "bundleVersion": "1.0",
+  "createdAt": "2026-03-12T12:19:40.742Z",
+  "scaffold": {
+    "schemaVersion": "1.0",
+    "scaffoldId": "scaffold-bolag1",
+    "name": "Bolag1",
+    "description": "Generated from discovery intake — Vehicle Manufacturing Medium Enterprise",
+    "createdAt": "2026-03-12T12:19:40.741Z",
+    "elements": {
+      "valueStreams": {
+        "vs-customer-order-fulfillment": {
+          "name": "Customer Order Fulfillment",
+          "description": "End-to-end flow from customer vehicle sales order through production commitment",
+          "activityIds": [
+            "act-customer-order-fulfillment-order-intake-and-validation",
+            "act-customer-order-fulfillment-product-configuration",
+            "act-customer-order-fulfillment-vin-assignment",
+            "act-customer-order-fulfillment-order-registration",
+            "act-customer-order-fulfillment-production-commitment"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "Customers and sales teams"
+        },
+        "vs-customer-master-synchronization": {
+          "name": "Customer Master Synchronization",
+          "description": "Customer data creation and synchronization across systems",
+          "activityIds": [
+            "act-customer-master-synchronization-customer-creation",
+            "act-customer-master-synchronization-data-synchronization",
+            "act-customer-master-synchronization-id-generation",
+            "act-customer-master-synchronization-system-registration"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "Customer service and operations teams"
+        },
+        "vs-order-change-management": {
+          "name": "Order Change Management",
+          "description": "Processing and implementing customer-requested changes to existing orders",
+          "activityIds": [
+            "act-order-change-management-change-request-processing",
+            "act-order-change-management-impact-assessment",
+            "act-order-change-management-configuration-update",
+            "act-order-change-management-order-revision"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "Customers and order management teams"
+        }
+      },
+      "activities": {
+        "act-customer-order-fulfillment-order-intake-and-validation": {
+          "name": "Order Intake and Validation",
+          "description": "Order Intake and Validation stage in Customer Order Fulfillment",
+          "preOutcomeId": "out-customer-order-fulfillment-entry",
+          "postOutcomeId": "out-customer-order-fulfillment-order-intake-and-validation-complete",
+          "requiresCapabilityIds": [
+            "cap-customer-order-fulfillment-order-intake-and-validation-demand-capture",
+            "cap-customer-order-fulfillment-order-intake-and-validation-data-validation",
+            "cap-customer-order-fulfillment-order-intake-and-validation-intake-routing"
+          ],
+          "performedByRoleIds": [
+            "role-order-processing-team",
+            "role-customer"
+          ],
+          "metricIds": [
+            "metric-daily-vehicle-order-volume"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-customer-order-fulfillment-order-intake-and-validation-demand-capture": {
+              "roleIds": [
+                "role-order-processing-team",
+                "role-customer"
+              ],
+              "activities": [
+                "Capture incoming request from all channels",
+                "Validate completeness of submitted information",
+                "Acknowledge receipt and assign tracking reference"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-order-fulfillment-order-intake-and-validation-data-validation": {
+              "roleIds": [
+                "role-customer",
+                "role-post-system"
+              ],
+              "activities": [
+                "Check mandatory fields against business rules",
+                "Validate identifiers against master data",
+                "Flag and route exceptions for manual review"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-order-fulfillment-order-intake-and-validation-intake-routing": {
+              "roleIds": [
+                "role-post-system",
+                "role-bm-system"
+              ],
+              "activities": [
+                "Classify request by type and priority",
+                "Assign to responsible team or queue",
+                "Notify stakeholders of receipt and expected timeline"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            }
+          }
+        },
+        "act-customer-order-fulfillment-product-configuration": {
+          "name": "Product Configuration",
+          "description": "Product Configuration stage in Customer Order Fulfillment",
+          "preOutcomeId": "out-customer-order-fulfillment-order-intake-and-validation-complete",
+          "postOutcomeId": "out-customer-order-fulfillment-product-configuration-complete",
+          "requiresCapabilityIds": [
+            "cap-customer-order-fulfillment-product-configuration-demand-capture",
+            "cap-customer-order-fulfillment-product-configuration-data-validation",
+            "cap-customer-order-fulfillment-product-configuration-intake-routing"
+          ],
+          "performedByRoleIds": [
+            "role-order-processing-team",
+            "role-customer"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl-complex-product-configuration-replication-from-sap-prevost-to-bm-including-variants-rules-and-restrictions"
+          ],
+          "capabilityPPIT": {
+            "cap-customer-order-fulfillment-product-configuration-demand-capture": {
+              "roleIds": [
+                "role-order-processing-team",
+                "role-customer"
+              ],
+              "activities": [
+                "Capture incoming request from all channels",
+                "Validate completeness of submitted information",
+                "Acknowledge receipt and assign tracking reference"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-order-fulfillment-product-configuration-data-validation": {
+              "roleIds": [
+                "role-customer",
+                "role-post-system"
+              ],
+              "activities": [
+                "Check mandatory fields against business rules",
+                "Validate identifiers against master data",
+                "Flag and route exceptions for manual review"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-order-fulfillment-product-configuration-intake-routing": {
+              "roleIds": [
+                "role-post-system",
+                "role-bm-system"
+              ],
+              "activities": [
+                "Classify request by type and priority",
+                "Assign to responsible team or queue",
+                "Notify stakeholders of receipt and expected timeline"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            }
+          }
+        },
+        "act-customer-order-fulfillment-vin-assignment": {
+          "name": "VIN Assignment",
+          "description": "VIN Assignment stage in Customer Order Fulfillment",
+          "preOutcomeId": "out-customer-order-fulfillment-product-configuration-complete",
+          "postOutcomeId": "out-customer-order-fulfillment-vin-assignment-complete",
+          "requiresCapabilityIds": [
+            "cap-customer-order-fulfillment-vin-assignment-demand-capture",
+            "cap-customer-order-fulfillment-vin-assignment-data-validation",
+            "cap-customer-order-fulfillment-vin-assignment-intake-routing"
+          ],
+          "performedByRoleIds": [
+            "role-order-processing-team",
+            "role-customer"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl-vin-number-creation-handled-manually-in-excel-as-transitional-solution"
+          ],
+          "capabilityPPIT": {
+            "cap-customer-order-fulfillment-vin-assignment-demand-capture": {
+              "roleIds": [
+                "role-order-processing-team",
+                "role-customer"
+              ],
+              "activities": [
+                "Capture incoming request from all channels",
+                "Validate completeness of submitted information",
+                "Acknowledge receipt and assign tracking reference"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-order-fulfillment-vin-assignment-data-validation": {
+              "roleIds": [
+                "role-customer",
+                "role-post-system"
+              ],
+              "activities": [
+                "Check mandatory fields against business rules",
+                "Validate identifiers against master data",
+                "Flag and route exceptions for manual review"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-order-fulfillment-vin-assignment-intake-routing": {
+              "roleIds": [
+                "role-post-system",
+                "role-bm-system"
+              ],
+              "activities": [
+                "Classify request by type and priority",
+                "Assign to responsible team or queue",
+                "Notify stakeholders of receipt and expected timeline"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            }
+          }
+        },
+        "act-customer-order-fulfillment-order-registration": {
+          "name": "Order Registration",
+          "description": "Order Registration stage in Customer Order Fulfillment",
+          "preOutcomeId": "out-customer-order-fulfillment-vin-assignment-complete",
+          "postOutcomeId": "out-customer-order-fulfillment-order-registration-complete",
+          "requiresCapabilityIds": [
+            "cap-customer-order-fulfillment-order-registration-demand-capture",
+            "cap-customer-order-fulfillment-order-registration-data-validation",
+            "cap-customer-order-fulfillment-order-registration-intake-routing"
+          ],
+          "performedByRoleIds": [
+            "role-order-processing-team",
+            "role-customer"
+          ],
+          "metricIds": [],
+          "controlIds": [
+            "ctrl-manual-vehicle-delivery-order-creation-required-for-volvo-coach-orders"
+          ],
+          "capabilityPPIT": {
+            "cap-customer-order-fulfillment-order-registration-demand-capture": {
+              "roleIds": [
+                "role-order-processing-team",
+                "role-customer"
+              ],
+              "activities": [
+                "Capture incoming request from all channels",
+                "Validate completeness of submitted information",
+                "Acknowledge receipt and assign tracking reference"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-order-fulfillment-order-registration-data-validation": {
+              "roleIds": [
+                "role-customer",
+                "role-post-system"
+              ],
+              "activities": [
+                "Check mandatory fields against business rules",
+                "Validate identifiers against master data",
+                "Flag and route exceptions for manual review"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-order-fulfillment-order-registration-intake-routing": {
+              "roleIds": [
+                "role-post-system",
+                "role-bm-system"
+              ],
+              "activities": [
+                "Classify request by type and priority",
+                "Assign to responsible team or queue",
+                "Notify stakeholders of receipt and expected timeline"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            }
+          }
+        },
+        "act-customer-order-fulfillment-production-commitment": {
+          "name": "Production Commitment",
+          "description": "Production Commitment stage in Customer Order Fulfillment",
+          "preOutcomeId": "out-customer-order-fulfillment-order-registration-complete",
+          "postOutcomeId": "out-customer-order-fulfillment-production-commitment-complete",
+          "requiresCapabilityIds": [
+            "cap-customer-order-fulfillment-production-commitment-demand-capture",
+            "cap-customer-order-fulfillment-production-commitment-data-validation",
+            "cap-customer-order-fulfillment-production-commitment-intake-routing"
+          ],
+          "performedByRoleIds": [
+            "role-order-processing-team",
+            "role-customer"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-customer-order-fulfillment-production-commitment-demand-capture": {
+              "roleIds": [
+                "role-order-processing-team",
+                "role-customer"
+              ],
+              "activities": [
+                "Capture incoming request from all channels",
+                "Validate completeness of submitted information",
+                "Acknowledge receipt and assign tracking reference"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-order-fulfillment-production-commitment-data-validation": {
+              "roleIds": [
+                "role-customer",
+                "role-post-system"
+              ],
+              "activities": [
+                "Check mandatory fields against business rules",
+                "Validate identifiers against master data",
+                "Flag and route exceptions for manual review"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-order-fulfillment-production-commitment-intake-routing": {
+              "roleIds": [
+                "role-post-system",
+                "role-bm-system"
+              ],
+              "activities": [
+                "Classify request by type and priority",
+                "Assign to responsible team or queue",
+                "Notify stakeholders of receipt and expected timeline"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            }
+          }
+        },
+        "act-customer-master-synchronization-customer-creation": {
+          "name": "Customer Creation",
+          "description": "Customer Creation stage in Customer Master Synchronization",
+          "preOutcomeId": "out-customer-master-synchronization-entry",
+          "postOutcomeId": "out-customer-master-synchronization-customer-creation-complete",
+          "requiresCapabilityIds": [
+            "cap-customer-master-synchronization-customer-creation-customer-creation-execution",
+            "cap-customer-master-synchronization-customer-creation-customer-creation-governance",
+            "cap-customer-master-synchronization-customer-creation-customer-creation-integration"
+          ],
+          "performedByRoleIds": [
+            "role-order-processing-team",
+            "role-customer"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-customer-master-synchronization-customer-creation-customer-creation-execution": {
+              "roleIds": [
+                "role-order-processing-team",
+                "role-customer"
+              ],
+              "activities": [
+                "Initiate customer creation process",
+                "Execute core customer creation activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-master-synchronization-customer-creation-customer-creation-governance": {
+              "roleIds": [
+                "role-customer",
+                "role-post-system"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for customer creation decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-master-synchronization-customer-creation-customer-creation-integration": {
+              "roleIds": [
+                "role-post-system",
+                "role-bm-system"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            }
+          }
+        },
+        "act-customer-master-synchronization-data-synchronization": {
+          "name": "Data Synchronization",
+          "description": "Data Synchronization stage in Customer Master Synchronization",
+          "preOutcomeId": "out-customer-master-synchronization-customer-creation-complete",
+          "postOutcomeId": "out-customer-master-synchronization-data-synchronization-complete",
+          "requiresCapabilityIds": [
+            "cap-customer-master-synchronization-data-synchronization-data-synchronization-execution",
+            "cap-customer-master-synchronization-data-synchronization-data-synchronization-governance",
+            "cap-customer-master-synchronization-data-synchronization-data-synchronization-integration"
+          ],
+          "performedByRoleIds": [
+            "role-order-processing-team",
+            "role-customer"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-customer-master-synchronization-data-synchronization-data-synchronization-execution": {
+              "roleIds": [
+                "role-order-processing-team",
+                "role-customer"
+              ],
+              "activities": [
+                "Initiate data synchronization process",
+                "Execute core data synchronization activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-master-synchronization-data-synchronization-data-synchronization-governance": {
+              "roleIds": [
+                "role-customer",
+                "role-post-system"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for data synchronization decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-master-synchronization-data-synchronization-data-synchronization-integration": {
+              "roleIds": [
+                "role-post-system",
+                "role-bm-system"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            }
+          }
+        },
+        "act-customer-master-synchronization-id-generation": {
+          "name": "ID Generation",
+          "description": "ID Generation stage in Customer Master Synchronization",
+          "preOutcomeId": "out-customer-master-synchronization-data-synchronization-complete",
+          "postOutcomeId": "out-customer-master-synchronization-id-generation-complete",
+          "requiresCapabilityIds": [
+            "cap-customer-master-synchronization-id-generation-id-generation-execution",
+            "cap-customer-master-synchronization-id-generation-id-generation-governance",
+            "cap-customer-master-synchronization-id-generation-id-generation-integration"
+          ],
+          "performedByRoleIds": [
+            "role-order-processing-team",
+            "role-customer"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-customer-master-synchronization-id-generation-id-generation-execution": {
+              "roleIds": [
+                "role-order-processing-team",
+                "role-customer"
+              ],
+              "activities": [
+                "Initiate id generation process",
+                "Execute core id generation activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-master-synchronization-id-generation-id-generation-governance": {
+              "roleIds": [
+                "role-customer",
+                "role-post-system"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for id generation decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-master-synchronization-id-generation-id-generation-integration": {
+              "roleIds": [
+                "role-post-system",
+                "role-bm-system"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            }
+          }
+        },
+        "act-customer-master-synchronization-system-registration": {
+          "name": "System Registration",
+          "description": "System Registration stage in Customer Master Synchronization",
+          "preOutcomeId": "out-customer-master-synchronization-id-generation-complete",
+          "postOutcomeId": "out-customer-master-synchronization-system-registration-complete",
+          "requiresCapabilityIds": [
+            "cap-customer-master-synchronization-system-registration-system-registration-execution",
+            "cap-customer-master-synchronization-system-registration-system-registration-governance",
+            "cap-customer-master-synchronization-system-registration-system-registration-integration"
+          ],
+          "performedByRoleIds": [
+            "role-order-processing-team",
+            "role-customer"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-customer-master-synchronization-system-registration-system-registration-execution": {
+              "roleIds": [
+                "role-order-processing-team",
+                "role-customer"
+              ],
+              "activities": [
+                "Initiate system registration process",
+                "Execute core system registration activities",
+                "Validate outputs before progression"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-master-synchronization-system-registration-system-registration-governance": {
+              "roleIds": [
+                "role-customer",
+                "role-post-system"
+              ],
+              "activities": [
+                "Apply governance rules and policy checks",
+                "Obtain required approvals for system registration decisions",
+                "Escalate exceptions to appropriate authority"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-customer-master-synchronization-system-registration-system-registration-integration": {
+              "roleIds": [
+                "role-post-system",
+                "role-bm-system"
+              ],
+              "activities": [
+                "Coordinate handoffs with upstream and downstream stages",
+                "Synchronise data across relevant systems",
+                "Communicate status to dependent stakeholders"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            }
+          }
+        },
+        "act-order-change-management-change-request-processing": {
+          "name": "Change Request Processing",
+          "description": "Change Request Processing stage in Order Change Management",
+          "preOutcomeId": "out-order-change-management-entry",
+          "postOutcomeId": "out-order-change-management-change-request-processing-complete",
+          "requiresCapabilityIds": [
+            "cap-order-change-management-change-request-processing-demand-capture",
+            "cap-order-change-management-change-request-processing-data-validation",
+            "cap-order-change-management-change-request-processing-intake-routing"
+          ],
+          "performedByRoleIds": [
+            "role-order-processing-team",
+            "role-customer"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-order-change-management-change-request-processing-demand-capture": {
+              "roleIds": [
+                "role-order-processing-team",
+                "role-customer"
+              ],
+              "activities": [
+                "Capture incoming request from all channels",
+                "Validate completeness of submitted information",
+                "Acknowledge receipt and assign tracking reference"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-order-change-management-change-request-processing-data-validation": {
+              "roleIds": [
+                "role-customer",
+                "role-post-system"
+              ],
+              "activities": [
+                "Check mandatory fields against business rules",
+                "Validate identifiers against master data",
+                "Flag and route exceptions for manual review"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-order-change-management-change-request-processing-intake-routing": {
+              "roleIds": [
+                "role-post-system",
+                "role-bm-system"
+              ],
+              "activities": [
+                "Classify request by type and priority",
+                "Assign to responsible team or queue",
+                "Notify stakeholders of receipt and expected timeline"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            }
+          }
+        },
+        "act-order-change-management-impact-assessment": {
+          "name": "Impact Assessment",
+          "description": "Impact Assessment stage in Order Change Management",
+          "preOutcomeId": "out-order-change-management-change-request-processing-complete",
+          "postOutcomeId": "out-order-change-management-impact-assessment-complete",
+          "requiresCapabilityIds": [
+            "cap-order-change-management-impact-assessment-demand-capture",
+            "cap-order-change-management-impact-assessment-data-validation",
+            "cap-order-change-management-impact-assessment-intake-routing"
+          ],
+          "performedByRoleIds": [
+            "role-order-processing-team",
+            "role-customer"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-order-change-management-impact-assessment-demand-capture": {
+              "roleIds": [
+                "role-order-processing-team",
+                "role-customer"
+              ],
+              "activities": [
+                "Capture incoming request from all channels",
+                "Validate completeness of submitted information",
+                "Acknowledge receipt and assign tracking reference"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-order-change-management-impact-assessment-data-validation": {
+              "roleIds": [
+                "role-customer",
+                "role-post-system"
+              ],
+              "activities": [
+                "Check mandatory fields against business rules",
+                "Validate identifiers against master data",
+                "Flag and route exceptions for manual review"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-order-change-management-impact-assessment-intake-routing": {
+              "roleIds": [
+                "role-post-system",
+                "role-bm-system"
+              ],
+              "activities": [
+                "Classify request by type and priority",
+                "Assign to responsible team or queue",
+                "Notify stakeholders of receipt and expected timeline"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            }
+          }
+        },
+        "act-order-change-management-configuration-update": {
+          "name": "Configuration Update",
+          "description": "Configuration Update stage in Order Change Management",
+          "preOutcomeId": "out-order-change-management-impact-assessment-complete",
+          "postOutcomeId": "out-order-change-management-configuration-update-complete",
+          "requiresCapabilityIds": [
+            "cap-order-change-management-configuration-update-demand-capture",
+            "cap-order-change-management-configuration-update-data-validation",
+            "cap-order-change-management-configuration-update-intake-routing"
+          ],
+          "performedByRoleIds": [
+            "role-order-processing-team",
+            "role-customer"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-order-change-management-configuration-update-demand-capture": {
+              "roleIds": [
+                "role-order-processing-team",
+                "role-customer"
+              ],
+              "activities": [
+                "Capture incoming request from all channels",
+                "Validate completeness of submitted information",
+                "Acknowledge receipt and assign tracking reference"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-order-change-management-configuration-update-data-validation": {
+              "roleIds": [
+                "role-customer",
+                "role-post-system"
+              ],
+              "activities": [
+                "Check mandatory fields against business rules",
+                "Validate identifiers against master data",
+                "Flag and route exceptions for manual review"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-order-change-management-configuration-update-intake-routing": {
+              "roleIds": [
+                "role-post-system",
+                "role-bm-system"
+              ],
+              "activities": [
+                "Classify request by type and priority",
+                "Assign to responsible team or queue",
+                "Notify stakeholders of receipt and expected timeline"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            }
+          }
+        },
+        "act-order-change-management-order-revision": {
+          "name": "Order Revision",
+          "description": "Order Revision stage in Order Change Management",
+          "preOutcomeId": "out-order-change-management-configuration-update-complete",
+          "postOutcomeId": "out-order-change-management-order-revision-complete",
+          "requiresCapabilityIds": [
+            "cap-order-change-management-order-revision-demand-capture",
+            "cap-order-change-management-order-revision-data-validation",
+            "cap-order-change-management-order-revision-intake-routing"
+          ],
+          "performedByRoleIds": [
+            "role-order-processing-team",
+            "role-customer"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap-order-change-management-order-revision-demand-capture": {
+              "roleIds": [
+                "role-order-processing-team",
+                "role-customer"
+              ],
+              "activities": [
+                "Capture incoming request from all channels",
+                "Validate completeness of submitted information",
+                "Acknowledge receipt and assign tracking reference"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-order-change-management-order-revision-data-validation": {
+              "roleIds": [
+                "role-customer",
+                "role-post-system"
+              ],
+              "activities": [
+                "Check mandatory fields against business rules",
+                "Validate identifiers against master data",
+                "Flag and route exceptions for manual review"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            },
+            "cap-order-change-management-order-revision-intake-routing": {
+              "roleIds": [
+                "role-post-system",
+                "role-bm-system"
+              ],
+              "activities": [
+                "Classify request by type and priority",
+                "Assign to responsible team or queue",
+                "Notify stakeholders of receipt and expected timeline"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-post",
+                "tech-bm-busmaster"
+              ]
+            }
+          }
+        }
+      },
+      "capabilities": {
+        "cap-customer-order-fulfillment-order-intake-and-validation-demand-capture": {
+          "name": "Demand Capture",
+          "description": "Ability to receive and record incoming requests in Customer Order Fulfillment"
+        },
+        "cap-customer-order-fulfillment-order-intake-and-validation-data-validation": {
+          "name": "Data Validation",
+          "description": "Ability to verify accuracy and completeness of captured data"
+        },
+        "cap-customer-order-fulfillment-order-intake-and-validation-intake-routing": {
+          "name": "Intake Routing",
+          "description": "Ability to route validated requests to the correct handling path"
+        },
+        "cap-customer-order-fulfillment-product-configuration-demand-capture": {
+          "name": "Demand Capture",
+          "description": "Ability to receive and record incoming requests in Customer Order Fulfillment"
+        },
+        "cap-customer-order-fulfillment-product-configuration-data-validation": {
+          "name": "Data Validation",
+          "description": "Ability to verify accuracy and completeness of captured data"
+        },
+        "cap-customer-order-fulfillment-product-configuration-intake-routing": {
+          "name": "Intake Routing",
+          "description": "Ability to route validated requests to the correct handling path"
+        },
+        "cap-customer-order-fulfillment-vin-assignment-demand-capture": {
+          "name": "Demand Capture",
+          "description": "Ability to receive and record incoming requests in Customer Order Fulfillment"
+        },
+        "cap-customer-order-fulfillment-vin-assignment-data-validation": {
+          "name": "Data Validation",
+          "description": "Ability to verify accuracy and completeness of captured data"
+        },
+        "cap-customer-order-fulfillment-vin-assignment-intake-routing": {
+          "name": "Intake Routing",
+          "description": "Ability to route validated requests to the correct handling path"
+        },
+        "cap-customer-order-fulfillment-order-registration-demand-capture": {
+          "name": "Demand Capture",
+          "description": "Ability to receive and record incoming requests in Customer Order Fulfillment"
+        },
+        "cap-customer-order-fulfillment-order-registration-data-validation": {
+          "name": "Data Validation",
+          "description": "Ability to verify accuracy and completeness of captured data"
+        },
+        "cap-customer-order-fulfillment-order-registration-intake-routing": {
+          "name": "Intake Routing",
+          "description": "Ability to route validated requests to the correct handling path"
+        },
+        "cap-customer-order-fulfillment-production-commitment-demand-capture": {
+          "name": "Demand Capture",
+          "description": "Ability to receive and record incoming requests in Customer Order Fulfillment"
+        },
+        "cap-customer-order-fulfillment-production-commitment-data-validation": {
+          "name": "Data Validation",
+          "description": "Ability to verify accuracy and completeness of captured data"
+        },
+        "cap-customer-order-fulfillment-production-commitment-intake-routing": {
+          "name": "Intake Routing",
+          "description": "Ability to route validated requests to the correct handling path"
+        },
+        "cap-customer-master-synchronization-customer-creation-customer-creation-execution": {
+          "name": "Customer Creation Execution",
+          "description": "Ability to execute Customer Creation activities within Customer Master Synchronization"
+        },
+        "cap-customer-master-synchronization-customer-creation-customer-creation-governance": {
+          "name": "Customer Creation Governance",
+          "description": "Ability to oversee and control Customer Creation outcomes"
+        },
+        "cap-customer-master-synchronization-customer-creation-customer-creation-integration": {
+          "name": "Customer Creation Integration",
+          "description": "Ability to coordinate Customer Creation across teams and systems"
+        },
+        "cap-customer-master-synchronization-data-synchronization-data-synchronization-execution": {
+          "name": "Data Synchronization Execution",
+          "description": "Ability to execute Data Synchronization activities within Customer Master Synchronization"
+        },
+        "cap-customer-master-synchronization-data-synchronization-data-synchronization-governance": {
+          "name": "Data Synchronization Governance",
+          "description": "Ability to oversee and control Data Synchronization outcomes"
+        },
+        "cap-customer-master-synchronization-data-synchronization-data-synchronization-integration": {
+          "name": "Data Synchronization Integration",
+          "description": "Ability to coordinate Data Synchronization across teams and systems"
+        },
+        "cap-customer-master-synchronization-id-generation-id-generation-execution": {
+          "name": "ID Generation Execution",
+          "description": "Ability to execute ID Generation activities within Customer Master Synchronization"
+        },
+        "cap-customer-master-synchronization-id-generation-id-generation-governance": {
+          "name": "ID Generation Governance",
+          "description": "Ability to oversee and control ID Generation outcomes"
+        },
+        "cap-customer-master-synchronization-id-generation-id-generation-integration": {
+          "name": "ID Generation Integration",
+          "description": "Ability to coordinate ID Generation across teams and systems"
+        },
+        "cap-customer-master-synchronization-system-registration-system-registration-execution": {
+          "name": "System Registration Execution",
+          "description": "Ability to execute System Registration activities within Customer Master Synchronization"
+        },
+        "cap-customer-master-synchronization-system-registration-system-registration-governance": {
+          "name": "System Registration Governance",
+          "description": "Ability to oversee and control System Registration outcomes"
+        },
+        "cap-customer-master-synchronization-system-registration-system-registration-integration": {
+          "name": "System Registration Integration",
+          "description": "Ability to coordinate System Registration across teams and systems"
+        },
+        "cap-order-change-management-change-request-processing-demand-capture": {
+          "name": "Demand Capture",
+          "description": "Ability to receive and record incoming requests in Order Change Management"
+        },
+        "cap-order-change-management-change-request-processing-data-validation": {
+          "name": "Data Validation",
+          "description": "Ability to verify accuracy and completeness of captured data"
+        },
+        "cap-order-change-management-change-request-processing-intake-routing": {
+          "name": "Intake Routing",
+          "description": "Ability to route validated requests to the correct handling path"
+        },
+        "cap-order-change-management-impact-assessment-demand-capture": {
+          "name": "Demand Capture",
+          "description": "Ability to receive and record incoming requests in Order Change Management"
+        },
+        "cap-order-change-management-impact-assessment-data-validation": {
+          "name": "Data Validation",
+          "description": "Ability to verify accuracy and completeness of captured data"
+        },
+        "cap-order-change-management-impact-assessment-intake-routing": {
+          "name": "Intake Routing",
+          "description": "Ability to route validated requests to the correct handling path"
+        },
+        "cap-order-change-management-configuration-update-demand-capture": {
+          "name": "Demand Capture",
+          "description": "Ability to receive and record incoming requests in Order Change Management"
+        },
+        "cap-order-change-management-configuration-update-data-validation": {
+          "name": "Data Validation",
+          "description": "Ability to verify accuracy and completeness of captured data"
+        },
+        "cap-order-change-management-configuration-update-intake-routing": {
+          "name": "Intake Routing",
+          "description": "Ability to route validated requests to the correct handling path"
+        },
+        "cap-order-change-management-order-revision-demand-capture": {
+          "name": "Demand Capture",
+          "description": "Ability to receive and record incoming requests in Order Change Management"
+        },
+        "cap-order-change-management-order-revision-data-validation": {
+          "name": "Data Validation",
+          "description": "Ability to verify accuracy and completeness of captured data"
+        },
+        "cap-order-change-management-order-revision-intake-routing": {
+          "name": "Intake Routing",
+          "description": "Ability to route validated requests to the correct handling path"
+        }
+      },
+      "roles": {
+        "role-order-processing-team": {
+          "name": "Order Processing Team"
+        },
+        "role-customer": {
+          "name": "Customer"
+        },
+        "role-post-system": {
+          "name": "Post System"
+        },
+        "role-bm-system": {
+          "name": "BM System"
+        }
+      },
+      "outcomes": {
+        "out-customer-order-fulfillment-entry": {
+          "name": "Customer Order Fulfillment initiated",
+          "status": "active"
+        },
+        "out-customer-order-fulfillment-order-intake-and-validation-complete": {
+          "name": "Order Intake and Validation complete",
+          "status": "active"
+        },
+        "out-customer-order-fulfillment-product-configuration-complete": {
+          "name": "Product Configuration complete",
+          "status": "active"
+        },
+        "out-customer-order-fulfillment-vin-assignment-complete": {
+          "name": "VIN Assignment complete",
+          "status": "active"
+        },
+        "out-customer-order-fulfillment-order-registration-complete": {
+          "name": "Order Registration complete",
+          "status": "active"
+        },
+        "out-customer-order-fulfillment-production-commitment-complete": {
+          "name": "Production Commitment complete",
+          "status": "active"
+        },
+        "out-customer-master-synchronization-entry": {
+          "name": "Customer Master Synchronization initiated",
+          "status": "active"
+        },
+        "out-customer-master-synchronization-customer-creation-complete": {
+          "name": "Customer Creation complete",
+          "status": "active"
+        },
+        "out-customer-master-synchronization-data-synchronization-complete": {
+          "name": "Data Synchronization complete",
+          "status": "active"
+        },
+        "out-customer-master-synchronization-id-generation-complete": {
+          "name": "ID Generation complete",
+          "status": "active"
+        },
+        "out-customer-master-synchronization-system-registration-complete": {
+          "name": "System Registration complete",
+          "status": "active"
+        },
+        "out-order-change-management-entry": {
+          "name": "Order Change Management initiated",
+          "status": "active"
+        },
+        "out-order-change-management-change-request-processing-complete": {
+          "name": "Change Request Processing complete",
+          "status": "active"
+        },
+        "out-order-change-management-impact-assessment-complete": {
+          "name": "Impact Assessment complete",
+          "status": "active"
+        },
+        "out-order-change-management-configuration-update-complete": {
+          "name": "Configuration Update complete",
+          "status": "active"
+        },
+        "out-order-change-management-order-revision-complete": {
+          "name": "Order Revision complete",
+          "status": "active"
+        }
+      },
+      "metrics": {
+        "metric-daily-vehicle-order-volume": {
+          "name": "Daily Vehicle Order Volume"
+        }
+      },
+      "controls": {
+        "ctrl-vin-number-creation-handled-manually-in-excel-as-transitional-solution": {
+          "name": "VIN Number Creation handled manually in Excel as transitiona"
+        },
+        "ctrl-manual-vehicle-delivery-order-creation-required-for-volvo-coach-orders": {
+          "name": "Manual Vehicle Delivery Order creation required for Volvo Co"
+        },
+        "ctrl-complex-product-configuration-replication-from-sap-prevost-to-bm-including-variants-rules-and-restrictions": {
+          "name": "Complex product configuration replication from SAP Prevost t"
+        }
+      },
+      "informationObjects": {},
+      "technologyApps": {
+        "tech-post": {
+          "name": "Post",
+          "type": "CRM"
+        },
+        "tech-bm-busmaster": {
+          "name": "BM (BusMaster)",
+          "type": "ERP"
+        },
+        "tech-sap-prevost": {
+          "name": "SAP Prevost",
+          "type": "ERP"
+        },
+        "tech-excel": {
+          "name": "Excel",
+          "type": "Other"
+        }
+      }
+    },
+    "crossStreamOutcomes": [],
+    "scaffoldIntegrityHash": "c2NhZmZvbGQtYm9sYWcxMTc3MzMxNzk4"
+  },
+  "heatmaps": [
+    {
+      "heatmapId": "heatmap-vs-customer-order-fulfillment-1773318002605",
+      "scaffoldId": "scaffold-bolag1",
+      "valueStreamId": "vs-customer-order-fulfillment",
+      "observations": [
+        {
+          "observationId": "fr_001_manual_vin_creation_excel_bottleneck",
+          "category": "ProcessHandoffFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-customer-order-fulfillment-vin-assignment"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 8
+          },
+          "rationale": "Manual VIN creation in Excel creates significant process bottleneck with high error potential and capacity constraints in critical value stream stage",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_1",
+              "excerpt": "VIN Number Creation handled manually in Excel as transitional solution (intensity 8/10, stage: Customer Order Fulfillment → VIN Assignment) ← rep flagged as binding"
+            }
+          ],
+          "observedAt": "2026-03-12T12:19:40.742Z"
+        },
+        {
+          "observationId": "fr_002_manual_delivery_order_creation",
+          "category": "ProcessHandoffFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-customer-order-fulfillment-order-registration"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 7
+          },
+          "rationale": "Manual Vehicle Delivery Order creation for Volvo Coach orders creates handoff delays and rework potential between order registration and downstream processes",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_2",
+              "excerpt": "Manual Vehicle Delivery Order creation required for Volvo Coach orders (intensity 7/10, stage: Customer Order Fulfillment → Order Registration)"
+            }
+          ],
+          "observedAt": "2026-03-12T12:19:40.742Z"
+        },
+        {
+          "observationId": "fr_003_complex_product_configuration_replication",
+          "category": "DataSignalFriction",
+          "evidenceBasis": "EVIDENCED",
+          "primaryAnchor": {
+            "anchorType": "Activity",
+            "anchorId": "act-customer-order-fulfillment-product-configuration"
+          },
+          "contributingAnchors": [],
+          "intensity": {
+            "scale": "0-10",
+            "score": 6
+          },
+          "rationale": "Complex replication of product configuration data from SAP Prevost to BM creates data fragmentation and decision latency in configuration process",
+          "evidence": [
+            {
+              "sourceType": "discovery_signal",
+              "ref": "pain_point_3",
+              "excerpt": "Complex product configuration replication from SAP Prevost to BM including variants, rules and restrictions (intensity 6/10, stage: Customer Order Fulfillment → Product Configuration)"
+            }
+          ],
+          "observedAt": "2026-03-12T12:19:40.742Z"
+        }
+      ],
+      "bindingConstraint": {
+        "findingId": "bc_001",
+        "bindingAnchor": {
+          "anchorType": "Activity",
+          "anchorId": "act-customer-order-fulfillment-vin-assignment"
+        },
+        "bindingAnchorObservationId": "fr_001_manual_vin_creation_excel_bottleneck",
+        "justification": "VIN Assignment represents the highest-scoring constraint with maximum downstream dependency - all subsequent order processing stages depend on VIN completion, creating systemic bottleneck effect amplified by manual Excel-based process",
+        "constraintScoring": {
+          "candidates": [
+            {
+              "anchorId": "act-customer-order-fulfillment-vin-assignment",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 3,
+                "authorityCentralisation": 2,
+                "downstreamDependency": 3,
+                "controlLayering": 1,
+                "capacityConstraint": 3
+              },
+              "totalScore": 12
+            },
+            {
+              "anchorId": "act-customer-order-fulfillment-order-registration",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 2,
+                "authorityCentralisation": 2,
+                "downstreamDependency": 2,
+                "controlLayering": 1,
+                "capacityConstraint": 2
+              },
+              "totalScore": 9
+            },
+            {
+              "anchorId": "act-customer-order-fulfillment-product-configuration",
+              "eligible": true,
+              "scores": {
+                "observationFrequency": 2,
+                "authorityCentralisation": 1,
+                "downstreamDependency": 3,
+                "controlLayering": 2,
+                "capacityConstraint": 1
+              },
+              "totalScore": 9
+            }
+          ],
+          "selectedAnchorId": "act-customer-order-fulfillment-vin-assignment",
+          "selectionRationale": "Highest total score (12/15) with maximum capacity constraint and downstream dependency impact"
+        },
+        "confidence": 0.8,
+        "observedAt": "2026-03-12T12:19:40.742Z"
+      },
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-03-12T12:19:40.742Z"
+    }
+  ]
+}

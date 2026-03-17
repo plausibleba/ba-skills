@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import { runPipeline, continuePipeline } from "../domain/pipeline/pipeline-orchestrator";
 import type { PipelineProgress } from "../domain/pipeline/pipeline-orchestrator";
 import { buildDiscoveryIR, makeId } from "../domain/pipeline/discovery-ir";
+import * as XLSX from "xlsx";
 
 // ─── Colour palette matching VCC design ───────────────────────────────────
 const INDUSTRY_OPTIONS = [
@@ -466,15 +467,93 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
   }
 
 
+  // ─── File reading helper (supports txt, md, csv, xlsx, docx, pdf) ────────
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const readFileAsText = useCallback(async (file: File): Promise<string> => {
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+
+    // Text-based formats
+    if (["txt", "md", "csv", "tsv", "text", "log"].includes(ext)) {
+      return file.text();
+    }
+
+    // Excel — extract all sheets as text
+    if (["xlsx", "xls", "xlsm"].includes(ext)) {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "array" });
+      const lines: string[] = [];
+      for (const sheetName of wb.SheetNames) {
+        lines.push(`--- ${sheetName} ---`);
+        const csv = XLSX.utils.sheet_to_csv(wb.Sheets[sheetName]);
+        lines.push(csv);
+      }
+      return lines.join("\n");
+    }
+
+    // Word (.docx) — try dynamic import of mammoth, fall back to message
+    if (ext === "docx") {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mammoth = await (Function('return import("mammoth")')() as Promise<any>);
+        const buf = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer: buf });
+        return result.value;
+      } catch {
+        throw new Error("Word (.docx) support requires the mammoth library. Run: npm install mammoth");
+      }
+    }
+
+    // PDF — try dynamic import of pdfjs-dist, fall back to message
+    if (ext === "pdf") {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pdfjsLib = await (Function('return import("pdfjs-dist")')() as Promise<any>);
+        if (pdfjsLib.GlobalWorkerOptions) pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+        const buf = await file.arrayBuffer();
+        const doc = await pdfjsLib.getDocument({ data: buf }).promise;
+        const pages: string[] = [];
+        for (let i = 1; i <= doc.numPages; i++) {
+          const page = await doc.getPage(i);
+          const content = await page.getTextContent();
+          pages.push(content.items.map((item: any) => item.str).join(" "));
+        }
+        return pages.join("\n\n");
+      } catch {
+        throw new Error("PDF support requires the pdfjs-dist library. Run: npm install pdfjs-dist");
+      }
+    }
+
+    // JSON — could be a bundle, read as text
+    if (ext === "json") {
+      return file.text();
+    }
+
+    // Fallback — try reading as text
+    return file.text();
+  }, []);
+
+  const handleFileUpload = useCallback(async (files: File[]) => {
+    const parts: string[] = [];
+    for (const file of files) {
+      try {
+        const text = await readFileAsText(file);
+        parts.push(files.length > 1 ? `--- ${file.name} ---\n${text}` : text);
+      } catch (err) {
+        alert(err instanceof Error ? err.message : `Failed to read ${file.name}`);
+      }
+    }
+    if (parts.length > 0) {
+      setTranscript((prev) => prev ? prev + "\n\n" + parts.join("\n\n") : parts.join("\n\n"));
+    }
+  }, [readFileAsText]);
+
   // ─── Drag-drop ───────────────────────────────────────────────────────────
   const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => setTranscript((ev.target as FileReader).result as string);
-    reader.readAsText(file);
-  }, []);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) void handleFileUpload(files);
+  }, [handleFileUpload]);
 
   // ─── All stage names for pain point linking ─────────────────────────────
   const allStages = form.valueStreams.flatMap(vs =>
@@ -634,7 +713,28 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
             >
               <div className="text-2xl mb-3">📋</div>
               <p className="text-sm font-medium text-slate-700 mb-1">Drop your transcript or notes</p>
-              <p className="text-xs text-slate-400 mb-4">Meeting notes · Call transcript · Email thread · Voice memo text</p>
+              <p className="text-xs text-slate-400 mb-2">Meeting notes · Call transcript · Email thread · Voice memo text</p>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                className="mb-3 inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50 transition-colors"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg>
+                Upload file (.txt, .md, .xlsx, .docx, .pdf, .csv)
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".txt,.md,.csv,.tsv,.xlsx,.xls,.xlsm,.docx,.pdf,.json,.text,.log"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void handleFileUpload(file);
+                  e.target.value = "";
+                }}
+              />
               <textarea
                 className="w-full h-48 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-300 resize-none"
                 placeholder="Or paste here…
