@@ -11,3 +11,6 @@ packages/frontend/.vite/
 .vercel
 .env*.local
 .env.git
+
+# Website lives in its own repo (plausibleba/website)
+website/
