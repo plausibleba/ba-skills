@@ -1,0 +1,2782 @@
+{
+  "bundleVersion": "1.0",
+  "createdAt": "2026-03-17T03:29:44.526Z",
+  "scaffold": {
+    "schemaVersion": "1.0.0",
+    "scaffoldId": "scaffold_tradie_business_platform",
+    "name": "Tradie Business Platform — Operating Model",
+    "description": "AI-powered business platform for trade operators providing automated operations and intelligent insights",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "elements": {
+      "valueStreams": {
+        "vs_lead_to_customer": {
+          "name": "Lead to Customer",
+          "description": "End-to-end flow from quote request through job completion and payment",
+          "activityIds": [
+            "act_process_quote_request",
+            "act_generate_quote",
+            "act_schedule_job",
+            "act_execute_job",
+            "act_generate_invoice",
+            "act_collect_payment"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_tradie_operator",
+          "elementType": "ValueStream"
+        },
+        "vs_business_health_diagnosis": {
+          "name": "Business Health Diagnosis",
+          "description": "End-to-end flow from data connection through personalized business insights delivery",
+          "activityIds": [
+            "act_setup_data_connection",
+            "act_analyze_historical_data",
+            "act_process_pattern_recognition",
+            "act_generate_insights",
+            "act_deliver_personalized_report"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "role_business_partner_ai",
+          "elementType": "ValueStream"
+        },
+        "vs_daily_operations_brief": {
+          "name": "Daily Operations Brief",
+          "description": "End-to-end flow from overnight data processing through daily action plan delivery",
+          "activityIds": [
+            "act_scan_overnight_data",
+            "act_assess_priorities",
+            "act_generate_action_items",
+            "act_compile_brief",
+            "act_deliver_morning_brief"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "role_business_partner_ai",
+          "elementType": "ValueStream"
+        },
+        "vs_trust_level_progression": {
+          "name": "Trust Level Progression",
+          "description": "End-to-end flow from read-only access through full autonomous partnership",
+          "activityIds": [
+            "act_observe_readonly",
+            "act_suggest_approve",
+            "act_enable_autonomous_routines",
+            "act_authorize_full_partnership"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "role_business_partner_ai",
+          "elementType": "ValueStream"
+        },
+        "vs_passive_learning_evolution": {
+          "name": "Passive Learning Evolution",
+          "description": "End-to-end flow from initial data mapping through predictive business intelligence",
+          "activityIds": [
+            "act_map_initial_data",
+            "act_develop_pattern_recognition",
+            "act_build_predictive_models",
+            "act_deploy_intelligence"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "role_business_partner_ai",
+          "elementType": "ValueStream"
+        },
+        "vs_invoice_to_payment": {
+          "name": "Invoice to Payment",
+          "description": "End-to-end flow from invoice generation through payment collection and follow-up",
+          "activityIds": [
+            "act_generate_invoice_itp",
+            "act_deliver_invoice",
+            "act_monitor_payment",
+            "act_followup_overdue",
+            "act_process_payment"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_tradie_operator",
+          "elementType": "ValueStream"
+        }
+      },
+      "activities": {
+        "act_process_quote_request": {
+          "name": "Process Quote Request",
+          "preOutcomeId": "outcome_quote_request_received",
+          "postOutcomeId": "outcome_quote_request_processed",
+          "nextActivityId": "act_generate_quote",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_data_management",
+            "cap_communication_management"
+          ],
+          "performedByRoleIds": [
+            "role_tradie_operator"
+          ],
+          "informationObjectIds": [
+            "io_quote_request",
+            "io_customer_profile"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Review customer history and preferences",
+                "Assess relationship status",
+                "Identify customer requirements"
+              ],
+              "informationObjectIds": [
+                "io_customer_profile"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Extract request details from email",
+                "Validate customer information",
+                "Update customer records"
+              ],
+              "informationObjectIds": [
+                "io_quote_request",
+                "io_customer_profile"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api",
+                "tech_xero_api"
+              ]
+            },
+            "cap_communication_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Acknowledge quote request receipt",
+                "Schedule initial consultation",
+                "Confirm project scope"
+              ],
+              "informationObjectIds": [
+                "io_quote_request"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_generate_quote": {
+          "name": "Generate Quote",
+          "preOutcomeId": "outcome_quote_request_processed",
+          "postOutcomeId": "outcome_quote_generated",
+          "nextActivityId": "act_schedule_job",
+          "requiresCapabilityIds": [
+            "cap_pricing_management",
+            "cap_data_management",
+            "cap_document_management"
+          ],
+          "performedByRoleIds": [
+            "role_tradie_operator"
+          ],
+          "informationObjectIds": [
+            "io_quote_document",
+            "io_pricing_data"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_pricing_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Calculate material costs",
+                "Estimate labor requirements",
+                "Apply pricing margins"
+              ],
+              "informationObjectIds": [
+                "io_pricing_data"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Retrieve historical pricing data",
+                "Validate cost calculations",
+                "Store quote information"
+              ],
+              "informationObjectIds": [
+                "io_quote_document",
+                "io_pricing_data"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            },
+            "cap_document_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Format quote document",
+                "Generate professional presentation",
+                "Prepare delivery package"
+              ],
+              "informationObjectIds": [
+                "io_quote_document"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_schedule_job": {
+          "name": "Schedule Job",
+          "preOutcomeId": "outcome_quote_generated",
+          "postOutcomeId": "outcome_job_scheduled",
+          "nextActivityId": "act_execute_job",
+          "requiresCapabilityIds": [
+            "cap_resource_management",
+            "cap_communication_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_tradie_operator"
+          ],
+          "informationObjectIds": [
+            "io_job_schedule",
+            "io_resource_allocation"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_resource_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Check availability calendar",
+                "Allocate required resources",
+                "Coordinate material delivery"
+              ],
+              "informationObjectIds": [
+                "io_job_schedule",
+                "io_resource_allocation"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            },
+            "cap_communication_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Confirm appointment with customer",
+                "Send job confirmation details",
+                "Provide arrival time estimates"
+              ],
+              "informationObjectIds": [
+                "io_job_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Update job status records",
+                "Synchronize calendar systems",
+                "Archive scheduling decisions"
+              ],
+              "informationObjectIds": [
+                "io_job_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_execute_job": {
+          "name": "Execute Job",
+          "preOutcomeId": "outcome_job_scheduled",
+          "postOutcomeId": "outcome_job_executed",
+          "nextActivityId": "act_generate_invoice",
+          "requiresCapabilityIds": [
+            "cap_service_delivery",
+            "cap_quality_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_tradie_operator"
+          ],
+          "informationObjectIds": [
+            "io_job_completion_record",
+            "io_service_documentation"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_service_delivery": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Perform technical work",
+                "Apply trade expertise",
+                "Complete service requirements"
+              ],
+              "informationObjectIds": [
+                "io_job_completion_record"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_quality_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Inspect work quality",
+                "Verify completion standards",
+                "Obtain customer sign-off"
+              ],
+              "informationObjectIds": [
+                "io_job_completion_record",
+                "io_service_documentation"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Document work performed",
+                "Record time and materials",
+                "Update job status"
+              ],
+              "informationObjectIds": [
+                "io_job_completion_record",
+                "io_service_documentation"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_generate_invoice": {
+          "name": "Generate Invoice",
+          "preOutcomeId": "outcome_job_executed",
+          "postOutcomeId": "outcome_invoice_generated",
+          "nextActivityId": "act_collect_payment",
+          "requiresCapabilityIds": [
+            "cap_financial_management",
+            "cap_document_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_tradie_operator"
+          ],
+          "informationObjectIds": [
+            "io_invoice_document",
+            "io_billing_data"
+          ],
+          "metricIds": [
+            "metric_time_to_invoice_generation"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_financial_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Calculate final billing amounts",
+                "Apply tax calculations",
+                "Process payment terms"
+              ],
+              "informationObjectIds": [
+                "io_invoice_document",
+                "io_billing_data"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            },
+            "cap_document_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Format invoice document",
+                "Generate professional invoice",
+                "Prepare delivery package"
+              ],
+              "informationObjectIds": [
+                "io_invoice_document"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Consolidate job cost data",
+                "Validate billing accuracy",
+                "Update financial records"
+              ],
+              "informationObjectIds": [
+                "io_invoice_document",
+                "io_billing_data"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_collect_payment": {
+          "name": "Collect Payment",
+          "preOutcomeId": "outcome_invoice_generated",
+          "postOutcomeId": "outcome_payment_collected",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_financial_management",
+            "cap_communication_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_payment_processor"
+          ],
+          "informationObjectIds": [
+            "io_payment_record",
+            "io_account_receivable"
+          ],
+          "metricIds": [
+            "metric_cash_flow_delay"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_financial_management": {
+              "roleIds": [
+                "role_payment_processor"
+              ],
+              "activities": [
+                "Process payment transactions",
+                "Reconcile account balances",
+                "Update cash flow records"
+              ],
+              "informationObjectIds": [
+                "io_payment_record",
+                "io_account_receivable"
+              ],
+              "technologyAppIds": [
+                "tech_bank_feed_integration",
+                "tech_xero_api"
+              ]
+            },
+            "cap_communication_management": {
+              "roleIds": [
+                "role_payment_processor"
+              ],
+              "activities": [
+                "Send payment reminders",
+                "Confirm payment receipt",
+                "Handle payment inquiries"
+              ],
+              "informationObjectIds": [
+                "io_payment_record"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_payment_processor"
+              ],
+              "activities": [
+                "Record payment transactions",
+                "Update customer payment history",
+                "Archive payment documentation"
+              ],
+              "informationObjectIds": [
+                "io_payment_record",
+                "io_account_receivable"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api",
+                "tech_bank_feed_integration"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_setup_data_connection": {
+          "name": "Setup Data Connection",
+          "preOutcomeId": "outcome_data_access_granted",
+          "postOutcomeId": "outcome_data_connection_established",
+          "nextActivityId": "act_analyze_historical_data",
+          "requiresCapabilityIds": [
+            "cap_system_integration",
+            "cap_data_management",
+            "cap_security_management"
+          ],
+          "performedByRoleIds": [
+            "role_system_administrator"
+          ],
+          "informationObjectIds": [
+            "io_connection_configuration",
+            "io_access_credentials"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_system_integration": {
+              "roleIds": [
+                "role_system_administrator"
+              ],
+              "activities": [
+                "Configure API connections",
+                "Establish data pipelines",
+                "Test integration endpoints"
+              ],
+              "informationObjectIds": [
+                "io_connection_configuration"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api",
+                "tech_bank_feed_integration",
+                "tech_xero_api"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_system_administrator"
+              ],
+              "activities": [
+                "Map data source schemas",
+                "Validate data quality",
+                "Initialize data synchronization"
+              ],
+              "informationObjectIds": [
+                "io_connection_configuration"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_security_management": {
+              "roleIds": [
+                "role_system_administrator"
+              ],
+              "activities": [
+                "Authenticate user credentials",
+                "Establish secure connections",
+                "Implement access controls"
+              ],
+              "informationObjectIds": [
+                "io_access_credentials"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api",
+                "tech_bank_feed_integration"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_analyze_historical_data": {
+          "name": "Analyze Historical Data",
+          "preOutcomeId": "outcome_data_connection_established",
+          "postOutcomeId": "outcome_historical_analysis_complete",
+          "nextActivityId": "act_process_pattern_recognition",
+          "requiresCapabilityIds": [
+            "cap_data_analytics",
+            "cap_data_management",
+            "cap_performance_monitoring"
+          ],
+          "performedByRoleIds": [
+            "role_data_analyst"
+          ],
+          "informationObjectIds": [
+            "io_historical_dataset",
+            "io_analysis_results"
+          ],
+          "metricIds": [
+            "metric_business_health_diagnosis_time"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_data_analytics": {
+              "roleIds": [
+                "role_data_analyst"
+              ],
+              "activities": [
+                "Process historical transactions",
+                "Calculate performance metrics",
+                "Identify trend patterns"
+              ],
+              "informationObjectIds": [
+                "io_historical_dataset",
+                "io_analysis_results"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_data_analyst"
+              ],
+              "activities": [
+                "Cleanse and normalize data",
+                "Aggregate multi-source datasets",
+                "Validate data completeness"
+              ],
+              "informationObjectIds": [
+                "io_historical_dataset"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine",
+                "tech_xero_api"
+              ]
+            },
+            "cap_performance_monitoring": {
+              "roleIds": [
+                "role_data_analyst"
+              ],
+              "activities": [
+                "Benchmark against industry standards",
+                "Track key performance indicators",
+                "Assess business health metrics"
+              ],
+              "informationObjectIds": [
+                "io_analysis_results"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_process_pattern_recognition": {
+          "name": "Process Pattern Recognition",
+          "preOutcomeId": "outcome_historical_analysis_complete",
+          "postOutcomeId": "outcome_patterns_identified",
+          "nextActivityId": "act_generate_insights",
+          "requiresCapabilityIds": [
+            "cap_ai_processing",
+            "cap_data_analytics",
+            "cap_pattern_recognition"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_pattern_models",
+            "io_behavioral_insights"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_ai_processing": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Apply machine learning algorithms",
+                "Train pattern recognition models",
+                "Execute automated analysis"
+              ],
+              "informationObjectIds": [
+                "io_pattern_models"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_data_analytics": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Correlate business variables",
+                "Identify statistical relationships",
+                "Quantify pattern significance"
+              ],
+              "informationObjectIds": [
+                "io_pattern_models",
+                "io_behavioral_insights"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_pattern_recognition": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Detect recurring business cycles",
+                "Identify anomalous behaviors",
+                "Map operational patterns"
+              ],
+              "informationObjectIds": [
+                "io_behavioral_insights"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_generate_insights": {
+          "name": "Generate Insights",
+          "preOutcomeId": "outcome_patterns_identified",
+          "postOutcomeId": "outcome_insights_generated",
+          "nextActivityId": "act_deliver_personalized_report",
+          "requiresCapabilityIds": [
+            "cap_ai_processing",
+            "cap_business_intelligence",
+            "cap_data_analytics"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_business_insights",
+            "io_recommendation_engine"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_ai_processing": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Generate intelligent recommendations",
+                "Synthesize complex data relationships",
+                "Produce actionable insights"
+              ],
+              "informationObjectIds": [
+                "io_business_insights",
+                "io_recommendation_engine"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_business_intelligence": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Interpret business implications",
+                "Prioritize improvement opportunities",
+                "Contextualize findings"
+              ],
+              "informationObjectIds": [
+                "io_business_insights"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_data_analytics": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Validate insight accuracy",
+                "Quantify potential impact",
+                "Support findings with evidence"
+              ],
+              "informationObjectIds": [
+                "io_business_insights",
+                "io_recommendation_engine"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_deliver_personalized_report": {
+          "name": "Deliver Personalized Report",
+          "preOutcomeId": "outcome_insights_generated",
+          "postOutcomeId": "outcome_report_delivered",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_communication_management",
+            "cap_document_management",
+            "cap_business_intelligence"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_personalized_report",
+            "io_delivery_confirmation"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_communication_management": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Format user-friendly presentation",
+                "Schedule optimal delivery timing",
+                "Confirm report receipt"
+              ],
+              "informationObjectIds": [
+                "io_personalized_report",
+                "io_delivery_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api"
+              ]
+            },
+            "cap_document_management": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Generate professional report format",
+                "Create visual data presentations",
+                "Package comprehensive deliverable"
+              ],
+              "informationObjectIds": [
+                "io_personalized_report"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_business_intelligence": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Tailor insights to user context",
+                "Highlight critical findings",
+                "Provide actionable next steps"
+              ],
+              "informationObjectIds": [
+                "io_personalized_report"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_scan_overnight_data": {
+          "name": "Scan Overnight Data",
+          "preOutcomeId": "outcome_processing_cycle_initiated",
+          "postOutcomeId": "outcome_data_scan_complete",
+          "nextActivityId": "act_assess_priorities",
+          "requiresCapabilityIds": [
+            "cap_data_management",
+            "cap_system_integration",
+            "cap_ai_processing"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_overnight_data_feed",
+            "io_scan_results"
+          ],
+          "metricIds": [
+            "metric_morning_brief_preparation_time"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_data_management": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Aggregate overnight data streams",
+                "Validate data integrity",
+                "Consolidate multi-source updates"
+              ],
+              "informationObjectIds": [
+                "io_overnight_data_feed"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine",
+                "tech_xero_api",
+                "tech_bank_feed_integration"
+              ]
+            },
+            "cap_system_integration": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Poll connected data sources",
+                "Synchronize system updates",
+                "Maintain data pipeline health"
+              ],
+              "informationObjectIds": [
+                "io_overnight_data_feed"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api",
+                "tech_xero_api",
+                "tech_bank_feed_integration"
+              ]
+            },
+            "cap_ai_processing": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Detect significant data changes",
+                "Identify anomalous patterns",
+                "Flag urgent conditions"
+              ],
+              "informationObjectIds": [
+                "io_scan_results"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_assess_priorities": {
+          "name": "Assess Priorities",
+          "preOutcomeId": "outcome_data_scan_complete",
+          "postOutcomeId": "outcome_priorities_assessed",
+          "nextActivityId": "act_generate_action_items",
+          "requiresCapabilityIds": [
+            "cap_ai_processing",
+            "cap_business_intelligence",
+            "cap_decision_support"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_priority_matrix",
+            "io_urgency_assessment"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_ai_processing": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Apply priority scoring algorithms",
+                "Rank business impact factors",
+                "Calculate urgency metrics"
+              ],
+              "informationObjectIds": [
+                "io_priority_matrix"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_business_intelligence": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Interpret business context",
+                "Assess strategic alignment",
+                "Evaluate resource implications"
+              ],
+              "informationObjectIds": [
+                "io_priority_matrix",
+                "io_urgency_assessment"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_decision_support": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Recommend priority ordering",
+                "Identify critical path items",
+                "Suggest resource allocation"
+              ],
+              "informationObjectIds": [
+                "io_urgency_assessment"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_generate_action_items": {
+          "name": "Generate Action Items",
+          "preOutcomeId": "outcome_priorities_assessed",
+          "postOutcomeId": "outcome_action_items_generated",
+          "nextActivityId": "act_compile_brief",
+          "requiresCapabilityIds": [
+            "cap_ai_processing",
+            "cap_task_management",
+            "cap_business_intelligence"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_action_items",
+            "io_task_specifications"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_ai_processing": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Generate specific task recommendations",
+                "Create actionable work items",
+                "Optimize task sequencing"
+              ],
+              "informationObjectIds": [
+                "io_action_items"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_task_management": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Structure task definitions",
+                "Assign completion timeframes",
+                "Define success criteria"
+              ],
+              "informationObjectIds": [
+                "io_action_items",
+                "io_task_specifications"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_business_intelligence": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Contextualize task importance",
+                "Link actions to business outcomes",
+                "Provide supporting rationale"
+              ],
+              "informationObjectIds": [
+                "io_task_specifications"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_compile_brief": {
+          "name": "Compile Brief",
+          "preOutcomeId": "outcome_action_items_generated",
+          "postOutcomeId": "outcome_brief_compiled",
+          "nextActivityId": "act_deliver_morning_brief",
+          "requiresCapabilityIds": [
+            "cap_document_management",
+            "cap_communication_management",
+            "cap_business_intelligence"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_daily_brief",
+            "io_executive_summary"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_document_management": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Format professional brief document",
+                "Structure information hierarchy",
+                "Create visual summaries"
+              ],
+              "informationObjectIds": [
+                "io_daily_brief"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_communication_management": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Tailor message to audience",
+                "Optimize information clarity",
+                "Prepare delivery format"
+              ],
+              "informationObjectIds": [
+                "io_daily_brief",
+                "io_executive_summary"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_business_intelligence": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Synthesize key insights",
+                "Highlight critical decisions",
+                "Provide strategic context"
+              ],
+              "informationObjectIds": [
+                "io_executive_summary"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_deliver_morning_brief": {
+          "name": "Deliver Morning Brief",
+          "preOutcomeId": "outcome_brief_compiled",
+          "postOutcomeId": "outcome_brief_delivered",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_communication_management",
+            "cap_delivery_management",
+            "cap_user_experience"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_delivery_confirmation",
+            "io_user_feedback"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_communication_management": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Deliver brief at optimal timing",
+                "Ensure message accessibility",
+                "Confirm receipt and understanding"
+              ],
+              "informationObjectIds": [
+                "io_delivery_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api"
+              ]
+            },
+            "cap_delivery_management": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Execute scheduled delivery",
+                "Monitor delivery success",
+                "Handle delivery exceptions"
+              ],
+              "informationObjectIds": [
+                "io_delivery_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api"
+              ]
+            },
+            "cap_user_experience": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Optimize presentation format",
+                "Gather user feedback",
+                "Improve delivery experience"
+              ],
+              "informationObjectIds": [
+                "io_user_feedback"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_observe_readonly": {
+          "name": "Observe Readonly",
+          "preOutcomeId": "outcome_initial_access_granted",
+          "postOutcomeId": "outcome_observation_complete",
+          "nextActivityId": "act_suggest_approve",
+          "requiresCapabilityIds": [
+            "cap_data_analytics",
+            "cap_behavioral_analysis",
+            "cap_trust_building"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_observation_log",
+            "io_behavior_patterns"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_data_analytics": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Monitor business operations passively",
+                "Collect behavioral data points",
+                "Analyze operational patterns"
+              ],
+              "informationObjectIds": [
+                "io_observation_log"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_behavioral_analysis": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Study user interaction patterns",
+                "Identify decision-making preferences",
+                "Map workflow behaviors"
+              ],
+              "informationObjectIds": [
+                "io_behavior_patterns"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_trust_building": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Demonstrate reliable observation",
+                "Respect privacy boundaries",
+                "Build confidence through consistency"
+              ],
+              "informationObjectIds": [
+                "io_observation_log"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_suggest_approve": {
+          "name": "Suggest Approve",
+          "preOutcomeId": "outcome_observation_complete",
+          "postOutcomeId": "outcome_suggestions_validated",
+          "nextActivityId": "act_enable_autonomous_routines",
+          "requiresCapabilityIds": [
+            "cap_ai_processing",
+            "cap_decision_support",
+            "cap_trust_building"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_suggestions",
+            "io_approval_tracking"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_ai_processing": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Generate intelligent suggestions",
+                "Provide supporting rationale",
+                "Adapt recommendations based on feedback"
+              ],
+              "informationObjectIds": [
+                "io_suggestions"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_decision_support": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Present decision options clearly",
+                "Highlight potential outcomes",
+                "Support informed choice-making"
+              ],
+              "informationObjectIds": [
+                "io_suggestions",
+                "io_approval_tracking"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_trust_building": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Demonstrate suggestion accuracy",
+                "Respect user approval decisions",
+                "Build confidence through results"
+              ],
+              "informationObjectIds": [
+                "io_approval_tracking"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_enable_autonomous_routines": {
+          "name": "Enable Autonomous Routines",
+          "preOutcomeId": "outcome_suggestions_validated",
+          "postOutcomeId": "outcome_routines_enabled",
+          "nextActivityId": "act_authorize_full_partnership",
+          "requiresCapabilityIds": [
+            "cap_automation_management",
+            "cap_ai_processing",
+            "cap_trust_building"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_automation_rules",
+            "io_routine_performance"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_automation_management": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Configure automated workflows",
+                "Implement routine procedures",
+                "Monitor automation performance"
+              ],
+              "informationObjectIds": [
+                "io_automation_rules",
+                "io_routine_performance"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_ai_processing": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Execute autonomous decisions",
+                "Apply learned preferences",
+                "Optimize routine efficiency"
+              ],
+              "informationObjectIds": [
+                "io_routine_performance"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_trust_building": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Demonstrate reliable automation",
+                "Maintain transparent operations",
+                "Build confidence in autonomous actions"
+              ],
+              "informationObjectIds": [
+                "io_routine_performance"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_authorize_full_partnership": {
+          "name": "Authorize Full Partnership",
+          "preOutcomeId": "outcome_routines_enabled",
+          "postOutcomeId": "outcome_partnership_authorized",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_partnership_management",
+            "cap_trust_building",
+            "cap_governance_management"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_partnership_agreement",
+            "io_authorization_record"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_partnership_management": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Establish partnership framework",
+                "Define collaboration boundaries",
+                "Implement partnership protocols"
+              ],
+              "informationObjectIds": [
+                "io_partnership_agreement"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_trust_building": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Demonstrate partnership readiness",
+                "Maintain trust relationship",
+                "Honor partnership commitments"
+              ],
+              "informationObjectIds": [
+                "io_authorization_record"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_governance_management": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Implement governance controls",
+                "Maintain accountability standards",
+                "Ensure ethical operations"
+              ],
+              "informationObjectIds": [
+                "io_partnership_agreement",
+                "io_authorization_record"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_map_initial_data": {
+          "name": "Map Initial Data",
+          "preOutcomeId": "outcome_learning_initiated",
+          "postOutcomeId": "outcome_data_mapped",
+          "nextActivityId": "act_develop_pattern_recognition",
+          "requiresCapabilityIds": [
+            "cap_data_management",
+            "cap_system_integration",
+            "cap_data_analytics"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_data_map",
+            "io_schema_definitions"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_data_management": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Catalog available data sources",
+                "Map data relationships",
+                "Establish data quality baselines"
+              ],
+              "informationObjectIds": [
+                "io_data_map"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_system_integration": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Connect to operational systems",
+                "Establish data flow pipelines",
+                "Synchronize data access"
+              ],
+              "informationObjectIds": [
+                "io_schema_definitions"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api",
+                "tech_gmail_outlook_api",
+                "tech_bank_feed_integration"
+              ]
+            },
+            "cap_data_analytics": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Analyze data structure patterns",
+                "Identify key data elements",
+                "Assess data completeness"
+              ],
+              "informationObjectIds": [
+                "io_data_map",
+                "io_schema_definitions"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_develop_pattern_recognition": {
+          "name": "Develop Pattern Recognition",
+          "preOutcomeId": "outcome_data_mapped",
+          "postOutcomeId": "outcome_pattern_recognition_developed",
+          "nextActivityId": "act_build_predictive_models",
+          "requiresCapabilityIds": [
+            "cap_ai_processing",
+            "cap_pattern_recognition",
+            "cap_machine_learning"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_pattern_algorithms",
+            "io_recognition_models"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_ai_processing": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Train pattern recognition algorithms",
+                "Optimize learning parameters",
+                "Validate pattern accuracy"
+              ],
+              "informationObjectIds": [
+                "io_pattern_algorithms"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_pattern_recognition": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Identify recurring business patterns",
+                "Detect operational anomalies",
+                "Map behavioral sequences"
+              ],
+              "informationObjectIds": [
+                "io_recognition_models"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_machine_learning": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Implement learning algorithms",
+                "Adapt to new data patterns",
+                "Improve recognition accuracy"
+              ],
+              "informationObjectIds": [
+                "io_pattern_algorithms",
+                "io_recognition_models"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_build_predictive_models": {
+          "name": "Build Predictive Models",
+          "preOutcomeId": "outcome_pattern_recognition_developed",
+          "postOutcomeId": "outcome_predictive_models_built",
+          "nextActivityId": "act_deploy_intelligence",
+          "requiresCapabilityIds": [
+            "cap_ai_processing",
+            "cap_machine_learning",
+            "cap_predictive_analytics"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_predictive_models",
+            "io_forecasting_algorithms"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_ai_processing": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Develop predictive algorithms",
+                "Train forecasting models",
+                "Optimize prediction accuracy"
+              ],
+              "informationObjectIds": [
+                "io_predictive_models"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_machine_learning": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Implement advanced ML techniques",
+                "Continuously improve model performance",
+                "Adapt to changing patterns"
+              ],
+              "informationObjectIds": [
+                "io_predictive_models",
+                "io_forecasting_algorithms"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_predictive_analytics": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Generate business forecasts",
+                "Predict operational outcomes",
+                "Assess future scenarios"
+              ],
+              "informationObjectIds": [
+                "io_forecasting_algorithms"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_deploy_intelligence": {
+          "name": "Deploy Intelligence",
+          "preOutcomeId": "outcome_predictive_models_built",
+          "postOutcomeId": "outcome_intelligence_deployed",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_ai_processing",
+            "cap_system_integration",
+            "cap_performance_monitoring"
+          ],
+          "performedByRoleIds": [
+            "role_business_partner_ai"
+          ],
+          "informationObjectIds": [
+            "io_intelligence_deployment",
+            "io_performance_metrics"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_ai_processing": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Activate intelligent systems",
+                "Deploy predictive capabilities",
+                "Enable autonomous intelligence"
+              ],
+              "informationObjectIds": [
+                "io_intelligence_deployment"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_system_integration": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Integrate intelligence with operations",
+                "Connect predictive outputs to workflows",
+                "Synchronize intelligent actions"
+              ],
+              "informationObjectIds": [
+                "io_intelligence_deployment"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine",
+                "tech_xero_api"
+              ]
+            },
+            "cap_performance_monitoring": {
+              "roleIds": [
+                "role_business_partner_ai"
+              ],
+              "activities": [
+                "Monitor intelligence effectiveness",
+                "Track prediction accuracy",
+                "Measure business impact"
+              ],
+              "informationObjectIds": [
+                "io_performance_metrics"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_generate_invoice_itp": {
+          "name": "Generate Invoice",
+          "preOutcomeId": "outcome_invoicing_triggered",
+          "postOutcomeId": "outcome_invoice_generated_itp",
+          "nextActivityId": "act_deliver_invoice",
+          "requiresCapabilityIds": [
+            "cap_financial_management",
+            "cap_document_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_tradie_operator"
+          ],
+          "informationObjectIds": [
+            "io_invoice_document",
+            "io_billing_data"
+          ],
+          "metricIds": [
+            "metric_time_to_invoice_generation"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_financial_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Calculate billing amounts",
+                "Apply tax calculations",
+                "Process payment terms"
+              ],
+              "informationObjectIds": [
+                "io_invoice_document",
+                "io_billing_data"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            },
+            "cap_document_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Format invoice document",
+                "Generate professional invoice",
+                "Prepare delivery package"
+              ],
+              "informationObjectIds": [
+                "io_invoice_document"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Consolidate job cost data",
+                "Validate billing accuracy",
+                "Update financial records"
+              ],
+              "informationObjectIds": [
+                "io_invoice_document",
+                "io_billing_data"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_deliver_invoice": {
+          "name": "Deliver Invoice",
+          "preOutcomeId": "outcome_invoice_generated_itp",
+          "postOutcomeId": "outcome_invoice_delivered",
+          "nextActivityId": "act_monitor_payment",
+          "requiresCapabilityIds": [
+            "cap_communication_management",
+            "cap_delivery_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_tradie_operator"
+          ],
+          "informationObjectIds": [
+            "io_delivery_confirmation",
+            "io_invoice_tracking"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_communication_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Send invoice to customer",
+                "Confirm receipt acknowledgment",
+                "Handle delivery inquiries"
+              ],
+              "informationObjectIds": [
+                "io_delivery_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api"
+              ]
+            },
+            "cap_delivery_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Execute invoice delivery",
+                "Track delivery status",
+                "Manage delivery exceptions"
+              ],
+              "informationObjectIds": [
+                "io_delivery_confirmation",
+                "io_invoice_tracking"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_tradie_operator"
+              ],
+              "activities": [
+                "Record delivery timestamps",
+                "Update invoice status",
+                "Maintain delivery audit trail"
+              ],
+              "informationObjectIds": [
+                "io_invoice_tracking"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_monitor_payment": {
+          "name": "Monitor Payment",
+          "preOutcomeId": "outcome_invoice_delivered",
+          "postOutcomeId": "outcome_payment_monitored",
+          "nextActivityId": "act_followup_overdue",
+          "requiresCapabilityIds": [
+            "cap_financial_management",
+            "cap_performance_monitoring",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_payment_processor"
+          ],
+          "informationObjectIds": [
+            "io_payment_status",
+            "io_monitoring_alerts"
+          ],
+          "metricIds": [
+            "metric_payment_collection_cycle"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_financial_management": {
+              "roleIds": [
+                "role_payment_processor"
+              ],
+              "activities": [
+                "Track payment due dates",
+                "Monitor account receivables",
+                "Calculate aging reports"
+              ],
+              "informationObjectIds": [
+                "io_payment_status"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api",
+                "tech_bank_feed_integration"
+              ]
+            },
+            "cap_performance_monitoring": {
+              "roleIds": [
+                "role_payment_processor"
+              ],
+              "activities": [
+                "Monitor payment performance",
+                "Track collection metrics",
+                "Generate payment alerts"
+              ],
+              "informationObjectIds": [
+                "io_monitoring_alerts"
+              ],
+              "technologyAppIds": [
+                "tech_ai_processing_engine"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_payment_processor"
+              ],
+              "activities": [
+                "Update payment tracking records",
+                "Maintain payment history",
+                "Synchronize financial data"
+              ],
+              "informationObjectIds": [
+                "io_payment_status",
+                "io_monitoring_alerts"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_followup_overdue": {
+          "name": "Followup Overdue",
+          "preOutcomeId": "outcome_payment_monitored",
+          "postOutcomeId": "outcome_followup_complete",
+          "nextActivityId": "act_process_payment",
+          "requiresCapabilityIds": [
+            "cap_communication_management",
+            "cap_customer_relationship_management",
+            "cap_collection_management"
+          ],
+          "performedByRoleIds": [
+            "role_payment_processor"
+          ],
+          "informationObjectIds": [
+            "io_followup_communications",
+            "io_collection_records"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_communication_management": {
+              "roleIds": [
+                "role_payment_processor"
+              ],
+              "activities": [
+                "Send payment reminders",
+                "Escalate overdue notices",
+                "Handle payment inquiries"
+              ],
+              "informationObjectIds": [
+                "io_followup_communications"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api"
+              ]
+            },
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_payment_processor"
+              ],
+              "activities": [
+                "Maintain customer relationships",
+                "Negotiate payment arrangements",
+                "Resolve payment disputes"
+              ],
+              "informationObjectIds": [
+                "io_followup_communications",
+                "io_collection_records"
+              ],
+              "technologyAppIds": [
+                "tech_gmail_outlook_api"
+              ]
+            },
+            "cap_collection_management": {
+              "roleIds": [
+                "role_payment_processor"
+              ],
+              "activities": [
+                "Execute collection procedures",
+                "Document collection efforts",
+                "Manage collection escalation"
+              ],
+              "informationObjectIds": [
+                "io_collection_records"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_process_payment": {
+          "name": "Process Payment",
+          "preOutcomeId": "outcome_followup_complete",
+          "postOutcomeId": "outcome_payment_processed",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_financial_management",
+            "cap_data_management",
+            "cap_reconciliation_management"
+          ],
+          "performedByRoleIds": [
+            "role_payment_processor"
+          ],
+          "informationObjectIds": [
+            "io_payment_record",
+            "io_reconciliation_data"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_financial_management": {
+              "roleIds": [
+                "role_payment_processor"
+              ],
+              "activities": [
+                "Process payment transactions",
+                "Update account balances",
+                "Record payment receipts"
+              ],
+              "informationObjectIds": [
+                "io_payment_record"
+              ],
+              "technologyAppIds": [
+                "tech_bank_feed_integration",
+                "tech_xero_api"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_payment_processor"
+              ],
+              "activities": [
+                "Record payment details",
+                "Update customer payment history",
+                "Archive payment documentation"
+              ],
+              "informationObjectIds": [
+                "io_payment_record",
+                "io_reconciliation_data"
+              ],
+              "technologyAppIds": [
+                "tech_xero_api"
+              ]
+            },
+            "cap_reconciliation_management": {
+              "roleIds": [
+                "role_payment_processor"
+              ],
+              "activities": [
+                "Reconcile payment against invoice",
+                "Match bank transactions",
+                "Close payment cycle"
+              ],
+              "informationObjectIds": [
+                "io_reconciliation_data"
+              ],
+              "technologyAppIds": [
+                "tech_bank_feed_integration",
+                "tech_xero_api"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        }
+      },
+      "outcomes": {
+        "outcome_quote_request_received": {
+          "name": "Quote Request Received",
+          "elementType": "Outcome"
+        },
+        "outcome_quote_request_processed": {
+          "name": "Quote Request Processed",
+          "elementType": "Outcome"
+        },
+        "outcome_quote_generated": {
+          "name": "Quote Generated",
+          "elementType": "Outcome"
+        },
+        "outcome_job_scheduled": {
+          "name": "Job Scheduled",
+          "elementType": "Outcome"
+        },
+        "outcome_job_executed": {
+          "name": "Job Executed",
+          "elementType": "Outcome"
+        },
+        "outcome_invoice_generated": {
+          "name": "Invoice Generated",
+          "elementType": "Outcome"
+        },
+        "outcome_payment_collected": {
+          "name": "Payment Collected",
+          "elementType": "Outcome"
+        },
+        "outcome_data_access_granted": {
+          "name": "Data Access Granted",
+          "elementType": "Outcome"
+        },
+        "outcome_data_connection_established": {
+          "name": "Data Connection Established",
+          "elementType": "Outcome"
+        },
+        "outcome_historical_analysis_complete": {
+          "name": "Historical Analysis Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_patterns_identified": {
+          "name": "Patterns Identified",
+          "elementType": "Outcome"
+        },
+        "outcome_insights_generated": {
+          "name": "Insights Generated",
+          "elementType": "Outcome"
+        },
+        "outcome_report_delivered": {
+          "name": "Report Delivered",
+          "elementType": "Outcome"
+        },
+        "outcome_processing_cycle_initiated": {
+          "name": "Processing Cycle Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_data_scan_complete": {
+          "name": "Data Scan Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_priorities_assessed": {
+          "name": "Priorities Assessed",
+          "elementType": "Outcome"
+        },
+        "outcome_action_items_generated": {
+          "name": "Action Items Generated",
+          "elementType": "Outcome"
+        },
+        "outcome_brief_compiled": {
+          "name": "Brief Compiled",
+          "elementType": "Outcome"
+        },
+        "outcome_brief_delivered": {
+          "name": "Brief Delivered",
+          "elementType": "Outcome"
+        },
+        "outcome_initial_access_granted": {
+          "name": "Initial Access Granted",
+          "elementType": "Outcome"
+        },
+        "outcome_observation_complete": {
+          "name": "Observation Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_suggestions_validated": {
+          "name": "Suggestions Validated",
+          "elementType": "Outcome"
+        },
+        "outcome_routines_enabled": {
+          "name": "Routines Enabled",
+          "elementType": "Outcome"
+        },
+        "outcome_partnership_authorized": {
+          "name": "Partnership Authorized",
+          "elementType": "Outcome"
+        },
+        "outcome_learning_initiated": {
+          "name": "Learning Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_data_mapped": {
+          "name": "Data Mapped",
+          "elementType": "Outcome"
+        },
+        "outcome_pattern_recognition_developed": {
+          "name": "Pattern Recognition Developed",
+          "elementType": "Outcome"
+        },
+        "outcome_predictive_models_built": {
+          "name": "Predictive Models Built",
+          "elementType": "Outcome"
+        },
+        "outcome_intelligence_deployed": {
+          "name": "Intelligence Deployed",
+          "elementType": "Outcome"
+        },
+        "outcome_invoicing_triggered": {
+          "name": "Invoicing Triggered",
+          "elementType": "Outcome"
+        },
+        "outcome_invoice_generated_itp": {
+          "name": "Invoice Generated",
+          "elementType": "Outcome"
+        },
+        "outcome_invoice_delivered": {
+          "name": "Invoice Delivered",
+          "elementType": "Outcome"
+        },
+        "outcome_payment_monitored": {
+          "name": "Payment Monitored",
+          "elementType": "Outcome"
+        },
+        "outcome_followup_complete": {
+          "name": "Followup Complete",
+          "elementType": "Outcome"
+        },
+        "outcome_payment_processed": {
+          "name": "Payment Processed",
+          "elementType": "Outcome"
+        }
+      },
+      "roles": {
+        "role_tradie_operator": {
+          "name": "Tradie Operator",
+          "description": "Solo trade operator responsible for executing jobs and managing their business operations",
+          "elementType": "Role"
+        },
+        "role_business_partner_ai": {
+          "name": "Business Partner AI",
+          "description": "AI system acting as intelligent business partner providing proactive support and analysis",
+          "elementType": "Role"
+        },
+        "role_client": {
+          "name": "Client",
+          "description": "Customer requesting quotes and services from the trade business",
+          "elementType": "Role"
+        },
+        "role_payment_processor": {
+          "name": "Payment Processor",
+          "description": "Entity responsible for processing and collecting payments from clients",
+          "elementType": "Role"
+        },
+        "role_data_analyst": {
+          "name": "Data Analyst",
+          "description": "Role responsible for analyzing historical data and generating business insights",
+          "elementType": "Role"
+        },
+        "role_system_administrator": {
+          "name": "System Administrator",
+          "description": "Role responsible for managing data connections and system integrations",
+          "elementType": "Role"
+        }
+      },
+      "capabilities": {
+        "cap_customer_relationship_management": {
+          "name": "Customer Relationship Management",
+          "description": "Ability to manage and maintain customer relationships throughout the business lifecycle",
+          "elementType": "Capability"
+        },
+        "cap_data_management": {
+          "name": "Data Management",
+          "description": "Ability to collect, store, process, and maintain business data across systems",
+          "elementType": "Capability"
+        },
+        "cap_communication_management": {
+          "name": "Communication Management",
+          "description": "Ability to manage internal and external communications effectively",
+          "elementType": "Capability"
+        },
+        "cap_pricing_management": {
+          "name": "Pricing Management",
+          "description": "Ability to calculate, manage, and optimize pricing strategies",
+          "elementType": "Capability"
+        },
+        "cap_document_management": {
+          "name": "Document Management",
+          "description": "Ability to create, format, and manage business documents",
+          "elementType": "Capability"
+        },
+        "cap_resource_management": {
+          "name": "Resource Management",
+          "description": "Ability to plan, allocate, and optimize business resources",
+          "elementType": "Capability"
+        },
+        "cap_service_delivery": {
+          "name": "Service Delivery",
+          "description": "Ability to execute and deliver trade services to customers",
+          "elementType": "Capability"
+        },
+        "cap_quality_management": {
+          "name": "Quality Management",
+          "description": "Ability to ensure and maintain service quality standards",
+          "elementType": "Capability"
+        },
+        "cap_financial_management": {
+          "name": "Financial Management",
+          "description": "Ability to manage financial transactions, billing, and accounting processes",
+          "elementType": "Capability"
+        },
+        "cap_system_integration": {
+          "name": "System Integration",
+          "description": "Ability to connect and integrate various business systems and data sources",
+          "elementType": "Capability"
+        },
+        "cap_security_management": {
+          "name": "Security Management",
+          "description": "Ability to manage data security, access controls, and privacy protection",
+          "elementType": "Capability"
+        },
+        "cap_data_analytics": {
+          "name": "Data Analytics",
+          "description": "Ability to analyze data patterns and generate business insights",
+          "elementType": "Capability"
+        },
+        "cap_performance_monitoring": {
+          "name": "Performance Monitoring",
+          "description": "Ability to monitor and track business performance metrics",
+          "elementType": "Capability"
+        },
+        "cap_ai_processing": {
+          "name": "AI Processing",
+          "description": "Ability to apply artificial intelligence for automated decision-making and analysis",
+          "elementType": "Capability"
+        },
+        "cap_pattern_recognition": {
+          "name": "Pattern Recognition",
+          "description": "Ability to identify and analyze patterns in business data and operations",
+          "elementType": "Capability"
+        },
+        "cap_business_intelligence": {
+          "name": "Business Intelligence",
+          "description": "Ability to generate actionable business insights and recommendations",
+          "elementType": "Capability"
+        },
+        "cap_decision_support": {
+          "name": "Decision Support",
+          "description": "Ability to provide intelligent support for business decision-making",
+          "elementType": "Capability"
+        },
+        "cap_task_management": {
+          "name": "Task Management",
+          "description": "Ability to organize, prioritize, and manage business tasks and activities",
+          "elementType": "Capability"
+        },
+        "cap_delivery_management": {
+          "name": "Delivery Management",
+          "description": "Ability to manage and execute delivery of services and communications",
+          "elementType": "Capability"
+        },
+        "cap_user_experience": {
+          "name": "User Experience",
+          "description": "Ability to optimize and enhance user interactions and experiences",
+          "elementType": "Capability"
+        },
+        "cap_behavioral_analysis": {
+          "name": "Behavioral Analysis",
+          "description": "Ability to analyze and understand user and business behavioral patterns",
+          "elementType": "Capability"
+        },
+        "cap_trust_building": {
+          "name": "Trust Building",
+          "description": "Ability to establish and maintain trust relationships with users and stakeholders",
+          "elementType": "Capability"
+        },
+        "cap_automation_management": {
+          "name": "Automation Management",
+          "description": "Ability to design, implement, and manage automated business processes",
+          "elementType": "Capability"
+        },
+        "cap_partnership_management": {
+          "name": "Partnership Management",
+          "description": "Ability to establish and manage strategic business partnerships",
+          "elementType": "Capability"
+        },
+        "cap_governance_management": {
+          "name": "Governance Management",
+          "description": "Ability to implement and maintain governance controls and compliance",
+          "elementType": "Capability"
+        },
+        "cap_machine_learning": {
+          "name": "Machine Learning",
+          "description": "Ability to implement and optimize machine learning algorithms and models",
+          "elementType": "Capability"
+        },
+        "cap_predictive_analytics": {
+          "name": "Predictive Analytics",
+          "description": "Ability to generate predictions and forecasts based on data analysis",
+          "elementType": "Capability"
+        },
+        "cap_collection_management": {
+          "name": "Collection Management",
+          "description": "Ability to manage debt collection and payment recovery processes",
+          "elementType": "Capability"
+        },
+        "cap_reconciliation_management": {
+          "name": "Reconciliation Management",
+          "description": "Ability to reconcile financial transactions and maintain accurate records",
+          "elementType": "Capability"
+        }
+      },
+      "informationObjects": {
+        "io_quote_request": {
+          "name": "Quote Request",
+          "elementType": "InformationObject"
+        },
+        "io_customer_profile": {
+          "name": "Customer Profile",
+          "elementType": "InformationObject"
+        },
+        "io_quote_document": {
+          "name": "Quote Document",
+          "elementType": "InformationObject"
+        },
+        "io_pricing_data": {
+          "name": "Pricing Data",
+          "elementType": "InformationObject"
+        },
+        "io_job_schedule": {
+          "name": "Job Schedule",
+          "elementType": "InformationObject"
+        },
+        "io_resource_allocation": {
+          "name": "Resource Allocation",
+          "elementType": "InformationObject"
+        },
+        "io_job_completion_record": {
+          "name": "Job Completion Record",
+          "elementType": "InformationObject"
+        },
+        "io_service_documentation": {
+          "name": "Service Documentation",
+          "elementType": "InformationObject"
+        },
+        "io_invoice_document": {
+          "name": "Invoice Document",
+          "elementType": "InformationObject"
+        },
+        "io_billing_data": {
+          "name": "Billing Data",
+          "elementType": "InformationObject"
+        },
+        "io_payment_record": {
+          "name": "Payment Record",
+          "elementType": "InformationObject"
+        },
+        "io_account_receivable": {
+          "name": "Account Receivable",
+          "elementType": "InformationObject"
+        },
+        "io_connection_configuration": {
+          "name": "Connection Configuration",
+          "elementType": "InformationObject"
+        },
+        "io_access_credentials": {
+          "name": "Access Credentials",
+          "elementType": "InformationObject"
+        },
+        "io_historical_dataset": {
+          "name": "Historical Dataset",
+          "elementType": "InformationObject"
+        },
+        "io_analysis_results": {
+          "name": "Analysis Results",
+          "elementType": "InformationObject"
+        },
+        "io_pattern_models": {
+          "name": "Pattern Models",
+          "elementType": "InformationObject"
+        },
+        "io_behavioral_insights": {
+          "name": "Behavioral Insights",
+          "elementType": "InformationObject"
+        },
+        "io_business_insights": {
+          "name": "Business Insights",
+          "elementType": "InformationObject"
+        },
+        "io_recommendation_engine": {
+          "name": "Recommendation Engine",
+          "elementType": "InformationObject"
+        },
+        "io_personalized_report": {
+          "name": "Personalized Report",
+          "elementType": "InformationObject"
+        },
+        "io_delivery_confirmation": {
+          "name": "Delivery Confirmation",
+          "elementType": "InformationObject"
+        },
+        "io_overnight_data_feed": {
+          "name": "Overnight Data Feed",
+          "elementType": "InformationObject"
+        },
+        "io_scan_results": {
+          "name": "Scan Results",
+          "elementType": "InformationObject"
+        },
+        "io_priority_matrix": {
+          "name": "Priority Matrix",
+          "elementType": "InformationObject"
+        },
+        "io_urgency_assessment": {
+          "name": "Urgency Assessment",
+          "elementType": "InformationObject"
+        },
+        "io_action_items": {
+          "name": "Action Items",
+          "elementType": "InformationObject"
+        },
+        "io_task_specifications": {
+          "name": "Task Specifications",
+          "elementType": "InformationObject"
+        },
+        "io_daily_brief": {
+          "name": "Daily Brief",
+          "elementType": "InformationObject"
+        },
+        "io_executive_summary": {
+          "name": "Executive Summary",
+          "elementType": "InformationObject"
+        },
+        "io_user_feedback": {
+          "name": "User Feedback",
+          "elementType": "InformationObject"
+        },
+        "io_observation_log": {
+          "name": "Observation Log",
+          "elementType": "InformationObject"
+        },
+        "io_behavior_patterns": {
+          "name": "Behavior Patterns",
+          "elementType": "InformationObject"
+        },
+        "io_suggestions": {
+          "name": "Suggestions",
+          "elementType": "InformationObject"
+        },
+        "io_approval_tracking": {
+          "name": "Approval Tracking",
+          "elementType": "InformationObject"
+        },
+        "io_automation_rules": {
+          "name": "Automation Rules",
+          "elementType": "InformationObject"
+        },
+        "io_routine_performance": {
+          "name": "Routine Performance",
+          "elementType": "InformationObject"
+        },
+        "io_partnership_agreement": {
+          "name": "Partnership Agreement",
+          "elementType": "InformationObject"
+        },
+        "io_authorization_record": {
+          "name": "Authorization Record",
+          "elementType": "InformationObject"
+        },
+        "io_data_map": {
+          "name": "Data Map",
+          "elementType": "InformationObject"
+        },
+        "io_schema_definitions": {
+          "name": "Schema Definitions",
+          "elementType": "InformationObject"
+        },
+        "io_pattern_algorithms": {
+          "name": "Pattern Algorithms",
+          "elementType": "InformationObject"
+        },
+        "io_recognition_models": {
+          "name": "Recognition Models",
+          "elementType": "InformationObject"
+        },
+        "io_predictive_models": {
+          "name": "Predictive Models",
+          "elementType": "InformationObject"
+        },
+        "io_forecasting_algorithms": {
+          "name": "Forecasting Algorithms",
+          "elementType": "InformationObject"
+        },
+        "io_intelligence_deployment": {
+          "name": "Intelligence Deployment",
+          "elementType": "InformationObject"
+        },
+        "io_performance_metrics": {
+          "name": "Performance Metrics",
+          "elementType": "InformationObject"
+        },
+        "io_invoice_tracking": {
+          "name": "Invoice Tracking",
+          "elementType": "InformationObject"
+        },
+        "io_payment_status": {
+          "name": "Payment Status",
+          "elementType": "InformationObject"
+        },
+        "io_monitoring_alerts": {
+          "name": "Monitoring Alerts",
+          "elementType": "InformationObject"
+        },
+        "io_followup_communications": {
+          "name": "Followup Communications",
+          "elementType": "InformationObject"
+        },
+        "io_collection_records": {
+          "name": "Collection Records",
+          "elementType": "InformationObject"
+        },
+        "io_reconciliation_data": {
+          "name": "Reconciliation Data",
+          "elementType": "InformationObject"
+        }
+      },
+      "controls": {},
+      "constraints": {},
+      "directives": {},
+      "deonticLogic": {},
+      "flowLogic": {},
+      "concepts": {},
+      "properties": {},
+      "metrics": {
+        "metric_time_to_invoice_generation": {
+          "name": "Time to Invoice Generation",
+          "elementType": "Metric"
+        },
+        "metric_cash_flow_delay": {
+          "name": "Cash Flow Delay",
+          "elementType": "Metric"
+        },
+        "metric_business_health_diagnosis_time": {
+          "name": "Business Health Diagnosis Time",
+          "elementType": "Metric"
+        },
+        "metric_morning_brief_preparation_time": {
+          "name": "Morning Brief Preparation Time",
+          "elementType": "Metric"
+        },
+        "metric_payment_collection_cycle": {
+          "name": "Payment Collection Cycle",
+          "elementType": "Metric"
+        }
+      },
+      "measures": {},
+      "conditions": {}
+    },
+    "_discoveryPainPoints": "1. [ProcessHandoffFriction] 90 minutes of unpaid administrative work required after each job completion (intensity 9/10, stage: Invoice Generation) ← flagged as binding\n2. [ProcessHandoffFriction] Delayed invoicing causing cash flow problems equivalent to one month's revenue annually (intensity 8/10, stage: Invoice Generation) ← flagged as binding\n3. [DataSignalFriction] No visibility into business performance patterns and profitable client segments (intensity 7/10, stage: Insight Generation)\n4. [TechnologyIntegrationFriction] Cold start problem with AI having no data on day one (intensity 6/10, stage: Initial Data Mapping)\n5. [IncentiveCapacityFriction] High AI running costs for continuous background processing at scale (intensity 7/10, stage: Overnight Data Scanning)"
+  },
+  "heatmaps": []
+}

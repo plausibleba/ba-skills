@@ -14,3 +14,8 @@ packages/frontend/.vite/
 
 # Website lives in its own repo (plausibleba/website)
 website/
+
+# Build artifacts and temp files
+*.zip
+~$*
+about-backup.html

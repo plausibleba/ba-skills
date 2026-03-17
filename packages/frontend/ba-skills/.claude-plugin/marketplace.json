@@ -1,0 +1,30 @@
+{
+  "name": "plausibleba-ba-skills",
+  "owner": {
+    "name": "PlausibleBA",
+    "url": "https://www.plausibleba.com"
+  },
+  "description": "Just enough business architecture. For every BA, on every project.",
+  "plugins": [
+    {
+      "name": "ba-plausibleba",
+      "description": "Full PlausibleBA session in one command. Capability Map + Concept Model + Value Stream → single bundle. Start here.",
+      "source": "./ba-plausibleba"
+    },
+    {
+      "name": "ba-capability-mapping",
+      "description": "BIZBOK-grounded Business Capability Map. MECE hierarchy, Execution/Governance split, validated XLSX artefact.",
+      "source": "./ba-capability-mapping"
+    },
+    {
+      "name": "ba-concept-model",
+      "description": "Business Object Taxonomy using the Capsicum Triad (Party/Record/Resource). Cross-validates Capability Map coverage.",
+      "source": "./ba-concept-model"
+    },
+    {
+      "name": "ba-value-streams",
+      "description": "Value Stream Analysis. Maps staged delivery of value, orchestrates capabilities, exports ba-skills-bundle.json for VCC.",
+      "source": "./ba-value-streams"
+    }
+  ]
+}
