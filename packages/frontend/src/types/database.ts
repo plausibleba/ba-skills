@@ -10,6 +10,24 @@ export type ProjectModule = "sales-discovery" | "board-diagnostic" | "transforma
 export interface Database {
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          id: string;
+          email: string;
+          display_name: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          email: string;
+          display_name?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          display_name?: string | null;
+        };
+        Relationships: [];
+      };
       projects: {
         Row: {
           id: string;
@@ -84,3 +102,4 @@ export interface Database {
 export type ProjectRow = Database["public"]["Tables"]["projects"]["Row"];
 export type ProjectInsert = Database["public"]["Tables"]["projects"]["Insert"];
 export type ProjectAccessRow = Database["public"]["Tables"]["project_access"]["Row"];
+export type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];

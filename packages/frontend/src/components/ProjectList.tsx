@@ -9,6 +9,7 @@ import { useProjectStore } from "../store/project-store.ts";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { useAuthStore } from "../store/auth-store.ts";
 import { FileLoader } from "./FileLoader.tsx";
+import { ShareDialog } from "./ShareDialog.tsx";
 import type { ProjectModule } from "../types/database.ts";
 
 const MODULE_INFO: Record<ProjectModule, { label: string; description: string; color: string }> = {
@@ -38,6 +39,11 @@ export function ProjectList() {
   const [newName, setNewName] = useState("");
   const [newModule, setNewModule] = useState<ProjectModule>("sales-discovery");
   const [creating, setCreating] = useState(false);
+  const [shareTarget, setShareTarget] = useState<{ id: string; name: string } | null>(null);
+
+  // Split projects into owned and shared-with-me
+  const ownedProjects = projects.filter((p) => p.owner_id === user?.id);
+  const sharedProjects = projects.filter((p) => p.owner_id !== user?.id);
 
   useEffect(() => {
     fetchProjects();
@@ -232,47 +238,130 @@ export function ProjectList() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project) => {
-              const info = MODULE_INFO[project.module as ProjectModule] ?? MODULE_INFO["sales-discovery"];
-              return (
-                <button
-                  key={project.id}
-                  onClick={() => handleOpenProject(project.id)}
-                  className="group rounded-xl border border-gray-200 bg-white p-4 text-left shadow-sm transition-all hover:border-vcc-300 hover:shadow-md"
-                >
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${info.color}`}>
-                      {info.label}
-                    </span>
-                    <span className="text-[10px] text-gray-400">
-                      v{project.revision}
-                    </span>
-                  </div>
-                  <h3 className="mb-1 text-sm font-semibold text-gray-900 group-hover:text-vcc-700">
-                    {project.name}
-                  </h3>
-                  <p className="text-[11px] text-gray-400">
-                    Updated {new Date(project.updated_at).toLocaleDateString()}
-                  </p>
-                </button>
-              );
-            })}
+          <>
+          {/* My Projects */}
+          {ownedProjects.length > 0 && (
+            <>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">My Projects</h3>
+              <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {ownedProjects.map((project) => {
+                  const info = MODULE_INFO[project.module as ProjectModule] ?? MODULE_INFO["sales-discovery"];
+                  return (
+                    <div
+                      key={project.id}
+                      className="group relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:border-vcc-300 hover:shadow-md"
+                    >
+                      <button
+                        onClick={() => handleOpenProject(project.id)}
+                        className="w-full text-left"
+                      >
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${info.color}`}>
+                            {info.label}
+                          </span>
+                          <span className="text-[10px] text-gray-400">
+                            v{project.revision}
+                          </span>
+                        </div>
+                        <h3 className="mb-1 text-sm font-semibold text-gray-900 group-hover:text-vcc-700">
+                          {project.name}
+                        </h3>
+                        <p className="text-[11px] text-gray-400">
+                          Updated {new Date(project.updated_at).toLocaleDateString()}
+                        </p>
+                      </button>
+                      {/* Share button */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setShareTarget({ id: project.id, name: project.name }); }}
+                        className="absolute right-2 top-2 rounded-lg p-1.5 text-gray-300 opacity-0 transition-opacity hover:bg-gray-100 hover:text-gray-500 group-hover:opacity-100"
+                        title="Share project"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                        </svg>
+                      </button>
+                    </div>
+                  );
+                })}
 
-            {/* Quick actions */}
-            <button
-              onClick={handleQuickDiscovery}
-              className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 p-4 text-center transition-all hover:border-vcc-300 hover:bg-vcc-50/50"
-            >
-              <svg className="mb-1 h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-              </svg>
-              <span className="text-xs font-medium text-gray-500">Quick Discovery</span>
-              <span className="text-[10px] text-gray-400">No project — just run</span>
-            </button>
-          </div>
+                {/* Quick actions */}
+                <button
+                  onClick={handleQuickDiscovery}
+                  className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 p-4 text-center transition-all hover:border-vcc-300 hover:bg-vcc-50/50"
+                >
+                  <svg className="mb-1 h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="text-xs font-medium text-gray-500">Quick Discovery</span>
+                  <span className="text-[10px] text-gray-400">No project — just run</span>
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* Shared with me */}
+          {sharedProjects.length > 0 && (
+            <>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Shared with me</h3>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {sharedProjects.map((project) => {
+                  const info = MODULE_INFO[project.module as ProjectModule] ?? MODULE_INFO["sales-discovery"];
+                  return (
+                    <button
+                      key={project.id}
+                      onClick={() => handleOpenProject(project.id)}
+                      className="group rounded-xl border border-gray-200 bg-white p-4 text-left shadow-sm transition-all hover:border-vcc-300 hover:shadow-md"
+                    >
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${info.color}`}>
+                          {info.label}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-[10px] text-gray-400">
+                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          Shared
+                        </span>
+                      </div>
+                      <h3 className="mb-1 text-sm font-semibold text-gray-900 group-hover:text-vcc-700">
+                        {project.name}
+                      </h3>
+                      <p className="text-[11px] text-gray-400">
+                        Updated {new Date(project.updated_at).toLocaleDateString()}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* Empty state when no owned projects but only Quick Discovery */}
+          {ownedProjects.length === 0 && sharedProjects.length > 0 && (
+            <div className="mt-4">
+              <button
+                onClick={handleQuickDiscovery}
+                className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 p-4 text-center transition-all hover:border-vcc-300 hover:bg-vcc-50/50"
+              >
+                <svg className="mb-1 h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                </svg>
+                <span className="text-xs font-medium text-gray-500">Quick Discovery</span>
+              </button>
+            </div>
+          )}
+          </>
         )}
       </div>
+
+      {/* Share dialog */}
+      {shareTarget && (
+        <ShareDialog
+          projectId={shareTarget.id}
+          projectName={shareTarget.name}
+          onClose={() => setShareTarget(null)}
+        />
+      )}
     </div>
   );
 }

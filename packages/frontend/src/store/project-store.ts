@@ -6,7 +6,13 @@
  */
 import { create } from "zustand";
 import { supabase, isSupabaseConfigured } from "../lib/supabase.ts";
-import type { ProjectRow, ProjectModule } from "../types/database.ts";
+import type { ProjectRow, ProjectModule, ProjectAccessRow, ProfileRow } from "../types/database.ts";
+
+/** Enriched access row with profile info for UI display */
+export interface AccessGrant extends ProjectAccessRow {
+  email: string;
+  display_name: string | null;
+}
 
 interface ProjectState {
   projects: ProjectRow[];
@@ -27,6 +33,9 @@ interface ProjectState {
 
   // Sharing
   shareProject: (projectId: string, email: string, permission: "view" | "edit") => Promise<{ error: string | null }>;
+  fetchProjectAccess: (projectId: string) => Promise<AccessGrant[]>;
+  updateAccess: (accessId: string, permission: "view" | "edit") => Promise<{ error: string | null }>;
+  revokeAccess: (accessId: string) => Promise<{ error: string | null }>;
 
   // State management
   setCurrentProject: (id: string | null, revision?: number) => void;
@@ -191,14 +200,104 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }));
   },
 
-  shareProject: async (_projectId, _email, _permission) => {
+  shareProject: async (projectId, email, permission) => {
     if (!isSupabaseConfigured) return { error: "Not configured" };
 
-    // Look up user by email — requires a Supabase edge function or RPC
-    // For MVP, we'll store by email and resolve on access
-    // Simplified: use Supabase admin API or a simple RPC function
-    // For now, return an informational error
-    return { error: "Sharing by email requires a server-side function. Coming in Phase 2." };
+    // Step 1: Look up user by email via the profiles table
+    const { data: profile, error: lookupErr } = await supabase
+      .from("profiles")
+      .select("id, email")
+      .eq("email", email.toLowerCase().trim())
+      .single();
+
+    if (lookupErr || !profile) {
+      return { error: `No account found for "${email}". They need to sign up first.` };
+    }
+
+    const targetUserId = (profile as unknown as ProfileRow).id;
+
+    // Step 2: Don't allow sharing with yourself
+    const { useAuthStore } = await import("./auth-store.ts");
+    const currentUser = useAuthStore.getState().user;
+    if (currentUser && targetUserId === currentUser.id) {
+      return { error: "You can't share a project with yourself." };
+    }
+
+    // Step 3: Insert access grant (RLS ensures only owner can do this)
+    const { error: insertErr } = await supabase
+      .from("project_access")
+      .upsert(
+        { project_id: projectId, user_id: targetUserId, permission },
+        { onConflict: "project_id,user_id" }
+      );
+
+    if (insertErr) {
+      return { error: insertErr.message };
+    }
+
+    return { error: null };
+  },
+
+  fetchProjectAccess: async (projectId) => {
+    if (!isSupabaseConfigured) return [];
+
+    // Fetch access grants for a project
+    const { data: grants, error } = await supabase
+      .from("project_access")
+      .select("*")
+      .eq("project_id", projectId);
+
+    if (error || !grants) return [];
+
+    // Enrich with profile info
+    const accessRows = grants as unknown as ProjectAccessRow[];
+    const userIds = accessRows.map((g) => g.user_id);
+    if (userIds.length === 0) return [];
+
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, email, display_name")
+      .in("id", userIds);
+
+    const profileMap = new Map<string, ProfileRow>();
+    if (profiles) {
+      for (const p of profiles as unknown as ProfileRow[]) {
+        profileMap.set(p.id, p);
+      }
+    }
+
+    return accessRows.map((g) => {
+      const p = profileMap.get(g.user_id);
+      return {
+        ...g,
+        email: p?.email ?? "unknown",
+        display_name: p?.display_name ?? null,
+      };
+    });
+  },
+
+  updateAccess: async (accessId, permission) => {
+    if (!isSupabaseConfigured) return { error: "Not configured" };
+
+    const { error } = await supabase
+      .from("project_access")
+      .update({ permission })
+      .eq("id", accessId);
+
+    if (error) return { error: error.message };
+    return { error: null };
+  },
+
+  revokeAccess: async (accessId) => {
+    if (!isSupabaseConfigured) return { error: "Not configured" };
+
+    const { error } = await supabase
+      .from("project_access")
+      .delete()
+      .eq("id", accessId);
+
+    if (error) return { error: error.message };
+    return { error: null };
   },
 
   setCurrentProject: (id, revision) => {
