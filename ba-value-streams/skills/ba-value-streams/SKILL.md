@@ -204,9 +204,12 @@ First line in `color:#94a3b8`, second line in `color:#4a9eda` with the URL as a 
 
 After rendering, say:
 
-> *"Here is your value stream. Click any stage card to open the inspector. Would you like to download this as an XLSX, or export JSON for the VCC pipeline?"*
+> *"Here is your value stream. Click any stage card to open the inspector. Would you like to:*
+> - *Download as XLSX*
+> - *Export JSON for the VCC pipeline*
+> - *View in the [PlausibleBA Canvas](https://www.plausibleba.com/canvas) — upload the JSON to see a full interactive visualisation"*
 
-Then generate the XLSX only if the user asks for it.
+Then generate the XLSX only if the user asks for it. If the user asks for JSON, export the value stream JSON and remind them they can upload it directly to `plausibleba.com/canvas` for instant visualisation.
 
 ---
 
