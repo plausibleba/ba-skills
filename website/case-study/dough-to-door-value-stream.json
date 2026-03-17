@@ -1,0 +1,79 @@
+{
+  "vs_customer_order_experience": {
+    "id": "vs_customer_order_experience",
+    "elementType": "ValueStream",
+    "name": "Customer Order Experience",
+    "valueObject": "obj_order",
+    "recipient": "obj_customer",
+    "trigger": "Customer decides to order food via app, dine-in, or counter",
+    "outcome": "Order delivered, feedback collected, loyalty points awarded, revenue recorded",
+    "stages": [
+      {
+        "id": "stg_order_placed",
+        "number": 1,
+        "name": "Order Placed",
+        "entryCriteria": "Customer has browsed the menu and selected items via app, dine-in, or counter",
+        "exitCriteria": "Order submitted with confirmed pricing, Dough-Points applied, and payment processed",
+        "valueObjectState": "Placed",
+        "capabilities": ["cap_manage_menu_portfolio", "cap_manage_digital_channel_presence", "cap_manage_order_capture", "cap_manage_order_pricing", "cap_manage_payment_collection"],
+        "objects": ["obj_order", "obj_customer", "obj_menu", "obj_product", "obj_payment", "obj_loyalty_account"],
+        "systems": ["Branded Ordering App", "POS System"]
+      },
+      {
+        "id": "stg_order_accepted",
+        "number": 2,
+        "name": "Order Accepted",
+        "entryCriteria": "Order submitted with valid payment",
+        "exitCriteria": "Order validated, queued, and allocated to kitchen production slot",
+        "valueObjectState": "Accepted",
+        "capabilities": ["cap_manage_order_queue", "cap_manage_production_scheduling"],
+        "objects": ["obj_order"],
+        "systems": ["Kitchen Display System"]
+      },
+      {
+        "id": "stg_order_prepared",
+        "number": 3,
+        "name": "Order Prepared",
+        "entryCriteria": "Order queued and production slot allocated",
+        "exitCriteria": "Food prepared to quality standards, assembled, and packaged for fulfilment",
+        "valueObjectState": "Ready",
+        "capabilities": ["cap_manage_ingredient_stock", "cap_manage_recipe_execution", "cap_manage_production_quality", "cap_manage_order_assembly"],
+        "objects": ["obj_order", "obj_recipe", "obj_product", "obj_ingredient"],
+        "systems": ["Kitchen Display System"]
+      },
+      {
+        "id": "stg_order_dispatched",
+        "number": 4,
+        "name": "Order Dispatched",
+        "entryCriteria": "Order assembled and ready for handoff",
+        "exitCriteria": "Order dispatched to delivery driver or handed to counter/dine-in customer",
+        "valueObjectState": "Dispatched",
+        "capabilities": ["cap_manage_order_dispatch", "cap_manage_delivery_routing", "cap_manage_driver_pool", "cap_manage_delivery_platform"],
+        "objects": ["obj_order", "obj_delivery", "obj_driver"],
+        "systems": ["Dough-Sync Logistics App"]
+      },
+      {
+        "id": "stg_order_delivered",
+        "number": 5,
+        "name": "Order Delivered",
+        "entryCriteria": "Order in transit or ready at counter",
+        "exitCriteria": "Customer receives order within the 25-minute-from-oven promise",
+        "valueObjectState": "Delivered",
+        "capabilities": ["cap_manage_delivery_timeliness", "cap_manage_delivery_quality"],
+        "objects": ["obj_order", "obj_delivery", "obj_customer"],
+        "systems": ["Dough-Sync Logistics App"]
+      },
+      {
+        "id": "stg_experience_closed",
+        "number": 6,
+        "name": "Experience Closed",
+        "entryCriteria": "Customer has received their order",
+        "exitCriteria": "Feedback collected, Dough-Points awarded, revenue recorded, order closed",
+        "valueObjectState": "Closed",
+        "capabilities": ["cap_manage_loyalty_programme", "cap_manage_customer_relationship", "cap_manage_customer_feedback", "cap_manage_revenue_tracking"],
+        "objects": ["obj_order", "obj_customer", "obj_loyalty_account", "obj_feedback"],
+        "systems": ["Branded Ordering App", "CRM"]
+      }
+    ]
+  }
+}

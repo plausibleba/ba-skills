@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlausibleBA Canvas — Visualise Your Business Architecture Bundle</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #0f0f0f;
+  --ink-2: #3a3a3a;
+  --ink-3: #6b6b6b;
+  --ink-4: #a0a0a0;
+  --surface: #ffffff;
+  --surface-2: #f7f6f3;
+  --surface-3: #eeede9;
+  --border: #e2e1dc;
+  --border-strong: #c8c7c0;
+  --party: #1D9E75;
+  --party-light: #E1F5EE;
+  --party-text: #085041;
+  --resource: #378ADD;
+  --resource-light: #E6F1FB;
+  --resource-text: #0C447C;
+  --record: #D4537E;
+  --record-light: #FBEAF0;
+  --record-text: #72243E;
+  --exec-border: #378ADD;
+  --gov-border: #7F77DD;
+  --accent: #0f0f0f;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--surface-2);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── NAV ── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(247,246,243,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 52px;
+}
+.nav-brand { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); text-decoration: none; }
+.nav-links { display: flex; gap: 2rem; }
+.nav-links a { font-size: 13px; color: var(--ink-3); text-decoration: none; transition: color 0.15s; }
+.nav-links a:hover { color: var(--ink); }
+.nav-cta { font-size: 12px; font-weight: 600; background: var(--ink); color: #fff; border: none; padding: 7px 16px; border-radius: 6px; cursor: pointer; text-decoration: none; transition: opacity 0.15s; }
+.nav-cta:hover { opacity: 0.8; }
+
+/* ── UPLOAD ZONE ── */
+.upload-zone {
+  max-width: 720px; margin: 4rem auto; padding: 0 1.5rem;
+  text-align: center;
+}
+.upload-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 1rem; }
+.upload-title { font-size: 2.2rem; font-weight: 300; line-height: 1.2; color: var(--ink); margin-bottom: 0.75rem; }
+.upload-title strong { font-weight: 600; }
+.upload-subtitle { font-size: 1rem; color: var(--ink-3); margin-bottom: 2.5rem; line-height: 1.6; }
+
+.drop-target {
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 3rem 2rem;
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+}
+.drop-target:hover, .drop-target.drag-over {
+  border-color: var(--ink);
+  background: var(--surface-2);
+}
+.drop-icon { font-size: 2rem; margin-bottom: 1rem; opacity: 0.3; }
+.drop-label { font-size: 15px; color: var(--ink-2); font-weight: 500; margin-bottom: 0.4rem; }
+.drop-sub { font-size: 13px; color: var(--ink-4); }
+.drop-target input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+
+.try-demo { margin-top: 1.25rem; font-size: 13px; color: var(--ink-4); }
+.try-demo button { background: none; border: none; font-family: inherit; font-size: 13px; color: var(--ink-3); text-decoration: underline; cursor: pointer; }
+.try-demo button:hover { color: var(--ink); }
+
+/* ── CANVAS ── */
+#canvas { display: none; padding: 0 0 6rem; }
+
+.canvas-header {
+  background: var(--ink);
+  color: #fff;
+  padding: 2.5rem 2.5rem 2rem;
+}
+.canvas-client { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.5; margin-bottom: 0.4rem; }
+.canvas-name { font-size: 1.8rem; font-weight: 300; margin-bottom: 0.4rem; }
+.canvas-name strong { font-weight: 600; }
+.canvas-desc { font-size: 14px; opacity: 0.6; line-height: 1.5; max-width: 640px; }
+.canvas-meta { display: flex; gap: 2rem; margin-top: 1.5rem; flex-wrap: wrap; }
+.canvas-meta-item { font-size: 12px; opacity: 0.5; }
+.canvas-meta-item span { opacity: 1; font-weight: 500; color: #fff; }
+
+.canvas-tabs {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex; gap: 0;
+  position: sticky; top: 52px; z-index: 90;
+}
+.tab-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 500;
+  color: var(--ink-4);
+  background: none; border: none;
+  padding: 14px 20px;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--ink-2); }
+.tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); }
+
+.tab-panel { display: none; padding: 2rem 2rem; }
+.tab-panel.active { display: block; }
+
+/* ── SECTION HEADERS ── */
+.section-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-4);
+  margin-bottom: 1rem;
+}
+
+/* ── TREEMAP ── */
+.treemap-legend { display: flex; gap: 1.5rem; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-3); }
+.legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
+.treemap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.l1-block {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+  background: var(--surface);
+}
+.l1-block.exec { border-color: var(--exec-border); }
+.l1-block.gov { border-color: var(--gov-border); }
+.l1-title {
+  font-size: 10px; font-weight: 600; color: var(--ink-3);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  margin-bottom: 6px; padding: 0 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.l2-block {
+  border: 1px solid var(--border);
+  border-radius: 5px; padding: 5px 6px;
+  margin-bottom: 4px; background: var(--surface-2);
+}
+.l2-title { font-size: 9px; font-weight: 600; color: var(--ink-3); margin-bottom: 4px; }
+.l3-tiles { display: flex; flex-wrap: wrap; gap: 2px; }
+.l3-tile {
+  font-size: 8px; color: var(--ink-3);
+  background: var(--surface-3); border: 0.5px solid var(--border);
+  border-radius: 3px; padding: 2px 5px;
+  cursor: pointer; transition: background 0.12s, color 0.12s;
+  line-height: 1.4;
+}
+.l3-tile:hover { background: var(--resource-light); color: var(--resource-text); }
+
+/* ── CONCEPT GRAPH ── */
+.graph-wrap { position: relative; }
+#concept-svg { width: 100%; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); }
+.concept-detail {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1rem 1.25rem; margin-top: 1rem;
+  background: var(--surface); font-size: 13px; min-height: 70px;
+}
+.cd-name { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+.cd-type { font-size: 11px; font-weight: 600; margin-bottom: 6px; }
+.cd-def { color: var(--ink-2); line-height: 1.55; margin-bottom: 5px; }
+.cd-states { font-size: 11px; color: var(--ink-4); font-family: 'DM Mono', monospace; }
+.cd-placeholder { color: var(--ink-4); font-size: 13px; }
+
+/* ── VALUE STREAM ── */
+.vs-header-block { margin-bottom: 1.25rem; }
+.vs-name { font-size: 1.1rem; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+.vs-meta { font-size: 12px; color: var(--ink-3); }
+
+.state-flow { display: flex; align-items: center; gap: 0; flex-wrap: nowrap; overflow-x: auto; margin-bottom: 1.25rem; padding-bottom: 4px; }
+.state-pill {
+  font-size: 10px; font-weight: 500; color: var(--ink-3);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 10px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.state-pill.terminal { background: var(--resource-light); color: var(--resource-text); border-color: var(--resource); }
+.state-arrow { font-size: 12px; color: var(--ink-4); margin: 0 4px; flex-shrink: 0; }
+
+.stages-scroll { overflow-x: auto; padding-bottom: 8px; }
+.stages-row { display: flex; gap: 0; min-width: max-content; }
+.stage-card {
+  width: 180px; flex-shrink: 0;
+  border: 0.5px solid var(--border); border-right: none;
+  background: var(--surface); padding: 12px 10px;
+  cursor: pointer; transition: background 0.12s;
+}
+.stage-card:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.stage-card:last-child { border-right: 0.5px solid var(--border); border-radius: 0 var(--radius) var(--radius) 0; }
+.stage-card:hover { background: var(--surface-2); }
+.stage-card.active { background: var(--resource-light); border-color: var(--resource); z-index: 1; }
+.stage-num { font-size: 10px; color: var(--ink-4); font-family: 'DM Mono', monospace; margin-bottom: 4px; }
+.stage-name { font-size: 11px; font-weight: 600; color: var(--ink); line-height: 1.3; margin-bottom: 6px; }
+.stage-actor { font-size: 9px; color: var(--ink-4); margin-bottom: 8px; line-height: 1.3; }
+.stage-caps { display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 6px; }
+.stage-cap-tag { font-size: 8px; background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 2px; padding: 1px 4px; color: var(--ink-3); }
+.ppit-row { display: flex; gap: 3px; }
+.ppit-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+.stage-detail {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.25rem 1.5rem; margin-top: 1rem;
+  background: var(--surface);
+}
+.sd-name { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 1rem; }
+.sd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.sd-block .sd-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-4); margin-bottom: 4px; }
+.sd-block .sd-val { font-size: 12px; color: var(--ink-2); line-height: 1.5; }
+.sd-placeholder { color: var(--ink-4); font-size: 13px; }
+
+/* ── METRICS ── */
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.metric-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1rem 1.1rem;
+}
+.metric-name { font-size: 12px; font-weight: 600; color: var(--ink-2); margin-bottom: 4px; }
+.metric-unit { font-size: 11px; color: var(--ink-4); }
+.metric-dir { font-size: 10px; font-weight: 600; margin-top: 6px; padding: 2px 7px; border-radius: 3px; display: inline-block; }
+.metric-dir.up { background: #EAF3DE; color: #3B6D11; }
+.metric-dir.down { background: #FAECE7; color: #993C1D; }
+
+/* ── CTA BANNER ── */
+.cta-banner {
+  background: var(--ink); color: #fff;
+  padding: 3rem 2.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 2rem; flex-wrap: wrap;
+  margin: 2rem 0 0;
+}
+.cta-left { max-width: 500px; }
+.cta-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.4; margin-bottom: 0.5rem; }
+.cta-headline { font-size: 1.4rem; font-weight: 300; line-height: 1.3; margin-bottom: 0.5rem; }
+.cta-headline strong { font-weight: 600; }
+.cta-sub { font-size: 13px; opacity: 0.5; line-height: 1.5; }
+.cta-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.cta-btn-primary {
+  background: #fff; color: var(--ink);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+  border: none; padding: 11px 22px; border-radius: 6px; cursor: pointer;
+  text-decoration: none; transition: opacity 0.15s; white-space: nowrap;
+}
+.cta-btn-primary:hover { opacity: 0.85; }
+.cta-btn-secondary {
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  background: none; border: 1px solid rgba(255,255,255,0.25); color: rgba(255,255,255,0.7);
+  padding: 10px 20px; border-radius: 6px; cursor: pointer;
+  text-decoration: none; transition: border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.cta-btn-secondary:hover { border-color: rgba(255,255,255,0.6); color: #fff; }
+
+/* ── FOOTER ── */
+.canvas-footer {
+  background: var(--surface-2); border-top: 1px solid var(--border);
+  padding: 1.5rem 2.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+}
+.footer-brand { font-size: 12px; color: var(--ink-4); }
+.footer-brand a { color: var(--ink-3); text-decoration: none; }
+.footer-brand a:hover { color: var(--ink); }
+.footer-convert { font-size: 12px; color: var(--ink-3); }
+.footer-convert a { color: var(--ink-2); font-weight: 500; text-decoration: none; }
+.footer-convert a:hover { color: var(--ink); text-decoration: underline; }
+
+@media (max-width: 600px) {
+  .canvas-header { padding: 1.5rem; }
+  .tab-panel { padding: 1.25rem 1rem; }
+  .sd-grid { grid-template-columns: 1fr; }
+  .cta-banner { padding: 2rem 1.5rem; }
+  nav { padding: 0 1rem; }
+  .nav-links { display: none; }
+}
+</style>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png">
+    <link rel="stylesheet" href="/site.css">
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script async src="https://plausible.io/js/pa-fQD2wVJrTO7vhKcNfQW4P.js"></script>
+    <script>
+      window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+      plausible.init()
+    </script>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="/">PlausibleBA</a>
+    <div class="nav-links">
+      <a href="/skills">Skills</a>
+      <a href="/methodology">Methodology</a>
+      <a href="/install">Install</a>
+      <a href="/canvas" class="active">Canvas</a>
+      <a href="/case-study">Case study</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+      <a class="nav-cta" href="/install">Install free →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- UPLOAD STATE -->
+<div id="upload-state">
+  <div class="upload-zone">
+    <div class="upload-eyebrow">PlausibleBA Canvas</div>
+    <h1 class="upload-title">Drop your bundle.<br><strong>See your operating model.</strong></h1>
+    <p class="upload-subtitle">This canvas renders a capability map, concept model, and value stream from a JSON bundle exported by the PlausibleBA skills library — a free plugin for <a href="https://claude.ai/download" target="_blank" style="color:var(--blue)">Claude Cowork</a>.</p>
+
+    <div style="background:var(--surface-3);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.25rem;text-align:left;max-width:540px;margin-left:auto;margin-right:auto">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-4);margin-bottom:0.75rem">How to get a bundle</div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem">
+        <div style="display:flex;gap:0.75rem;align-items:flex-start;font-size:13px;color:var(--ink-3)">
+          <span style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--navy);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">1</span>
+          <span><a href="/install" style="color:var(--blue);font-weight:500">Install PlausibleBA</a> — free, three steps, works in Claude Cowork</span>
+        </div>
+        <div style="display:flex;gap:0.75rem;align-items:flex-start;font-size:13px;color:var(--ink-3)">
+          <span style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--navy);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">2</span>
+          <span>Open a <strong>new Cowork task</strong>, paste any business description, and type <code style="font-size:11px;background:var(--surface);padding:1px 5px;border-radius:3px;border:1px solid var(--border)">/value-stream</code></span>
+        </div>
+        <div style="display:flex;gap:0.75rem;align-items:flex-start;font-size:13px;color:var(--ink-3)">
+          <span style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--navy);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">3</span>
+          <span>When the visualisation renders, ask Claude to <strong>export the JSON bundle</strong> — then upload it here</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="drop-target" id="drop-target">
+      <div class="drop-icon">⬡</div>
+      <div class="drop-label">Drop ba-skills-bundle.json here</div>
+      <div class="drop-sub">or click to browse</div>
+      <input type="file" id="file-input" accept=".json">
+    </div>
+
+    <div class="try-demo">
+      Don't have a bundle yet? <button id="demo-btn">Load the PortfolioProp demo</button>
+    </div>
+  </div>
+</div>
+
+<!-- CANVAS STATE -->
+<div id="canvas">
+  <div class="canvas-header" id="canvas-header"></div>
+
+  <div class="canvas-tabs">
+    <button class="tab-btn active" data-tab="capabilities">Capability map</button>
+    <button class="tab-btn" data-tab="concepts">Concept model</button>
+    <button class="tab-btn" data-tab="valuestreams">Value streams</button>
+    <button class="tab-btn" data-tab="metrics">Metrics</button>
+  </div>
+
+  <div id="tab-capabilities" class="tab-panel active">
+    <div class="section-label" id="cap-label"></div>
+    <div class="treemap-legend">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--exec-border)"></span>Execution</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--gov-border)"></span>Governance</div>
+      <div class="legend-item" style="color:var(--ink-4);font-size:11px">Hover L3 tiles to highlight</div>
+    </div>
+    <div class="treemap-grid" id="treemap-grid"></div>
+  </div>
+
+  <div id="tab-concepts" class="tab-panel">
+    <div class="section-label" id="concept-label"></div>
+    <div class="treemap-legend">
+      <div class="legend-item"><span class="legend-swatch" style="border-radius:50%;background:var(--party)"></span>Party</div>
+      <div class="legend-item"><span class="legend-swatch" style="border-radius:50%;background:var(--resource)"></span>Resource</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--record)"></span>Record</div>
+      <div class="legend-item" style="color:var(--ink-4);font-size:11px">Click any node for details</div>
+    </div>
+    <div class="graph-wrap">
+      <svg id="concept-svg" viewBox="0 0 760 420" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="concept-detail" id="concept-detail">
+      <p class="cd-placeholder">Select a concept node to see its definition and lifecycle states.</p>
+    </div>
+  </div>
+
+  <div id="tab-valuestreams" class="tab-panel">
+    <div id="vs-content"></div>
+  </div>
+
+  <div id="tab-metrics" class="tab-panel">
+    <div class="section-label" id="metrics-label"></div>
+    <div class="metrics-grid" id="metrics-grid"></div>
+  </div>
+
+  <div class="cta-banner">
+    <div class="cta-left">
+      <div class="cta-eyebrow">Value Cognition Canvas</div>
+      <div class="cta-headline">Turn this into an <strong>interactive workshopping canvas.</strong></div>
+      <div class="cta-sub">Add friction heatmaps, solution mapping, throughput projections, and governance controls. Import your bundle directly into VCC and run your first workshop in minutes.</div>
+    </div>
+    <div class="cta-actions">
+      <a class="cta-btn-primary" href="https://www.valuecognitioncanvas.com">Open in VCC →</a>
+      <a class="cta-btn-secondary" href="/install">Install PlausibleBA free</a>
+    </div>
+  </div>
+
+  <footer class="site-footer" style="margin-top:0">
+    <div class="footer-inner">
+      <div class="footer-brand-col">
+        <span class="footer-brand">PlausibleBA</span>
+        <p>Just enough business architecture.<br>For every BA, on every project.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Skills</h4>
+        <a href="/skills#capability-map">Capability Mapping</a>
+        <a href="/skills#concept-model">Concept Model</a>
+        <a href="/skills#value-streams">Value Streams</a>
+        <a href="/install">Install</a>
+      </div>
+      <div class="footer-col">
+        <h4>Learn</h4>
+        <a href="/methodology">Methodology</a>
+        <a href="/canvas">Canvas</a>
+        <a href="https://plausibleba.substack.com" target="_blank">Substack</a>
+        <a href="https://github.com/plausibleba/ba-skills" target="_blank">GitHub</a>
+      </div>
+      <div class="footer-col">
+        <h4>About</h4>
+        <a href="/about">About PlausibleBA</a>
+        <a href="/privacy">Privacy policy</a>
+        <a href="https://www.valuecognitioncanvas.com" target="_blank">Value Cognition Canvas</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>Generated by the <a href="https://github.com/plausibleba/ba-skills" target="_blank">PlausibleBA Skills Library</a> · Licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a></p>
+      <p>Built for <a href="https://claude.ai/download" target="_blank">Claude Cowork</a> by Anthropic</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+const GOVWORDS = ['governance','compliance','risk','audit','legal','regulatory','data privacy','strategy','performance management'];
+
+function isGov(name) {
+  const n = name.toLowerCase();
+  return GOVWORDS.some(w => n.includes(w));
+}
+
+// ── Bundle Normalisation ─────────────────────────────────────────────────────
+// Accepts three input shapes and normalises to the unified canvas format:
+//  1. Unified bundle (ba-skills-bundle) — already correct, pass through
+//  2. Individual Skill outputs (flat maps of capabilities, concepts, or VS)
+//  3. Merged individual outputs (capability-map + concept-model + value-stream
+//     pasted into a single object with top-level keys like cap_*, obj_*, vs_*)
+
+function snakeToTitle(id) {
+  return id.replace(/^cap_/, '').replace(/_/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase())
+    .replace(/\bAnd\b/g, '&');
+}
+
+function generateMissingHierarchy(caps) {
+  const result = Object.assign({}, caps);
+  const existingIds = new Set(Object.keys(result));
+  const missingParentIds = new Set();
+  Object.values(result).forEach(cap => {
+    if (cap.parentId && !existingIds.has(cap.parentId)) missingParentIds.add(cap.parentId);
+  });
+  if (missingParentIds.size === 0) return result;
+  if (Object.values(result).some(c => c.level === 1) && Object.values(result).some(c => c.level === 2)) return result;
+
+  // Create L2 entries
+  missingParentIds.forEach(parentId => {
+    result[parentId] = { id: parentId, name: snakeToTitle(parentId), level: 2, parentId: null };
+  });
+
+  // Group L2s into L1 areas — separate gov from exec, pair consecutive exec L2s
+  const l2Order = [];
+  const seen = new Set();
+  Object.values(caps).forEach(cap => {
+    if (cap.parentId && missingParentIds.has(cap.parentId) && !seen.has(cap.parentId)) {
+      l2Order.push(cap.parentId);
+      seen.add(cap.parentId);
+    }
+  });
+
+  const govL2s = [], execL2s = [];
+  l2Order.forEach(l2Id => {
+    const children = Object.values(result).filter(c => c.parentId === l2Id);
+    const govCount = children.filter(c => c.authority === 'Gov' || c.type === 'Governance').length;
+    (govCount > children.length / 2 ? govL2s : execL2s).push(l2Id);
+  });
+
+  let counter = 1;
+  for (let i = 0; i < execL2s.length; i += 2) {
+    const l1Id = 'cap_area_' + counter;
+    const names = [execL2s[i], execL2s[i+1]].filter(Boolean).map(snakeToTitle);
+    const short = names.map(n => n.replace(/ Management$/, '').replace(/ And /, ' & '));
+    const l1Name = short.length === 1 ? short[0] : short.join(' & ');
+    result[l1Id] = { id: l1Id, name: l1Name, level: 1, parentId: null, type: 'Execution' };
+    result[execL2s[i]].parentId = l1Id;
+    if (execL2s[i+1]) result[execL2s[i+1]].parentId = l1Id;
+    counter++;
+  }
+
+  if (govL2s.length > 0) {
+    const govL1Id = 'cap_area_gov';
+    result[govL1Id] = { id: govL1Id, name: 'Governance & Compliance', level: 1, parentId: null, type: 'Governance' };
+    govL2s.forEach(l2Id => { result[l2Id].parentId = govL1Id; });
+  }
+  return result;
+}
+
+function inferConceptCapabilityLinks(concepts, capabilities, stages) {
+  const objToCaps = {};
+  Object.values(capabilities).forEach(cap => {
+    const objRef = cap.valueObject || cap.businessObject;
+    if (objRef && typeof objRef === 'string') {
+      if (!objToCaps[objRef]) objToCaps[objRef] = new Set();
+      objToCaps[objRef].add(cap.id);
+    }
+  });
+  // Also infer from stage co-occurrence: objects in a stage share that stage's capabilities
+  if (stages) {
+    Object.values(stages).forEach(s => {
+      const stageObjs = s.objects || s.informationObjectIds || [];
+      const stageCaps = s.capabilities || s.requiresCapabilityIds || [];
+      stageObjs.forEach(objId => {
+        if (!objToCaps[objId]) objToCaps[objId] = new Set();
+        stageCaps.forEach(capId => objToCaps[objId].add(capId));
+      });
+    });
+  }
+  Object.values(concepts).forEach(concept => {
+    const existing = concept.relatedCapabilityIds || concept.relatedCapabilities || [];
+    const inferred = [...(objToCaps[concept.id] || [])];
+    if (existing.length === 0 && inferred.length > 0) {
+      concept.relatedCapabilityIds = inferred;
+    }
+  });
+}
+
+function normalizeBundle(raw) {
+  // Already a unified bundle — has elements.capabilities as an object
+  if (raw.elements && typeof raw.elements.capabilities === 'object') {
+    // Normalise any string levels ("L1" → 1) in capabilities
+    const caps = raw.elements.capabilities;
+    Object.values(caps).forEach(c => {
+      if (typeof c.level === 'string') c.level = parseInt(c.level.replace('L',''), 10);
+      if (!c.type) c.type = c.level === 1 ? (isGov(c.name) ? 'Governance' : 'Execution') : undefined;
+      // Map parent → parentId
+      if (c.parent && !c.parentId) { c.parentId = c.parent; delete c.parent; }
+    });
+    // Auto-generate missing L1/L2 entries from parent references
+    raw.elements.capabilities = generateMissingHierarchy(caps);
+
+    // Normalise concepts: relatedCapabilities → relatedCapabilityIds
+    const concepts = raw.elements.concepts || {};
+    Object.values(concepts).forEach(c => {
+      if (c.relatedCapabilities && !c.relatedCapabilityIds) {
+        c.relatedCapabilityIds = c.relatedCapabilities;
+      }
+    });
+    // Infer relatedCapabilityIds from capabilities' valueObject field + stage co-occurrence
+    inferConceptCapabilityLinks(concepts, raw.elements.capabilities, raw.elements.valueStreamStages);
+
+    // Normalise value streams with inline stages → flattened stages + outcomes
+    const vs = raw.elements.valueStreams || {};
+    Object.values(vs).forEach(v => {
+      // Handle stages as array of string IDs (references to valueStreamStages)
+      if (v.stages && Array.isArray(v.stages) && v.stages.length > 0 && typeof v.stages[0] === 'string') {
+        v.stageIds = v.stages;
+        delete v.stages;
+      } else if (v.stages && Array.isArray(v.stages) && !v.stageIds) {
+        normalizeInlineVS(v, raw.elements);
+      }
+      if (v.outcome && !v.terminalOutcome) v.terminalOutcome = v.outcome;
+    });
+
+    // Normalise valueStreamStages field names
+    const vss = raw.elements.valueStreamStages || {};
+    Object.values(vss).forEach(s => {
+      if (s.capabilities && !s.requiresCapabilityIds) { s.requiresCapabilityIds = s.capabilities; delete s.capabilities; }
+      if (s.objects && !s.informationObjectIds) { s.informationObjectIds = s.objects; delete s.objects; }
+      if (s.entryCondition && !s.entryCriteria) { s.entryCriteria = s.entryCondition; delete s.entryCondition; }
+      if (s.exitCondition && !s.exitCriteria) { s.exitCriteria = s.exitCondition; delete s.exitCondition; }
+      // Generate outcome IDs if missing
+      if (!s.preOutcomeId) {
+        const preId = 'outcome_' + s.id + '_pre';
+        const postId = 'outcome_' + s.id + '_post';
+        if (!raw.elements.outcomes) raw.elements.outcomes = {};
+        raw.elements.outcomes[preId] = { id: preId, name: s.entryCriteria || 'Before ' + s.name };
+        raw.elements.outcomes[postId] = { id: postId, name: s.exitCriteria || s.valueObjectState || s.name };
+        s.preOutcomeId = preId;
+        s.postOutcomeId = postId;
+      }
+      if (!s.performedByRoleIds) s.performedByRoleIds = [];
+      if (!s.capabilityPPIT) s.capabilityPPIT = {};
+      if (!s.metricIds) s.metricIds = [];
+    });
+
+    return raw;
+  }
+
+  // Individual or merged Skill output — detect by key prefixes
+  const keys = Object.keys(raw);
+  const capKeys = keys.filter(k => k.startsWith('cap_'));
+  const objKeys = keys.filter(k => k.startsWith('obj_'));
+  const vsKeys  = keys.filter(k => k.startsWith('vs_'));
+
+  if (capKeys.length === 0 && objKeys.length === 0 && vsKeys.length === 0) {
+    // Unknown format — return as-is and let renderBundle handle gracefully
+    return raw;
+  }
+
+  // Build unified bundle from individual outputs
+  const bundle = {
+    name: raw.name || 'Operating Model',
+    description: raw.description || '',
+    meta: raw.meta || { client: '', bundleVersion: '1.0.0' },
+    elements: {
+      capabilities: {},
+      concepts: {},
+      valueStreams: {},
+      valueStreamStages: {},
+      outcomes: {},
+      roles: {},
+      metrics: {},
+      informationObjects: {}
+    }
+  };
+
+  // Capabilities
+  capKeys.forEach(k => {
+    const c = raw[k];
+    const level = typeof c.level === 'string' ? parseInt(c.level.replace('L',''), 10) : (c.level || 0);
+    bundle.elements.capabilities[k] = {
+      id: c.id || k,
+      name: c.name,
+      level,
+      parentId: c.parentId || null,
+      description: c.description || '',
+      type: c.type || (level === 1 ? (isGov(c.name) ? 'Governance' : 'Execution') : undefined),
+      businessObject: c.businessObject || null
+    };
+  });
+
+  // Concepts (from obj_ keys — individual concept model output)
+  objKeys.forEach(k => {
+    const c = raw[k];
+    bundle.elements.concepts[k] = {
+      id: c.id || k,
+      name: c.name,
+      type: c.type, // Party | Resource | Record
+      definition: c.definition || '',
+      lifecycleStates: c.lifecycleStates || [],
+      relatedCapabilityIds: c.relatedCapabilities || c.relatedCapabilityIds || []
+    };
+  });
+
+  // Value Streams (from vs_ keys — individual value stream output)
+  vsKeys.forEach(k => {
+    const v = raw[k];
+    if (v.stages && Array.isArray(v.stages)) {
+      // Inline stages format — normalise to flattened
+      const stageIds = [];
+      let prevOutcomeId = null;
+      v.stages.forEach((s, i) => {
+        const stageId = s.id || `stg_${i+1}`;
+        stageIds.push(stageId);
+        // Create pre-outcome from entryCriteria or valueObjectState
+        const preId = `outcome_${stageId}_pre`;
+        const postId = `outcome_${stageId}_post`;
+        if (i === 0 || !prevOutcomeId) {
+          bundle.elements.outcomes[preId] = { id: preId, name: s.entryCriteria || `Before ${s.name}` };
+        }
+        bundle.elements.outcomes[postId] = { id: postId, name: s.exitCriteria || s.valueObjectState || s.name };
+        bundle.elements.valueStreamStages[stageId] = {
+          id: stageId,
+          name: s.name,
+          preOutcomeId: prevOutcomeId || preId,
+          postOutcomeId: postId,
+          requiresCapabilityIds: s.capabilities || [],
+          performedByRoleIds: [],
+          informationObjectIds: s.objects || [],
+          metricIds: [],
+          capabilityPPIT: {},
+          entryCriteria: s.entryCriteria || '',
+          exitCriteria: s.exitCriteria || '',
+          valueObjectState: s.valueObjectState || ''
+        };
+        prevOutcomeId = postId;
+      });
+      bundle.elements.valueStreams[k] = {
+        id: v.id || k,
+        name: v.name,
+        stageIds,
+        trigger: v.trigger || '',
+        terminalOutcome: v.outcome || v.terminalOutcome || '',
+        layoutZone: v.layoutZone || 'ecosystem'
+      };
+    }
+  });
+
+  return bundle;
+}
+
+// Normalise a single VS with inline stages[] into the flattened format
+function normalizeInlineVS(vs, elements) {
+  if (!elements.valueStreamStages) elements.valueStreamStages = {};
+  if (!elements.outcomes) elements.outcomes = {};
+  const stageIds = [];
+  let prevOutcomeId = null;
+  vs.stages.forEach((s, i) => {
+    const stageId = s.id || `stg_${i+1}`;
+    stageIds.push(stageId);
+    const preId = `outcome_${stageId}_pre`;
+    const postId = `outcome_${stageId}_post`;
+    if (i === 0 || !prevOutcomeId) {
+      elements.outcomes[preId] = { id: preId, name: s.entryCriteria || `Before ${s.name}` };
+    }
+    elements.outcomes[postId] = { id: postId, name: s.exitCriteria || s.valueObjectState || s.name };
+    elements.valueStreamStages[stageId] = {
+      id: stageId,
+      name: s.name,
+      preOutcomeId: prevOutcomeId || preId,
+      postOutcomeId: postId,
+      requiresCapabilityIds: s.capabilities || s.requiresCapabilityIds || [],
+      performedByRoleIds: s.performedByRoleIds || [],
+      informationObjectIds: s.objects || s.informationObjectIds || [],
+      metricIds: s.metricIds || [],
+      capabilityPPIT: s.capabilityPPIT || {},
+      entryCriteria: s.entryCriteria || '',
+      exitCriteria: s.exitCriteria || '',
+      valueObjectState: s.valueObjectState || ''
+    };
+    prevOutcomeId = postId;
+  });
+  vs.stageIds = stageIds;
+  delete vs.stages;
+}
+
+function buildTreemap(caps) {
+  const grid = document.getElementById('treemap-grid');
+  grid.innerHTML = '';
+  const l1s = Object.values(caps).filter(c => c.level === 1);
+  const l2s = Object.values(caps).filter(c => c.level === 2);
+  const l3s = Object.values(caps).filter(c => c.level === 3);
+
+  let totalL3 = l3s.length;
+  document.getElementById('cap-label').textContent =
+    `${l1s.length} business areas · ${l2s.length} domains · ${totalL3} capabilities`;
+
+  l1s.forEach(l1 => {
+    const gov = isGov(l1.name);
+    const block = document.createElement('div');
+    block.className = 'l1-block ' + (gov ? 'gov' : 'exec');
+    block.innerHTML = `<div class="l1-title" title="${l1.name}">${l1.name}</div>`;
+
+    const myL2s = l2s.filter(l2 => l2.parentId === l1.id);
+    myL2s.forEach(l2 => {
+      const l2b = document.createElement('div');
+      l2b.className = 'l2-block';
+      const myL3s = l3s.filter(l3 => l3.parentId === l2.id);
+      l2b.innerHTML = `<div class="l2-title">${l2.name}</div>
+        <div class="l3-tiles">${myL3s.map(l3 =>
+          `<div class="l3-tile" title="${l3.description||l3.name}">${l3.name}</div>`
+        ).join('')}</div>`;
+      block.appendChild(l2b);
+    });
+    grid.appendChild(block);
+  });
+}
+
+function buildConceptGraph(concepts) {
+  const svg = document.getElementById('concept-svg');
+  svg.innerHTML = '';
+  const ns = 'http://www.w3.org/2000/svg';
+  const detail = document.getElementById('concept-detail');
+
+  const parties = Object.values(concepts).filter(c => c.type === 'Party');
+  const resources = Object.values(concepts).filter(c => c.type === 'Resource');
+  const records = Object.values(concepts).filter(c => c.type === 'Record');
+
+  const totalNodes = Math.max(parties.length, resources.length, records.length);
+  const svgH = Math.max(360, totalNodes * 70 + 80);
+  svg.setAttribute('viewBox', `0 0 760 ${svgH}`);
+
+  const colX = { Party: 120, Resource: 380, Record: 630 };
+  const color = { Party: '#1D9E75', Resource: '#378ADD', Record: '#D4537E' };
+  const lightColor = { Party: '#E1F5EE', Resource: '#E6F1FB', Record: '#FBEAF0' };
+  const textColor = { Party: '#085041', Resource: '#0C447C', Record: '#72243E' };
+
+  const nodePos = {};
+  [['Party', parties], ['Resource', resources], ['Record', records]].forEach(([type, nodes]) => {
+    const spacing = svgH / (nodes.length + 1);
+    nodes.forEach((n, i) => {
+      nodePos[n.id] = { x: colX[type], y: spacing * (i + 1), type };
+    });
+  });
+
+  // Draw edges based on relatedCapabilityIds overlaps (simple cross-type connections)
+  const allConcepts = Object.values(concepts);
+  const drawn = new Set();
+  allConcepts.forEach(a => {
+    if (!nodePos[a.id]) return;
+    allConcepts.forEach(b => {
+      if (a.id === b.id) return;
+      if (!nodePos[b.id]) return;
+      const key = [a.id, b.id].sort().join('|');
+      if (drawn.has(key)) return;
+      const aIds = a.relatedCapabilityIds || [];
+      const bIds = b.relatedCapabilityIds || [];
+      const shared = aIds.filter(id => bIds.includes(id)).length;
+      if (shared > 0) {
+        drawn.add(key);
+        const pa = nodePos[a.id], pb = nodePos[b.id];
+        const line = document.createElementNS(ns, 'line');
+        line.setAttribute('x1', pa.x); line.setAttribute('y1', pa.y);
+        line.setAttribute('x2', pb.x); line.setAttribute('y2', pb.y);
+        line.setAttribute('stroke', '#e2e1dc'); line.setAttribute('stroke-width', '1');
+        svg.appendChild(line);
+      }
+    });
+  });
+
+  allConcepts.forEach(c => {
+    if (!nodePos[c.id]) return;
+    const { x, y, type } = nodePos[c.id];
+    const g = document.createElementNS(ns, 'g');
+    g.style.cursor = 'pointer';
+
+    if (type === 'Record') {
+      const r = document.createElementNS(ns, 'rect');
+      r.setAttribute('x', x - 36); r.setAttribute('y', y - 18);
+      r.setAttribute('width', '72'); r.setAttribute('height', '36');
+      r.setAttribute('rx', '4');
+      r.setAttribute('fill', lightColor[type]);
+      r.setAttribute('stroke', color[type]); r.setAttribute('stroke-width', '1.5');
+      g.appendChild(r);
+    } else {
+      const circle = document.createElementNS(ns, 'circle');
+      circle.setAttribute('cx', x); circle.setAttribute('cy', y); circle.setAttribute('r', '28');
+      circle.setAttribute('fill', lightColor[type]);
+      circle.setAttribute('stroke', color[type]); circle.setAttribute('stroke-width', '1.5');
+      g.appendChild(circle);
+    }
+
+    const words = c.name.split(' ');
+    const lines = [];
+    let cur = '';
+    words.forEach(w => {
+      if ((cur + ' ' + w).trim().length > 10 && cur) { lines.push(cur); cur = w; }
+      else cur = (cur ? cur + ' ' : '') + w;
+    });
+    if (cur) lines.push(cur);
+    lines.slice(0, 2).forEach((line, i) => {
+      const t = document.createElementNS(ns, 'text');
+      t.setAttribute('x', x); t.setAttribute('y', y + (i - (Math.min(lines.length,2)-1)/2) * 12);
+      t.setAttribute('text-anchor', 'middle'); t.setAttribute('dominant-baseline', 'middle');
+      t.setAttribute('font-size', '9'); t.setAttribute('font-weight', '600');
+      t.setAttribute('fill', textColor[type]);
+      t.setAttribute('font-family', 'DM Sans, sans-serif');
+      t.textContent = line;
+      g.appendChild(t);
+    });
+
+    g.addEventListener('click', () => {
+      svg.querySelectorAll('circle, rect').forEach(el => el.setAttribute('stroke-width', '1.5'));
+      const shape = g.querySelector('circle') || g.querySelector('rect');
+      if (shape) shape.setAttribute('stroke-width', '3');
+      const states = Array.isArray(c.lifecycleStates) ? c.lifecycleStates.join(' → ') : (c.lifecycleStates || '');
+      detail.innerHTML = `
+        <div class="cd-name">${c.name}</div>
+        <div class="cd-type" style="color:${color[type]}">${type}</div>
+        <div class="cd-def">${c.definition || ''}</div>
+        ${states ? `<div class="cd-states">Lifecycle: ${states}</div>` : ''}`;
+    });
+    svg.appendChild(g);
+  });
+
+  // Column labels
+  ['Party', 'Resource', 'Record'].forEach(type => {
+    const t = document.createElementNS(ns, 'text');
+    t.setAttribute('x', colX[type]); t.setAttribute('y', 20);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('font-size', '10'); t.setAttribute('font-weight', '600');
+    t.setAttribute('fill', color[type]); t.setAttribute('font-family', 'DM Sans, sans-serif');
+    t.setAttribute('text-transform', 'uppercase');
+    t.textContent = type.toUpperCase();
+    svg.appendChild(t);
+  });
+
+  document.getElementById('concept-label').textContent =
+    `${parties.length} parties · ${resources.length} resources · ${records.length} records`;
+}
+
+function buildValueStreams(elements) {
+  const vsEl = document.getElementById('vs-content');
+  vsEl.innerHTML = '';
+  const vsList = Object.values(elements.valueStreams || {});
+  if (!vsList.length) {
+    vsEl.innerHTML = '<p style="color:var(--ink-4);font-size:13px">No value streams in this bundle.</p>';
+    return;
+  }
+
+  vsList.forEach(vs => {
+    const stages = (vs.stageIds || []).map(id => elements.valueStreamStages[id]).filter(Boolean);
+    const outcomes = elements.outcomes || {};
+    const caps = elements.capabilities || {};
+    const infoObjs = elements.informationObjects || {};
+    const roles = elements.roles || {};
+
+    const div = document.createElement('div');
+    div.style.marginBottom = '2.5rem';
+
+    // Header
+    const badge = vs.layoutZone === 'ecosystem' ? 'Ecosystem' : vs.layoutZone === 'knowledge' ? 'Knowledge' : vs.layoutZone || '';
+
+    div.innerHTML = `
+      <div class="vs-header-block">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+          <div>
+            <div class="vs-name">${vs.name}</div>
+            <div class="vs-meta">Trigger: ${vs.trigger || '—'} &nbsp;·&nbsp; Outcome: ${vs.terminalOutcome || '—'}</div>
+          </div>
+          ${badge ? `<span style="font-size:10px;font-weight:600;background:var(--resource-light);color:var(--resource-text);padding:3px 10px;border-radius:20px;border:1px solid var(--resource);white-space:nowrap">${badge}</span>` : ''}
+        </div>
+      </div>`;
+
+    // State flow
+    const stateFlow = document.createElement('div');
+    stateFlow.className = 'state-flow';
+    stages.forEach((s, i) => {
+      const preOut = outcomes[s.preOutcomeId];
+      if (i === 0 && preOut) {
+        const pill = document.createElement('div');
+        pill.className = 'state-pill';
+        pill.textContent = preOut.name || preOut.id;
+        stateFlow.appendChild(pill);
+        const arr = document.createElement('span');
+        arr.className = 'state-arrow'; arr.textContent = '›';
+        stateFlow.appendChild(arr);
+      }
+      const postOut = outcomes[s.postOutcomeId];
+      if (postOut) {
+        const pill = document.createElement('div');
+        pill.className = 'state-pill' + (i === stages.length - 1 ? ' terminal' : '');
+        pill.textContent = postOut.name || postOut.id;
+        stateFlow.appendChild(pill);
+        if (i < stages.length - 1) {
+          const arr = document.createElement('span');
+          arr.className = 'state-arrow'; arr.textContent = '›';
+          stateFlow.appendChild(arr);
+        }
+      }
+    });
+    div.appendChild(stateFlow);
+
+    // Stage cards
+    const scroll = document.createElement('div');
+    scroll.className = 'stages-scroll';
+    const row = document.createElement('div');
+    row.className = 'stages-row';
+
+    const detailPanel = document.createElement('div');
+    detailPanel.className = 'stage-detail';
+    detailPanel.innerHTML = '<p class="sd-placeholder">Click a stage to see its full breakdown.</p>';
+
+    stages.forEach((s, i) => {
+      const card = document.createElement('div');
+      card.className = 'stage-card';
+
+      const stageCaps = (s.requiresCapabilityIds || []).map(id => caps[id]).filter(Boolean);
+      const stageRoles = (s.performedByRoleIds || []).map(id => roles[id]).filter(Boolean);
+      const stageInfo = (s.informationObjectIds || []).map(id => infoObjs[id]).filter(Boolean);
+      const ppit = s.capabilityPPIT || {};
+      const hasPeople = ppit.roleIds && ppit.roleIds.length > 0 || stageRoles.length > 0;
+      const hasProcess = !!(ppit.processActivities && ppit.processActivities.length > 0);
+      const hasInfo = ppit.informationObjectIds && ppit.informationObjectIds.length > 0 || stageInfo.length > 0;
+      const hasTech = !!(ppit.technologyAppIds && ppit.technologyAppIds.length > 0);
+
+      const preOut = outcomes[s.preOutcomeId];
+      const postOut = outcomes[s.postOutcomeId];
+      const actorNames = stageRoles.map(r => r.name).join(' · ') || '—';
+      const topCaps = stageCaps.slice(0, 3);
+      const moreCaps = stageCaps.length - 3;
+
+      card.innerHTML = `
+        <div class="stage-num">S${i+1}</div>
+        <div class="stage-name">${s.name}</div>
+        <div class="stage-actor">${actorNames}</div>
+        <div class="stage-caps">
+          ${topCaps.map(c => `<span class="stage-cap-tag">${c.name}</span>`).join('')}
+          ${moreCaps > 0 ? `<span class="stage-cap-tag">+${moreCaps}</span>` : ''}
+        </div>
+        <div class="ppit-row">
+          <span class="ppit-dot" style="background:${hasPeople ? '#378ADD' : '#e2e1dc'}" title="People"></span>
+          <span class="ppit-dot" style="background:${hasProcess ? '#1D9E75' : '#e2e1dc'}" title="Process"></span>
+          <span class="ppit-dot" style="background:${hasInfo ? '#D4537E' : '#e2e1dc'}" title="Information"></span>
+          <span class="ppit-dot" style="background:${hasTech ? '#BA7517' : '#e2e1dc'}" title="Technology"></span>
+        </div>`;
+
+      card.addEventListener('click', () => {
+        row.querySelectorAll('.stage-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        const entryCrit = s.entryCriteria || (preOut ? (preOut.name || preOut.id) : '—');
+        const exitCrit = s.exitCriteria || (postOut ? (postOut.name || postOut.id) : '—');
+        const voState = s.valueObjectState ? `<div class="sd-block"><div class="sd-label">Value Object State</div><div class="sd-val">${s.valueObjectState}</div></div>` : '';
+        detailPanel.innerHTML = `
+          <div class="sd-name">S${i+1} — ${s.name}</div>
+          <div class="sd-grid">
+            <div class="sd-block">
+              <div class="sd-label">Entry criteria</div>
+              <div class="sd-val">${entryCrit}</div>
+            </div>
+            <div class="sd-block">
+              <div class="sd-label">Exit criteria</div>
+              <div class="sd-val">${exitCrit}</div>
+            </div>
+            <div class="sd-block">
+              <div class="sd-label">Capabilities (${stageCaps.length})</div>
+              <div class="sd-val">${stageCaps.map(c=>c.name).join(' · ') || '—'}</div>
+            </div>
+            <div class="sd-block">
+              <div class="sd-label">Information objects</div>
+              <div class="sd-val">${stageInfo.map(o=>o.name).join(' · ') || '—'}</div>
+            </div>
+            ${voState}
+          </div>`;
+      });
+
+      row.appendChild(card);
+    });
+    scroll.appendChild(row);
+    div.appendChild(scroll);
+    div.appendChild(detailPanel);
+    vsEl.appendChild(div);
+  });
+
+  const vsCount = vsList.length;
+  const stageCount = Object.keys(elements.valueStreamStages || {}).length;
+  document.querySelector('[data-tab="valuestreams"]').textContent = `Value streams (${vsCount})`;
+}
+
+function buildMetrics(elements) {
+  const grid = document.getElementById('metrics-grid');
+  grid.innerHTML = '';
+  const metrics = Object.values(elements.metrics || {});
+  if (!metrics.length) {
+    grid.innerHTML = '<p style="color:var(--ink-4);font-size:13px">No metrics in this bundle.</p>';
+    return;
+  }
+  document.getElementById('metrics-label').textContent = `${metrics.length} defined metrics`;
+  metrics.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'metric-card';
+    const dir = m.direction === 'up' ? 'up' : m.direction === 'down' ? 'down' : null;
+    card.innerHTML = `
+      <div class="metric-name">${m.name}</div>
+      <div class="metric-unit">${m.unit || '—'}</div>
+      ${dir ? `<div class="metric-dir ${dir}">${dir === 'up' ? '↑ Maximise' : '↓ Minimise'}</div>` : ''}`;
+    grid.appendChild(card);
+  });
+}
+
+function renderBundle(raw) {
+  const bundle = normalizeBundle(raw);
+  const meta = bundle.meta || {};
+  const elements = bundle.elements || {};
+
+  // Header
+  document.getElementById('canvas-header').innerHTML = `
+    <div class="canvas-client">${meta.client || 'Operating Model'}</div>
+    <div class="canvas-name">${bundle.name || '<strong>Operating Model</strong>'}</div>
+    <div class="canvas-desc">${bundle.description || ''}</div>
+    <div class="canvas-meta">
+      <div class="canvas-meta-item">Capabilities <span>${Object.values(elements.capabilities||{}).filter(c=>c.level===3).length}</span></div>
+      <div class="canvas-meta-item">Concepts <span>${Object.keys(elements.concepts||{}).length}</span></div>
+      <div class="canvas-meta-item">Value streams <span>${Object.keys(elements.valueStreams||{}).length}</span></div>
+      <div class="canvas-meta-item">Metrics <span>${Object.keys(elements.metrics||{}).length}</span></div>
+      <div class="canvas-meta-item">Bundle version <span>${meta.bundleVersion || '1.0.0'}</span></div>
+    </div>`;
+
+  buildTreemap(elements.capabilities || {});
+  buildConceptGraph(elements.concepts || {});
+  buildValueStreams(elements);
+  buildMetrics(elements);
+
+  document.getElementById('upload-state').style.display = 'none';
+  document.getElementById('canvas').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// File input
+const fileInput = document.getElementById('file-input');
+const dropTarget = document.getElementById('drop-target');
+
+fileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try { renderBundle(JSON.parse(ev.target.result)); }
+    catch(err) { alert('Could not parse bundle JSON. Please check the file and try again.'); }
+  };
+  reader.readAsText(file);
+});
+
+dropTarget.addEventListener('dragover', e => { e.preventDefault(); dropTarget.classList.add('drag-over'); });
+dropTarget.addEventListener('dragleave', () => dropTarget.classList.remove('drag-over'));
+dropTarget.addEventListener('drop', e => {
+  e.preventDefault(); dropTarget.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try { renderBundle(JSON.parse(ev.target.result)); }
+    catch(err) { alert('Could not parse bundle JSON.'); }
+  };
+  reader.readAsText(file);
+});
+
+// Demo button — fetch the PortfolioProp bundle from GitHub
+document.getElementById('demo-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('demo-btn');
+  btn.textContent = 'Loading…';
+  btn.disabled = true;
+  try {
+    const res = await fetch('https://raw.githubusercontent.com/plausibleba/ba-skills/main/examples/portfolioprop_ba-skills-bundle_v1.json');
+    if (!res.ok) throw new Error('fetch failed');
+    const bundle = await res.json();
+    renderBundle(bundle);
+  } catch(e) {
+    btn.textContent = 'Load the PortfolioProp demo';
+    btn.disabled = false;
+    alert('Could not load demo. Please try uploading the file directly from the GitHub examples folder.');
+  }
+});
+
+// ── URL Parameter Loading ────────────────────────────────────────────────────
+// Supports:
+//   ?bundle=<URL>         — fetch a bundle from a URL (e.g. GitHub raw link)
+//   ?demo=portfolioprop   — load a named demo
+//   ?demo=dough-to-door   — load the case study demo
+(function autoLoadFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const bundleURL = params.get('bundle');
+  const demo = params.get('demo');
+
+  if (bundleURL) {
+    fetch(bundleURL)
+      .then(r => { if (!r.ok) throw new Error('fetch failed'); return r.json(); })
+      .then(bundle => renderBundle(bundle))
+      .catch(() => { /* silently fall back to upload state */ });
+  } else if (demo) {
+    const demos = {
+      'portfolioprop': 'https://raw.githubusercontent.com/plausibleba/ba-skills/main/examples/portfolioprop_ba-skills-bundle_v1.json',
+      'dough-to-door': '/case-study/dough-to-door-bundle.json'
+    };
+    const url = demos[demo.toLowerCase()];
+    if (url) {
+      fetch(url)
+        .then(r => { if (!r.ok) throw new Error('fetch failed'); return r.json(); })
+        .then(bundle => renderBundle(bundle))
+        .catch(() => { /* silently fall back to upload state */ });
+    }
+  }
+})();
+</script>
+</body>
+</html>

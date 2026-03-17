@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BA Skills — Capability Map, Concept Model, Value Stream | PlausibleBA</title>
+<meta name="description" content="Three free business architecture slash commands for Claude Cowork. /capability-map builds MECE capability hierarchies. /concept-model classifies business objects. /value-stream maps staged value delivery. BIZBOK-grounded, XLSX export.">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png">
+    <link rel="stylesheet" href="/site.css">
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script async src="https://plausible.io/js/pa-fQD2wVJrTO7vhKcNfQW4P.js"></script>
+    <script>
+      window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+      plausible.init()
+    </script>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="/">PlausibleBA</a>
+    <div class="nav-links">
+      <a href="/skills" class="active">Skills</a>
+      <a href="/methodology">Methodology</a>
+      <a href="/install">Install</a>
+      <a href="/canvas">Canvas</a>
+      <a href="/case-study">Case study</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+      <a class="nav-cta" href="/install">Install free →</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero" style="padding:4rem 2rem 3rem">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Three slash commands</div>
+    <h1>The BA Skills Library</h1>
+    <p class="hero-sub" style="margin-bottom:0">Each skill encodes a methodology — not just a prompt. Guided elicitation, validation checkpoints, interactive output, and export for the VCC pipeline.</p>
+  </div>
+</section>
+
+<!-- CAPABILITY MAP -->
+<section class="section section-white" id="capability-map">
+  <div class="section-inner">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start">
+      <div>
+        <div class="section-eyebrow">Skill 1 of 3</div>
+        <h2 style="margin-bottom:0.75rem">BA Capability Mapping</h2>
+        <div style="margin-bottom:1.25rem"><span class="badge badge-blue" style="font-size:12px;padding:4px 12px">/capability-map</span></div>
+        <p style="margin-bottom:1.25rem">Produces a MECE (Mutually Exclusive, Collectively Exhaustive) capability hierarchy grounded in the Business Architecture Guild's BIZBOK framework. The skill elicits L1 Business Areas and L2 Business Domains first, pauses for your validation, then derives L3 Business Capabilities from confirmed foundations.</p>
+        <p style="margin-bottom:1.25rem">Execution and Governance capabilities are distinguished throughout. The output is structurally correct — not just formatted — because the methodology is embedded in the skill.</p>
+        <h3 style="font-family:var(--sans);font-size:1rem;font-weight:600;margin-bottom:0.75rem;margin-top:1.5rem">What it produces</h3>
+        <ul style="margin-left:1.5rem;margin-bottom:1.5rem">
+          <li style="margin-bottom:0.4rem;color:var(--ink-3)">Interactive treemap — L1 containers, L2 groups, L3 hoverable tiles. Execution in blue, Governance in purple.</li>
+          <li style="margin-bottom:0.4rem;color:var(--ink-3)">XLSX workbook — Summary, Capability Register, Validation, Legend tabs</li>
+          <li style="color:var(--ink-3)">JSON export — capabilities section of the <code>ba-skills-bundle.json</code></li>
+        </ul>
+        <h3 style="font-family:var(--sans);font-size:1rem;font-weight:600;margin-bottom:0.75rem">Validation checkpoints</h3>
+        <p><strong>Checkpoint 1</strong> — L1/L2 hierarchy presented for recognition. The naming convention and structure must feel right before L3 is derived.</p>
+        <p style="margin-top:0.5rem"><strong>Checkpoint 2</strong> — Full L1–L3 map reviewed. Capabilities must feel like stable organisational abilities, not process steps or system names.</p>
+      </div>
+      <div>
+        <div style="background:var(--navy);border-radius:14px;padding:1.75rem;border:1px solid #2e3f5c;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:1rem">Quality bars</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:10px 12px;border:1px solid #2e3f5c;">
+              <div style="font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:3px">MECE hierarchy</div>
+              <div style="font-size:11px;color:#94a3b8">No overlapping siblings. No exhaustiveness gaps. Every L3 belongs unambiguously to one L2.</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:10px 12px;border:1px solid #2e3f5c;">
+              <div style="font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:3px">Verb–Noun naming</div>
+              <div style="font-size:11px;color:#94a3b8">Every L3 capability named as "Manage X", "Track X", "Define X" — stable abilities, not activities.</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:10px 12px;border:1px solid #2e3f5c;">
+              <div style="font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:3px">Business object grounding</div>
+              <div style="font-size:11px;color:#94a3b8">Every capability references a named business object. Objects without capabilities signal a gap.</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:10px 12px;border:1px solid #2e3f5c;">
+              <div style="font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:3px">Typical output</div>
+              <div style="font-size:11px;color:#94a3b8">6–10 L1 domains · 15–30 L2 groups · 40–120 L3 capabilities depending on scope.</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:1rem;text-align:center">
+          <a href="/install" class="btn-outline" style="display:inline-block;margin-top:0.5rem">Install and run /capability-map →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr style="border-color:var(--border);margin:0">
+
+<!-- CONCEPT MODEL -->
+<section class="section section-mid" id="concept-model">
+  <div class="section-inner">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start">
+      <div>
+        <div class="section-eyebrow">Skill 2 of 3</div>
+        <h2 style="margin-bottom:0.75rem">BA Concept Model</h2>
+        <div style="margin-bottom:1.25rem"><span class="badge badge-blue" style="font-size:12px;padding:4px 12px">/concept-model</span></div>
+        <p style="margin-bottom:1.25rem">Produces a business object taxonomy using the Capsicum Triad — Party, Record, Resource — grounded in REA theory (McCarthy 1982) and Bunge's ontology. Every object is defined, typed, given lifecycle states, and related to at least one capability.</p>
+        <p style="margin-bottom:1.25rem">Run in the same session as <code>/capability-map</code> and the concept model will cross-validate both ways — every object should ground at least one capability, and every capability should reference a named object. Gaps surface immediately.</p>
+        <h3 style="font-family:var(--sans);font-size:1rem;font-weight:600;margin-bottom:0.75rem;margin-top:1.5rem">The Capsicum Triad</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="width:10px;height:10px;border-radius:50%;background:#2dd4bf;flex-shrink:0;margin-top:5px"></span>
+            <div><strong style="color:var(--ink-2)">Party</strong> <span style="color:var(--ink-3);font-size:0.9rem">— a person or organisation that plays a role (Owner, Guest, Contractor)</span></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="width:10px;height:10px;border-radius:50%;background:#4a9eda;flex-shrink:0;margin-top:5px"></span>
+            <div><strong style="color:var(--ink-2)">Resource</strong> <span style="color:var(--ink-3);font-size:0.9rem">— a thing of value that is managed, exchanged, or consumed (Property, Booking, Tenancy)</span></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="width:10px;height:10px;border-radius:2px;background:#e05b8a;flex-shrink:0;margin-top:5px"></span>
+            <div><strong style="color:var(--ink-2)">Record</strong> <span style="color:var(--ink-3);font-size:0.9rem">— a document that captures evidence of something that happened (Financial Report, Guest Review)</span></div>
+          </div>
+        </div>
+        <h3 style="font-family:var(--sans);font-size:1rem;font-weight:600;margin-bottom:0.75rem">What it produces</h3>
+        <ul style="margin-left:1.5rem">
+          <li style="margin-bottom:0.4rem;color:var(--ink-3)">Interactive concept graph — typed nodes with edges. Click any node for definition and lifecycle states.</li>
+          <li style="margin-bottom:0.4rem;color:var(--ink-3)">XLSX workbook — Object Register, Relationships, Validation, Legend tabs</li>
+          <li style="color:var(--ink-3)">JSON export — concepts section of the <code>ba-skills-bundle.json</code></li>
+        </ul>
+      </div>
+      <div>
+        <div style="background:var(--navy);border-radius:14px;padding:1.75rem;border:1px solid #2e3f5c;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:1rem">Quality bars</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:10px 12px;border:1px solid #2e3f5c;">
+              <div style="font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:3px">8–20 objects</div>
+              <div style="font-size:11px;color:#94a3b8">Fewer suggests under-modelling. More suggests conflation of objects at different levels of abstraction.</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:10px 12px;border:1px solid #2e3f5c;">
+              <div style="font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:3px">Every object grounded</div>
+              <div style="font-size:11px;color:#94a3b8">Every object references at least one L3 capability. Objects with no capabilities are candidates for removal.</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:10px 12px;border:1px solid #2e3f5c;">
+              <div style="font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:3px">Lifecycle states</div>
+              <div style="font-size:11px;color:#94a3b8">Every object has at least one lifecycle state sequence. States reveal the business events that matter.</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:1rem;text-align:center">
+          <a href="/install" class="btn-outline" style="display:inline-block;margin-top:0.5rem">Install and run /concept-model →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr style="border-color:var(--border);margin:0">
+
+<!-- VALUE STREAMS -->
+<section class="section section-white" id="value-streams">
+  <div class="section-inner">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start">
+      <div>
+        <div class="section-eyebrow">Skill 3 of 3</div>
+        <h2 style="margin-bottom:0.75rem">BA Value Streams</h2>
+        <div style="margin-bottom:1.25rem"><span class="badge badge-blue" style="font-size:12px;padding:4px 12px">/value-stream</span></div>
+        <p style="margin-bottom:1.25rem">Maps how an organisation delivers value to a recipient through a sequence of stages — each with named entry and exit outcomes, accountable stakeholders, required capabilities, and a PPIT breakdown (People, Process, Information, Technology).</p>
+        <p style="margin-bottom:1.25rem">The value stream is the thread that ties capability map and concept model together. Every stage requires capabilities from the map; every capability references objects from the concept model. The three skills form a coherent, cross-validated operating model.</p>
+        <h3 style="font-family:var(--sans);font-size:1rem;font-weight:600;margin-bottom:0.75rem;margin-top:1.5rem">What it produces</h3>
+        <ul style="margin-left:1.5rem;margin-bottom:1.5rem">
+          <li style="margin-bottom:0.4rem;color:var(--ink-3)">Interactive stage view — outcome chain, stage cards with PPIT dots, click-through inspector panel per stage</li>
+          <li style="margin-bottom:0.4rem;color:var(--ink-3)">XLSX workbook — Stage Register, Capability Mapping, Validation, Legend tabs</li>
+          <li style="color:var(--ink-3)"><code>ba-skills-bundle.json</code> — complete schema-validated bundle for VCC pipeline import</li>
+        </ul>
+        <h3 style="font-family:var(--sans);font-size:1rem;font-weight:600;margin-bottom:0.75rem">VCC pipeline</h3>
+        <p>The <code>ba-skills-bundle.json</code> imports directly into the <a href="https://www.valuecognitioncanvas.com" target="_blank">Value Cognition Canvas</a>, where it becomes the foundation for friction analysis, solution mapping, throughput projections, and governance controls.</p>
+      </div>
+      <div>
+        <div style="background:var(--navy);border-radius:14px;padding:1.75rem;border:1px solid #2e3f5c;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:1rem">Quality bars</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:10px 12px;border:1px solid #2e3f5c;">
+              <div style="font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:3px">4–8 stages</div>
+              <div style="font-size:11px;color:#94a3b8">Fewer suggests conflation. More suggests process-level mapping rather than value-stage thinking.</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:10px 12px;border:1px solid #2e3f5c;">
+              <div style="font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:3px">Outcome chain</div>
+              <div style="font-size:11px;color:#94a3b8">Every stage has named entry and exit criteria. Exit of one stage must equal entry of the next.</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:10px 12px;border:1px solid #2e3f5c;">
+              <div style="font-size:11px;font-weight:600;color:#cbd5e1;margin-bottom:3px">No orphan stages</div>
+              <div style="font-size:11px;color:#94a3b8">Every stage requires at least one L3 capability. Stages with no capabilities signal a gap in the map.</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:1rem;text-align:center">
+          <a href="/install" class="btn-outline" style="display:inline-block;margin-top:0.5rem">Install and run /value-stream →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-banner">
+  <h2 style="color:#fff;margin-bottom:0.75rem">Run all three in sequence</h2>
+  <p>A complete operating model slice — capability map, concept model, and value stream — cross-validated and pipeline-ready. One Cowork session.</p>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <a class="btn-primary" href="/install">Install free in Cowork →</a>
+    <a class="btn-ghost" href="/methodology">Read the methodology</a>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand-col">
+      <span class="footer-brand">PlausibleBA</span>
+      <p>Just enough business architecture.<br>For every BA, on every project.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Skills</h4>
+      <a href="/skills#capability-map">Capability Mapping</a>
+      <a href="/skills#concept-model">Concept Model</a>
+      <a href="/skills#value-streams">Value Streams</a>
+      <a href="/install">Install</a>
+    </div>
+    <div class="footer-col">
+      <h4>Learn</h4>
+      <a href="/methodology">Methodology</a>
+      <a href="/canvas">Canvas</a>
+      <a href="https://plausibleba.substack.com" target="_blank">Substack</a>
+      <a href="https://github.com/plausibleba/ba-skills" target="_blank">GitHub</a>
+    </div>
+    <div class="footer-col">
+      <h4>About</h4>
+      <a href="/about">About PlausibleBA</a>
+      <a href="/contact">Contact</a>
+      <a href="/privacy">Privacy policy</a>
+      <a href="https://www.valuecognitioncanvas.com" target="_blank">Value Cognition Canvas</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 PlausibleBA · Licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a></p>
+    <p>Built for <a href="https://claude.ai/download" target="_blank">Claude Cowork</a> by Anthropic</p>
+  </div>
+</footer>
+
+</body>
+</html>

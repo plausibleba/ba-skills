@@ -3,6 +3,7 @@
 //
 // Pass A — Discovery IR  (two LLM calls: A1 VS+stages, A2 roles+caps+signals)
 // Pass B — Scaffold      (one LLM call, Gate 1 + repair + Gate 2)
+// Pass D — Cards         (one LLM call: concept cards + policy cards from scaffold)
 //
 // Prompts are in domain/pipeline/prompts/ — one file per pass.
 // Heatmaps (Pass C) are generated separately via "Assess Friction".
@@ -11,6 +12,8 @@ import { buildDiscoveryIR } from "./discovery-ir";
 import type { DiscoveryIR } from "./discovery-ir";
 import { runPassB } from "./scaffold-formaliser";
 import type { GateResult } from "./scaffold-gates";
+import { generateCards } from "./card-generator";
+import type { CardRegistry } from "../../types/cards";
 import { callLLM } from "./llm-client";
 import { buildPass1Prompt } from "./prompts/pass-a1-value-streams";
 import { buildPass2Prompt } from "./prompts/pass-a2-capability-mapping";
@@ -25,6 +28,7 @@ export type PipelineStatus =
   | "pass-b"           // formalising scaffold
   | "pass-b-repairing" // Gate 1 failed, attempting repair
   | "pass-b-failed"    // Gate 1 still failed after repair — surface to user
+  | "pass-d"           // generating concept + policy cards
   | "done"
   | "error";
 
@@ -34,11 +38,16 @@ export interface PipelineProgress {
   scaffold?: any;                      // available after pass-b
   gate1?: GateResult;
   gate2?: GateResult;
+  cardRegistry?: CardRegistry;        // available after pass-d
   bundle?: any;                        // available after done
   errorMessage?: string;
 }
 
 export type ProgressCallback = (progress: PipelineProgress) => void;
+
+// Re-export card generator for standalone use (e.g. "Generate Cards" button on imported scaffolds)
+export { generateCards } from "./card-generator";
+export type { CardGenerationResult } from "./card-generator";
 
 // ── Main orchestrator — Pass A ──────────────────────────────────────────────
 
@@ -125,13 +134,32 @@ export async function continuePipeline(
     scaffold._discoveryPainPoints = ppSummary;
   }
 
+  // ── Pass D: Generate Concept & Policy Cards ──────────────────────────────
+  onProgress({ status: "pass-d", discoveryIR, scaffold });
+  let cardRegistry: CardRegistry | undefined;
+
+  try {
+    const cardResult = await generateCards(scaffold);
+    if (cardResult.registry) {
+      cardRegistry = cardResult.registry;
+    } else {
+      console.warn("[pipeline] Card generation returned no cards:", cardResult.error);
+    }
+  } catch (e) {
+    // Card generation is non-fatal — we still emit the scaffold
+    console.warn("[pipeline] Card generation failed (non-fatal):", e);
+  }
+
   const now = new Date().toISOString();
-  const bundle = {
-    bundleVersion: "1.0",
+  const bundle: Record<string, unknown> = {
+    bundleVersion: "2.0",
     createdAt: now,
     scaffold,
     heatmaps: [] as any[],
   };
+  if (cardRegistry) {
+    bundle.cardRegistry = cardRegistry;
+  }
 
   onProgress({
     status: "done",
@@ -139,6 +167,7 @@ export async function continuePipeline(
     scaffold,
     gate1: formaliseResult.gate1,
     gate2: formaliseResult.gate2,
+    cardRegistry,
     bundle,
   });
 }

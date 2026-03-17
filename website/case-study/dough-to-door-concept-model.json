@@ -1,0 +1,257 @@
+{
+  "obj_customer": {
+    "id": "obj_customer",
+    "elementType": "BusinessObject",
+    "name": "Customer",
+    "number": "1",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Party",
+    "definition": "A Party who orders, subscribes, or dines in and holds a loyalty relationship with the business.",
+    "lifecycleStates": ["Prospect", "Active", "Lapsed", "Churned"],
+    "relatedCapabilities": ["cap_manage_loyalty_programme", "cap_manage_customer_relationship", "cap_manage_customer_feedback"],
+    "relatedObjects": [
+      {"objectId": "obj_order", "relationship": "Association", "label": "places"},
+      {"objectId": "obj_loyalty_account", "relationship": "Association", "label": "holds"},
+      {"objectId": "obj_subscription", "relationship": "Association", "label": "holds"},
+      {"objectId": "obj_feedback", "relationship": "Association", "label": "provides"}
+    ]
+  },
+  "obj_supplier": {
+    "id": "obj_supplier",
+    "elementType": "BusinessObject",
+    "name": "Supplier",
+    "number": "2",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Party",
+    "definition": "A Party who provides locally sourced organic ingredients under agreed sourcing standards.",
+    "lifecycleStates": ["Prospective", "Contracted", "Active", "Terminated"],
+    "relatedCapabilities": ["cap_manage_supplier_relationship", "cap_manage_ingredient_sourcing", "cap_govern_sourcing_standards"],
+    "relatedObjects": [
+      {"objectId": "obj_ingredient", "relationship": "Association", "label": "provides"}
+    ]
+  },
+  "obj_driver": {
+    "id": "obj_driver",
+    "elementType": "BusinessObject",
+    "name": "Driver",
+    "number": "3",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Party",
+    "definition": "A Party who transports completed orders from the kitchen to the customer.",
+    "lifecycleStates": ["Onboarding", "Active", "Inactive", "Offboarded"],
+    "relatedCapabilities": ["cap_manage_driver_pool"],
+    "relatedObjects": [
+      {"objectId": "obj_delivery", "relationship": "Association", "label": "fulfils"}
+    ]
+  },
+  "obj_menu": {
+    "id": "obj_menu",
+    "elementType": "BusinessObject",
+    "name": "Menu",
+    "number": "4",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Resource",
+    "definition": "A Resource representing the curated collection of products offered to customers across all channels.",
+    "lifecycleStates": ["Draft", "Published", "Seasonal", "Retired"],
+    "relatedCapabilities": ["cap_manage_menu_portfolio"],
+    "relatedObjects": [
+      {"objectId": "obj_product", "relationship": "Composition", "label": "contains"}
+    ]
+  },
+  "obj_recipe": {
+    "id": "obj_recipe",
+    "elementType": "BusinessObject",
+    "name": "Recipe",
+    "number": "5",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Resource",
+    "definition": "A Resource defining the formulation, ingredient ratios, and wood-fired preparation standards for a product.",
+    "lifecycleStates": ["Draft", "Approved", "In Use", "Superseded"],
+    "relatedCapabilities": ["cap_manage_recipe_catalogue", "cap_manage_recipe_execution"],
+    "relatedObjects": [
+      {"objectId": "obj_ingredient", "relationship": "Association", "label": "requires"}
+    ]
+  },
+  "obj_product": {
+    "id": "obj_product",
+    "elementType": "BusinessObject",
+    "name": "Product",
+    "number": "6",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Resource",
+    "definition": "A Resource that is sold to the customer — a pizza, organic sauce, or meal kit.",
+    "lifecycleStates": ["Development", "Available", "Seasonal", "Discontinued"],
+    "relatedCapabilities": ["cap_manage_meal_kit_portfolio", "cap_manage_sauce_product_line", "cap_manage_production_quality"],
+    "relatedObjects": [
+      {"objectId": "obj_recipe", "relationship": "Association", "label": "follows"}
+    ]
+  },
+  "obj_ingredient": {
+    "id": "obj_ingredient",
+    "elementType": "BusinessObject",
+    "name": "Ingredient",
+    "number": "7",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Resource",
+    "definition": "A Resource that is sourced from suppliers, stored, and consumed in food production.",
+    "lifecycleStates": ["Specified", "In Stock", "Allocated", "Consumed", "Wasted"],
+    "relatedCapabilities": ["cap_manage_ingredient_specification", "cap_manage_ingredient_sourcing", "cap_manage_ingredient_stock"],
+    "relatedObjects": []
+  },
+  "obj_order": {
+    "id": "obj_order",
+    "elementType": "BusinessObject",
+    "name": "Order",
+    "number": "8",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Resource",
+    "definition": "A Resource representing a customer's request for one or more products, fulfilled through a specific channel.",
+    "lifecycleStates": ["Placed", "Accepted", "In Preparation", "Ready", "Dispatched", "Delivered", "Closed"],
+    "relatedCapabilities": ["cap_manage_order_capture", "cap_manage_order_pricing", "cap_manage_order_queue", "cap_manage_order_assembly", "cap_manage_order_dispatch"],
+    "relatedObjects": [
+      {"objectId": "obj_product", "relationship": "Association", "label": "contains"},
+      {"objectId": "obj_payment", "relationship": "Association", "label": "triggers"},
+      {"objectId": "obj_delivery", "relationship": "Association", "label": "triggers"}
+    ]
+  },
+  "obj_subscription": {
+    "id": "obj_subscription",
+    "elementType": "BusinessObject",
+    "name": "Subscription",
+    "number": "9",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Resource",
+    "definition": "A Resource representing a recurring delivery arrangement for weekly meal kits or products.",
+    "lifecycleStates": ["Created", "Active", "Paused", "Cancelled"],
+    "relatedCapabilities": ["cap_manage_subscription_offering"],
+    "relatedObjects": []
+  },
+  "obj_loyalty_account": {
+    "id": "obj_loyalty_account",
+    "elementType": "BusinessObject",
+    "name": "Loyalty Account",
+    "number": "10",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Resource",
+    "definition": "A Resource holding accumulated Dough-Points value redeemable by a customer.",
+    "lifecycleStates": ["Opened", "Active", "Redeemed", "Dormant"],
+    "relatedCapabilities": ["cap_manage_loyalty_programme"],
+    "relatedObjects": []
+  },
+  "obj_delivery": {
+    "id": "obj_delivery",
+    "elementType": "BusinessObject",
+    "name": "Delivery",
+    "number": "11",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Resource",
+    "definition": "A Resource representing the physical transport of a completed order from the kitchen to the customer.",
+    "lifecycleStates": ["Assigned", "In Transit", "Delivered", "Failed"],
+    "relatedCapabilities": ["cap_manage_delivery_routing", "cap_manage_delivery_timeliness", "cap_manage_delivery_quality"],
+    "relatedObjects": []
+  },
+  "obj_equipment": {
+    "id": "obj_equipment",
+    "elementType": "BusinessObject",
+    "name": "Equipment",
+    "number": "12",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Resource",
+    "definition": "A Resource representing kitchen assets including wood-fired ovens, prep stations, and packaging systems.",
+    "lifecycleStates": ["Procured", "Operational", "Under Maintenance", "Decommissioned"],
+    "relatedCapabilities": ["cap_manage_kitchen_equipment"],
+    "relatedObjects": []
+  },
+  "obj_facility": {
+    "id": "obj_facility",
+    "elementType": "BusinessObject",
+    "name": "Facility",
+    "number": "13",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Resource",
+    "definition": "A Resource representing the ghost kitchen premises and its physical infrastructure.",
+    "lifecycleStates": ["Leased", "Operational", "Under Renovation", "Vacated"],
+    "relatedCapabilities": ["cap_manage_facility_maintenance", "cap_manage_kitchen_capacity"],
+    "relatedObjects": [
+      {"objectId": "obj_equipment", "relationship": "Composition", "label": "houses"}
+    ]
+  },
+  "obj_payment": {
+    "id": "obj_payment",
+    "elementType": "BusinessObject",
+    "name": "Payment",
+    "number": "14",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Record",
+    "definition": "A Record documenting the financial settlement of an order across in-app, counter, or subscription billing.",
+    "lifecycleStates": ["Pending", "Processed", "Settled", "Refunded"],
+    "relatedCapabilities": ["cap_manage_payment_collection"],
+    "relatedObjects": []
+  },
+  "obj_feedback": {
+    "id": "obj_feedback",
+    "elementType": "BusinessObject",
+    "name": "Feedback",
+    "number": "15",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Record",
+    "definition": "A Record documenting a customer's rating, review, or complaint about their experience.",
+    "lifecycleStates": ["Submitted", "Acknowledged", "Actioned", "Closed"],
+    "relatedCapabilities": ["cap_manage_customer_feedback"],
+    "relatedObjects": []
+  },
+  "obj_marketing_campaign": {
+    "id": "obj_marketing_campaign",
+    "elementType": "BusinessObject",
+    "name": "Marketing Campaign",
+    "number": "16",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Record",
+    "definition": "A Record documenting a planned and executed hyper-local marketing or community partnership initiative.",
+    "lifecycleStates": ["Planned", "Active", "Completed", "Evaluated"],
+    "relatedCapabilities": ["cap_manage_marketing_campaign", "cap_manage_community_partnership", "cap_manage_digital_channel_presence"],
+    "relatedObjects": [
+      {"objectId": "obj_customer", "relationship": "Association", "label": "targets"}
+    ]
+  },
+  "obj_financial_report": {
+    "id": "obj_financial_report",
+    "elementType": "BusinessObject",
+    "name": "Financial Report",
+    "number": "17",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Record",
+    "definition": "A Record documenting revenue, costs, and financial performance for investor and operational reporting.",
+    "lifecycleStates": ["Draft", "Published", "Archived"],
+    "relatedCapabilities": ["cap_manage_revenue_tracking", "cap_manage_channel_revenue", "cap_manage_cost_control", "cap_manage_financial_reporting"],
+    "relatedObjects": []
+  },
+  "obj_quality_audit": {
+    "id": "obj_quality_audit",
+    "elementType": "BusinessObject",
+    "name": "Quality Audit",
+    "number": "18",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Record",
+    "definition": "A Record documenting a food safety or quality inspection event and its findings.",
+    "lifecycleStates": ["Scheduled", "In Progress", "Completed", "Remediated"],
+    "relatedCapabilities": ["cap_govern_food_safety_standards", "cap_govern_hygiene_compliance", "cap_manage_quality_audit"],
+    "relatedObjects": [
+      {"objectId": "obj_facility", "relationship": "Association", "label": "inspects"}
+    ]
+  },
+  "obj_licence": {
+    "id": "obj_licence",
+    "elementType": "BusinessObject",
+    "name": "Licence",
+    "number": "19",
+    "classificationHierarchy": "CapsicumTriad",
+    "type": "Record",
+    "definition": "A Record documenting a regulatory permit or certification held by the business.",
+    "lifecycleStates": ["Applied", "Granted", "Active", "Expired", "Renewed"],
+    "relatedCapabilities": ["cap_govern_licensing_permits", "cap_govern_health_safety_compliance"],
+    "relatedObjects": [
+      {"objectId": "obj_facility", "relationship": "Association", "label": "authorises"}
+    ]
+  }
+}

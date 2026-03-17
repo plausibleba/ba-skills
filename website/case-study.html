@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Study: Business Capability Map & Value Stream for Pizza Delivery Startup | PlausibleBA</title>
+<meta name="description" content="A complete BIZBOK capability map, business concept model, and value stream generated from a startup pitch deck in one Claude Cowork session. Download XLSX and JSON. Full Dough-To-Door pizza delivery operating model.">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png">
+    <link rel="stylesheet" href="/site.css">
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script async src="https://plausible.io/js/pa-fQD2wVJrTO7vhKcNfQW4P.js"></script>
+    <script>
+      window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+      plausible.init()
+    </script>
+<style>
+/* ── CASE STUDY EXTRAS ── */
+.pitch-card {
+  background: var(--navy);
+  border: 1px solid #2e3f5c;
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 2rem;
+  max-width: 720px;
+}
+.pitch-tag { font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#4a9eda; margin-bottom:0.5rem; }
+.pitch-tagline { font-size:1.1rem; font-weight:600; color:#f1f5f9; font-style:italic; margin-bottom:1rem; }
+.pitch-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1rem; }
+.pitch-item { background:rgba(255,255,255,0.04); border-radius:6px; padding:0.75rem 1rem; border:1px solid #1e293b; }
+.pitch-label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; margin-bottom:4px; }
+.pitch-value { font-size:12px; color:#94a3b8; line-height:1.5; }
+.pitch-value strong { color:#cbd5e1; }
+
+.artefact-section { margin-bottom:3rem; }
+.artefact-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem; }
+.artefact-title-block {}
+.artefact-eyebrow { font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--blue); margin-bottom:4px; }
+.artefact-title { font-size:1.1rem; font-weight:700; color:var(--ink); margin-bottom:2px; }
+.artefact-meta { font-size:11px; color:var(--ink-4); }
+.download-row { display:flex; gap:8px; flex-wrap:wrap; }
+.dl-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:var(--sans); font-size:12px; font-weight:600;
+  padding:7px 14px; border-radius:6px; text-decoration:none !important;
+  transition:opacity 0.15s; cursor:pointer; border:none;
+}
+.dl-btn-xlsx { background:var(--surface-3); color:var(--ink-2); border:1px solid var(--border); }
+.dl-btn-json { background:rgba(74,158,218,0.1); color:var(--blue); border:1px solid rgba(74,158,218,0.3); }
+.dl-btn:hover { opacity:0.8; }
+
+/* Treemap */
+.treemap-wrap { background:#0f172a; border-radius:10px; padding:1.25rem; }
+.tm-header { margin-bottom:0.75rem; }
+.tm-title { font-size:13px; font-weight:700; color:#f1f5f9; margin-bottom:2px; }
+.tm-sub { font-size:10px; color:#64748b; }
+.tm-legend { display:flex; gap:1.25rem; margin-bottom:10px; flex-wrap:wrap; }
+.tm-legend-item { display:flex; align-items:center; gap:5px; font-size:10px; color:#64748b; }
+.tm-swatch { width:10px; height:10px; border-radius:2px; }
+.tm-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:5px; }
+.tm-l1 { border-radius:7px; overflow:hidden; border:1.5px solid #1e3a5f; }
+.tm-l1.gov { border-color:#3730a3; }
+.tm-l1-hdr { padding:6px 8px 5px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.tm-l1.exec .tm-l1-hdr { background:rgba(59,130,246,0.08); }
+.tm-l1.gov .tm-l1-hdr { background:rgba(99,102,241,0.08); }
+.tm-l1-title { font-size:9px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px; }
+.tm-l1-meta { font-size:8px; color:#475569; margin-top:1px; }
+.tm-l1-body { padding:5px; background:#111827; }
+.tm-l2 { margin-bottom:3px; border-radius:4px; overflow:hidden; border:1px solid rgba(255,255,255,0.05); }
+.tm-l2:last-child { margin-bottom:0; }
+.tm-l2-hdr { padding:3px 6px; background:rgba(255,255,255,0.03); }
+.tm-l2-title { font-size:8.5px; font-weight:600; color:#64748b; }
+.tm-l3-tiles { padding:4px 5px; display:flex; flex-wrap:wrap; gap:2px; }
+.tm-l3 { font-size:7.5px; color:#64748b; background:rgba(255,255,255,0.04); border:0.5px solid rgba(255,255,255,0.06); border-radius:3px; padding:2px 5px; cursor:pointer; transition:all 0.12s; line-height:1.4; }
+.tm-l3:hover { background:rgba(59,130,246,0.15); color:#93c5fd; border-color:rgba(59,130,246,0.3); }
+.tm-l1.gov .tm-l3:hover { background:rgba(99,102,241,0.15); color:#a5b4fc; border-color:rgba(99,102,241,0.3); }
+.tm-inspector { background:#1e293b; border:1.5px solid #3b82f6; border-radius:7px; padding:0.875rem 1rem; margin-top:8px; min-height:48px; }
+.tm-insp-name { font-size:13px; font-weight:700; color:#f1f5f9; margin-bottom:3px; }
+.tm-insp-obj { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:#3b82f6; }
+.tm-insp-placeholder { font-size:11px; color:#475569; }
+
+/* Concept graph */
+.graph-wrap { background:#0f172a; border-radius:10px; padding:1.25rem; }
+.graph-legend { display:flex; gap:1.25rem; margin-bottom:10px; flex-wrap:wrap; align-items:center; }
+.graph-legend-item { display:flex; align-items:center; gap:5px; font-size:10px; color:#64748b; }
+.graph-legend-dot { width:10px; height:10px; border-radius:50%; }
+.graph-legend-rect { width:14px; height:10px; border-radius:2px; }
+.tabs-row { display:flex; gap:0; border-bottom:1px solid #1e293b; margin-bottom:12px; }
+.tab-pill { font-size:12px; font-weight:500; padding:6px 16px; color:#475569; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; }
+.tab-pill.active { color:#3b82f6; border-bottom-color:#3b82f6; }
+#concept-svg { width:100%; border-radius:7px; background:#111827; border:1px solid #1e293b; }
+.concept-detail { background:#1e293b; border:1.5px solid #3b82f6; border-radius:7px; padding:0.875rem 1rem; margin-top:8px; min-height:60px; }
+.cd-name { font-size:14px; font-weight:700; color:#f1f5f9; margin-bottom:3px; }
+.cd-type { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:6px; }
+.cd-def { font-size:11px; color:#94a3b8; line-height:1.55; margin-bottom:6px; }
+.cd-lc-label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:#475569; margin-bottom:4px; }
+.cd-lc-pills { display:flex; gap:5px; flex-wrap:wrap; }
+.lc-pill { font-size:9px; padding:2px 8px; border-radius:4px; background:rgba(255,255,255,0.06); color:#94a3b8; border:1px solid rgba(255,255,255,0.08); }
+.cd-placeholder { font-size:11px; color:#475569; }
+
+/* Value stream */
+.vs-wrap { background:#0f172a; border-radius:10px; padding:1.25rem; }
+.vs-header { margin-bottom:0.75rem; }
+.vs-name-line { font-size:13px; font-weight:700; color:#f1f5f9; margin-bottom:2px; }
+.vs-desc { font-size:10px; color:#64748b; line-height:1.5; margin-bottom:8px; }
+.vs-trigger { font-size:10px; color:#64748b; margin-bottom:10px; }
+.state-flow { display:flex; align-items:center; gap:3px; overflow-x:auto; margin-bottom:10px; padding-bottom:3px; flex-wrap:nowrap; }
+.s-pill { font-size:9px; font-weight:500; color:#64748b; background:#1e293b; border:1px solid #2e3f5c; border-radius:20px; padding:3px 8px; white-space:nowrap; flex-shrink:0; }
+.s-pill.terminal { background:rgba(59,130,246,0.12); color:#3b82f6; border-color:rgba(59,130,246,0.4); }
+.s-arrow { font-size:11px; color:#2e3f5c; flex-shrink:0; }
+.stages-scroll { overflow-x:auto; padding-bottom:4px; }
+.stages-row { display:flex; gap:0; min-width:max-content; }
+.stage-card { width:175px; flex-shrink:0; border:1px solid #1e293b; border-right:none; background:#111827; padding:10px 9px; cursor:pointer; transition:background 0.12s; display:flex; flex-direction:column; }
+.stage-card:first-child { border-radius:7px 0 0 7px; }
+.stage-card:last-child { border-right:1px solid #1e293b; border-radius:0 7px 7px 0; }
+.stage-card:hover { background:#1e293b; }
+.stage-card.active { background:rgba(59,130,246,0.08); border-color:rgba(59,130,246,0.4); z-index:1; }
+.sc-num { font-size:9px; color:#475569; font-family:'DM Mono',monospace; margin-bottom:3px; }
+.sc-name { font-size:11px; font-weight:700; color:#f1f5f9; line-height:1.25; margin-bottom:5px; }
+.sc-entry { font-size:8px; color:#475569; line-height:1.3; margin-bottom:3px; }
+.sc-exit { font-size:8px; color:#3b82f6; line-height:1.3; margin-bottom:6px; }
+.sc-caps { display:flex; flex-wrap:wrap; gap:2px; margin-bottom:5px; flex:1; }
+.sc-cap-tag { font-size:7.5px; background:rgba(255,255,255,0.05); border:0.5px solid rgba(255,255,255,0.08); border-radius:2px; padding:1px 4px; color:#64748b; }
+.ppit-row { display:flex; gap:3px; }
+.ppit-dot { width:6px; height:6px; border-radius:50%; }
+.vs-inspector { background:#1e293b; border:1.5px solid #3b82f6; border-radius:7px; padding:0.875rem 1rem; margin-top:8px; }
+.vi-name { font-size:13px; font-weight:700; color:#f1f5f9; margin-bottom:8px; }
+.vi-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.875rem; }
+.vi-block .vi-label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:#475569; margin-bottom:3px; }
+.vi-entry-box { background:rgba(255,255,255,0.03); border-left:2px solid #2e3f5c; padding:5px 8px; font-size:10px; color:#94a3b8; line-height:1.4; border-radius:0 3px 3px 0; }
+.vi-exit-box { background:rgba(59,130,246,0.06); border-left:2px solid #3b82f6; padding:5px 8px; font-size:10px; color:#94a3b8; line-height:1.4; border-radius:0 3px 3px 0; }
+.vi-val { font-size:11px; color:#94a3b8; line-height:1.5; }
+.vi-placeholder { font-size:11px; color:#475569; }
+.ppit-legend { display:flex; gap:0.875rem; flex-wrap:wrap; margin-top:8px; padding-top:8px; border-top:1px solid #1e293b; }
+.ppit-legend-item { display:flex; align-items:center; gap:4px; font-size:9px; color:#475569; }
+
+/* VCC CTA */
+.vcc-cta { background:var(--navy); border:1px solid #2e3f5c; border-radius:var(--radius-lg); padding:2rem; display:flex; align-items:center; justify-content:space-between; gap:1.5rem; flex-wrap:wrap; margin-top:2.5rem; }
+.vcc-cta-left {}
+.vcc-cta-eyebrow { font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#4a9eda; margin-bottom:0.4rem; }
+.vcc-cta-title { font-size:1rem; font-weight:700; color:#f1f5f9; margin-bottom:0.4rem; }
+.vcc-cta-desc { font-size:12px; color:#64748b; line-height:1.5; max-width:480px; }
+.vcc-cta-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.vcc-btn-primary { font-family:var(--sans); font-size:13px; font-weight:600; background:#3b82f6; color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; text-decoration:none !important; transition:opacity 0.15s; }
+.vcc-btn-primary:hover { opacity:0.85; }
+.vcc-btn-secondary { font-family:var(--sans); font-size:13px; font-weight:500; background:none; color:rgba(255,255,255,0.5); border:1px solid rgba(255,255,255,0.15); padding:9px 18px; border-radius:6px; text-decoration:none !important; transition:all 0.15s; }
+.vcc-btn-secondary:hover { border-color:rgba(255,255,255,0.4); color:#fff; }
+
+@media(max-width:600px){ .pitch-grid{grid-template-columns:1fr;} .vi-grid{grid-template-columns:1fr;} .artefact-header{flex-direction:column;} }
+</style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Business Capability Map and Value Stream for a Pizza Delivery Startup",
+    "description": "A complete operating model slice for Dough-To-Door Pizzeria — capability map, concept model, and value stream generated from a pitch deck in one Claude Cowork session.",
+    "author": {"@type": "Person", "name": "Terry Roach"},
+    "publisher": {"@type": "Organization", "name": "PlausibleBA", "url": "https://www.plausibleba.com"},
+    "url": "https://www.plausibleba.com/case-study"
+  }
+  </script>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="/">PlausibleBA</a>
+    <div class="nav-links">
+      <a href="/skills">Skills</a>
+      <a href="/methodology">Methodology</a>
+      <a href="/install">Install</a>
+      <a href="/canvas">Canvas</a>
+      <a href="/case-study" class="active">Case study</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+      <a class="nav-cta" href="/install">Install free →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" style="padding:4rem 2rem 3rem">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Full pipeline walkthrough</div>
+    <h1>From pitch deck<br><em>to operating model.</em></h1>
+    <p class="hero-sub">A complete operating model slice for a premium pizza delivery startup — generated from a two-page pitch deck in a single Claude Cowork session using the PlausibleBA skills library.</p>
+  </div>
+</section>
+
+<section class="section section-white">
+  <div class="section-inner">
+
+    <!-- BUSINESS DESCRIPTION -->
+    <div class="artefact-section">
+      <div class="artefact-eyebrow">The input</div>
+      <h2 style="margin-bottom:0.5rem;max-width:560px">The business description</h2>
+      <p style="max-width:640px;margin-bottom:1.5rem;color:var(--ink-3)">This is the only input provided to the skills — a two-page startup pitch. No capability framework knowledge required. No prior architecture work. Just paste and run.</p>
+
+      <div style="background:var(--surface-3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;max-width:720px;position:relative">
+        <div style="position:absolute;top:1rem;right:1rem;font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4);background:var(--surface);border:1px solid var(--border);padding:3px 8px;border-radius:4px">Pasted into Cowork</div>
+        <pre style="font-family:'DM Mono',monospace;font-size:12px;color:var(--ink-3);line-height:1.7;white-space:pre-wrap;margin:0">Draft Pitch: Dough-To-Door Pizzeria
+
+Page 1: The Vision &amp; The Problem
+Company Name: Dough-To-Door Pizzeria
+Tagline: "Farm-to-table speed, neighborhood soul."
+
+The Problem: Current delivery options in the [Target Neighborhood] are either
+low-quality fast food or high-end sit-down restaurants with 60+ minute wait
+times. There is a "quality gap" for busy families and professionals who want
+premium, organic ingredients delivered fast.
+
+The Solution: A Fast-Casual Hybrid Model that combines artisanal wood-fired
+quality with a tech-driven delivery engine. We use locally sourced, organic
+ingredients and a proprietary "Dough-Sync" logistics app to ensure every pizza
+is delivered within 25 minutes of being pulled from the oven.
+
+Target Market: Young professionals and families (ages 25-45) in high-density
+urban areas. Local market opportunity: $1.2M in annual revenue.
+
+Page 2: The Strategy &amp; The Ask
+Traction: 3-month pop-up pilot. $15,000 in revenue. 4.8-star average rating.
+Team: Head Chef (10 years Michelin-rated kitchens) + CTO (logistics software).
+Financials: Break-even in 10 months. Year 2 target: $540,000/year.
+The Ask: $250,000 seed — equipment (30%), ghost kitchen lease (40%), marketing
+and app launch (30%).
+
+Revenue streams: Direct sales 40% · Branded app delivery 50% · Meal kits 10%
+Cost structure: Ghost-kitchen hybrid. Organic COGS 14%. Tech-driven ops.
+Customer acquisition: Hyper-local social media, community events, Dough-Points
+loyalty programme.</pre>
+      </div>
+    </div>
+
+    <hr style="border-color:var(--border);margin:3rem 0">
+
+    <!-- CAPABILITY MAP -->
+    <div class="artefact-section" id="capability-map">
+      <div class="artefact-header">
+        <div class="artefact-title-block">
+          <div class="artefact-eyebrow">Artefact 1 · /capability-map</div>
+          <div class="artefact-title">Capability Map</div>
+          <div class="artefact-meta">8 business areas · 17 domains · 51 capabilities</div>
+        </div>
+        <div class="download-row">
+          <a class="dl-btn dl-btn-xlsx" href="/case-study/dough-to-door-capability-map.xlsx" download>↓ Download XLSX</a>
+          <a class="dl-btn dl-btn-json" href="/case-study/dough-to-door-capability-map.json" download>↓ Download JSON</a>
+        </div>
+      </div>
+
+      <div class="treemap-wrap">
+        <div class="tm-header">
+          <div class="tm-title">Dough-To-Door — Operating Capabilities</div>
+          <div class="tm-sub">8 business areas · 17 domains · 51 capabilities</div>
+        </div>
+        <div class="tm-legend">
+          <div class="tm-legend-item"><span class="tm-swatch" style="background:#3b82f6"></span>Execution</div>
+          <div class="tm-legend-item"><span class="tm-swatch" style="background:#6366f1"></span>Governance</div>
+          <div class="tm-legend-item" style="margin-left:auto;font-size:9px;color:#475569">Click any L3 tile to inspect</div>
+        </div>
+        <div class="tm-grid" id="tm-grid"></div>
+        <div class="tm-inspector" id="tm-inspector">
+          <p class="tm-insp-placeholder">Click any L3 capability tile to inspect it.</p>
+        </div>
+      </div>
+    </div>
+
+    <hr style="border-color:var(--border);margin:3rem 0">
+
+    <!-- CONCEPT MODEL -->
+    <div class="artefact-section" id="concept-model">
+      <div class="artefact-header">
+        <div class="artefact-title-block">
+          <div class="artefact-eyebrow">Artefact 2 · /concept-model</div>
+          <div class="artefact-title">Concept Model</div>
+          <div class="artefact-meta">Capsicum Triad · 3 parties · 10 resources · 6 records</div>
+        </div>
+        <div class="download-row">
+          <a class="dl-btn dl-btn-xlsx" href="/case-study/dough-to-door-concept-model.xlsx" download>↓ Download XLSX</a>
+          <a class="dl-btn dl-btn-json" href="/case-study/dough-to-door-concept-model.json" download>↓ Download JSON</a>
+        </div>
+      </div>
+
+      <div class="graph-wrap">
+        <div class="tm-header">
+          <div class="tm-title">Dough-To-Door — Business Object Taxonomy</div>
+          <div class="tm-sub">Capsicum Triad classification · 3 parties · 10 resources · 6 records</div>
+        </div>
+        <div class="tabs-row">
+          <div class="tab-pill active">Graph</div>
+          <div class="tab-pill">Table</div>
+        </div>
+        <div class="graph-legend">
+          <div class="graph-legend-item"><span class="graph-legend-dot" style="background:#2dd4bf"></span>Party</div>
+          <div class="graph-legend-item"><span class="graph-legend-dot" style="background:#3b82f6"></span>Resource</div>
+          <div class="graph-legend-item"><span class="graph-legend-rect" style="background:#ec4899"></span>Record</div>
+          <div class="graph-legend-item" style="margin-left:auto;font-size:9px;color:#475569">Click any node for details</div>
+        </div>
+        <svg id="concept-svg" viewBox="0 0 760 420" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="concept-detail" id="concept-detail">
+          <p class="cd-placeholder">Select a concept node to see its definition and lifecycle states.</p>
+        </div>
+      </div>
+    </div>
+
+    <hr style="border-color:var(--border);margin:3rem 0">
+
+    <!-- VALUE STREAM -->
+    <div class="artefact-section" id="value-stream">
+      <div class="artefact-header">
+        <div class="artefact-title-block">
+          <div class="artefact-eyebrow">Artefact 3 · /value-stream</div>
+          <div class="artefact-title">Value Stream</div>
+          <div class="artefact-meta">Customer Order Experience · 6 stages · Ecosystem zone</div>
+        </div>
+        <div class="download-row">
+          <a class="dl-btn dl-btn-xlsx" href="/case-study/dough-to-door-value-stream.xlsx" download>↓ Download XLSX</a>
+          <a class="dl-btn dl-btn-json" href="/case-study/dough-to-door-value-stream.json" download>↓ Download JSON</a>
+        </div>
+      </div>
+
+      <div class="vs-wrap" id="vs-root"></div>
+    </div>
+
+    <!-- UNIFIED BUNDLE -->
+    <hr style="border-color:var(--border);margin:3rem 0">
+    <div class="artefact-section" id="unified-bundle">
+      <div class="artefact-header">
+        <div class="artefact-title-block">
+          <div class="artefact-eyebrow">All three artefacts combined</div>
+          <div class="artefact-title">Unified Bundle</div>
+          <div class="artefact-meta">Capability map + Concept model + Value stream in a single JSON file</div>
+        </div>
+        <div class="download-row">
+          <a class="dl-btn dl-btn-json" href="/case-study/dough-to-door-bundle.json" download>↓ Download unified bundle</a>
+          <a class="dl-btn dl-btn-xlsx" href="/canvas?demo=dough-to-door" style="background:rgba(74,158,218,0.1);color:var(--blue);border:1px solid rgba(74,158,218,0.3)">View in Canvas →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- VCC CTA -->
+    <div class="vcc-cta">
+      <div class="vcc-cta-left">
+        <div class="vcc-cta-eyebrow">Take it further</div>
+        <div class="vcc-cta-title">Turn this into an interactive workshopping canvas</div>
+        <div class="vcc-cta-desc">Download the unified bundle and import it into the Value Cognition Canvas (VCC) to add friction analysis, solution mapping, throughput projections, and governance controls. Run your first facilitated workshop in minutes.</div>
+      </div>
+      <div class="vcc-cta-actions">
+        <a class="vcc-btn-primary" href="/case-study/dough-to-door-bundle.json" download>↓ Download unified bundle</a>
+        <a class="vcc-btn-secondary" href="https://www.valuecognitioncanvas.com" target="_blank">Open VCC trial →</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- HOW THIS WAS MADE -->
+<section class="section section-mid">
+  <div class="section-inner" style="max-width:720px">
+    <div class="section-eyebrow">How this was made</div>
+    <h2 style="margin-bottom:1rem">One session. Three slash commands.</h2>
+    <p style="margin-bottom:1rem">The entire operating model above was generated in a single Claude Cowork session. The only input was the pitch deck text above — no prior architecture knowledge, no reference models, no configuration.</p>
+    <div style="background:var(--surface);border-radius:var(--radius-lg);padding:1.5rem;border:1px solid var(--border);font-family:'DM Mono',monospace;font-size:12px;color:var(--ink-3);line-height:2">
+      <div><span style="color:var(--blue)">/capability-map</span> <span style="color:var(--ink-4)">→ 8 areas, 17 domains, 51 capabilities · treemap rendered</span></div>
+      <div><span style="color:var(--blue)">/concept-model</span> &nbsp;<span style="color:var(--ink-4)">→ 19 objects classified · cross-validated against capability map</span></div>
+      <div><span style="color:var(--blue)">/value-stream</span> &nbsp; <span style="color:var(--ink-4)">→ 6 stages · outcome chain · PPIT breakdown · JSON bundle</span></div>
+    </div>
+    <p style="margin-top:1.25rem">Each skill guided the session through structured elicitation with two validation checkpoints before rendering. The outputs are BIZBOK-grounded, MECE-validated, and schema-validated for VCC import.</p>
+    <div style="margin-top:1.5rem">
+      <a class="btn-outline" href="/install">Install the skills and try it yourself →</a>
+    </div>
+  </div>
+</section>
+
+<section class="cta-banner">
+  <h2 style="color:#fff;margin-bottom:0.75rem">Try it on your own domain</h2>
+  <p>Paste any business description into a fresh Cowork task. Three slash commands. Your own operating model.</p>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <a class="btn-primary" href="/install">Install free in Cowork →</a>
+    <a class="btn-ghost" href="/canvas">Upload a bundle to the canvas</a>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand-col">
+      <span class="footer-brand">PlausibleBA</span>
+      <p>Just enough business architecture.<br>For every BA, on every project.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Skills</h4>
+      <a href="/skills#capability-map">Capability Mapping</a>
+      <a href="/skills#concept-model">Concept Model</a>
+      <a href="/skills#value-streams">Value Streams</a>
+      <a href="/install">Install</a>
+    </div>
+    <div class="footer-col">
+      <h4>Learn</h4>
+      <a href="/methodology">Methodology</a>
+      <a href="/canvas">Canvas</a>
+      <a href="https://plausibleba.substack.com" target="_blank">Substack</a>
+      <a href="https://github.com/plausibleba/ba-skills" target="_blank">GitHub</a>
+    </div>
+    <div class="footer-col">
+      <h4>About</h4>
+      <a href="/about">About PlausibleBA</a>
+      <a href="/contact">Contact</a>
+      <a href="/privacy">Privacy policy</a>
+      <a href="https://www.valuecognitioncanvas.com" target="_blank">Value Cognition Canvas</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 PlausibleBA · Licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a></p>
+    <p>Built for <a href="https://claude.ai/download" target="_blank">Claude Cowork</a> by Anthropic</p>
+  </div>
+</footer>
+
+<script>
+// ── CAPABILITY MAP TREEMAP ──────────────────────────────────────────
+const capData = [
+  {l1:"Product Management",type:"exec",l2s:[
+    {name:"Menu & Recipe Development",l3s:[{n:"Manage Menu Portfolio",o:"Menu",d:"Ability to curate and manage the active menu offering."},{n:"Manage Recipe Catalogue",o:"Recipe",d:"Ability to maintain the approved recipe catalogue."},{n:"Manage Ingredient Specification",o:"Ingredient",d:"Ability to define ingredient quality and sourcing standards."}]},
+    {name:"Retail Product Management",l3s:[{n:"Manage Meal Kit Portfolio",o:"Product",d:"Ability to manage the weekly meal kit product range."},{n:"Manage Sauce Product Line",o:"Product",d:"Ability to manage retail organic sauce products."},{n:"Manage Subscription Offering",o:"Subscription",d:"Ability to manage Pizza Night subscription tiers."}]}
+  ]},
+  {l1:"Customer Management",type:"exec",l2s:[
+    {name:"Customer Acquisition",l3s:[{n:"Manage Marketing Campaign",o:"Marketing Campaign",d:"Ability to plan and execute hyper-local marketing campaigns."},{n:"Manage Community Partnership",o:"Marketing Campaign",d:"Ability to establish and manage community event partnerships."},{n:"Manage Digital Channel Presence",o:"Marketing Campaign",d:"Ability to manage social media and digital presence."}]},
+    {name:"Customer Retention & Loyalty",l3s:[{n:"Manage Loyalty Programme",o:"Loyalty Account",d:"Ability to operate the Dough-Points loyalty programme."},{n:"Manage Customer Relationship",o:"Customer",d:"Ability to manage ongoing customer relationships."},{n:"Manage Customer Feedback",o:"Feedback",d:"Ability to collect and action customer feedback."}]}
+  ]},
+  {l1:"Order Management",type:"exec",l2s:[
+    {name:"Order Processing",l3s:[{n:"Manage Order Capture",o:"Order",d:"Ability to receive orders via app, dine-in, and counter."},{n:"Manage Order Pricing",o:"Order",d:"Ability to apply dynamic pricing and Dough-Points."},{n:"Manage Payment Collection",o:"Payment",d:"Ability to process payments across all channels."}]},
+    {name:"Order Fulfilment",l3s:[{n:"Manage Order Queue",o:"Order",d:"Ability to manage the kitchen order queue and prioritisation."},{n:"Manage Order Assembly",o:"Order",d:"Ability to assemble and quality-check completed orders."},{n:"Manage Order Dispatch",o:"Order",d:"Ability to dispatch orders to delivery or counter collection."}]}
+  ]},
+  {l1:"Supply Chain Management",type:"exec",l2s:[
+    {name:"Supplier & Sourcing Management",l3s:[{n:"Manage Supplier Relationship",o:"Supplier",d:"Ability to manage relationships with organic ingredient suppliers."},{n:"Manage Ingredient Sourcing",o:"Ingredient",d:"Ability to source and procure organic ingredients."},{n:"Govern Sourcing Standards",o:"Ingredient",d:"Ability to enforce organic and local sourcing standards."}]},
+    {name:"Inventory Management",l3s:[{n:"Manage Ingredient Stock",o:"Ingredient",d:"Ability to track and manage ingredient stock levels."},{n:"Manage Inventory Replenishment",o:"Ingredient",d:"Ability to trigger timely stock replenishment."},{n:"Manage Perishable Waste",o:"Ingredient",d:"Ability to minimise waste of perishable ingredients."}]}
+  ]},
+  {l1:"Kitchen Operations",type:"exec",l2s:[
+    {name:"Food Preparation",l3s:[{n:"Manage Production Scheduling",o:"Recipe",d:"Ability to schedule production across the kitchen."},{n:"Manage Recipe Execution",o:"Recipe",d:"Ability to ensure consistent recipe execution by kitchen team."},{n:"Manage Production Quality",o:"Order",d:"Ability to maintain wood-fired quality standards."}]},
+    {name:"Kitchen Asset Management",l3s:[{n:"Manage Kitchen Equipment",o:"Equipment",d:"Ability to maintain and service kitchen equipment."},{n:"Manage Facility Maintenance",o:"Facility",d:"Ability to manage ghost kitchen facility upkeep."},{n:"Manage Kitchen Capacity",o:"Facility",d:"Ability to optimise kitchen throughput and capacity."}]}
+  ]},
+  {l1:"Delivery Management",type:"exec",l2s:[
+    {name:"Delivery Logistics",l3s:[{n:"Manage Delivery Routing",o:"Delivery",d:"Ability to optimise delivery routes via Dough-Sync app."},{n:"Manage Driver Pool",o:"Driver",d:"Ability to manage the delivery driver pool and scheduling."},{n:"Manage Delivery Platform",o:"Delivery",d:"Ability to operate the Dough-Sync delivery platform."}]},
+    {name:"Delivery Performance",l3s:[{n:"Manage Delivery Timeliness",o:"Delivery",d:"Ability to ensure 25-minute delivery SLA is met."},{n:"Manage Delivery Quality",o:"Delivery",d:"Ability to maintain pizza quality during delivery."},{n:"Manage Delivery Performance Analytics",o:"Delivery",d:"Ability to track and improve delivery KPIs."}]}
+  ]},
+  {l1:"Financial Management",type:"exec",l2s:[
+    {name:"Revenue Management",l3s:[{n:"Manage Revenue Tracking",o:"Financial Report",d:"Ability to track revenue across all channels."},{n:"Manage Pricing Strategy",o:"Order",d:"Ability to set and optimise pricing across channels."},{n:"Manage Channel Revenue",o:"Financial Report",d:"Ability to analyse revenue contribution by channel."}]},
+    {name:"Cost & Budget Management",l3s:[{n:"Manage Cost Control",o:"Financial Report",d:"Ability to manage COGS and labour costs against targets."},{n:"Manage Budget Planning",o:"Financial Report",d:"Ability to plan and manage operational budgets."},{n:"Manage Financial Reporting",o:"Financial Report",d:"Ability to produce investor-grade financial reports."}]}
+  ]},
+  {l1:"Governance & Compliance",type:"gov",l2s:[
+    {name:"Food Safety & Quality Assurance",l3s:[{n:"Govern Food Safety Standards",o:"Quality Audit",d:"Ability to define and enforce food safety standards."},{n:"Govern Hygiene Compliance",o:"Quality Audit",d:"Ability to maintain hygiene compliance across operations."},{n:"Manage Quality Audit",o:"Quality Audit",d:"Ability to conduct regular quality audits."}]},
+    {name:"Regulatory Compliance",l3s:[{n:"Govern Licensing & Permits",o:"Licence",d:"Ability to obtain and maintain all required licences."},{n:"Govern Health & Safety Compliance",o:"Licence",d:"Ability to comply with health and safety regulations."},{n:"Govern Employment Compliance",o:"Licence",d:"Ability to comply with employment law requirements."}]},
+    {name:"Data & Privacy Governance",l3s:[{n:"Govern Customer Data Privacy",o:"Customer",d:"Ability to protect customer data per privacy regulations."},{n:"Govern Application Data Security",o:"Customer",d:"Ability to maintain Dough-Sync app data security."},{n:"Manage Data Retention Policy",o:"Customer",d:"Ability to manage data retention and deletion policies."}]}
+  ]}
+];
+
+const tmGrid = document.getElementById('tm-grid');
+const tmInspector = document.getElementById('tm-inspector');
+let selectedTile = null;
+
+capData.forEach(d => {
+  const gov = d.type === 'gov';
+  const l3count = d.l2s.reduce((a,l2)=>a+l2.l3s.length,0);
+  const block = document.createElement('div');
+  block.className = `tm-l1 ${gov?'gov':'exec'}`;
+  block.innerHTML = `<div class="tm-l1-hdr"><div class="tm-l1-title">${d.l1}</div><div class="tm-l1-meta">${d.l2s.length} domains · ${l3count} caps</div></div><div class="tm-l1-body"></div>`;
+  const body = block.querySelector('.tm-l1-body');
+  d.l2s.forEach(l2 => {
+    const l2el = document.createElement('div');
+    l2el.className = 'tm-l2';
+    l2el.innerHTML = `<div class="tm-l2-hdr"><div class="tm-l2-title">${l2.name}</div></div><div class="tm-l3-tiles"></div>`;
+    const tiles = l2el.querySelector('.tm-l3-tiles');
+    l2.l3s.forEach(l3 => {
+      const tile = document.createElement('div');
+      tile.className = 'tm-l3';
+      tile.textContent = l3.n;
+      tile.addEventListener('click', () => {
+        if (selectedTile) selectedTile.classList.remove('selected');
+        tile.classList.add('selected');
+        selectedTile = tile;
+        tmInspector.innerHTML = `<div class="tm-insp-name">${l3.n}</div><div class="tm-insp-obj">Business object: ${l3.o}</div>`;
+        tmInspector.style.borderColor = gov ? '#6366f1' : '#3b82f6';
+      });
+      tiles.appendChild(tile);
+    });
+    body.appendChild(l2el);
+  });
+  tmGrid.appendChild(block);
+});
+
+// ── CONCEPT GRAPH ──────────────────────────────────────────────────
+const ns = 'http://www.w3.org/2000/svg';
+const concepts = [
+  {id:'customer',name:'Customer',type:'Party',x:80,y:60,def:'A Party who orders, subscribes, or dines in and holds a loyalty relationship.',states:['Prospect','Active','Lapsed','Churned']},
+  {id:'supplier',name:'Supplier',type:'Party',x:80,y:175,def:'A Party who supplies organic ingredients under a sourcing agreement.',states:['Prospective','Contracted','Active','Terminated']},
+  {id:'driver',name:'Driver',type:'Party',x:80,y:290,def:'A Party who delivers orders to customers via the Dough-Sync platform.',states:['Onboarding','Active','Inactive','Offboarded']},
+  {id:'menu',name:'Menu',type:'Resource',x:260,y:50,def:'The curated collection of available pizzas and products for a given period.',states:['Draft','Published','Seasonal','Retired']},
+  {id:'order',name:'Order',type:'Resource',x:260,y:140,def:'A confirmed customer order placed through any channel.',states:['Placed','Accepted','In Preparation','Ready','Dispatched','Delivered','Closed']},
+  {id:'subscription',name:'Subscription',type:'Resource',x:260,y:230,def:'A recurring Pizza Night meal kit subscription held by a customer.',states:['Created','Active','Paused','Cancelled']},
+  {id:'loyalty',name:'Loyalty\nAccount',type:'Resource',x:260,y:320,def:'A Dough-Points loyalty account held by a customer.',states:['Opened','Active','Redeemed','Dormant']},
+  {id:'delivery',name:'Delivery',type:'Resource',x:260,y:400,def:'A physical delivery of an order assigned to a driver.',states:['Assigned','In Transit','Delivered','Failed']},
+  {id:'ingredient',name:'Ingredient',type:'Resource',x:440,y:60,def:'An organic ingredient sourced from a supplier and used in recipe production.',states:['Specified','In Stock','Allocated','Consumed','Wasted']},
+  {id:'payment',name:'Payment',type:'Record',x:580,y:50,def:'A record of payment collected from a customer for an order.',states:['Pending','Processed','Settled','Refunded']},
+  {id:'feedback',name:'Feedback',type:'Record',x:580,y:140,def:'A record of customer feedback submitted after an order.',states:['Submitted','Acknowledged','Actioned','Closed']},
+  {id:'campaign',name:'Marketing\nCampaign',type:'Record',x:580,y:230,def:'A record of a marketing or community campaign.',states:['Planned','Active','Completed','Evaluated']},
+  {id:'finreport',name:'Financial\nReport',type:'Record',x:580,y:320,def:'A financial performance report for investors and management.',states:['Draft','Published','Archived']},
+  {id:'audit',name:'Quality\nAudit',type:'Record',x:700,y:140,def:'A record of a food safety or quality audit.',states:['Scheduled','In Progress','Completed','Remediated']},
+  {id:'licence',name:'Licence',type:'Record',x:700,y:280,def:'A regulatory licence or permit required to operate.',states:['Applied','Granted','Active','Expired','Renewed']},
+];
+
+const edges = [
+  ['customer','order'],['customer','loyalty'],['customer','subscription'],
+  ['supplier','ingredient'],['driver','delivery'],
+  ['order','delivery'],['order','payment'],['order','feedback'],
+  ['menu','order'],['ingredient','menu'],['loyalty','order'],
+];
+
+const colMap = {Party:'#2dd4bf',Resource:'#3b82f6',Record:'#ec4899'};
+const fillMap = {Party:'rgba(45,212,191,0.12)',Resource:'rgba(59,130,246,0.12)',Record:'rgba(236,72,153,0.12)'};
+const strokeMap = {Party:'rgba(45,212,191,0.5)',Resource:'rgba(59,130,246,0.5)',Record:'rgba(236,72,153,0.5)'};
+const textMap = {Party:'#ccfbf1',Resource:'#bfdbfe',Record:'#fce7f3'};
+
+const svg = document.getElementById('concept-svg');
+const detail = document.getElementById('concept-detail');
+const nodeMap = {};
+concepts.forEach(c => nodeMap[c.id] = c);
+
+edges.forEach(([a,b]) => {
+  const na=nodeMap[a],nb=nodeMap[b];
+  if(!na||!nb) return;
+  const line=document.createElementNS(ns,'line');
+  line.setAttribute('x1',na.x);line.setAttribute('y1',na.y);
+  line.setAttribute('x2',nb.x);line.setAttribute('y2',nb.y);
+  line.setAttribute('stroke','rgba(30,41,59,0.9)');line.setAttribute('stroke-width','1');
+  line.setAttribute('stroke-dasharray','4 3');
+  svg.appendChild(line);
+});
+
+[{t:'Party',x:80},{t:'Resource',x:330},{t:'Record',x:640}].forEach(col=>{
+  const t=document.createElementNS(ns,'text');
+  t.setAttribute('x',col.x);t.setAttribute('y',16);
+  t.setAttribute('text-anchor','middle');t.setAttribute('font-size','9');
+  t.setAttribute('font-weight','700');t.setAttribute('fill',colMap[col.t]);
+  t.setAttribute('font-family','DM Sans,sans-serif');t.setAttribute('letter-spacing','0.5');
+  t.textContent=col.t.toUpperCase();
+  svg.appendChild(t);
+});
+
+concepts.forEach(c => {
+  const g=document.createElementNS(ns,'g');
+  g.style.cursor='pointer';
+  const isRecord=c.type==='Record';
+  if(isRecord){
+    const r=document.createElementNS(ns,'rect');
+    r.setAttribute('x',c.x-34);r.setAttribute('y',c.y-17);
+    r.setAttribute('width','68');r.setAttribute('height','34');
+    r.setAttribute('rx','4');r.setAttribute('fill',fillMap[c.type]);
+    r.setAttribute('stroke',strokeMap[c.type]);r.setAttribute('stroke-width','1.5');
+    g.appendChild(r);
+  } else {
+    const circle=document.createElementNS(ns,'circle');
+    circle.setAttribute('cx',c.x);circle.setAttribute('cy',c.y);circle.setAttribute('r','26');
+    circle.setAttribute('fill',fillMap[c.type]);
+    circle.setAttribute('stroke',strokeMap[c.type]);circle.setAttribute('stroke-width','1.5');
+    g.appendChild(circle);
+  }
+  const lines=c.name.split('\n');
+  lines.forEach((line,i)=>{
+    const t=document.createElementNS(ns,'text');
+    t.setAttribute('x',c.x);
+    t.setAttribute('y',c.y+(i-(lines.length-1)/2)*11+1);
+    t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-size','8.5');t.setAttribute('font-weight','600');
+    t.setAttribute('fill',textMap[c.type]);t.setAttribute('font-family','DM Sans,sans-serif');
+    t.textContent=line;
+    g.appendChild(t);
+  });
+  g.addEventListener('click',()=>{
+    svg.querySelectorAll('circle,rect').forEach(el=>el.setAttribute('stroke-width','1.5'));
+    const shape=g.querySelector('circle')||g.querySelector('rect');
+    if(shape) shape.setAttribute('stroke-width','3');
+    const lcPills=c.states.map(s=>`<span class="lc-pill">${s}</span>`).join('');
+    detail.style.borderColor=colMap[c.type];
+    detail.innerHTML=`<div class="cd-name">${c.name.replace('\n',' ')}</div>
+      <div class="cd-type" style="color:${colMap[c.type]}">${c.type}</div>
+      <div class="cd-def">${c.def}</div>
+      <div class="cd-lc-label">Lifecycle</div>
+      <div class="cd-lc-pills">${lcPills}</div>`;
+  });
+  svg.appendChild(g);
+});
+
+// ── VALUE STREAM ──────────────────────────────────────────────────
+const vsData = {
+  name: 'Customer Order Experience',
+  desc: 'End-to-end flow from customer browsing through to order delivery, feedback collection and loyalty award.',
+  trigger: 'Customer decides to order food via app, dine-in, or counter',
+  outcome: 'Order delivered, feedback collected, loyalty points awarded, revenue recorded',
+  states: ['Placed','Accepted','In Preparation','Ready','Dispatched','Delivered','Closed'],
+  stages: [
+    {num:1,name:'Order Placed',entry:'Customer has browsed the menu and selected items',exit:'Order submitted with confirmed pricing and payment processed',caps:['Manage Menu Portfolio','Manage Digital Channel Presence','Manage Order Capture','Manage Order Pricing','Manage Payment Collection'],ppit:{P:true,Pr:true,I:true,T:true}},
+    {num:2,name:'Order Accepted',entry:'Order submitted with valid payment',exit:'Order confirmed and queued in kitchen display',caps:['Manage Order Queue','Manage Production Scheduling'],ppit:{P:false,Pr:true,I:true,T:true}},
+    {num:3,name:'Order Prepared',entry:'Order queued and production slot allocated',exit:'Pizza assembled, wood-fired, and passes quality check',caps:['Manage Recipe Execution','Manage Production Quality','Manage Ingredient Stock','Manage Kitchen Capacity'],ppit:{P:true,Pr:true,I:false,T:false}},
+    {num:4,name:'Order Dispatched',entry:'Order assembled and ready for handoff',exit:'Order handed to driver or ready at counter',caps:['Manage Order Dispatch','Manage Delivery Routing','Manage Driver Pool','Manage Delivery Platform'],ppit:{P:true,Pr:true,I:true,T:true}},
+    {num:5,name:'Order Delivered',entry:'Order in transit or ready at counter',exit:'Customer confirms receipt of order',caps:['Manage Delivery Timeliness','Manage Delivery Quality'],ppit:{P:true,Pr:false,I:false,T:true}},
+    {num:6,name:'Experience Closed',entry:'Customer has received their order',exit:'Feedback collected, loyalty points awarded, revenue recorded',caps:['Manage Customer Feedback','Manage Loyalty Programme','Manage Revenue Tracking','Manage Customer Relationship'],ppit:{P:false,Pr:true,I:true,T:true}},
+  ]
+};
+
+const vsRoot = document.getElementById('vs-root');
+const PPIT = [{k:'P',c:'#3b82f6',label:'People'},{k:'Pr',c:'#2dd4bf',label:'Process'},{k:'I',c:'#ec4899',label:'Information'},{k:'T',c:'#f59e0b',label:'Technology'}];
+
+vsRoot.innerHTML = `
+  <div class="vs-header">
+    <div class="vs-name-line">${vsData.name}</div>
+    <div class="vs-desc">${vsData.desc}</div>
+    <div class="vs-trigger"><strong style="color:#64748b">Trigger:</strong> ${vsData.trigger} &nbsp;→&nbsp; <strong style="color:#64748b">Outcome:</strong> ${vsData.outcome}</div>
+  </div>`;
+
+const stateFlow = document.createElement('div');
+stateFlow.className = 'state-flow';
+vsData.states.forEach((s,i) => {
+  const pill = document.createElement('div');
+  pill.className = 's-pill' + (i===vsData.states.length-1?' terminal':'');
+  pill.textContent = s;
+  stateFlow.appendChild(pill);
+  if(i < vsData.states.length-1) {
+    const arr = document.createElement('span');
+    arr.className='s-arrow'; arr.textContent='›';
+    stateFlow.appendChild(arr);
+  }
+});
+vsRoot.appendChild(stateFlow);
+
+const scroll = document.createElement('div'); scroll.className='stages-scroll';
+const row = document.createElement('div'); row.className='stages-row';
+const inspector = document.createElement('div'); inspector.className='vs-inspector';
+inspector.innerHTML = '<p class="vi-placeholder">Click any stage to see its full breakdown.</p>';
+
+vsData.stages.forEach(s => {
+  const card = document.createElement('div');
+  card.className = 'stage-card';
+  const top3 = s.caps.slice(0,3);
+  const more = s.caps.length - 3;
+  const ppitDots = PPIT.map(p=>`<span class="ppit-dot" style="background:${s.ppit[p.k]?p.c:'rgba(255,255,255,0.1)'}" title="${p.label}"></span>`).join('');
+  card.innerHTML = `
+    <div class="sc-num">S${s.num}</div>
+    <div class="sc-name">${s.name}</div>
+    <div class="sc-entry">→ ${s.exit}</div>
+    <div class="sc-caps">${top3.map(c=>`<span class="sc-cap-tag">${c}</span>`).join('')}${more>0?`<span class="sc-cap-tag">+${more}</span>`:''}</div>
+    <div class="ppit-row">${ppitDots}</div>`;
+  card.addEventListener('click',()=>{
+    row.querySelectorAll('.stage-card').forEach(c=>c.classList.remove('active'));
+    card.classList.add('active');
+    const ppitLegend = PPIT.map(p=>`<div class="ppit-legend-item"><span class="ppit-dot" style="width:7px;height:7px;border-radius:50%;background:${s.ppit[p.k]?p.c:'rgba(255,255,255,0.15)'}"></span>${p.label}</div>`).join('');
+    inspector.innerHTML=`
+      <div class="vi-name">S${s.num} — ${s.name}</div>
+      <div class="vi-grid">
+        <div class="vi-block"><div class="vi-label">Entry criteria</div><div class="vi-entry-box">${s.entry}</div></div>
+        <div class="vi-block"><div class="vi-label">Exit criteria</div><div class="vi-exit-box">${s.exit}</div></div>
+        <div class="vi-block"><div class="vi-label">Capabilities (${s.caps.length})</div><div class="vi-val">${s.caps.map(c=>`• ${c}`).join('<br>')}</div></div>
+        <div class="vi-block"><div class="vi-label">PPIT</div><div class="ppit-legend" style="margin-top:4px;padding-top:0;border-top:none">${ppitLegend}</div></div>
+      </div>`;
+  });
+  row.appendChild(card);
+});
+scroll.appendChild(row);
+vsRoot.appendChild(scroll);
+vsRoot.appendChild(inspector);
+
+// Auto-select stage 1
+setTimeout(()=>{
+  const first = row.querySelector('.stage-card');
+  if(first) first.click();
+},150);
+</script>
+
+</body>
+</html>

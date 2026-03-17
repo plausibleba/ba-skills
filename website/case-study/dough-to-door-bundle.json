@@ -1,0 +1,1320 @@
+{
+  "$schema": "https://plausibleba.com/schemas/ba-skills-bundle/1.0.0",
+  "meta": {
+    "bundleVersion": "1.0.0",
+    "createdAt": "2026-03-17T05:06:31.276Z",
+    "client": "Dough to Door",
+    "skillVersions": {
+      "capabilityMap": "1.0.0",
+      "conceptModel": "1.0.0",
+      "valueStream": "1.0.0",
+      "ppitMapping": null
+    },
+    "capsicumVersion": "1.0.0"
+  },
+  "scaffoldId": "scaffold_dough_to_door",
+  "name": "Dough to Door — Operating Model",
+  "description": "Ghost kitchen pizza delivery operation with wood-fired organic ingredients, Dough-Points loyalty, and multi-channel fulfilment.",
+  "elements": {
+    "capabilities": {
+      "cap_product_management": {
+        "id": "cap_product_management",
+        "elementType": "Capability",
+        "name": "Product Management",
+        "level": 1,
+        "parentId": null,
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_menu_recipe_development": {
+        "id": "cap_menu_recipe_development",
+        "elementType": "Capability",
+        "name": "Menu & Recipe Development",
+        "level": 2,
+        "parentId": "cap_product_management",
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_manage_menu_portfolio": {
+        "id": "cap_manage_menu_portfolio",
+        "elementType": "Capability",
+        "name": "Manage Menu Portfolio",
+        "level": 3,
+        "parentId": "cap_menu_recipe_development",
+        "businessObject": "Menu",
+        "description": "Ability to curate and evolve the range of menu items offered across all channels, balancing variety with operational efficiency.",
+        "type": "Execution"
+      },
+      "cap_manage_recipe_catalogue": {
+        "id": "cap_manage_recipe_catalogue",
+        "elementType": "Capability",
+        "name": "Manage Recipe Catalogue",
+        "level": 3,
+        "parentId": "cap_menu_recipe_development",
+        "businessObject": "Recipe",
+        "description": "Ability to maintain and version the library of recipes, including wood-fired preparation standards and ingredient ratios.",
+        "type": "Execution"
+      },
+      "cap_manage_ingredient_specification": {
+        "id": "cap_manage_ingredient_specification",
+        "elementType": "Capability",
+        "name": "Manage Ingredient Specification",
+        "level": 3,
+        "parentId": "cap_menu_recipe_development",
+        "businessObject": "Ingredient",
+        "description": "Ability to define and maintain quality, sourcing, and organic certification requirements for each ingredient.",
+        "type": "Execution"
+      },
+      "cap_retail_product_management": {
+        "id": "cap_retail_product_management",
+        "elementType": "Capability",
+        "name": "Retail Product Management",
+        "level": 2,
+        "parentId": "cap_product_management",
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_manage_meal_kit_portfolio": {
+        "id": "cap_manage_meal_kit_portfolio",
+        "elementType": "Capability",
+        "name": "Manage Meal Kit Portfolio",
+        "level": 3,
+        "parentId": "cap_retail_product_management",
+        "businessObject": "Meal Kit",
+        "description": "Ability to design, package, and evolve the weekly Pizza Night meal kit offering for the subscription channel.",
+        "type": "Execution"
+      },
+      "cap_manage_sauce_product_line": {
+        "id": "cap_manage_sauce_product_line",
+        "elementType": "Capability",
+        "name": "Manage Sauce Product Line",
+        "level": 3,
+        "parentId": "cap_retail_product_management",
+        "businessObject": "Product",
+        "description": "Ability to develop and maintain the range of signature organic sauces sold through retail channels.",
+        "type": "Execution"
+      },
+      "cap_manage_subscription_offering": {
+        "id": "cap_manage_subscription_offering",
+        "elementType": "Capability",
+        "name": "Manage Subscription Offering",
+        "level": 3,
+        "parentId": "cap_retail_product_management",
+        "businessObject": "Subscription",
+        "description": "Ability to structure and maintain the recurring subscription programme including pricing tiers and fulfilment cadence.",
+        "type": "Execution"
+      },
+      "cap_customer_management": {
+        "id": "cap_customer_management",
+        "elementType": "Capability",
+        "name": "Customer Management",
+        "level": 1,
+        "parentId": null,
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_customer_acquisition": {
+        "id": "cap_customer_acquisition",
+        "elementType": "Capability",
+        "name": "Customer Acquisition",
+        "level": 2,
+        "parentId": "cap_customer_management",
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_manage_marketing_campaign": {
+        "id": "cap_manage_marketing_campaign",
+        "elementType": "Capability",
+        "name": "Manage Marketing Campaign",
+        "level": 3,
+        "parentId": "cap_customer_acquisition",
+        "businessObject": "Marketing Campaign",
+        "description": "Ability to plan, execute, and measure hyper-local social media and community-based marketing initiatives.",
+        "type": "Execution"
+      },
+      "cap_manage_community_partnership": {
+        "id": "cap_manage_community_partnership",
+        "elementType": "Capability",
+        "name": "Manage Community Partnership",
+        "level": 3,
+        "parentId": "cap_customer_acquisition",
+        "businessObject": "Partnership",
+        "description": "Ability to establish and maintain partnerships with local community events and organisations for brand visibility.",
+        "type": "Execution"
+      },
+      "cap_manage_digital_channel_presence": {
+        "id": "cap_manage_digital_channel_presence",
+        "elementType": "Capability",
+        "name": "Manage Digital Channel Presence",
+        "level": 3,
+        "parentId": "cap_customer_acquisition",
+        "businessObject": "Digital Channel",
+        "description": "Ability to maintain and optimise the brand's presence across digital ordering platforms and social media.",
+        "type": "Execution"
+      },
+      "cap_customer_retention_loyalty": {
+        "id": "cap_customer_retention_loyalty",
+        "elementType": "Capability",
+        "name": "Customer Retention & Loyalty",
+        "level": 2,
+        "parentId": "cap_customer_management",
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_manage_loyalty_programme": {
+        "id": "cap_manage_loyalty_programme",
+        "elementType": "Capability",
+        "name": "Manage Loyalty Programme",
+        "level": 3,
+        "parentId": "cap_customer_retention_loyalty",
+        "businessObject": "Loyalty Account",
+        "description": "Ability to operate the Dough-Points loyalty programme, including point accrual, redemption, and lifetime value maximisation.",
+        "type": "Execution"
+      },
+      "cap_manage_customer_relationship": {
+        "id": "cap_manage_customer_relationship",
+        "elementType": "Capability",
+        "name": "Manage Customer Relationship",
+        "level": 3,
+        "parentId": "cap_customer_retention_loyalty",
+        "businessObject": "Customer",
+        "description": "Ability to maintain a unified view of each customer across channels and personalise engagement accordingly.",
+        "type": "Execution"
+      },
+      "cap_manage_customer_feedback": {
+        "id": "cap_manage_customer_feedback",
+        "elementType": "Capability",
+        "name": "Manage Customer Feedback",
+        "level": 3,
+        "parentId": "cap_customer_retention_loyalty",
+        "businessObject": "Feedback",
+        "description": "Ability to collect, analyse, and act on customer feedback and ratings to drive continuous improvement.",
+        "type": "Execution"
+      },
+      "cap_order_management": {
+        "id": "cap_order_management",
+        "elementType": "Capability",
+        "name": "Order Management",
+        "level": 1,
+        "parentId": null,
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_order_processing": {
+        "id": "cap_order_processing",
+        "elementType": "Capability",
+        "name": "Order Processing",
+        "level": 2,
+        "parentId": "cap_order_management",
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_manage_order_capture": {
+        "id": "cap_manage_order_capture",
+        "elementType": "Capability",
+        "name": "Manage Order Capture",
+        "level": 3,
+        "parentId": "cap_order_processing",
+        "businessObject": "Order",
+        "description": "Ability to receive and validate orders across all channels — dine-in, counter, branded app, and subscription.",
+        "type": "Execution"
+      },
+      "cap_manage_order_pricing": {
+        "id": "cap_manage_order_pricing",
+        "elementType": "Capability",
+        "name": "Manage Order Pricing",
+        "level": 3,
+        "parentId": "cap_order_processing",
+        "businessObject": "Price",
+        "description": "Ability to apply the correct pricing rules, promotions, and Dough-Points discounts to each order.",
+        "type": "Execution"
+      },
+      "cap_manage_payment_collection": {
+        "id": "cap_manage_payment_collection",
+        "elementType": "Capability",
+        "name": "Manage Payment Collection",
+        "level": 3,
+        "parentId": "cap_order_processing",
+        "businessObject": "Payment",
+        "description": "Ability to process payments securely across multiple methods including in-app, counter, and subscription billing.",
+        "type": "Execution"
+      },
+      "cap_order_fulfilment": {
+        "id": "cap_order_fulfilment",
+        "elementType": "Capability",
+        "name": "Order Fulfilment",
+        "level": 2,
+        "parentId": "cap_order_management",
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_manage_order_queue": {
+        "id": "cap_manage_order_queue",
+        "elementType": "Capability",
+        "name": "Manage Order Queue",
+        "level": 3,
+        "parentId": "cap_order_fulfilment",
+        "businessObject": "Order",
+        "description": "Ability to prioritise and sequence orders in the production queue to meet promised delivery windows.",
+        "type": "Execution"
+      },
+      "cap_manage_order_assembly": {
+        "id": "cap_manage_order_assembly",
+        "elementType": "Capability",
+        "name": "Manage Order Assembly",
+        "level": 3,
+        "parentId": "cap_order_fulfilment",
+        "businessObject": "Order",
+        "description": "Ability to coordinate the assembly and packaging of completed orders for handoff to delivery or counter.",
+        "type": "Execution"
+      },
+      "cap_manage_order_dispatch": {
+        "id": "cap_manage_order_dispatch",
+        "elementType": "Capability",
+        "name": "Manage Order Dispatch",
+        "level": 3,
+        "parentId": "cap_order_fulfilment",
+        "businessObject": "Order",
+        "description": "Ability to hand off completed orders to the correct fulfilment channel — delivery driver, counter pickup, or subscription packaging.",
+        "type": "Execution"
+      },
+      "cap_supply_chain_management": {
+        "id": "cap_supply_chain_management",
+        "elementType": "Capability",
+        "name": "Supply Chain Management",
+        "level": 1,
+        "parentId": null,
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_supplier_sourcing_management": {
+        "id": "cap_supplier_sourcing_management",
+        "elementType": "Capability",
+        "name": "Supplier & Sourcing Management",
+        "level": 2,
+        "parentId": "cap_supply_chain_management",
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_manage_supplier_relationship": {
+        "id": "cap_manage_supplier_relationship",
+        "elementType": "Capability",
+        "name": "Manage Supplier Relationship",
+        "level": 3,
+        "parentId": "cap_supplier_sourcing_management",
+        "businessObject": "Supplier",
+        "description": "Ability to onboard, evaluate, and maintain relationships with local and organic ingredient suppliers.",
+        "type": "Execution"
+      },
+      "cap_manage_ingredient_sourcing": {
+        "id": "cap_manage_ingredient_sourcing",
+        "elementType": "Capability",
+        "name": "Manage Ingredient Sourcing",
+        "level": 3,
+        "parentId": "cap_supplier_sourcing_management",
+        "businessObject": "Ingredient",
+        "description": "Ability to identify, negotiate, and secure supply of locally sourced organic ingredients at target cost.",
+        "type": "Execution"
+      },
+      "cap_govern_sourcing_standards": {
+        "id": "cap_govern_sourcing_standards",
+        "elementType": "Capability",
+        "name": "Govern Sourcing Standards",
+        "level": 3,
+        "parentId": "cap_supplier_sourcing_management",
+        "businessObject": "Sourcing Standard",
+        "description": "Ability to define and enforce organic, local-sourcing, and sustainability standards across the supply base.",
+        "type": "Governance"
+      },
+      "cap_inventory_management": {
+        "id": "cap_inventory_management",
+        "elementType": "Capability",
+        "name": "Inventory Management",
+        "level": 2,
+        "parentId": "cap_supply_chain_management",
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_manage_ingredient_stock": {
+        "id": "cap_manage_ingredient_stock",
+        "elementType": "Capability",
+        "name": "Manage Ingredient Stock",
+        "level": 3,
+        "parentId": "cap_inventory_management",
+        "businessObject": "Ingredient",
+        "description": "Ability to track real-time stock levels of perishable and non-perishable ingredients across storage locations.",
+        "type": "Execution"
+      },
+      "cap_manage_inventory_replenishment": {
+        "id": "cap_manage_inventory_replenishment",
+        "elementType": "Capability",
+        "name": "Manage Inventory Replenishment",
+        "level": 3,
+        "parentId": "cap_inventory_management",
+        "businessObject": "Inventory",
+        "description": "Ability to trigger and coordinate restocking based on demand forecasts, par levels, and supplier lead times.",
+        "type": "Execution"
+      },
+      "cap_manage_perishable_waste": {
+        "id": "cap_manage_perishable_waste",
+        "elementType": "Capability",
+        "name": "Manage Perishable Waste",
+        "level": 3,
+        "parentId": "cap_inventory_management",
+        "businessObject": "Waste Record",
+        "description": "Ability to track, analyse, and minimise spoilage and waste of perishable ingredients.",
+        "type": "Execution"
+      },
+      "cap_kitchen_operations": {
+        "id": "cap_kitchen_operations",
+        "elementType": "Capability",
+        "name": "Kitchen Operations",
+        "level": 1,
+        "parentId": null,
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_food_preparation": {
+        "id": "cap_food_preparation",
+        "elementType": "Capability",
+        "name": "Food Preparation",
+        "level": 2,
+        "parentId": "cap_kitchen_operations",
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_manage_production_scheduling": {
+        "id": "cap_manage_production_scheduling",
+        "elementType": "Capability",
+        "name": "Manage Production Scheduling",
+        "level": 3,
+        "parentId": "cap_food_preparation",
+        "businessObject": "Production Schedule",
+        "description": "Ability to plan and sequence kitchen production runs to meet demand across dine-in, delivery, and subscription channels.",
+        "type": "Execution"
+      },
+      "cap_manage_recipe_execution": {
+        "id": "cap_manage_recipe_execution",
+        "elementType": "Capability",
+        "name": "Manage Recipe Execution",
+        "level": 3,
+        "parentId": "cap_food_preparation",
+        "businessObject": "Recipe",
+        "description": "Ability to ensure consistent, standards-compliant preparation of each menu item, including wood-fired cooking processes.",
+        "type": "Execution"
+      },
+      "cap_manage_production_quality": {
+        "id": "cap_manage_production_quality",
+        "elementType": "Capability",
+        "name": "Manage Production Quality",
+        "level": 3,
+        "parentId": "cap_food_preparation",
+        "businessObject": "Product",
+        "description": "Ability to monitor and assure the quality of food output against defined standards before handoff to fulfilment.",
+        "type": "Execution"
+      },
+      "cap_kitchen_asset_management": {
+        "id": "cap_kitchen_asset_management",
+        "elementType": "Capability",
+        "name": "Kitchen Asset Management",
+        "level": 2,
+        "parentId": "cap_kitchen_operations",
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_manage_kitchen_equipment": {
+        "id": "cap_manage_kitchen_equipment",
+        "elementType": "Capability",
+        "name": "Manage Kitchen Equipment",
+        "level": 3,
+        "parentId": "cap_kitchen_asset_management",
+        "businessObject": "Equipment",
+        "description": "Ability to track, maintain, and plan replacement of kitchen equipment including wood-fired ovens and prep stations.",
+        "type": "Execution"
+      },
+      "cap_manage_facility_maintenance": {
+        "id": "cap_manage_facility_maintenance",
+        "elementType": "Capability",
+        "name": "Manage Facility Maintenance",
+        "level": 3,
+        "parentId": "cap_kitchen_asset_management",
+        "businessObject": "Facility",
+        "description": "Ability to maintain the ghost kitchen facility including utilities, cleanliness, and physical infrastructure.",
+        "type": "Execution"
+      },
+      "cap_manage_kitchen_capacity": {
+        "id": "cap_manage_kitchen_capacity",
+        "elementType": "Capability",
+        "name": "Manage Kitchen Capacity",
+        "level": 3,
+        "parentId": "cap_kitchen_asset_management",
+        "businessObject": "Kitchen",
+        "description": "Ability to understand and optimise throughput capacity of the kitchen relative to order demand.",
+        "type": "Execution"
+      },
+      "cap_delivery_management": {
+        "id": "cap_delivery_management",
+        "elementType": "Capability",
+        "name": "Delivery Management",
+        "level": 1,
+        "parentId": null,
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_delivery_logistics": {
+        "id": "cap_delivery_logistics",
+        "elementType": "Capability",
+        "name": "Delivery Logistics",
+        "level": 2,
+        "parentId": "cap_delivery_management",
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_manage_delivery_routing": {
+        "id": "cap_manage_delivery_routing",
+        "elementType": "Capability",
+        "name": "Manage Delivery Routing",
+        "level": 3,
+        "parentId": "cap_delivery_logistics",
+        "businessObject": "Delivery Route",
+        "description": "Ability to calculate and assign optimal delivery routes to meet the 25-minute delivery promise.",
+        "type": "Execution"
+      },
+      "cap_manage_driver_pool": {
+        "id": "cap_manage_driver_pool",
+        "elementType": "Capability",
+        "name": "Manage Driver Pool",
+        "level": 3,
+        "parentId": "cap_delivery_logistics",
+        "businessObject": "Driver",
+        "description": "Ability to recruit, schedule, and coordinate the pool of delivery drivers to match order volume.",
+        "type": "Execution"
+      },
+      "cap_manage_delivery_platform": {
+        "id": "cap_manage_delivery_platform",
+        "elementType": "Capability",
+        "name": "Manage Delivery Platform",
+        "level": 3,
+        "parentId": "cap_delivery_logistics",
+        "businessObject": "Delivery Platform",
+        "description": "Ability to operate and evolve the Dough-Sync logistics app that powers delivery coordination.",
+        "type": "Execution"
+      },
+      "cap_delivery_performance": {
+        "id": "cap_delivery_performance",
+        "elementType": "Capability",
+        "name": "Delivery Performance",
+        "level": 2,
+        "parentId": "cap_delivery_management",
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_manage_delivery_timeliness": {
+        "id": "cap_manage_delivery_timeliness",
+        "elementType": "Capability",
+        "name": "Manage Delivery Timeliness",
+        "level": 3,
+        "parentId": "cap_delivery_performance",
+        "businessObject": "Delivery",
+        "description": "Ability to monitor and assure on-time delivery against the 25-minute-from-oven commitment.",
+        "type": "Execution"
+      },
+      "cap_manage_delivery_quality": {
+        "id": "cap_manage_delivery_quality",
+        "elementType": "Capability",
+        "name": "Manage Delivery Quality",
+        "level": 3,
+        "parentId": "cap_delivery_performance",
+        "businessObject": "Delivery",
+        "description": "Ability to ensure the product arrives in the intended condition — temperature, packaging integrity, presentation.",
+        "type": "Execution"
+      },
+      "cap_manage_delivery_performance_analytics": {
+        "id": "cap_manage_delivery_performance_analytics",
+        "elementType": "Capability",
+        "name": "Manage Delivery Performance Analytics",
+        "level": 3,
+        "parentId": "cap_delivery_performance",
+        "businessObject": "Performance Metric",
+        "description": "Ability to collect and analyse delivery KPIs to identify trends and drive continuous improvement.",
+        "type": "Execution"
+      },
+      "cap_financial_management": {
+        "id": "cap_financial_management",
+        "elementType": "Capability",
+        "name": "Financial Management",
+        "level": 1,
+        "parentId": null,
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_revenue_management": {
+        "id": "cap_revenue_management",
+        "elementType": "Capability",
+        "name": "Revenue Management",
+        "level": 2,
+        "parentId": "cap_financial_management",
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_manage_revenue_tracking": {
+        "id": "cap_manage_revenue_tracking",
+        "elementType": "Capability",
+        "name": "Manage Revenue Tracking",
+        "level": 3,
+        "parentId": "cap_revenue_management",
+        "businessObject": "Financial Transaction",
+        "description": "Ability to record, reconcile, and report revenue across dine-in, delivery, and retail/subscription channels.",
+        "type": "Execution"
+      },
+      "cap_manage_pricing_strategy": {
+        "id": "cap_manage_pricing_strategy",
+        "elementType": "Capability",
+        "name": "Manage Pricing Strategy",
+        "level": 3,
+        "parentId": "cap_revenue_management",
+        "businessObject": "Price",
+        "description": "Ability to set and adjust pricing to maintain the premium-fast positioning while hitting margin targets.",
+        "type": "Execution"
+      },
+      "cap_manage_channel_revenue": {
+        "id": "cap_manage_channel_revenue",
+        "elementType": "Capability",
+        "name": "Manage Channel Revenue",
+        "level": 3,
+        "parentId": "cap_revenue_management",
+        "businessObject": "Revenue Stream",
+        "description": "Ability to monitor and optimise revenue contribution from each channel — direct sales (40%), delivery (50%), retail (10%).",
+        "type": "Execution"
+      },
+      "cap_cost_budget_management": {
+        "id": "cap_cost_budget_management",
+        "elementType": "Capability",
+        "name": "Cost & Budget Management",
+        "level": 2,
+        "parentId": "cap_financial_management",
+        "businessObject": null,
+        "description": "",
+        "type": "Execution"
+      },
+      "cap_manage_cost_control": {
+        "id": "cap_manage_cost_control",
+        "elementType": "Capability",
+        "name": "Manage Cost Control",
+        "level": 3,
+        "parentId": "cap_cost_budget_management",
+        "businessObject": "Cost",
+        "description": "Ability to monitor and contain variable and fixed costs, including organic COGS and lean operations overhead.",
+        "type": "Execution"
+      },
+      "cap_manage_budget_planning": {
+        "id": "cap_manage_budget_planning",
+        "elementType": "Capability",
+        "name": "Manage Budget Planning",
+        "level": 3,
+        "parentId": "cap_cost_budget_management",
+        "businessObject": "Budget",
+        "description": "Ability to plan and allocate budget across operations, marketing, technology, and facility investment.",
+        "type": "Execution"
+      },
+      "cap_manage_financial_reporting": {
+        "id": "cap_manage_financial_reporting",
+        "elementType": "Capability",
+        "name": "Manage Financial Reporting",
+        "level": 3,
+        "parentId": "cap_cost_budget_management",
+        "businessObject": "Financial Report",
+        "description": "Ability to produce financial statements and investor-facing reports including break-even tracking.",
+        "type": "Execution"
+      },
+      "cap_governance_compliance": {
+        "id": "cap_governance_compliance",
+        "elementType": "Capability",
+        "name": "Governance & Compliance",
+        "level": 1,
+        "parentId": null,
+        "businessObject": null,
+        "description": "",
+        "type": "Governance"
+      },
+      "cap_food_safety_quality_assurance": {
+        "id": "cap_food_safety_quality_assurance",
+        "elementType": "Capability",
+        "name": "Food Safety & Quality Assurance",
+        "level": 2,
+        "parentId": "cap_governance_compliance",
+        "businessObject": null,
+        "description": "",
+        "type": "Governance"
+      },
+      "cap_govern_food_safety_standards": {
+        "id": "cap_govern_food_safety_standards",
+        "elementType": "Capability",
+        "name": "Govern Food Safety Standards",
+        "level": 3,
+        "parentId": "cap_food_safety_quality_assurance",
+        "businessObject": "Food Safety Standard",
+        "description": "Ability to define, communicate, and enforce food safety standards across all preparation and handling processes.",
+        "type": "Governance"
+      },
+      "cap_govern_hygiene_compliance": {
+        "id": "cap_govern_hygiene_compliance",
+        "elementType": "Capability",
+        "name": "Govern Hygiene Compliance",
+        "level": 3,
+        "parentId": "cap_food_safety_quality_assurance",
+        "businessObject": "Hygiene Record",
+        "description": "Ability to monitor and assure compliance with hygiene standards in the kitchen facility and during delivery.",
+        "type": "Governance"
+      },
+      "cap_manage_quality_audit": {
+        "id": "cap_manage_quality_audit",
+        "elementType": "Capability",
+        "name": "Manage Quality Audit",
+        "level": 3,
+        "parentId": "cap_food_safety_quality_assurance",
+        "businessObject": "Quality Audit",
+        "description": "Ability to plan and execute periodic quality audits and maintain the audit trail for regulatory purposes.",
+        "type": "Governance"
+      },
+      "cap_regulatory_compliance": {
+        "id": "cap_regulatory_compliance",
+        "elementType": "Capability",
+        "name": "Regulatory Compliance",
+        "level": 2,
+        "parentId": "cap_governance_compliance",
+        "businessObject": null,
+        "description": "",
+        "type": "Governance"
+      },
+      "cap_govern_licensing_permits": {
+        "id": "cap_govern_licensing_permits",
+        "elementType": "Capability",
+        "name": "Govern Licensing & Permits",
+        "level": 3,
+        "parentId": "cap_regulatory_compliance",
+        "businessObject": "Licence",
+        "description": "Ability to obtain, renew, and maintain all required food service, health, and business licences.",
+        "type": "Governance"
+      },
+      "cap_govern_health_safety_compliance": {
+        "id": "cap_govern_health_safety_compliance",
+        "elementType": "Capability",
+        "name": "Govern Health & Safety Compliance",
+        "level": 3,
+        "parentId": "cap_regulatory_compliance",
+        "businessObject": "Regulation",
+        "description": "Ability to ensure ongoing compliance with workplace health and safety regulations in the kitchen and delivery operations.",
+        "type": "Governance"
+      },
+      "cap_govern_employment_compliance": {
+        "id": "cap_govern_employment_compliance",
+        "elementType": "Capability",
+        "name": "Govern Employment Compliance",
+        "level": 3,
+        "parentId": "cap_regulatory_compliance",
+        "businessObject": "Employment Record",
+        "description": "Ability to maintain compliance with employment law including driver classification, wages, and working conditions.",
+        "type": "Governance"
+      },
+      "cap_data_privacy_governance": {
+        "id": "cap_data_privacy_governance",
+        "elementType": "Capability",
+        "name": "Data & Privacy Governance",
+        "level": 2,
+        "parentId": "cap_governance_compliance",
+        "businessObject": null,
+        "description": "",
+        "type": "Governance"
+      },
+      "cap_govern_customer_data_privacy": {
+        "id": "cap_govern_customer_data_privacy",
+        "elementType": "Capability",
+        "name": "Govern Customer Data Privacy",
+        "level": 3,
+        "parentId": "cap_data_privacy_governance",
+        "businessObject": "Customer Data",
+        "description": "Ability to protect customer personal and payment data collected through the ordering app and loyalty programme.",
+        "type": "Governance"
+      },
+      "cap_govern_application_data_security": {
+        "id": "cap_govern_application_data_security",
+        "elementType": "Capability",
+        "name": "Govern Application Data Security",
+        "level": 3,
+        "parentId": "cap_data_privacy_governance",
+        "businessObject": "Application Data",
+        "description": "Ability to secure the Dough-Sync platform and branded app against data breaches and unauthorised access.",
+        "type": "Governance"
+      },
+      "cap_manage_data_retention_policy": {
+        "id": "cap_manage_data_retention_policy",
+        "elementType": "Capability",
+        "name": "Manage Data Retention Policy",
+        "level": 3,
+        "parentId": "cap_data_privacy_governance",
+        "businessObject": "Data Policy",
+        "description": "Ability to define and enforce data retention and deletion policies in line with privacy regulations.",
+        "type": "Governance"
+      }
+    },
+    "concepts": {
+      "obj_customer": {
+        "id": "obj_customer",
+        "elementType": "Concept",
+        "name": "Customer",
+        "type": "Party",
+        "definition": "A Party who orders, subscribes, or dines in and holds a loyalty relationship with the business.",
+        "lifecycleStates": [
+          "Prospect",
+          "Active",
+          "Lapsed",
+          "Churned"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_loyalty_programme",
+          "cap_manage_customer_relationship",
+          "cap_manage_customer_feedback"
+        ]
+      },
+      "obj_supplier": {
+        "id": "obj_supplier",
+        "elementType": "Concept",
+        "name": "Supplier",
+        "type": "Party",
+        "definition": "A Party who provides locally sourced organic ingredients under agreed sourcing standards.",
+        "lifecycleStates": [
+          "Prospective",
+          "Contracted",
+          "Active",
+          "Terminated"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_supplier_relationship",
+          "cap_manage_ingredient_sourcing",
+          "cap_govern_sourcing_standards"
+        ]
+      },
+      "obj_driver": {
+        "id": "obj_driver",
+        "elementType": "Concept",
+        "name": "Driver",
+        "type": "Party",
+        "definition": "A Party who transports completed orders from the kitchen to the customer.",
+        "lifecycleStates": [
+          "Onboarding",
+          "Active",
+          "Inactive",
+          "Offboarded"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_driver_pool"
+        ]
+      },
+      "obj_menu": {
+        "id": "obj_menu",
+        "elementType": "Concept",
+        "name": "Menu",
+        "type": "Resource",
+        "definition": "A Resource representing the curated collection of products offered to customers across all channels.",
+        "lifecycleStates": [
+          "Draft",
+          "Published",
+          "Seasonal",
+          "Retired"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_menu_portfolio"
+        ]
+      },
+      "obj_recipe": {
+        "id": "obj_recipe",
+        "elementType": "Concept",
+        "name": "Recipe",
+        "type": "Resource",
+        "definition": "A Resource defining the formulation, ingredient ratios, and wood-fired preparation standards for a product.",
+        "lifecycleStates": [
+          "Draft",
+          "Approved",
+          "In Use",
+          "Superseded"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_recipe_catalogue",
+          "cap_manage_recipe_execution"
+        ]
+      },
+      "obj_product": {
+        "id": "obj_product",
+        "elementType": "Concept",
+        "name": "Product",
+        "type": "Resource",
+        "definition": "A Resource that is sold to the customer — a pizza, organic sauce, or meal kit.",
+        "lifecycleStates": [
+          "Development",
+          "Available",
+          "Seasonal",
+          "Discontinued"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_meal_kit_portfolio",
+          "cap_manage_sauce_product_line",
+          "cap_manage_production_quality"
+        ]
+      },
+      "obj_ingredient": {
+        "id": "obj_ingredient",
+        "elementType": "Concept",
+        "name": "Ingredient",
+        "type": "Resource",
+        "definition": "A Resource that is sourced from suppliers, stored, and consumed in food production.",
+        "lifecycleStates": [
+          "Specified",
+          "In Stock",
+          "Allocated",
+          "Consumed",
+          "Wasted"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_ingredient_specification",
+          "cap_manage_ingredient_sourcing",
+          "cap_manage_ingredient_stock"
+        ]
+      },
+      "obj_order": {
+        "id": "obj_order",
+        "elementType": "Concept",
+        "name": "Order",
+        "type": "Resource",
+        "definition": "A Resource representing a customer's request for one or more products, fulfilled through a specific channel.",
+        "lifecycleStates": [
+          "Placed",
+          "Accepted",
+          "In Preparation",
+          "Ready",
+          "Dispatched",
+          "Delivered",
+          "Closed"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_order_capture",
+          "cap_manage_order_pricing",
+          "cap_manage_order_queue",
+          "cap_manage_order_assembly",
+          "cap_manage_order_dispatch"
+        ]
+      },
+      "obj_subscription": {
+        "id": "obj_subscription",
+        "elementType": "Concept",
+        "name": "Subscription",
+        "type": "Resource",
+        "definition": "A Resource representing a recurring delivery arrangement for weekly meal kits or products.",
+        "lifecycleStates": [
+          "Created",
+          "Active",
+          "Paused",
+          "Cancelled"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_subscription_offering"
+        ]
+      },
+      "obj_loyalty_account": {
+        "id": "obj_loyalty_account",
+        "elementType": "Concept",
+        "name": "Loyalty Account",
+        "type": "Resource",
+        "definition": "A Resource holding accumulated Dough-Points value redeemable by a customer.",
+        "lifecycleStates": [
+          "Opened",
+          "Active",
+          "Redeemed",
+          "Dormant"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_loyalty_programme"
+        ]
+      },
+      "obj_delivery": {
+        "id": "obj_delivery",
+        "elementType": "Concept",
+        "name": "Delivery",
+        "type": "Resource",
+        "definition": "A Resource representing the physical transport of a completed order from the kitchen to the customer.",
+        "lifecycleStates": [
+          "Assigned",
+          "In Transit",
+          "Delivered",
+          "Failed"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_delivery_routing",
+          "cap_manage_delivery_timeliness",
+          "cap_manage_delivery_quality"
+        ]
+      },
+      "obj_equipment": {
+        "id": "obj_equipment",
+        "elementType": "Concept",
+        "name": "Equipment",
+        "type": "Resource",
+        "definition": "A Resource representing kitchen assets including wood-fired ovens, prep stations, and packaging systems.",
+        "lifecycleStates": [
+          "Procured",
+          "Operational",
+          "Under Maintenance",
+          "Decommissioned"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_kitchen_equipment"
+        ]
+      },
+      "obj_facility": {
+        "id": "obj_facility",
+        "elementType": "Concept",
+        "name": "Facility",
+        "type": "Resource",
+        "definition": "A Resource representing the ghost kitchen premises and its physical infrastructure.",
+        "lifecycleStates": [
+          "Leased",
+          "Operational",
+          "Under Renovation",
+          "Vacated"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_facility_maintenance",
+          "cap_manage_kitchen_capacity"
+        ]
+      },
+      "obj_payment": {
+        "id": "obj_payment",
+        "elementType": "Concept",
+        "name": "Payment",
+        "type": "Record",
+        "definition": "A Record documenting the financial settlement of an order across in-app, counter, or subscription billing.",
+        "lifecycleStates": [
+          "Pending",
+          "Processed",
+          "Settled",
+          "Refunded"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_payment_collection"
+        ]
+      },
+      "obj_feedback": {
+        "id": "obj_feedback",
+        "elementType": "Concept",
+        "name": "Feedback",
+        "type": "Record",
+        "definition": "A Record documenting a customer's rating, review, or complaint about their experience.",
+        "lifecycleStates": [
+          "Submitted",
+          "Acknowledged",
+          "Actioned",
+          "Closed"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_customer_feedback"
+        ]
+      },
+      "obj_marketing_campaign": {
+        "id": "obj_marketing_campaign",
+        "elementType": "Concept",
+        "name": "Marketing Campaign",
+        "type": "Record",
+        "definition": "A Record documenting a planned and executed hyper-local marketing or community partnership initiative.",
+        "lifecycleStates": [
+          "Planned",
+          "Active",
+          "Completed",
+          "Evaluated"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_marketing_campaign",
+          "cap_manage_community_partnership",
+          "cap_manage_digital_channel_presence"
+        ]
+      },
+      "obj_financial_report": {
+        "id": "obj_financial_report",
+        "elementType": "Concept",
+        "name": "Financial Report",
+        "type": "Record",
+        "definition": "A Record documenting revenue, costs, and financial performance for investor and operational reporting.",
+        "lifecycleStates": [
+          "Draft",
+          "Published",
+          "Archived"
+        ],
+        "relatedCapabilityIds": [
+          "cap_manage_revenue_tracking",
+          "cap_manage_channel_revenue",
+          "cap_manage_cost_control",
+          "cap_manage_financial_reporting"
+        ]
+      },
+      "obj_quality_audit": {
+        "id": "obj_quality_audit",
+        "elementType": "Concept",
+        "name": "Quality Audit",
+        "type": "Record",
+        "definition": "A Record documenting a food safety or quality inspection event and its findings.",
+        "lifecycleStates": [
+          "Scheduled",
+          "In Progress",
+          "Completed",
+          "Remediated"
+        ],
+        "relatedCapabilityIds": [
+          "cap_govern_food_safety_standards",
+          "cap_govern_hygiene_compliance",
+          "cap_manage_quality_audit"
+        ]
+      },
+      "obj_licence": {
+        "id": "obj_licence",
+        "elementType": "Concept",
+        "name": "Licence",
+        "type": "Record",
+        "definition": "A Record documenting a regulatory permit or certification held by the business.",
+        "lifecycleStates": [
+          "Applied",
+          "Granted",
+          "Active",
+          "Expired",
+          "Renewed"
+        ],
+        "relatedCapabilityIds": [
+          "cap_govern_licensing_permits",
+          "cap_govern_health_safety_compliance"
+        ]
+      }
+    },
+    "valueStreams": {
+      "vs_customer_order_experience": {
+        "id": "vs_customer_order_experience",
+        "elementType": "ValueStream",
+        "name": "Customer Order Experience",
+        "stageIds": [
+          "stg_order_placed",
+          "stg_order_accepted",
+          "stg_order_prepared",
+          "stg_order_dispatched",
+          "stg_order_delivered",
+          "stg_experience_closed"
+        ],
+        "trigger": "Customer decides to order food via app, dine-in, or counter",
+        "terminalOutcome": "Order delivered, feedback collected, loyalty points awarded, revenue recorded",
+        "layoutZone": "ecosystem"
+      }
+    },
+    "valueStreamStages": {
+      "stg_order_placed": {
+        "id": "stg_order_placed",
+        "elementType": "ValueStreamStage",
+        "name": "Order Placed",
+        "preOutcomeId": "outcome_stg_order_placed_pre",
+        "postOutcomeId": "outcome_stg_order_placed_post",
+        "requiresCapabilityIds": [
+          "cap_manage_menu_portfolio",
+          "cap_manage_digital_channel_presence",
+          "cap_manage_order_capture",
+          "cap_manage_order_pricing",
+          "cap_manage_payment_collection"
+        ],
+        "performedByRoleIds": [],
+        "informationObjectIds": [
+          "obj_order",
+          "obj_customer",
+          "obj_menu",
+          "obj_product",
+          "obj_payment",
+          "obj_loyalty_account"
+        ],
+        "metricIds": [],
+        "capabilityPPIT": {},
+        "entryCriteria": "Customer has browsed the menu and selected items via app, dine-in, or counter",
+        "exitCriteria": "Order submitted with confirmed pricing, Dough-Points applied, and payment processed",
+        "valueObjectState": "Placed"
+      },
+      "stg_order_accepted": {
+        "id": "stg_order_accepted",
+        "elementType": "ValueStreamStage",
+        "name": "Order Accepted",
+        "preOutcomeId": "outcome_stg_order_placed_post",
+        "postOutcomeId": "outcome_stg_order_accepted_post",
+        "requiresCapabilityIds": [
+          "cap_manage_order_queue",
+          "cap_manage_production_scheduling"
+        ],
+        "performedByRoleIds": [],
+        "informationObjectIds": [
+          "obj_order"
+        ],
+        "metricIds": [],
+        "capabilityPPIT": {},
+        "entryCriteria": "Order submitted with valid payment",
+        "exitCriteria": "Order validated, queued, and allocated to kitchen production slot",
+        "valueObjectState": "Accepted"
+      },
+      "stg_order_prepared": {
+        "id": "stg_order_prepared",
+        "elementType": "ValueStreamStage",
+        "name": "Order Prepared",
+        "preOutcomeId": "outcome_stg_order_accepted_post",
+        "postOutcomeId": "outcome_stg_order_prepared_post",
+        "requiresCapabilityIds": [
+          "cap_manage_ingredient_stock",
+          "cap_manage_recipe_execution",
+          "cap_manage_production_quality",
+          "cap_manage_order_assembly"
+        ],
+        "performedByRoleIds": [],
+        "informationObjectIds": [
+          "obj_order",
+          "obj_recipe",
+          "obj_product",
+          "obj_ingredient"
+        ],
+        "metricIds": [],
+        "capabilityPPIT": {},
+        "entryCriteria": "Order queued and production slot allocated",
+        "exitCriteria": "Food prepared to quality standards, assembled, and packaged for fulfilment",
+        "valueObjectState": "Ready"
+      },
+      "stg_order_dispatched": {
+        "id": "stg_order_dispatched",
+        "elementType": "ValueStreamStage",
+        "name": "Order Dispatched",
+        "preOutcomeId": "outcome_stg_order_prepared_post",
+        "postOutcomeId": "outcome_stg_order_dispatched_post",
+        "requiresCapabilityIds": [
+          "cap_manage_order_dispatch",
+          "cap_manage_delivery_routing",
+          "cap_manage_driver_pool",
+          "cap_manage_delivery_platform"
+        ],
+        "performedByRoleIds": [],
+        "informationObjectIds": [
+          "obj_order",
+          "obj_delivery",
+          "obj_driver"
+        ],
+        "metricIds": [],
+        "capabilityPPIT": {},
+        "entryCriteria": "Order assembled and ready for handoff",
+        "exitCriteria": "Order dispatched to delivery driver or handed to counter/dine-in customer",
+        "valueObjectState": "Dispatched"
+      },
+      "stg_order_delivered": {
+        "id": "stg_order_delivered",
+        "elementType": "ValueStreamStage",
+        "name": "Order Delivered",
+        "preOutcomeId": "outcome_stg_order_dispatched_post",
+        "postOutcomeId": "outcome_stg_order_delivered_post",
+        "requiresCapabilityIds": [
+          "cap_manage_delivery_timeliness",
+          "cap_manage_delivery_quality"
+        ],
+        "performedByRoleIds": [],
+        "informationObjectIds": [
+          "obj_order",
+          "obj_delivery",
+          "obj_customer"
+        ],
+        "metricIds": [],
+        "capabilityPPIT": {},
+        "entryCriteria": "Order in transit or ready at counter",
+        "exitCriteria": "Customer receives order within the 25-minute-from-oven promise",
+        "valueObjectState": "Delivered"
+      },
+      "stg_experience_closed": {
+        "id": "stg_experience_closed",
+        "elementType": "ValueStreamStage",
+        "name": "Experience Closed",
+        "preOutcomeId": "outcome_stg_order_delivered_post",
+        "postOutcomeId": "outcome_stg_experience_closed_post",
+        "requiresCapabilityIds": [
+          "cap_manage_loyalty_programme",
+          "cap_manage_customer_relationship",
+          "cap_manage_customer_feedback",
+          "cap_manage_revenue_tracking"
+        ],
+        "performedByRoleIds": [],
+        "informationObjectIds": [
+          "obj_order",
+          "obj_customer",
+          "obj_loyalty_account",
+          "obj_feedback"
+        ],
+        "metricIds": [],
+        "capabilityPPIT": {},
+        "entryCriteria": "Customer has received their order",
+        "exitCriteria": "Feedback collected, Dough-Points awarded, revenue recorded, order closed",
+        "valueObjectState": "Closed"
+      }
+    },
+    "outcomes": {
+      "outcome_stg_order_placed_pre": {
+        "id": "outcome_stg_order_placed_pre",
+        "elementType": "Outcome",
+        "name": "Customer has browsed the menu and selected items via app, dine-in, or counter"
+      },
+      "outcome_stg_order_placed_post": {
+        "id": "outcome_stg_order_placed_post",
+        "elementType": "Outcome",
+        "name": "Order submitted with confirmed pricing, Dough-Points applied, and payment processed"
+      },
+      "outcome_stg_order_accepted_post": {
+        "id": "outcome_stg_order_accepted_post",
+        "elementType": "Outcome",
+        "name": "Order validated, queued, and allocated to kitchen production slot"
+      },
+      "outcome_stg_order_prepared_post": {
+        "id": "outcome_stg_order_prepared_post",
+        "elementType": "Outcome",
+        "name": "Food prepared to quality standards, assembled, and packaged for fulfilment"
+      },
+      "outcome_stg_order_dispatched_post": {
+        "id": "outcome_stg_order_dispatched_post",
+        "elementType": "Outcome",
+        "name": "Order dispatched to delivery driver or handed to counter/dine-in customer"
+      },
+      "outcome_stg_order_delivered_post": {
+        "id": "outcome_stg_order_delivered_post",
+        "elementType": "Outcome",
+        "name": "Customer receives order within the 25-minute-from-oven promise"
+      },
+      "outcome_stg_experience_closed_post": {
+        "id": "outcome_stg_experience_closed_post",
+        "elementType": "Outcome",
+        "name": "Feedback collected, Dough-Points awarded, revenue recorded, order closed"
+      }
+    },
+    "roles": {},
+    "metrics": {},
+    "informationObjects": {}
+  }
+}
