@@ -6,6 +6,7 @@ import { PPIT_LAYERS } from "./ppit.ts";
 import { humanizeId } from "../../lib/humanize-id.ts";
 import { InlineEdit } from "./InlineEdit.tsx";
 import { useCanvasStore } from "../../store/canvas-store.ts";
+import { useThemeStore } from "../../store/theme-store.ts";
 import { tv } from "../../theme.ts";
 
 /* ── PPIT data shape from capabilityPPIT ───────────────────────────── */
@@ -65,21 +66,40 @@ function MiniAddButton({ placeholder, chipClass, onAdd }: {
 
 /* ── Badge Counts (compact R3 A5 I2 T3 indicators) ────────────────── */
 
+/* PPIT badge color sets — dark text for light mode, light text for dark mode */
+const PPIT_BADGE_COLORS = {
+  dark: [
+    { b: "R", bg: "rgba(59,130,246,0.15)", fg: "#93c5fd" },
+    { b: "A", bg: "rgba(139,92,246,0.15)", fg: "#c4b5fd" },
+    { b: "I", bg: "rgba(245,158,11,0.15)", fg: "#fcd34d" },
+    { b: "T", bg: "rgba(16,185,129,0.15)", fg: "#6ee7b7" },
+  ],
+  light: [
+    { b: "R", bg: "rgba(59,130,246,0.12)", fg: "#2563eb" },
+    { b: "A", bg: "rgba(139,92,246,0.12)", fg: "#7c3aed" },
+    { b: "I", bg: "rgba(217,119,6,0.12)", fg: "#b45309" },
+    { b: "T", bg: "rgba(5,150,105,0.12)", fg: "#047857" },
+  ],
+};
+
 function CapabilityBadgeCounts({ ppit }: { ppit: CapPPIT | null }) {
   if (!ppit) return null;
-  const counts: { b: string; n: number; c: string }[] = [
-    { b: "R", n: ppit.roleIds?.length ?? 0, c: "text-blue-300 bg-blue-500/15" },
-    { b: "A", n: ppit.activities?.length ?? 0, c: "text-violet-300 bg-violet-500/15" },
-    { b: "I", n: ppit.informationObjectIds?.length ?? 0, c: "text-amber-300 bg-amber-500/15" },
-    { b: "T", n: ppit.technologyAppIds?.length ?? 0, c: "text-emerald-300 bg-emerald-500/15" },
+  const isDark = useThemeStore((s) => s.mode) === "dark";
+  const palette = isDark ? PPIT_BADGE_COLORS.dark : PPIT_BADGE_COLORS.light;
+  const counts = [
+    { ...palette[0], n: ppit.roleIds?.length ?? 0 },
+    { ...palette[1], n: ppit.activities?.length ?? 0 },
+    { ...palette[2], n: ppit.informationObjectIds?.length ?? 0 },
+    { ...palette[3], n: ppit.technologyAppIds?.length ?? 0 },
   ];
   return (
     <div className="flex gap-0.5">
-      {counts.map(({ b, n, c }) =>
+      {counts.map(({ b, n, bg, fg }) =>
         n > 0 ? (
           <span
             key={b}
-            className={`inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-[9px] font-medium ${c}`}
+            className="inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-[9px] font-medium"
+            style={{ background: bg, color: fg }}
           >
             {b}{n}
           </span>

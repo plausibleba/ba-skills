@@ -3,6 +3,7 @@ import type { PPITLayer } from "./ppit.ts";
 import type { CardToggleLayer } from "./useCanvasControls.ts";
 import { PPIT_LABELS, PPIT_LAYERS } from "./ppit.ts";
 import { ChevronIcon } from "./ChevronIcon.tsx";
+import { useThemeStore } from "../../store/theme-store.ts";
 import { tv } from "../../theme.ts";
 
 /* ── Toggle Button ─────────────────────────────────────────────────── */
@@ -35,13 +36,20 @@ function ToggleBtn({
   );
 }
 
-/* ── Layer colour map ──────────────────────────────────────────────── */
+/* ── Layer colour map — dark/light variants for contrast ──────────── */
 
-const LAYER_COLORS: Record<PPITLayer, { on: string }> = {
-  roles: { on: "bg-blue-500/15 text-blue-300" },
-  activities: { on: "bg-violet-500/15 text-violet-300" },
-  concepts: { on: "bg-amber-500/15 text-amber-300" },
-  applications: { on: "bg-emerald-500/15 text-emerald-300" },
+const LAYER_COLORS_DARK: Record<PPITLayer, { bg: string; fg: string }> = {
+  roles:        { bg: "rgba(59,130,246,0.15)",  fg: "#93c5fd" },
+  activities:   { bg: "rgba(139,92,246,0.15)",  fg: "#c4b5fd" },
+  concepts:     { bg: "rgba(245,158,11,0.15)",  fg: "#fcd34d" },
+  applications: { bg: "rgba(16,185,129,0.15)",  fg: "#6ee7b7" },
+};
+
+const LAYER_COLORS_LIGHT: Record<PPITLayer, { bg: string; fg: string }> = {
+  roles:        { bg: "rgba(59,130,246,0.12)",  fg: "#2563eb" },
+  activities:   { bg: "rgba(139,92,246,0.12)",  fg: "#7c3aed" },
+  concepts:     { bg: "rgba(217,119,6,0.12)",   fg: "#b45309" },
+  applications: { bg: "rgba(5,150,105,0.12)",   fg: "#047857" },
 };
 
 /* ── Canvas Toolbar ────────────────────────────────────────────────── */
@@ -73,6 +81,8 @@ export function CanvasToolbar({
   heatmapData: HeatmapData | null;
   validationReport: ValidationReport | null;
 }) {
+  const isDark = useThemeStore((s) => s.mode) === "dark";
+  const layerPalette = isDark ? LAYER_COLORS_DARK : LAYER_COLORS_LIGHT;
   return (
     <div className="flex flex-shrink-0 items-center gap-3">
       {/* View controls */}
@@ -103,12 +113,10 @@ export function CanvasToolbar({
           <button
             key={layer}
             onClick={() => onTogglePPIT(layer)}
-            className={`rounded px-2 py-0.5 text-[10px] font-medium transition-all ${
-              ppitToggles[layer]
-                ? LAYER_COLORS[layer].on
-                : ""
-            }`}
-            style={ppitToggles[layer] ? {} : { color: tv.textDim }}
+            className="rounded px-2 py-0.5 text-[10px] font-medium transition-all"
+            style={ppitToggles[layer]
+              ? { background: layerPalette[layer].bg, color: layerPalette[layer].fg }
+              : { color: tv.textDim }}
           >
             {PPIT_LABELS[layer].short}
           </button>
@@ -122,24 +130,20 @@ export function CanvasToolbar({
         </span>
         <button
           onClick={() => onToggleCard("concepts")}
-          className={`rounded px-2 py-0.5 text-[10px] font-medium transition-all ${
-            cardToggles.concepts
-              ? "bg-sky-500/15 text-sky-300"
-              : ""
-          }`}
-          style={cardToggles.concepts ? {} : { color: tv.textDim }}
+          className="rounded px-2 py-0.5 text-[10px] font-medium transition-all"
+          style={cardToggles.concepts
+            ? { background: isDark ? "rgba(14,165,233,0.15)" : "rgba(2,132,199,0.12)", color: isDark ? "#7dd3fc" : "#0369a1" }
+            : { color: tv.textDim }}
           title="Concept Cards (MVC)"
         >
           C
         </button>
         <button
           onClick={() => onToggleCard("policies")}
-          className={`rounded px-2 py-0.5 text-[10px] font-medium transition-all ${
-            cardToggles.policies
-              ? "bg-rose-500/15 text-rose-300"
-              : ""
-          }`}
-          style={cardToggles.policies ? {} : { color: tv.textDim }}
+          className="rounded px-2 py-0.5 text-[10px] font-medium transition-all"
+          style={cardToggles.policies
+            ? { background: isDark ? "rgba(244,63,94,0.15)" : "rgba(225,29,72,0.12)", color: isDark ? "#fda4af" : "#be123c" }
+            : { color: tv.textDim }}
           title="Policy Cards (MVC)"
         >
           P

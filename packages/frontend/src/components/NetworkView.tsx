@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useMemo, useState, useRef, useCallback } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
+import { useThemeStore } from "../store/theme-store.ts";
 import { tv } from "../theme.ts";
 import type { NetworkNode, NetworkEdge, HeatmapData } from "../types.ts";
 
@@ -280,11 +281,12 @@ function NetworkNodeCard({
     : frictionLevel === "Medium" ? { background: "rgba(245,158,11,0.05)" }
     : { background: tv.bgCard };
 
-  // Heat badge colours
+  // Heat badge colours — dark text on light bg, light text on dark bg
+  const isDk = useThemeStore((s) => s.mode) === "dark";
   const badgeStyle =
-    frictionLevel === "High" ? { background: "rgba(239,68,68,0.15)", color: "#f87171" }
-    : frictionLevel === "Medium" ? { background: "rgba(245,158,11,0.15)", color: "#fbbf24" }
-    : frictionLevel === "Low" ? { background: "rgba(234,179,8,0.15)", color: "#facc15" }
+    frictionLevel === "High" ? { background: "rgba(239,68,68,0.15)", color: isDk ? "#f87171" : "#dc2626" }
+    : frictionLevel === "Medium" ? { background: isDk ? "rgba(245,158,11,0.15)" : "rgba(217,119,6,0.12)", color: isDk ? "#fbbf24" : "#b45309" }
+    : frictionLevel === "Low" ? { background: isDk ? "rgba(234,179,8,0.15)" : "rgba(202,138,4,0.12)", color: isDk ? "#facc15" : "#a16207" }
     : {};
 
   return (
@@ -331,7 +333,7 @@ function NetworkNodeCard({
           {couplingCount > 0 && (
             <>
               <div className="h-3 w-px" style={{ background: tv.borderSubtle }} />
-              <span className="text-[10px] text-indigo-300" title="Value streams coupled via shared roles, controls, application functions, or record classes">
+              <span className="text-[10px]" style={{ color: isDk ? "#a5b4fc" : "#4f46e5" }} title="Value streams coupled via shared roles, controls, application functions, or record classes">
                 {couplingCount} coupled
               </span>
             </>
@@ -340,7 +342,7 @@ function NetworkNodeCard({
           {node.hasBindingConstraint && (
             <>
               <div className="h-3 w-px" style={{ background: tv.borderSubtle }} />
-              <span className="text-[10px] font-medium text-red-400">
+              <span className="text-[10px] font-medium" style={{ color: isDk ? "#f87171" : "#dc2626" }}>
                 Constrained
               </span>
             </>
@@ -365,6 +367,7 @@ function NodeTooltip({
   couplingCount?: number;
 }) {
 
+  const isDark = useThemeStore((s) => s.mode) === "dark";
   const tooltipWidth = 280;
   // Center horizontally on node
   const x = position.x + (NODE_WIDTH - tooltipWidth) / 2;
@@ -407,7 +410,7 @@ function NodeTooltip({
             <p>{node.frictionCount} friction observations</p>
           )}
           {couplingCount > 0 && (
-            <p className="text-indigo-300">{couplingCount} coupled value stream{couplingCount !== 1 ? "s" : ""}</p>
+            <p style={{ color: isDark ? "#a5b4fc" : "#4f46e5" }}>{couplingCount} coupled value stream{couplingCount !== 1 ? "s" : ""}</p>
           )}
           {node.bindingStageName && (
             <p className="text-red-400">Binding: {node.bindingStageName}</p>
@@ -435,6 +438,7 @@ export function NetworkView() {
     loadHeatmap,
   } = useCanvasStore();
 
+  const isDark = useThemeStore((s) => s.mode) === "dark";
   const [hoveredVsId, setHoveredVsId] = useState<string | null>(null);
   const heatmapInputRef = useRef<HTMLInputElement>(null);
   const { positions, canvasWidth, canvasHeight } = useNodePositions(networkNodes);
@@ -551,16 +555,16 @@ export function NetworkView() {
         </div>
 
         <div className="flex items-center gap-3 text-[10px]">
-          <span className="rounded-full px-3 py-1 font-medium" style={{ background: "rgba(74,158,218,0.15)", color: "#4a9eda" }}>
+          <span className="rounded-full px-3 py-1 font-medium" style={{ background: isDark ? "rgba(74,158,218,0.15)" : "rgba(37,99,235,0.1)", color: isDark ? "#4a9eda" : "#2563eb" }}>
             {networkNodes.length} value streams
           </span>
           {totalFriction > 0 && (
-            <span className="rounded-full px-3 py-1 font-medium" style={{ background: "rgba(245,158,11,0.15)", color: "#fbbf24" }}>
+            <span className="rounded-full px-3 py-1 font-medium" style={{ background: isDark ? "rgba(245,158,11,0.15)" : "rgba(217,119,6,0.12)", color: isDark ? "#fbbf24" : "#b45309" }}>
               {totalFriction} friction observations
             </span>
           )}
           {constrainedCount > 0 && (
-            <span className="rounded-full px-3 py-1 font-medium" style={{ background: "rgba(239,68,68,0.15)", color: "#f87171" }}>
+            <span className="rounded-full px-3 py-1 font-medium" style={{ background: isDark ? "rgba(239,68,68,0.15)" : "rgba(220,38,38,0.1)", color: isDark ? "#f87171" : "#dc2626" }}>
               {constrainedCount} constrained
             </span>
           )}
