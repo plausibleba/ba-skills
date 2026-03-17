@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
-import { useThemeStore } from "../store/theme-store.ts";
-import { getTheme } from "../theme.ts";
+import { tv } from "../theme.ts";
 import type { TransformationUserStory } from "../types.ts";
 import { toJiraExport } from "../types.ts";
 import { humanizeId } from "../lib/humanize-id.ts";
@@ -24,8 +23,6 @@ import { useCanvasControls } from "./canvas/useCanvasControls.ts";
 export function CanvasView() {
   const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories, updateVsName, updateVsDescription, addActivity, removeActivity, cardRegistry, topologyView, capabilityInstanceView } =
     useCanvasStore();
-  const themeMode = useThemeStore((s) => s.mode);
-  const t = getTheme(themeMode);
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
     null,
   );
@@ -112,18 +109,18 @@ export function CanvasView() {
   const isStub = isEnterpriseScaffold && vsActivities.length <= 5 && totalMetrics <= 2;
 
   return (
-    <div className="flex h-full gap-0" style={{ background: t.bgSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+    <div className="flex h-full gap-0" style={{ background: tv.bgSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <div className="flex h-full flex-1 flex-col gap-4 overflow-hidden pl-6 pt-4">
         {/* Conflict banner — optimistic lock failure */}
         <ConflictBanner />
 
         {/* Stub banner */}
         {isStub && (
-          <div className="flex flex-shrink-0 items-center gap-2 rounded-lg px-4 py-2" style={{ border: `1px solid ${t.borderSubtle}`, background: t.bgCard }}>
-            <svg className="h-4 w-4 flex-shrink-0" style={{ color: t.accent }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex flex-shrink-0 items-center gap-2 rounded-lg px-4 py-2" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard }}>
+            <svg className="h-4 w-4 flex-shrink-0" style={{ color: tv.accent }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p className="text-[11px]" style={{ color: t.textDim }}>
+            <p className="text-[11px]" style={{ color: tv.textDim }}>
               Enterprise topology view — {vsActivities.length} stages modelled. For full stream diagnostics with friction analysis and throughput projections, load the dedicated stream scaffold.
             </p>
           </div>
@@ -132,31 +129,31 @@ export function CanvasView() {
         {/* ── Narrative header ── */}
         <div className="flex flex-shrink-0 flex-wrap items-start justify-between gap-4">
           <div className="min-w-[280px] flex-1 space-y-2">
-            <h2 className="text-lg font-semibold" style={{ color: t.textPrimary }}>
+            <h2 className="text-lg font-semibold" style={{ color: tv.textPrimary }}>
               <InlineEdit
                 value={vsName}
                 onSave={(name) => updateVsName(canvasViewModel.valueStreamId, name)}
                 className="text-lg font-semibold"
                 inputClassName="text-lg font-semibold text-gray-900 bg-white"
-                style={{ color: t.textPrimary }}
+                style={{ color: tv.textPrimary }}
               />
             </h2>
-            <div className="min-w-[200px] max-w-4xl rounded-md px-3 py-2" style={{ background: t.bgCard }}>
+            <div className="min-w-[200px] max-w-4xl rounded-md px-3 py-2" style={{ background: tv.bgCard }}>
               <InlineEdit
                 value={vsDescription ?? ""}
                 onSave={(desc) => updateVsDescription(canvasViewModel.valueStreamId, desc)}
                 className="text-xs leading-relaxed"
                 inputClassName="text-xs text-gray-900 bg-white"
-                style={{ color: t.textDim }}
+                style={{ color: tv.textDim }}
                 placeholder="Add a description…"
                 multiline
               />
             </div>
             <div className="flex items-center gap-3 pt-1 text-xs">
-              <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: t.textDim }}>
+              <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: tv.textDim }}>
                 Accountable Stakeholder
               </span>
-              <span className="rounded-full px-2.5 py-0.5 text-[11px] font-medium" style={{ color: t.textPrimary, background: t.bgCard, border: `1px solid ${t.borderSubtle}` }}>
+              <span className="rounded-full px-2.5 py-0.5 text-[11px] font-medium" style={{ color: tv.textPrimary, background: tv.bgCard, border: `1px solid ${tv.borderSubtle}` }}>
                 {accountableStakeholder}
               </span>
             </div>
@@ -242,7 +239,7 @@ export function CanvasView() {
                 addActivity(canvasViewModel.valueStreamId, "New Stage", afterId);
               }}
               className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed px-4 py-6 transition-colors"
-              style={{ borderColor: t.borderSubtle, color: t.textDim }}
+              style={{ borderColor: tv.borderSubtle, color: tv.textDim }}
               title="Add a new stage"
             >
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -340,7 +337,7 @@ function ExportStoriesButton({
       onClick={handleExport}
       title={`Export ${stories.length} user stor${stories.length !== 1 ? "ies" : "y"} to Jira CSV`}
       className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium transition-colors"
-      style={{ border: `1px solid rgba(74,158,218,0.3)`, background: "rgba(74,158,218,0.15)", color: getTheme(useThemeStore.getState().mode).accent }}
+      style={{ border: `1px solid rgba(74,158,218,0.3)`, background: "rgba(74,158,218,0.15)", color: tv.accent }}
     >
       <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -362,16 +359,16 @@ function DiagnosisSummary({
   onBindingClick: () => void;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-lg px-5 py-2.5" style={{ background: getTheme(useThemeStore.getState().mode).bgCard, border: `1px solid ${getTheme(useThemeStore.getState().mode).borderSubtle}` }}>
+    <div className="flex items-center gap-4 rounded-lg px-5 py-2.5" style={{ background: tv.bgCard, border: `1px solid ${tv.borderSubtle}` }}>
       <div className="flex items-center gap-2">
         <div className="h-2 w-2 rounded-full bg-red-500" />
-        <span className="text-xs font-medium" style={{ color: getTheme(useThemeStore.getState().mode).textSecondary }}>
+        <span className="text-xs font-medium" style={{ color: tv.textSecondary }}>
           {heatmapData.observations.length} friction observations
         </span>
       </div>
       {bindingActivityName && (
         <>
-          <div className="h-4 w-px" style={{ background: getTheme(useThemeStore.getState().mode).borderSubtle }} />
+          <div className="h-4 w-px" style={{ background: tv.borderSubtle }} />
           <div className="flex items-center gap-1.5">
             <svg
               className="h-3.5 w-3.5 text-red-400"
@@ -384,7 +381,7 @@ function DiagnosisSummary({
                 clipRule="evenodd"
               />
             </svg>
-            <span className="text-xs" style={{ color: getTheme(useThemeStore.getState().mode).textDim }}>
+            <span className="text-xs" style={{ color: tv.textDim }}>
               Binding:{" "}
               <button
                 onClick={onBindingClick}
@@ -396,8 +393,8 @@ function DiagnosisSummary({
           </div>
           {heatmapData.bindingConstraint.confidence != null && (
             <>
-              <div className="h-4 w-px" style={{ background: getTheme(useThemeStore.getState().mode).borderSubtle }} />
-              <span className="font-mono text-[10px]" style={{ color: getTheme(useThemeStore.getState().mode).textDim }}>
+              <div className="h-4 w-px" style={{ background: tv.borderSubtle }} />
+              <span className="font-mono text-[10px]" style={{ color: tv.textDim }}>
                 Confidence:{" "}
                 {(heatmapData.bindingConstraint.confidence * 100).toFixed(0)}%
               </span>

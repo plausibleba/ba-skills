@@ -6,8 +6,7 @@ import { PPIT_LAYERS } from "./ppit.ts";
 import { humanizeId } from "../../lib/humanize-id.ts";
 import { InlineEdit } from "./InlineEdit.tsx";
 import { useCanvasStore } from "../../store/canvas-store.ts";
-import { useThemeStore } from "../../store/theme-store.ts";
-import { getTheme } from "../../theme.ts";
+import { tv } from "../../theme.ts";
 
 /* ── PPIT data shape from capabilityPPIT ───────────────────────────── */
 interface CapPPIT {
@@ -27,7 +26,6 @@ function MiniAddButton({ placeholder, chipClass, onAdd }: {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const ref = useRef<HTMLInputElement>(null);
-  const mt = getTheme(useThemeStore.getState().mode);
   useEffect(() => { if (open && ref.current) ref.current.focus(); }, [open]);
 
   if (!open) {
@@ -60,7 +58,7 @@ function MiniAddButton({ placeholder, chipClass, onAdd }: {
       }}
       placeholder={placeholder}
       className="rounded-full px-1.5 py-0.5 text-[9px] w-20 focus:outline-none focus:ring-1 focus:ring-blue-400"
-      style={{ border: `1px solid ${mt.borderSubtle}`, background: mt.bgSurface, color: mt.textSecondary }}
+      style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgSurface, color: tv.textSecondary }}
     />
   );
 }
@@ -109,8 +107,6 @@ export function CapabilityBlock({
   isFirst?: boolean;
 }) {
   const { updateCapabilityName, addInfoObjectToCapability, removeInfoObjectFromCapability, addTechAppToCapability, removeTechAppFromCapability, updatePpitActivity, addPpitActivity, removePpitActivity, addRoleToCapability, removeRoleFromCapability, addRole, scaffoldData } = useCanvasStore();
-  const themeMode = useThemeStore((s) => s.mode);
-  const t = getTheme(themeMode);
   const cap = scaffold.elements.capabilities[capabilityId];
   const anyToggle = PPIT_LAYERS.some((l) => ppitToggles[l]);
 
@@ -173,29 +169,29 @@ export function CapabilityBlock({
   const capDescription = (cap as Record<string, unknown> | undefined)?.description as string | undefined;
 
   return (
-    <div className="relative rounded px-2.5 py-1.5" style={{ border: `1px solid ${t.borderSubtle}`, background: t.tileBg }}>
+    <div className="relative rounded px-2.5 py-1.5" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.tileBg }}>
       {/* Capability name + badge counts */}
       <div className="flex items-start justify-between gap-1.5">
-        <p className="min-w-0 text-xs font-medium" style={{ color: t.textSecondary }}>
+        <p className="min-w-0 text-xs font-medium" style={{ color: tv.textSecondary }}>
           <InlineEdit
             value={cap?.name ?? humanizeId(capabilityId)}
             onSave={(name) => updateCapabilityName(capabilityId, name)}
             className="text-xs font-medium"
             inputClassName="text-xs font-medium text-gray-900 bg-white"
-            style={{ color: t.textSecondary }}
+            style={{ color: tv.textSecondary }}
           />
         </p>
         <div className="flex flex-shrink-0 items-center gap-1">
           {capDescription && (
             <div className="group/tip">
-              <svg className="h-3 w-3 cursor-help transition-colors" style={{ color: t.textDim }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-3 w-3 cursor-help transition-colors" style={{ color: tv.textDim }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               {/* Tooltip: below for first cap, above for others */}
               <div className={`pointer-events-none absolute inset-x-0 z-50 px-1 opacity-0 transition-opacity group-hover/tip:pointer-events-auto group-hover/tip:opacity-100 ${
                 isFirst ? "top-full mt-1" : "bottom-full mb-1"
               }`}>
-                <div className="rounded-md px-3 py-2 text-[10px] leading-relaxed shadow-lg" style={{ background: t.bgCard, border: `1px solid ${t.borderSubtle}`, color: t.textSecondary }}>
+                <div className="rounded-md px-3 py-2 text-[10px] leading-relaxed shadow-lg" style={{ background: tv.bgCard, border: `1px solid ${tv.borderSubtle}`, color: tv.textSecondary }}>
                   {capDescription}
                 </div>
               </div>

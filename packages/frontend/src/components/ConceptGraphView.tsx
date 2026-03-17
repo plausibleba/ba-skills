@@ -2,7 +2,7 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { useThemeStore } from "../store/theme-store.ts";
-import { getTheme } from "../theme.ts";
+import { getTheme, tv } from "../theme.ts";
 import type { ConceptRelationship } from "../types/cards.ts";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -385,7 +385,6 @@ function ConceptTableView({
   onDeleteConcept: (id: string) => void;
 }) {
   const themeMode = useThemeStore((s) => s.mode);
-  const T = getTheme(themeMode);
   const TC = getColors(themeMode);
   const all = Object.values(concepts) as any[];
   const sorted = [...all].sort((a, b) => {
@@ -397,20 +396,20 @@ function ConceptTableView({
 
   return (
     <div>
-      <div className="overflow-x-auto rounded-lg" style={{ border: `1px solid ${T.borderSubtle}` }}>
+      <div className="overflow-x-auto rounded-lg" style={{ border: `1px solid ${tv.borderSubtle}` }}>
         <table className="w-full text-left text-[11px]" style={{ borderCollapse: "collapse" }}>
           <thead>
-            <tr style={{ background: T.bgSurface }}>
+            <tr style={{ background: tv.bgSurface }}>
               {["Type", "Name", "Definition", "Lifecycle States"].map(h => (
-                <th key={h} className="px-3 py-2 font-semibold" style={{ color: T.textDim, borderBottom: `1px solid ${T.borderSubtle}` }}>{h}</th>
+                <th key={h} className="px-3 py-2 font-semibold" style={{ color: tv.textDim, borderBottom: `1px solid ${tv.borderSubtle}` }}>{h}</th>
               ))}
-              {enriched && <th className="px-3 py-2 font-semibold" style={{ color: T.textDim, borderBottom: `1px solid ${T.borderSubtle}` }}>Attributes</th>}
-              <th className="px-3 py-2 font-semibold w-[60px]" style={{ color: T.textDim, borderBottom: `1px solid ${T.borderSubtle}` }}></th>
+              {enriched && <th className="px-3 py-2 font-semibold" style={{ color: tv.textDim, borderBottom: `1px solid ${tv.borderSubtle}` }}>Attributes</th>}
+              <th className="px-3 py-2 font-semibold w-[60px]" style={{ color: tv.textDim, borderBottom: `1px solid ${tv.borderSubtle}` }}></th>
             </tr>
           </thead>
           <tbody>
             {sorted.map((c) => (
-              <tr key={c.id} style={{ borderBottom: `1px solid ${T.borderSubtle}` }}>
+              <tr key={c.id} style={{ borderBottom: `1px solid ${tv.borderSubtle}` }}>
                 <td className="px-3 py-2">
                   <select
                     defaultValue={c.type}
@@ -428,7 +427,7 @@ function ConceptTableView({
                     defaultValue={c.name}
                     onBlur={(e) => onUpdateConcept(c.id, "name", e.target.value)}
                     className="w-full rounded px-1.5 py-0.5 text-[11px] font-semibold"
-                    style={{ background: T.bgInput, color: T.textPrimary, border: "1px solid transparent", outline: "none" }}
+                    style={{ background: tv.bgInput, color: tv.textPrimary, border: "1px solid transparent", outline: "none" }}
                     onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
                     onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
                   />
@@ -438,7 +437,7 @@ function ConceptTableView({
                     defaultValue={c.definition ?? c.description ?? ""}
                     onBlur={(e) => onUpdateConcept(c.id, "definition", e.target.value)}
                     className="w-full rounded px-1.5 py-0.5 text-[11px]"
-                    style={{ background: T.bgInput, color: T.textSecondary, border: "1px solid transparent", outline: "none" }}
+                    style={{ background: tv.bgInput, color: tv.textSecondary, border: "1px solid transparent", outline: "none" }}
                     onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
                     onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
                   />
@@ -448,14 +447,14 @@ function ConceptTableView({
                     defaultValue={(c.lifecycleStates ?? []).join(", ")}
                     onBlur={(e) => onUpdateConcept(c.id, "lifecycleStates", e.target.value)}
                     className="w-full rounded px-1.5 py-0.5 text-[11px]"
-                    style={{ background: T.bgInput, color: T.accent, border: "1px solid transparent", outline: "none", fontFamily: "'DM Mono', monospace" }}
+                    style={{ background: tv.bgInput, color: tv.accent, border: "1px solid transparent", outline: "none", fontFamily: "'DM Mono', monospace" }}
                     onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
                     onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
                     placeholder="state1, state2, ..."
                   />
                 </td>
                 {enriched && enriched.attributes[c.id] && (
-                  <td className="px-3 py-2 text-[10px]" style={{ color: T.textDim }}>
+                  <td className="px-3 py-2 text-[10px]" style={{ color: tv.textDim }}>
                     {enriched.attributes[c.id].slice(0, 4).map(a => a.name).join(", ")}
                     {enriched.attributes[c.id].length > 4 && ` +${enriched.attributes[c.id].length - 4}`}
                   </td>
@@ -473,7 +472,7 @@ function ConceptTableView({
                       <button
                         onClick={() => setConfirmDelete(null)}
                         className="rounded px-1.5 py-0.5 text-[9px]"
-                        style={{ color: T.textDim, border: `1px solid ${T.borderSubtle}` }}
+                        style={{ color: tv.textDim, border: `1px solid ${tv.borderSubtle}` }}
                       >
                         No
                       </button>
@@ -482,7 +481,7 @@ function ConceptTableView({
                     <button
                       onClick={() => setConfirmDelete(c.id)}
                       className="rounded px-1.5 py-0.5 text-[9px]"
-                      style={{ color: T.textDim, border: "1px solid transparent" }}
+                      style={{ color: tv.textDim, border: "1px solid transparent" }}
                       title="Delete concept"
                     >
                       ✕
@@ -497,7 +496,7 @@ function ConceptTableView({
 
       {/* Add concept buttons */}
       <div className="mt-3 flex items-center gap-2">
-        <span className="text-[10px] font-medium" style={{ color: T.textDim }}>Add:</span>
+        <span className="text-[10px] font-medium" style={{ color: tv.textDim }}>Add:</span>
         {(["Party", "Resource", "Record"] as const).map(type => (
           <button
             key={type}
@@ -524,7 +523,6 @@ export function ConceptGraphView() {
   const scaffoldData = useCanvasStore((s) => s.scaffoldData);
   const themeMode = useThemeStore((s) => s.mode);
   const TC = useMemo(() => getColors(themeMode), [themeMode]);
-  const T = useMemo(() => getTheme(themeMode), [themeMode]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [enriched, setEnriched] = useState<EnrichedProperties | null>(null);
   const [showRelLabels, setShowRelLabels] = useState(true);
@@ -719,28 +717,28 @@ export function ConceptGraphView() {
   const structuralCount = allEdges.filter(e => e.category === "structural").length;
 
   return (
-    <div style={{ background: T.bgPrimary, fontFamily: "'DM Sans', system-ui, sans-serif", minHeight: "100%" }}>
+    <div style={{ background: tv.bgPrimary, fontFamily: "'DM Sans', system-ui, sans-serif", minHeight: "100%" }}>
       <div className="mx-auto max-w-[1100px] p-5">
         {/* Header */}
         <div className="mb-4">
-          <div className="mb-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: T.textDim }}>Concept Model</div>
-          <div className="mb-1 text-lg font-bold" style={{ color: T.textPrimary }}>{scaffoldData.name} — Business Object Taxonomy</div>
-          <div className="text-[11px]" style={{ color: T.textDim }}>
+          <div className="mb-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: tv.textDim }}>Concept Model</div>
+          <div className="mb-1 text-lg font-bold" style={{ color: tv.textPrimary }}>{scaffoldData.name} — Business Object Taxonomy</div>
+          <div className="text-[11px]" style={{ color: tv.textDim }}>
             Capsicum Triad · {stats.parties} parties · {stats.resources} resources · {stats.records} records
           </div>
         </div>
 
         {/* Tab bar: Graph | Table */}
-        <div className="mb-3 flex items-center gap-1" style={{ borderBottom: `1px solid ${T.borderSubtle}` }}>
+        <div className="mb-3 flex items-center gap-1" style={{ borderBottom: `1px solid ${tv.borderSubtle}` }}>
           {(["graph", "table"] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setViewTab(tab)}
               className="rounded-t px-4 py-1.5 text-[11px] font-semibold capitalize"
               style={{
-                background: viewTab === tab ? T.bgCard : "transparent",
-                color: viewTab === tab ? T.textPrimary : T.textDim,
-                borderBottom: viewTab === tab ? `2px solid ${T.accent}` : "2px solid transparent",
+                background: viewTab === tab ? tv.bgCard : "transparent",
+                color: viewTab === tab ? tv.textPrimary : tv.textDim,
+                borderBottom: viewTab === tab ? `2px solid ${tv.accent}` : "2px solid transparent",
               }}
             >
               {tab === "graph" ? "Graph" : "Table"}
@@ -755,7 +753,7 @@ export function ConceptGraphView() {
             { type: "Record", color: TC.record },
             { type: "Resource", color: TC.resource },
           ] as const).map(({ type, color }) => (
-            <div key={type} className="flex items-center gap-1.5 text-[10px]" style={{ color: T.textDim }}>
+            <div key={type} className="flex items-center gap-1.5 text-[10px]" style={{ color: tv.textDim }}>
               <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: color }} />
               {type}
             </div>
@@ -763,7 +761,7 @@ export function ConceptGraphView() {
 
           <div className="ml-auto flex flex-wrap items-center gap-2">
             {hasMovedNodes && (
-              <button onClick={handleResetLayout} className="rounded px-2 py-0.5 text-[10px] font-medium" style={{ color: T.textDim, border: `1px solid ${T.borderSubtle}` }}>
+              <button onClick={handleResetLayout} className="rounded px-2 py-0.5 text-[10px] font-medium" style={{ color: tv.textDim, border: `1px solid ${tv.borderSubtle}` }}>
                 Reset
               </button>
             )}
@@ -775,8 +773,8 @@ export function ConceptGraphView() {
                   className="rounded px-2 py-0.5 text-[10px] font-medium"
                   style={{
                     background: showInteraction ? "rgba(245,158,11,0.15)" : "transparent",
-                    color: showInteraction ? TC.interaction : T.textDim,
-                    border: `1px solid ${showInteraction ? "rgba(245,158,11,0.3)" : T.borderSubtle}`,
+                    color: showInteraction ? TC.interaction : tv.textDim,
+                    border: `1px solid ${showInteraction ? "rgba(245,158,11,0.3)" : tv.borderSubtle}`,
                   }}
                 >
                   Interaction ({interactionCount})
@@ -786,8 +784,8 @@ export function ConceptGraphView() {
                   className="rounded px-2 py-0.5 text-[10px] font-medium"
                   style={{
                     background: showStructural ? "rgba(167,139,250,0.15)" : "transparent",
-                    color: showStructural ? TC.structural : T.textDim,
-                    border: `1px solid ${showStructural ? "rgba(167,139,250,0.3)" : T.borderSubtle}`,
+                    color: showStructural ? TC.structural : tv.textDim,
+                    border: `1px solid ${showStructural ? "rgba(167,139,250,0.3)" : tv.borderSubtle}`,
                   }}
                 >
                   Structural ({structuralCount})
@@ -795,11 +793,11 @@ export function ConceptGraphView() {
                 <button
                   onClick={() => setShowRelLabels(!showRelLabels)}
                   className="rounded px-2 py-0.5 text-[10px] font-medium"
-                  style={{ background: showRelLabels ? "rgba(74,158,218,0.15)" : "transparent", color: showRelLabels ? T.accent : T.textDim, border: `1px solid ${T.borderSubtle}` }}
+                  style={{ background: showRelLabels ? "rgba(74,158,218,0.15)" : "transparent", color: showRelLabels ? tv.accent : tv.textDim, border: `1px solid ${tv.borderSubtle}` }}
                 >
                   Labels
                 </button>
-                <button onClick={handleClearEnrichment} className="rounded px-2 py-0.5 text-[10px] font-medium" style={{ color: T.textDim, border: `1px solid ${T.borderSubtle}` }}>
+                <button onClick={handleClearEnrichment} className="rounded px-2 py-0.5 text-[10px] font-medium" style={{ color: tv.textDim, border: `1px solid ${tv.borderSubtle}` }}>
                   Clear
                 </button>
               </>
@@ -824,7 +822,7 @@ export function ConceptGraphView() {
             <div
               ref={containerRef}
               className="overflow-hidden rounded-lg"
-              style={{ border: `1px solid ${T.borderSubtle}`, background: T.bgCard, position: "relative" }}
+              style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard, position: "relative" }}
               onWheel={handleWheel}
             >
               <svg
@@ -880,7 +878,7 @@ export function ConceptGraphView() {
                       {showRelLabels && (
                         <>
                           <text x={path.labelX} y={path.labelY + 1} textAnchor="middle" dominantBaseline="middle"
-                            fontSize={7} fill={T.bgCard} stroke={T.bgCard} strokeWidth={3} fontFamily="DM Sans, sans-serif" paintOrder="stroke">
+                            fontSize={7} fill={tv.bgCard} stroke={tv.bgCard} strokeWidth={3} fontFamily="DM Sans, sans-serif" paintOrder="stroke">
                             {e.label}
                           </text>
                           <text x={path.labelX} y={path.labelY + 1} textAnchor="middle" dominantBaseline="middle"
@@ -920,7 +918,7 @@ export function ConceptGraphView() {
               {/* Zoom indicator */}
               {zoom !== 1 && (
                 <div className="absolute bottom-2 right-2 rounded px-2 py-0.5 text-[9px] font-medium"
-                  style={{ background: T.bgSurface, color: T.textDim, border: `1px solid ${T.borderSubtle}` }}>
+                  style={{ background: tv.bgSurface, color: tv.textDim, border: `1px solid ${tv.borderSubtle}` }}>
                   {Math.round(zoom * 100)}%
                 </div>
               )}
@@ -928,36 +926,36 @@ export function ConceptGraphView() {
 
             {/* Inspector */}
             <div className="mt-3 rounded-lg p-4" style={{
-              background: T.bgCard,
-              border: `1.5px solid ${selected ? colFor(selected.type, TC).accent : T.accent}`,
+              background: tv.bgCard,
+              border: `1.5px solid ${selected ? colFor(selected.type, TC).accent : tv.accent}`,
               minHeight: 72,
             }}>
               {selected ? (
                 <div className="flex gap-6">
                   <div className="flex-1 min-w-0">
                     <div className="mb-1 flex items-center gap-2">
-                      <div className="text-[15px] font-bold" style={{ color: T.textPrimary }}>{selected.name}</div>
+                      <div className="text-[15px] font-bold" style={{ color: tv.textPrimary }}>{selected.name}</div>
                       <span className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase"
                         style={{ background: colFor(selected.type, TC).fill, color: colFor(selected.type, TC).accent, border: `1px solid ${colFor(selected.type, TC).stroke}` }}>
                         {selected.type}
                       </span>
                     </div>
                     {(selected.definition || selected.description) && (
-                      <div className="mb-2 text-[12px] leading-relaxed" style={{ color: T.textSecondary }}>
+                      <div className="mb-2 text-[12px] leading-relaxed" style={{ color: tv.textSecondary }}>
                         {selected.definition || selected.description}
                       </div>
                     )}
                     {selected.lifecycleStates?.length > 0 && (
                       <div className="mb-2">
-                        <div className="mb-1 text-[9px] font-bold uppercase tracking-wider" style={{ color: T.textDim }}>Lifecycle</div>
+                        <div className="mb-1 text-[9px] font-bold uppercase tracking-wider" style={{ color: tv.textDim }}>Lifecycle</div>
                         <div className="flex flex-wrap gap-1">
                           {selected.lifecycleStates.map((s: string, i: number) => (
                             <span key={i} className="flex items-center gap-1">
                               <span className="rounded px-1.5 py-0.5 text-[10px] font-medium"
-                                style={{ background: "rgba(74,158,218,0.1)", color: T.accent, border: "1px solid rgba(74,158,218,0.2)" }}>
+                                style={{ background: "rgba(74,158,218,0.1)", color: tv.accent, border: "1px solid rgba(74,158,218,0.2)" }}>
                                 {s}
                               </span>
-                              {i < selected.lifecycleStates!.length - 1 && <span className="text-[10px]" style={{ color: T.borderSubtle }}>→</span>}
+                              {i < selected.lifecycleStates!.length - 1 && <span className="text-[10px]" style={{ color: tv.borderSubtle }}>→</span>}
                             </span>
                           ))}
                         </div>
@@ -968,7 +966,7 @@ export function ConceptGraphView() {
                       if (!rels.length) return null;
                       return (
                         <div className="mb-2">
-                          <div className="mb-1 text-[9px] font-bold uppercase tracking-wider" style={{ color: T.textDim }}>Relationships</div>
+                          <div className="mb-1 text-[9px] font-bold uppercase tracking-wider" style={{ color: tv.textDim }}>Relationships</div>
                           <div className="space-y-0.5">
                             {rels.map((r, i) => {
                               const isSource = r.from === selected.id;
@@ -976,14 +974,14 @@ export function ConceptGraphView() {
                               const catCol = r.category === "interaction" ? TC.interaction : TC.structural;
                               return (
                                 <div key={i} className="flex items-center gap-1 text-[10px]">
-                                  <span className="rounded px-1 py-0.5 text-[8px] font-bold" style={{ color: catCol, background: T.bgInput }}>
+                                  <span className="rounded px-1 py-0.5 text-[8px] font-bold" style={{ color: catCol, background: tv.bgInput }}>
                                     {r.label}
                                   </span>
-                                  <span className="text-[8px] rounded px-1" style={{ color: T.textDim, background: T.bgSurface }}>
+                                  <span className="text-[8px] rounded px-1" style={{ color: tv.textDim, background: tv.bgSurface }}>
                                     {r.category}
                                   </span>
-                                  <span style={{ color: T.textDim }}>{isSource ? "→" : "←"}</span>
-                                  <span style={{ color: other ? colFor(other.type, TC).accent : T.textSecondary, cursor: "pointer" }}
+                                  <span style={{ color: tv.textDim }}>{isSource ? "→" : "←"}</span>
+                                  <span style={{ color: other ? colFor(other.type, TC).accent : tv.textSecondary, cursor: "pointer" }}
                                     onClick={() => { if (other) setSelectedId(other.id); }}>
                                     {other?.name ?? (isSource ? r.to : r.from)}
                                   </span>
@@ -996,13 +994,13 @@ export function ConceptGraphView() {
                     })()}
                   </div>
                   {enriched?.attributes[selected.id] && (
-                    <div className="w-[240px] flex-shrink-0 rounded-md p-3" style={{ background: T.bgSurface, border: `1px solid ${T.borderSubtle}` }}>
-                      <div className="mb-2 text-[9px] font-bold uppercase tracking-wider" style={{ color: T.textDim }}>Attributes</div>
+                    <div className="w-[240px] flex-shrink-0 rounded-md p-3" style={{ background: tv.bgSurface, border: `1px solid ${tv.borderSubtle}` }}>
+                      <div className="mb-2 text-[9px] font-bold uppercase tracking-wider" style={{ color: tv.textDim }}>Attributes</div>
                       <div className="space-y-1">
                         {enriched.attributes[selected.id].map((attr, i) => (
                           <div key={i} className="flex items-center justify-between text-[10px]">
-                            <span style={{ color: T.textSecondary }}>{attr.name}</span>
-                            <span className="rounded px-1.5 py-0.5 text-[9px]" style={{ background: "rgba(74,158,218,0.1)", color: T.accent, fontFamily: "'DM Mono', monospace" }}>
+                            <span style={{ color: tv.textSecondary }}>{attr.name}</span>
+                            <span className="rounded px-1.5 py-0.5 text-[9px]" style={{ background: "rgba(74,158,218,0.1)", color: tv.accent, fontFamily: "'DM Mono', monospace" }}>
                               {attr.dataType}
                             </span>
                           </div>
@@ -1012,7 +1010,7 @@ export function ConceptGraphView() {
                   )}
                 </div>
               ) : (
-                <p className="text-[12px]" style={{ color: T.textDim }}>
+                <p className="text-[12px]" style={{ color: tv.textDim }}>
                   Select a concept to inspect. Drag nodes to rearrange. Scroll to zoom, drag background to pan.
                   {!enriched && " Click \"Enrich\" to suggest relationships and attributes."}
                 </p>

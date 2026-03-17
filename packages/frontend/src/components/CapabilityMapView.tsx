@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
-import { useThemeStore } from "../store/theme-store.ts";
-import { getTheme } from "../theme.ts";
+import { tv } from "../theme.ts";
 
 /* ── Governance detection ─────────────────────────────────── */
 const GOV_WORDS = [
@@ -87,8 +86,6 @@ function buildHierarchy(caps: Record<string, any>): L1Block[] {
 /* ── Component ────────────────────────────────────────────── */
 export function CapabilityMapView() {
   const scaffoldData = useCanvasStore((s) => s.scaffoldData);
-  const mode = useThemeStore((s) => s.mode);
-  const t = getTheme(mode);
   const [selectedL3, setSelectedL3] = useState<CapNode | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
@@ -137,7 +134,7 @@ export function CapabilityMapView() {
     <div
       className="h-full overflow-auto"
       style={{
-        background: t.bgPrimary,
+        background: tv.bgPrimary,
         fontFamily: "'DM Sans', system-ui, sans-serif",
       }}
     >
@@ -146,17 +143,17 @@ export function CapabilityMapView() {
         <div className="mb-4">
           <div
             className="mb-1 text-[10px] font-bold uppercase tracking-wider"
-            style={{ color: t.textDim }}
+            style={{ color: tv.textDim }}
           >
             Capability Map
           </div>
           <div
             className="mb-1 text-lg font-bold"
-            style={{ color: t.textPrimary }}
+            style={{ color: tv.textPrimary }}
           >
             {scaffoldData.name} — Operating Capabilities
           </div>
-          <div className="text-[11px]" style={{ color: t.textSecondary }}>
+          <div className="text-[11px]" style={{ color: tv.textSecondary }}>
             {stats.l1} business areas · {stats.l2} domains · {stats.l3}{" "}
             capabilities
           </div>
@@ -166,27 +163,27 @@ export function CapabilityMapView() {
         <div className="mb-4 flex flex-wrap items-center gap-5">
           <div
             className="flex items-center gap-1.5 text-[10px]"
-            style={{ color: t.textSecondary }}
+            style={{ color: tv.textSecondary }}
           >
             <span
               className="inline-block h-2.5 w-2.5 rounded-sm"
-              style={{ background: t.accent }}
+              style={{ background: tv.accent }}
             />
             Execution
           </div>
           <div
             className="flex items-center gap-1.5 text-[10px]"
-            style={{ color: t.textSecondary }}
+            style={{ color: tv.textSecondary }}
           >
             <span
               className="inline-block h-2.5 w-2.5 rounded-sm"
-              style={{ background: t.govColor }}
+              style={{ background: tv.govColor }}
             />
             Governance
           </div>
           <div
             className="ml-1 text-[9px]"
-            style={{ color: t.textDim }}
+            style={{ color: tv.textDim }}
           >
             Click any L3 tile to inspect · Double-click to rename
           </div>
@@ -210,7 +207,6 @@ export function CapabilityMapView() {
               onStartEdit={startEdit}
               onEditTextChange={setEditText}
               onCommitEdit={commitEdit}
-              t={t}
             />
           ))}
         </div>
@@ -219,8 +215,8 @@ export function CapabilityMapView() {
         <div
           className="mt-3 rounded-lg p-4"
           style={{
-            background: t.bgCard,
-            border: `1.5px solid ${t.borderAccent}`,
+            background: tv.bgCard,
+            border: `1.5px solid ${tv.borderAccent}`,
             minHeight: 72,
           }}
         >
@@ -228,14 +224,14 @@ export function CapabilityMapView() {
             <>
               <div
                 className="mb-1 text-[15px] font-bold"
-                style={{ color: t.textPrimary }}
+                style={{ color: tv.textPrimary }}
               >
                 {selectedL3.name}
               </div>
               {selectedL3.businessObject && (
                 <div
                   className="mb-1.5 text-[10px] font-bold uppercase tracking-wider"
-                  style={{ color: t.accent }}
+                  style={{ color: tv.accent }}
                 >
                   Business Object: {selectedL3.businessObject}
                 </div>
@@ -243,19 +239,19 @@ export function CapabilityMapView() {
               {selectedL3.description && (
                 <div
                   className="text-[12px] leading-relaxed"
-                  style={{ color: t.textSecondary }}
+                  style={{ color: tv.textSecondary }}
                 >
                   {selectedL3.description}
                 </div>
               )}
               {!selectedL3.description && (
-                <div className="text-[12px]" style={{ color: t.textDim }}>
+                <div className="text-[12px]" style={{ color: tv.textDim }}>
                   No description available. Double-click the tile to edit.
                 </div>
               )}
             </>
           ) : (
-            <p className="text-[12px]" style={{ color: t.textDim }}>
+            <p className="text-[12px]" style={{ color: tv.textDim }}>
               Select a capability tile to see its definition, business object,
               and relationships.
             </p>
@@ -276,7 +272,6 @@ function L1Card({
   onStartEdit,
   onEditTextChange,
   onCommitEdit,
-  t,
 }: {
   block: L1Block;
   selectedL3: CapNode | null;
@@ -286,10 +281,9 @@ function L1Card({
   onStartEdit: (c: CapNode) => void;
   onEditTextChange: (t: string) => void;
   onCommitEdit: () => void;
-  t: import("../theme.ts").ThemeTokens;
 }) {
-  const borderColor = block.gov ? t.govColor : t.accentBorder;
-  const headerBg = block.gov ? t.govMuted : t.accentMuted;
+  const borderColor = block.gov ? tv.govColor : tv.accentBorder;
+  const headerBg = block.gov ? tv.govMuted : tv.accentMuted;
   const l3Count = block.l2s.reduce((a, l2) => a + l2.l3s.length, 0);
 
   return (
@@ -297,22 +291,22 @@ function L1Card({
       className="overflow-hidden rounded-lg"
       style={{
         border: `1.5px solid ${borderColor}`,
-        background: t.bgCard,
+        background: tv.bgCard,
       }}
     >
       {/* L1 header */}
       <div
         className="border-b px-2.5 py-2"
-        style={{ background: headerBg, borderColor: t.borderSubtle }}
+        style={{ background: headerBg, borderColor: tv.borderSubtle }}
       >
         <div
           className="overflow-hidden text-ellipsis whitespace-nowrap text-[10px] font-bold uppercase tracking-wider"
-          style={{ color: t.textPrimary }}
+          style={{ color: tv.textPrimary }}
           title={block.name}
         >
           {block.name}
         </div>
-        <div className="mt-0.5 text-[9px]" style={{ color: t.textSecondary }}>
+        <div className="mt-0.5 text-[9px]" style={{ color: tv.textSecondary }}>
           {block.l2s.length} domains · {l3Count} capabilities
         </div>
       </div>
@@ -323,18 +317,18 @@ function L1Card({
           <div
             key={l2.id}
             className="mb-1 overflow-hidden rounded last:mb-0"
-            style={{ border: `1px solid ${t.borderSubtle}` }}
+            style={{ border: `1px solid ${tv.borderSubtle}` }}
           >
             <div
               className="px-2 py-1"
               style={{
-                background: t.bgSurface,
-                borderBottom: `1px solid ${t.borderSubtle}`,
+                background: tv.bgSurface,
+                borderBottom: `1px solid ${tv.borderSubtle}`,
               }}
             >
               <div
                 className="text-[9px] font-semibold"
-                style={{ color: t.textSecondary }}
+                style={{ color: tv.textSecondary }}
               >
                 {l2.name}
               </div>
@@ -352,7 +346,6 @@ function L1Card({
                   onStartEdit={() => onStartEdit(l3)}
                   onEditTextChange={onEditTextChange}
                   onCommitEdit={onCommitEdit}
-                  t={t}
                 />
               ))}
             </div>
@@ -374,7 +367,6 @@ function L3Tile({
   onStartEdit,
   onEditTextChange,
   onCommitEdit,
-  t,
 }: {
   cap: CapNode;
   gov: boolean;
@@ -385,11 +377,10 @@ function L3Tile({
   onStartEdit: () => void;
   onEditTextChange: (t: string) => void;
   onCommitEdit: () => void;
-  t: import("../theme.ts").ThemeTokens;
 }) {
-  const selectedBg = gov ? t.govMuted : t.tileSelectedBg;
-  const selectedBorder = gov ? t.govColor : t.tileSelectedBorder;
-  const selectedColor = gov ? t.govColor : t.accent;
+  const selectedBg = gov ? tv.govMuted : tv.tileSelectedBg;
+  const selectedBorder = gov ? tv.govColor : tv.tileSelectedBorder;
+  const selectedColor = gov ? tv.govColor : tv.accent;
 
   if (isEditing) {
     return (
@@ -404,9 +395,9 @@ function L3Tile({
         }}
         className="rounded px-1.5 py-0.5 text-[8px] leading-snug outline-none"
         style={{
-          background: t.bgInput,
-          border: `1px solid ${t.accentBorder}`,
-          color: t.textPrimary,
+          background: tv.bgInput,
+          border: `1px solid ${tv.accentBorder}`,
+          color: tv.textPrimary,
           minWidth: 60,
         }}
       />
@@ -419,9 +410,9 @@ function L3Tile({
       onDoubleClick={onStartEdit}
       className="cursor-pointer rounded px-1.5 py-0.5 text-[8px] leading-snug transition-colors"
       style={{
-        background: isSelected ? selectedBg : t.tileBg,
-        border: `0.5px solid ${isSelected ? selectedBorder : t.borderSubtle}`,
-        color: isSelected ? selectedColor : t.textSecondary,
+        background: isSelected ? selectedBg : tv.tileBg,
+        border: `0.5px solid ${isSelected ? selectedBorder : tv.borderSubtle}`,
+        color: isSelected ? selectedColor : tv.textSecondary,
       }}
       title={cap.description || cap.name}
     >

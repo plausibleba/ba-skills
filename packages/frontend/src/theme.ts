@@ -189,3 +189,23 @@ export function applyTheme(mode: ThemeMode): void {
 export function getTheme(mode: ThemeMode): ThemeTokens {
   return mode === "dark" ? darkTheme : lightTheme;
 }
+
+/**
+ * CSS variable references — use these instead of getTheme() + useThemeStore.
+ *
+ * Usage:  style={{ color: tv.textPrimary, background: tv.bgCard }}
+ *
+ * These resolve at paint time via CSS custom properties, so components
+ * don't need a theme store subscription and automatically update when
+ * applyTheme() is called.
+ */
+function buildTokenVars(): ThemeTokens {
+  const proxy = {} as Record<string, string>;
+  for (const key of Object.keys(darkTheme)) {
+    const cssVar = `--vcc-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`;
+    proxy[key] = `var(${cssVar})`;
+  }
+  return proxy as unknown as ThemeTokens;
+}
+
+export const tv: ThemeTokens = buildTokenVars();
