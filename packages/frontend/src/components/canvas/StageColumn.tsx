@@ -11,6 +11,8 @@ import { StructurePane } from "./StructurePane.tsx";
 import { StageCard } from "./StageCard.tsx";
 import { InlineEdit } from "./InlineEdit.tsx";
 import { useCanvasStore } from "../../store/canvas-store.ts";
+import { useThemeStore } from "../../store/theme-store.ts";
+import { getTheme } from "../../theme.ts";
 
 /* ── Stage Column ──────────────────────────────────────────────────── */
 
@@ -52,6 +54,8 @@ export function StageColumn({
   onRemoveActivity?: () => void;
 }) {
   const { updateActivityName } = useCanvasStore();
+  const themeMode = useThemeStore((s) => s.mode);
+  const t = getTheme(themeMode);
   const fCnt = column.activityIds.reduce(
     (s, a) => s + (frictionMap.get(a)?.length ?? 0),
     0,
@@ -73,10 +77,10 @@ export function StageColumn({
             ? "border-status-binding bg-status-binding"
             : ""
         }`}
-        style={hasBinding ? {} : { borderColor: "#2e3f5c", background: "#1e2d4a" }}
+        style={hasBinding ? {} : { borderColor: t.borderSubtle, background: t.bgCard }}
       >
         <div className="flex items-center justify-between px-4 py-2">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+          <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: t.textDim }}>
             Stage {index + 1} of {total}
           </span>
           <div className="flex items-center gap-1.5">
@@ -86,7 +90,7 @@ export function StageColumn({
               </span>
             )}
             {fCnt > 0 && (
-              <span className="rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[10px] font-mono text-white/80 backdrop-blur-sm">
+              <span className="rounded-full px-2 py-0.5 text-[10px] font-mono" style={{ border: `1px solid ${t.borderSubtle}`, background: t.tileBg, color: t.textSecondary }}>
                 {fCnt} obs
               </span>
             )}
@@ -94,7 +98,8 @@ export function StageColumn({
               <button
                 onClick={onRemoveActivity}
                 title="Remove this stage"
-                className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5 text-[9px] font-semibold text-white/50 hover:bg-red-500/40 hover:text-white transition-colors"
+                className="rounded px-1.5 py-0.5 text-[9px] font-semibold hover:bg-red-500/40 hover:text-white transition-colors"
+                style={{ border: `1px solid ${t.borderSubtle}`, background: t.tileBg, color: t.textDim }}
               >
                 ×
               </button>
@@ -102,17 +107,18 @@ export function StageColumn({
           </div>
         </div>
         <div className="flex items-start justify-between gap-2 px-4 pb-2.5">
-          <h3 className="text-[15px] font-semibold leading-snug tracking-tight text-white">
+          <h3 className="text-[15px] font-semibold leading-snug tracking-tight" style={{ color: t.textPrimary }}>
             <InlineEdit
               value={stageName}
               onSave={(name) => updateActivityName(primaryId, name)}
-              className="text-[15px] font-semibold leading-snug tracking-tight text-white"
+              className="text-[15px] font-semibold leading-snug tracking-tight"
               inputClassName="text-[15px] font-semibold text-gray-900 bg-white"
+              style={{ color: t.textPrimary }}
             />
           </h3>
           {stageDescription && (
             <div className="group relative flex-shrink-0 pt-0.5">
-              <svg className="h-3.5 w-3.5 cursor-help text-white/30 transition-colors group-hover:text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-3.5 w-3.5 cursor-help transition-colors" style={{ color: t.textDim }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 w-72 -translate-x-1/2 rounded-md bg-vcc-50 px-3 py-2 text-[10px] leading-relaxed text-vcc-700 opacity-0 shadow-vcc-card ring-1 ring-vcc-200 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
@@ -139,7 +145,7 @@ export function StageColumn({
             ? "border-status-binding/40"
             : ""
         }`}
-        style={hasBinding ? { background: "rgba(124,45,45,0.15)" } : { borderColor: "#2e3f5c", background: "#243352" }}
+        style={hasBinding ? { background: "rgba(124,45,45,0.15)" } : { borderColor: t.borderSubtle, background: t.bgCardHover }}
       >
         {column.activityIds.map((actId) => (
           <StageCard

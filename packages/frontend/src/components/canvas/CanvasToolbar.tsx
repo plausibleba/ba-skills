@@ -3,6 +3,8 @@ import type { PPITLayer } from "./ppit.ts";
 import type { CardToggleLayer } from "./useCanvasControls.ts";
 import { PPIT_LABELS, PPIT_LAYERS } from "./ppit.ts";
 import { ChevronIcon } from "./ChevronIcon.tsx";
+import { useThemeStore } from "../../store/theme-store.ts";
+import { getTheme } from "../../theme.ts";
 
 /* ── Toggle Button ─────────────────────────────────────────────────── */
 
@@ -15,6 +17,7 @@ function ToggleBtn({
   isOpen: boolean;
   onToggle: () => void;
 }) {
+  const _t = getTheme(useThemeStore((s) => s.mode));
   return (
     <button
       onClick={onToggle}
@@ -23,7 +26,7 @@ function ToggleBtn({
           ? "shadow-sm"
           : ""
       }`}
-      style={isOpen ? { background: "rgba(74,158,218,0.15)", color: "#4a9eda" } : { color: "#94a3b8" }}
+      style={isOpen ? { background: "rgba(74,158,218,0.15)", color: _t.accent } : { color: _t.textDim }}
     >
       <ChevronIcon
         open={isOpen}
@@ -72,10 +75,13 @@ export function CanvasToolbar({
   heatmapData: HeatmapData | null;
   validationReport: ValidationReport | null;
 }) {
+  const themeMode = useThemeStore((s) => s.mode);
+  const t = getTheme(themeMode);
+
   return (
     <div className="flex flex-shrink-0 items-center gap-3">
       {/* View controls */}
-      <div className="flex items-center gap-1 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: "1px solid #2e3f5c", background: "#243352" }}>
+      <div className="flex items-center gap-1 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: `1px solid ${t.borderSubtle}`, background: t.bgCard }}>
         <ToggleBtn
           label="Structure"
           isOpen={structureOpen}
@@ -94,8 +100,8 @@ export function CanvasToolbar({
       </div>
 
       {/* Layer toggles */}
-      <div className="flex items-center gap-0.5 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: "1px solid #2e3f5c", background: "#243352" }}>
-        <span className="px-1 text-[9px] font-medium uppercase tracking-wider" style={{ color: "#94a3b8" }}>
+      <div className="flex items-center gap-0.5 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: `1px solid ${t.borderSubtle}`, background: t.bgCard }}>
+        <span className="px-1 text-[9px] font-medium uppercase tracking-wider" style={{ color: t.textDim }}>
           Layers
         </span>
         {PPIT_LAYERS.map((layer) => (
@@ -107,7 +113,7 @@ export function CanvasToolbar({
                 ? LAYER_COLORS[layer].on
                 : ""
             }`}
-            style={ppitToggles[layer] ? {} : { color: "#94a3b8" }}
+            style={ppitToggles[layer] ? {} : { color: t.textDim }}
           >
             {PPIT_LABELS[layer].short}
           </button>
@@ -115,8 +121,8 @@ export function CanvasToolbar({
       </div>
 
       {/* MVC Card toggles */}
-      <div className="flex items-center gap-0.5 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: "1px solid #2e3f5c", background: "#243352" }}>
-        <span className="px-1 text-[9px] font-medium uppercase tracking-wider" style={{ color: "#94a3b8" }}>
+      <div className="flex items-center gap-0.5 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: `1px solid ${t.borderSubtle}`, background: t.bgCard }}>
+        <span className="px-1 text-[9px] font-medium uppercase tracking-wider" style={{ color: t.textDim }}>
           Cards
         </span>
         <button
@@ -126,7 +132,7 @@ export function CanvasToolbar({
               ? "bg-sky-500/15 text-sky-300"
               : ""
           }`}
-          style={cardToggles.concepts ? {} : { color: "#94a3b8" }}
+          style={cardToggles.concepts ? {} : { color: t.textDim }}
           title="Concept Cards (MVC)"
         >
           C
@@ -138,7 +144,7 @@ export function CanvasToolbar({
               ? "bg-rose-500/15 text-rose-300"
               : ""
           }`}
-          style={cardToggles.policies ? {} : { color: "#94a3b8" }}
+          style={cardToggles.policies ? {} : { color: t.textDim }}
           title="Policy Cards (MVC)"
         >
           P

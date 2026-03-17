@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useThemeStore } from "../../store/theme-store.ts";
+import { getTheme } from "../../theme.ts";
 
 /**
  * AddItemInput — compact inline input for adding new scaffold elements (D-093).
@@ -17,6 +19,7 @@ export function AddItemInput({ label, onAdd, className = "" }: AddItemInputProps
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const t = getTheme(useThemeStore((s) => s.mode));
 
   useEffect(() => {
     if (open && inputRef.current) {
@@ -43,7 +46,7 @@ export function AddItemInput({ label, onAdd, className = "" }: AddItemInputProps
       <button
         onClick={() => setOpen(true)}
         className={`flex items-center gap-1 rounded border border-dashed px-2 py-1 text-[10px] font-medium transition-colors ${className}`}
-        style={{ borderColor: "#2e3f5c", color: "#94a3b8" }}
+        style={{ borderColor: t.borderSubtle, color: t.textDim }}
       >
         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -67,7 +70,7 @@ export function AddItemInput({ label, onAdd, className = "" }: AddItemInputProps
         onBlur={submit}
         placeholder={`New ${label.toLowerCase()} name…`}
         className="flex-1 rounded px-2 py-0.5 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-400"
-        style={{ border: "1px solid #2e3f5c", background: "#1a2236", color: "#cbd5e1" }}
+        style={{ border: `1px solid ${t.borderSubtle}`, background: t.bgSurface, color: t.textSecondary }}
       />
     </div>
   );

@@ -1,6 +1,8 @@
 // @ts-nocheck
 import { useMemo, useState, useRef, useCallback } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
+import { useThemeStore } from "../store/theme-store.ts";
+import { getTheme } from "../theme.ts";
 import type { NetworkNode, NetworkEdge, HeatmapData } from "../types.ts";
 
 /* ── Layout Constants ──────────────────────────────────────────────── */
@@ -253,6 +255,7 @@ function NetworkNodeCard({
   onClick: () => void;
   couplingCount?: number;
 }) {
+  const t = getTheme(useThemeStore.getState().mode);
   // Visual encoding hierarchy (Reviewer spec):
   // 1. Position (layout)  2. Title  3. Edge direction
   // 4. Binding border  5. Friction tint  6. Small friction badge
@@ -269,14 +272,14 @@ function NetworkNodeCard({
     ? { borderColor: "rgba(239,68,68,0.4)" }
     : frictionLevel === "High" ? { borderColor: "rgba(245,158,11,0.4)" }
     : frictionLevel === "Medium" ? { borderColor: "rgba(245,158,11,0.25)" }
-    : { borderColor: "#2e3f5c" };
+    : { borderColor: t.borderSubtle };
 
   // Background tint: very subtle
   const bgStyle = node.hasBindingConstraint
     ? { background: "rgba(239,68,68,0.08)" }
     : frictionLevel === "High" ? { background: "rgba(245,158,11,0.08)" }
     : frictionLevel === "Medium" ? { background: "rgba(245,158,11,0.05)" }
-    : { background: "#243352" };
+    : { background: t.bgCard };
 
   // Heat badge colours
   const badgeStyle =
@@ -310,11 +313,11 @@ function NetworkNodeCard({
 
         {/* Title — the hero */}
         <div>
-          <h3 className="text-[15px] font-bold leading-snug text-white pr-12">
+          <h3 className="text-[15px] font-bold leading-snug pr-12" style={{ color: t.textPrimary }}>
             {node.name}
           </h3>
           {node.description && (
-            <p className="mt-0.5 text-[11px] leading-snug line-clamp-1" style={{ color: "#94a3b8" }}>
+            <p className="mt-0.5 text-[11px] leading-snug line-clamp-1" style={{ color: t.textDim }}>
               {node.description}
             </p>
           )}
@@ -322,13 +325,13 @@ function NetworkNodeCard({
 
         {/* Bottom: stage count + binding + coupling indicator */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px]" style={{ color: "#94a3b8" }}>
+          <span className="text-[10px]" style={{ color: t.textDim }}>
             {node.stageCount} stages
           </span>
 
           {couplingCount > 0 && (
             <>
-              <div className="h-3 w-px" style={{ background: "#2e3f5c" }} />
+              <div className="h-3 w-px" style={{ background: t.borderSubtle }} />
               <span className="text-[10px] text-indigo-300" title="Value streams coupled via shared roles, controls, application functions, or record classes">
                 {couplingCount} coupled
               </span>
@@ -337,7 +340,7 @@ function NetworkNodeCard({
 
           {node.hasBindingConstraint && (
             <>
-              <div className="h-3 w-px" style={{ background: "#2e3f5c" }} />
+              <div className="h-3 w-px" style={{ background: t.borderSubtle }} />
               <span className="text-[10px] font-medium text-red-400">
                 Constrained
               </span>
@@ -362,6 +365,7 @@ function NodeTooltip({
   canvasHeight: number;
   couplingCount?: number;
 }) {
+  const t = getTheme(useThemeStore.getState().mode);
   const tooltipWidth = 280;
   // Center horizontally on node
   const x = position.x + (NODE_WIDTH - tooltipWidth) / 2;
@@ -387,18 +391,18 @@ function NodeTooltip({
       <div
         className="rounded-lg p-3 shadow-lg"
         style={{
-          background: "#243352",
-          border: "1.5px solid #4a9eda",
+          background: t.bgCard,
+          border: `1.5px solid ${t.accent}`,
           ...(showBelow ? {} : { position: "absolute" as const, bottom: 0, width: tooltipWidth }),
         }}
       >
-        <h4 className="text-xs font-semibold text-white">{node.name}</h4>
+        <h4 className="text-xs font-semibold" style={{ color: t.textPrimary }}>{node.name}</h4>
         {node.description && (
-          <p className="mt-1 text-[11px] leading-relaxed" style={{ color: "#94a3b8" }}>
+          <p className="mt-1 text-[11px] leading-relaxed" style={{ color: t.textDim }}>
             {node.description}
           </p>
         )}
-        <div className="mt-2 space-y-0.5 text-[10px]" style={{ color: "#94a3b8" }}>
+        <div className="mt-2 space-y-0.5 text-[10px]" style={{ color: t.textDim }}>
           <p>{node.stageCount} stages</p>
           {node.frictionCount > 0 && (
             <p>{node.frictionCount} friction observations</p>
@@ -413,7 +417,7 @@ function NodeTooltip({
             <p>Confidence: {(node.confidence * 100).toFixed(0)}%</p>
           )}
         </div>
-        <p className="mt-2 text-[10px]" style={{ color: "#4a9eda" }}>Click to explore →</p>
+        <p className="mt-2 text-[10px]" style={{ color: t.accent }}>Click to explore →</p>
       </div>
     </foreignObject>
   );
@@ -432,6 +436,8 @@ export function NetworkView() {
     loadHeatmap,
   } = useCanvasStore();
 
+  const themeMode = useThemeStore((s) => s.mode);
+  const t = getTheme(themeMode);
   const [hoveredVsId, setHoveredVsId] = useState<string | null>(null);
   const heatmapInputRef = useRef<HTMLInputElement>(null);
   const { positions, canvasWidth, canvasHeight } = useNodePositions(networkNodes);
@@ -502,24 +508,24 @@ export function NetworkView() {
   );
 
   return (
-    <div className="flex h-full flex-col" style={{ background: "#1a2236", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+    <div className="flex h-full flex-col" style={{ background: t.bgSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       {/* Header */}
       <div className="flex items-start justify-between gap-4 px-5 pb-4 pt-5">
         <div className="space-y-2">
           {/* Scaffold selector */}
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#94a3b8" }}>
+            <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: t.textDim }}>
               Scaffold
             </span>
             <button
               onClick={() => useCanvasStore.getState().reset()}
-              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors"
-              style={{ border: "1px solid #2e3f5c", background: "#243352" }}
+              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium shadow-sm transition-colors"
+              style={{ color: t.textPrimary, border: `1px solid ${t.borderSubtle}`, background: t.bgCard }}
             >
               {scaffoldData.name}
               <svg
                 className="h-3 w-3"
-                style={{ color: "#94a3b8" }}
+                style={{ color: t.textDim }}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -535,11 +541,11 @@ export function NetworkView() {
           </div>
 
           {scaffoldData.description && (
-            <div className="max-w-3xl rounded-md px-3 py-2" style={{ background: "#243352" }}>
+            <div className="max-w-3xl rounded-md px-3 py-2" style={{ background: t.bgCard }}>
               <p
                 title={scaffoldData.description}
                 className="text-xs leading-relaxed line-clamp-4"
-                style={{ color: "#94a3b8" }}
+                style={{ color: t.textDim }}
               >
                 {scaffoldData.description}
               </p>
@@ -562,8 +568,8 @@ export function NetworkView() {
             </span>
           )}
           {highestFrictionNode && highestFrictionNode.frictionCount > 0 && (
-            <span className="rounded-full px-3 py-1" style={{ background: "rgba(255,255,255,0.05)", color: "#94a3b8" }}>
-              Highest friction: <span className="font-medium text-white">{highestFrictionNode.name}</span>
+            <span className="rounded-full px-3 py-1" style={{ background: t.tileBg, color: t.textDim }}>
+              Highest friction: <span className="font-medium" style={{ color: t.textPrimary }}>{highestFrictionNode.name}</span>
             </span>
           )}
 
@@ -571,7 +577,7 @@ export function NetworkView() {
           <button
             onClick={() => heatmapInputRef.current?.click()}
             className="rounded-full border border-dashed px-3 py-1 transition-colors"
-            style={{ borderColor: "#2e3f5c", color: "#94a3b8" }}
+            style={{ borderColor: t.borderSubtle, color: t.textDim }}
           >
             + Load Assessment
           </button>
@@ -590,7 +596,7 @@ export function NetworkView() {
       </div>
 
       {/* Network canvas — scrollable in both directions */}
-      <div className="flex-1 overflow-auto rounded-xl mx-5 mb-5" style={{ background: "#243352", border: "1px solid #2e3f5c" }}>
+      <div className="flex-1 overflow-auto rounded-xl mx-5 mb-5" style={{ background: t.bgCard, border: `1px solid ${t.borderSubtle}` }}>
         <svg
           width={Math.max(canvasWidth, 800)}
           height={Math.max(canvasHeight, 400)}
@@ -656,7 +662,7 @@ export function NetworkView() {
                   height={maxY - minY}
                   rx={12}
                   fill="none"
-                  stroke="#94a3b8"
+                  stroke={t.textDim}
                   strokeWidth={1.5}
                   strokeDasharray="8 4"
                   opacity={0.5}
@@ -665,7 +671,7 @@ export function NetworkView() {
                   x={labelX}
                   y={labelY}
                   textAnchor="middle"
-                  fill="#94a3b8"
+                  fill={t.textDim}
                   fontSize={13}
                   fontWeight={600}
                   letterSpacing={0.5}

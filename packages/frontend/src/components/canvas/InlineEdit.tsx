@@ -20,6 +20,8 @@ interface InlineEditProps {
   multiline?: boolean;
   /** Max length for the input */
   maxLength?: number;
+  /** Inline styles applied to the display span */
+  style?: React.CSSProperties;
 }
 
 export function InlineEdit({
@@ -30,6 +32,7 @@ export function InlineEdit({
   placeholder = "Untitled",
   multiline = false,
   maxLength,
+  style,
 }: InlineEditProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -116,6 +119,7 @@ export function InlineEdit({
       onDoubleClick={startEdit}
       title="Double-click to edit"
       className={`group/edit cursor-text inline-flex items-center gap-1 ${className}`}
+      style={style}
     >
       <span className={value ? "" : "italic text-gray-400"}>{value || placeholder}</span>
       <svg

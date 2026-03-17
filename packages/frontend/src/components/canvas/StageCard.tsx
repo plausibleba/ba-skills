@@ -6,6 +6,8 @@ import { getCardsForActivity } from "../../types/cards.ts";
 import { CapabilityBlock } from "./CapabilityBlock.tsx";
 import { TransformationPane } from "./TransformationPane.tsx";
 import { useCanvasStore } from "../../store/canvas-store.ts";
+import { useThemeStore } from "../../store/theme-store.ts";
+import { getTheme } from "../../theme.ts";
 import { AddItemInput } from "./AddItemInput.tsx";
 
 /* ── Stage Card ────────────────────────────────────────────────────── */
@@ -41,6 +43,8 @@ export function StageCard({
   if (!activity) return null;
 
   const { userStoriesByActivity, setActivityStories, addCapabilityToActivity, removeCapabilityFromActivity } = useCanvasStore();
+  const themeMode = useThemeStore((s) => s.mode);
+  const t = getTheme(themeMode);
 
   const caps: string[] = (activity as any).enabledByCapabilityIds ?? (activity as any).requiresCapabilityIds ?? [];
   const showSummary = false;
@@ -63,7 +67,7 @@ export function StageCard({
           ? "cursor-pointer hover:shadow-md"
           : ""
       } ${isSelected ? "ring-2 ring-vcc-500 ring-offset-2" : ""}`}
-      style={isBinding ? { borderColor: "rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)" } : { borderColor: "#2e3f5c", background: "#1e2d4a" }}
+      style={isBinding ? { borderColor: "rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)" } : { borderColor: t.borderSubtle, background: t.bgCard }}
     >
       {isBinding && (
         <div className="flex items-center gap-1.5 px-3 py-1.5" style={{ background: "rgba(239,68,68,0.1)" }}>
