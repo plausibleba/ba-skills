@@ -504,23 +504,23 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
       }
     }
 
-    // PDF — try dynamic import of pdfjs-dist, fall back to message
+    // PDF — dynamic import of pdfjs-dist (Vite handles the resolution)
     if (ext === "pdf") {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const pdfjsLib = await (Function('return import("pdfjs-dist")')() as Promise<any>);
-        if (pdfjsLib.GlobalWorkerOptions) pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+        const pdfjsLib = await import("pdfjs-dist");
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "";
         const buf = await file.arrayBuffer();
-        const doc = await pdfjsLib.getDocument({ data: buf }).promise;
+        const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
         const pages: string[] = [];
         for (let i = 1; i <= doc.numPages; i++) {
           const page = await doc.getPage(i);
           const content = await page.getTextContent();
-          pages.push(content.items.map((item: any) => item.str).join(" "));
+          pages.push(content.items.map((item: { str: string }) => item.str).join(" "));
         }
         return pages.join("\n\n");
-      } catch {
-        throw new Error("PDF support requires the pdfjs-dist library. Run: npm install pdfjs-dist");
+      } catch (e) {
+        console.error("PDF parse error:", e);
+        throw new Error("Failed to parse PDF. Check console for details.");
       }
     }
 
@@ -728,10 +728,11 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
                 ref={fileInputRef}
                 type="file"
                 accept=".txt,.md,.csv,.tsv,.xlsx,.xls,.xlsm,.docx,.pdf,.json,.text,.log"
+                multiple
                 className="hidden"
                 onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void handleFileUpload(file);
+                  const files = Array.from(e.target.files ?? []);
+                  if (files.length > 0) void handleFileUpload(files);
                   e.target.value = "";
                 }}
               />

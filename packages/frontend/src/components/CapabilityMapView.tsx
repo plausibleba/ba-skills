@@ -95,6 +95,39 @@ export function CapabilityMapView() {
     return buildHierarchy(scaffoldData.elements.capabilities as Record<string, any>);
   }, [scaffoldData]);
 
+  // Build PPIT lookup: capId → { roles, activities, infoObjects, techApps }
+  const ppitByCapId = useMemo(() => {
+    if (!scaffoldData?.elements?.activities) return new Map<string, { roles: string[]; activityNames: string[]; infoObjects: string[]; techApps: string[] }>();
+    const map = new Map<string, { roles: string[]; activityNames: string[]; infoObjects: string[]; techApps: string[] }>();
+    const roles = scaffoldData.elements.roles ?? {};
+    const infoObjs = scaffoldData.elements.informationObjects ?? {};
+    const techApps = scaffoldData.elements.technologyApplications ?? {};
+    for (const [, act] of Object.entries(scaffoldData.elements.activities)) {
+      const a = act as any;
+      const ppit = a.capabilityPPIT;
+      if (!ppit) continue;
+      for (const [capId, decomp] of Object.entries(ppit)) {
+        const d = decomp as any;
+        if (!map.has(capId)) map.set(capId, { roles: [], activityNames: [], infoObjects: [], techApps: [] });
+        const entry = map.get(capId)!;
+        for (const rId of d.roleIds ?? []) {
+          const rName = (roles as any)[rId]?.name ?? rId;
+          if (!entry.roles.includes(rName)) entry.roles.push(rName);
+        }
+        if (a.name && !entry.activityNames.includes(a.name)) entry.activityNames.push(a.name);
+        for (const iId of d.informationObjectIds ?? []) {
+          const iName = (infoObjs as any)[iId]?.name ?? iId;
+          if (!entry.infoObjects.includes(iName)) entry.infoObjects.push(iName);
+        }
+        for (const tId of d.technologyAppIds ?? []) {
+          const tName = (techApps as any)[tId]?.name ?? tId;
+          if (!entry.techApps.includes(tName)) entry.techApps.push(tName);
+        }
+      }
+    }
+    return map;
+  }, [scaffoldData]);
+
   const stats = useMemo(() => {
     const l2Count = hierarchy.reduce((a, b) => a + b.l2s.length, 0);
     const l3Count = hierarchy.reduce(
@@ -249,6 +282,34 @@ export function CapabilityMapView() {
                   No description available. Double-click the tile to edit.
                 </div>
               )}
+              {/* PPIT Mappings */}
+              {(() => {
+                const ppit = ppitByCapId.get(selectedL3.id);
+                if (!ppit) return null;
+                const sections = [
+                  { label: "People", items: ppit.roles, color: "#f59e0b" },
+                  { label: "Process", items: ppit.activityNames, color: "#10b981" },
+                  { label: "Information", items: ppit.infoObjects, color: "#3b82f6" },
+                  { label: "Technology", items: ppit.techApps, color: "#8b5cf6" },
+                ].filter(s => s.items.length > 0);
+                if (sections.length === 0) return null;
+                return (
+                  <div className="mt-3 space-y-2">
+                    {sections.map(s => (
+                      <div key={s.label}>
+                        <div className="text-[9px] font-bold uppercase tracking-wider mb-0.5" style={{ color: s.color }}>{s.label}</div>
+                        <div className="flex flex-wrap gap-1">
+                          {s.items.map(item => (
+                            <span key={item} className="inline-block rounded px-1.5 py-0.5 text-[10px]" style={{ backgroundColor: `${s.color}22`, color: s.color }}>
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </>
           ) : (
             <p className="text-[12px]" style={{ color: tv.textDim }}>

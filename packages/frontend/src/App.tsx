@@ -27,6 +27,7 @@ export default function App() {
     goToIntake,
     goToCapabilityMap,
     goToConceptGraph,
+    loading,
     loadScaffold,
     loadHeatmap,
   } = useCanvasStore();
@@ -88,9 +89,22 @@ export default function App() {
     };
   }, [handleGlobalDrop, handleGlobalDragOver]);
 
+  // Flush pending save on tab close / refresh
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const canvas = useCanvasStore.getState();
+      if (canvas.scaffoldDirty && canvas.scaffoldData) {
+        canvas.saveToProject(); // fire-and-forget; browser gives ~50ms
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
   const isLoaded = !!scaffoldData;
   const isNetwork = viewMode === "network";
-  const isStage = viewMode === "stage" && !!canvasViewModel;
+  const isStage = viewMode === "stage" && (!!canvasViewModel || loading);
+  const isStageReady = viewMode === "stage" && !!canvasViewModel;
   const isIntake = viewMode === "intake";
   const isCapabilityMap = viewMode === "capabilityMap";
   const isConceptGraph = viewMode === "conceptGraph";
@@ -117,9 +131,13 @@ export default function App() {
     ? ((scaffoldData.elements.valueStreams[selectedVsId] as { name?: string })?.name ?? selectedVsId)
     : null;
 
-  // Navigate back to project list
-  const goToProjects = () => {
-    useCanvasStore.getState().reset();
+  // Navigate back to project list — flush any pending save first
+  const goToProjects = async () => {
+    const canvas = useCanvasStore.getState();
+    if (canvas.scaffoldDirty && canvas.scaffoldData) {
+      await canvas.saveToProject();
+    }
+    canvas.reset();
     useProjectStore.getState().setCurrentProject(null);
   };
 
@@ -383,7 +401,7 @@ export default function App() {
         )}
 
         {!isIntake && isLoaded && isNetwork && <NetworkView />}
-        {!isIntake && isStage && <CanvasView />}
+        {!isIntake && isStageReady && <CanvasView />}
         {!isIntake && isLoaded && isCapabilityMap && <CapabilityMapView />}
         {!isIntake && isLoaded && isConceptGraph && <ConceptGraphView />}
       </main>
