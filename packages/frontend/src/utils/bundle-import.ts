@@ -35,7 +35,7 @@ export function isPlausibleBABundle(json: Record<string, unknown>): boolean {
   const meta = json.meta as Record<string, unknown> | undefined;
   return (
     !!meta?.bundleVersion &&
-    "scaffoldId" in json &&
+    ("scaffoldId" in json || !!meta?.scaffoldId) && // Accept scaffoldId at top-level or inside meta
     "elements" in json &&
     !("schemaVersion" in json) // VCC-native scaffolds have schemaVersion
   );
@@ -233,6 +233,183 @@ function normaliseValueStreamRegistry(
   return { valueStreams, activities, outcomes };
 }
 
+// ─── Hierarchy inference ─────────────────────────────────────────────────────
+
+/** Convert a snake_case ID like "cap_menu_development" to "Menu Development" */
+function snakeToTitle(id: string): string {
+  return id
+    .replace(/^cap_/, "")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/\bAnd\b/g, "&");
+}
+
+/**
+ * Auto-generate missing L1/L2 entries from parent references.
+ * When only L3 capabilities are present with parent refs pointing to
+ * non-existent entries, this creates L2 entries from those refs and
+ * groups them under synthetic L1 business areas.
+ */
+function generateMissingHierarchy(caps: Record<string, any>): Record<string, any> {
+  const result = { ...caps };
+
+  // Collect parent IDs that don't exist as entries
+  const existingIds = new Set(Object.keys(result));
+  const missingParentIds = new Set<string>();
+  for (const cap of Object.values(result)) {
+    if (cap.parentId && !existingIds.has(cap.parentId)) {
+      missingParentIds.add(cap.parentId);
+    }
+  }
+
+  if (missingParentIds.size === 0) return result;
+
+  // Check if there are any L1 or L2 entries already
+  const hasL1 = Object.values(result).some((c: any) => c.level === 1);
+  const hasL2 = Object.values(result).some((c: any) => c.level === 2);
+
+  if (hasL1 && hasL2) return result; // Hierarchy already exists
+
+  // Create L2 entries from missing parent IDs
+  const newL2Ids: string[] = [];
+  for (const parentId of missingParentIds) {
+    result[parentId] = {
+      id: parentId,
+      elementType: "Capability",
+      name: snakeToTitle(parentId),
+      level: 2,
+      parentId: null, // Will be assigned to L1 below
+    };
+    newL2Ids.push(parentId);
+  }
+
+  // Group L2s into L1 business areas.
+  // Strategy: group consecutive L2s (by order of first L3 appearance) into pairs.
+  // This mirrors the typical Skills output order (2–3 domains per area).
+  const l2Order: string[] = [];
+  const seen = new Set<string>();
+  for (const cap of Object.values(caps)) {
+    if (cap.parentId && missingParentIds.has(cap.parentId) && !seen.has(cap.parentId)) {
+      l2Order.push(cap.parentId);
+      seen.add(cap.parentId);
+    }
+  }
+
+  // Detect governance L2s (group separately)
+  const govL2s: string[] = [];
+  const execL2s: string[] = [];
+  for (const l2Id of l2Order) {
+    // Check if majority of children are Gov authority
+    const children = Object.values(result).filter((c: any) => c.parentId === l2Id);
+    const govCount = children.filter((c: any) =>
+      c.authority === "Gov" || c.type === "Governance"
+    ).length;
+    if (govCount > children.length / 2) {
+      govL2s.push(l2Id);
+    } else {
+      execL2s.push(l2Id);
+    }
+  }
+
+  // Create L1 areas — pair consecutive exec L2s, group all gov L2s together
+  let areaCounter = 1;
+  for (let i = 0; i < execL2s.length; i += 2) {
+    const l1Id = `cap_area_${areaCounter}`;
+    // Derive name from L2 names
+    const l2Names = [execL2s[i], execL2s[i + 1]].filter(Boolean).map((id) =>
+      snakeToTitle(id)
+    );
+    const l1Name = deriveAreaName(l2Names);
+    result[l1Id] = {
+      id: l1Id,
+      elementType: "Capability",
+      name: l1Name,
+      level: 1,
+      parentId: null,
+      type: "Execution",
+    };
+    result[execL2s[i]].parentId = l1Id;
+    if (execL2s[i + 1]) result[execL2s[i + 1]].parentId = l1Id;
+    areaCounter++;
+  }
+
+  if (govL2s.length > 0) {
+    const govL1Id = `cap_area_gov`;
+    result[govL1Id] = {
+      id: govL1Id,
+      elementType: "Capability",
+      name: "Governance & Compliance",
+      level: 1,
+      parentId: null,
+      type: "Governance",
+    };
+    for (const l2Id of govL2s) {
+      result[l2Id].parentId = govL1Id;
+    }
+  }
+
+  return result;
+}
+
+/** Derive a sensible L1 area name from its child L2 domain names */
+function deriveAreaName(l2Names: string[]): string {
+  if (l2Names.length === 1) return l2Names[0];
+  // Look for common keywords
+  const words1 = new Set(l2Names[0].toLowerCase().split(/\s+/));
+  const words2 = new Set(l2Names[1]?.toLowerCase().split(/\s+/) ?? []);
+  const shared = [...words1].filter((w) => words2.has(w) && w.length > 3);
+  if (shared.length > 0) {
+    return shared.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") + " Management";
+  }
+  // Fallback: combine shortened versions
+  const short = l2Names.map((n) => n.replace(/ Management$/, "").replace(/ And /, " & "));
+  return short.join(" & ");
+}
+
+/**
+ * Infer relatedCapabilities on concepts from:
+ * 1. Capabilities' valueObject field (cap → object reverse lookup)
+ * 2. Stage co-occurrence (objects appearing in the same stage share capabilities)
+ */
+function inferConceptCapabilityLinks(
+  concepts: Record<string, any>,
+  capabilities: Record<string, any>,
+  stages?: Record<string, any>,
+): void {
+  // Build reverse index: objectId → capabilityIds[]
+  const objToCaps: Record<string, Set<string>> = {};
+  for (const cap of Object.values(capabilities)) {
+    const objRef = cap.valueObject ?? cap.businessObject;
+    if (objRef && typeof objRef === "string") {
+      if (!objToCaps[objRef]) objToCaps[objRef] = new Set();
+      objToCaps[objRef].add(cap.id);
+    }
+  }
+
+  // Also add capability links from stage participation
+  if (stages) {
+    for (const stage of Object.values(stages)) {
+      const stageObjs: string[] = stage.objects ?? stage.informationObjectIds ?? [];
+      const stageCaps: string[] = stage.capabilities ?? stage.requiresCapabilityIds ?? [];
+      for (const objId of stageObjs) {
+        if (!objToCaps[objId]) objToCaps[objId] = new Set();
+        for (const capId of stageCaps) {
+          objToCaps[objId].add(capId);
+        }
+      }
+    }
+  }
+
+  // Apply to concepts
+  for (const concept of Object.values(concepts)) {
+    const existing = concept.relatedCapabilities ?? concept.relatedCapabilityIds ?? [];
+    const inferred = [...(objToCaps[concept.id] ?? [])];
+    if (existing.length === 0 && inferred.length > 0) {
+      concept.relatedCapabilities = inferred;
+    }
+  }
+}
+
 // ─── Main normalisation entry points ────────────────────────────────────────
 
 /** Build an empty scaffold shell */
@@ -343,8 +520,25 @@ export function normaliseBundle(bundle: Record<string, unknown>): ScaffoldData {
     for (const [id, stage] of Object.entries(elements.valueStreamStages as Record<string, any>)) {
       const mapped = { ...stage };
       // Rename elementType
-      if (mapped.elementType === "ValueStreamStage") {
+      if (mapped.elementType === "ValueStreamStage" || !mapped.elementType) {
         mapped.elementType = "Activity";
+      }
+      // Normalise field names: capabilities → requiresCapabilityIds, objects → informationObjectIds
+      if (mapped.capabilities && !mapped.requiresCapabilityIds) {
+        mapped.requiresCapabilityIds = mapped.capabilities;
+        delete mapped.capabilities;
+      }
+      if (mapped.objects && !mapped.informationObjectIds) {
+        mapped.informationObjectIds = mapped.objects;
+        delete mapped.objects;
+      }
+      if (mapped.entryCondition && !mapped.entryCriteria) {
+        mapped.entryCriteria = mapped.entryCondition;
+        delete mapped.entryCondition;
+      }
+      if (mapped.exitCondition && !mapped.exitCriteria) {
+        mapped.exitCriteria = mapped.exitCondition;
+        delete mapped.exitCondition;
       }
       // Normalise PPIT entries: processActivities → activities
       if (mapped.capabilityPPIT) {
@@ -374,26 +568,32 @@ export function normaliseBundle(bundle: Record<string, unknown>): ScaffoldData {
         mapped.activityIds = mapped.stageIds;
         delete mapped.stageIds;
       }
-      // Also handle inline stages[] from newer PlausibleBA exports
+      // Handle stages[] — could be array of string IDs or inline objects
       if (mapped.stages && Array.isArray(mapped.stages) && !mapped.activityIds) {
-        const activityIds: string[] = [];
-        for (const stage of mapped.stages) {
-          const stgId = stage.id ?? `stg_${id}_${stage.number}`;
-          activityIds.push(stgId);
-          if (!elements.activities) elements.activities = {};
-          elements.activities[stgId] = {
-            id: stgId,
-            elementType: "Activity",
-            name: stage.name,
-            description: stage.entryCriteria ? `Entry: ${stage.entryCriteria}` : "",
-            requiresCapabilityIds: stage.capabilities ?? [],
-            valueObjectState: stage.valueObjectState,
-            entryCriteria: stage.entryCriteria,
-            exitCriteria: stage.exitCriteria,
-            objects: stage.objects ?? [],
-          };
+        if (mapped.stages.length > 0 && typeof mapped.stages[0] === "string") {
+          // Array of string IDs referencing valueStreamStages/activities — just rename
+          mapped.activityIds = mapped.stages;
+        } else {
+          // Inline stage objects — flatten into activities
+          const activityIds: string[] = [];
+          for (const stage of mapped.stages) {
+            const stgId = stage.id ?? `stg_${id}_${stage.number}`;
+            activityIds.push(stgId);
+            if (!elements.activities) elements.activities = {};
+            elements.activities[stgId] = {
+              id: stgId,
+              elementType: "Activity",
+              name: stage.name,
+              description: stage.entryCriteria ? `Entry: ${stage.entryCriteria}` : "",
+              requiresCapabilityIds: stage.capabilities ?? [],
+              valueObjectState: stage.valueObjectState,
+              entryCriteria: stage.entryCriteria,
+              exitCriteria: stage.exitCriteria,
+              objects: stage.objects ?? [],
+            };
+          }
+          mapped.activityIds = activityIds;
         }
-        mapped.activityIds = activityIds;
         delete mapped.stages;
       }
       streams[id] = mapped;
@@ -425,9 +625,27 @@ export function normaliseBundle(bundle: Record<string, unknown>): ScaffoldData {
     elements.concepts = normalised;
   }
 
-  // 4. Normalise capability levels: "L1"/"L2"/"L3" → 1/2/3
+  // 4. Normalise capability levels: "L1"/"L2"/"L3" → 1/2/3, and parent → parentId
   if (elements.capabilities && Object.keys(elements.capabilities).length > 0) {
     elements.capabilities = normaliseCapabilityRegistry(elements.capabilities);
+    // Map parent → parentId for all caps
+    for (const cap of Object.values(elements.capabilities as Record<string, any>)) {
+      if (cap.parent && !cap.parentId) {
+        cap.parentId = cap.parent;
+        delete cap.parent;
+      }
+    }
+    // Auto-generate missing L1/L2 entries from parent references
+    elements.capabilities = generateMissingHierarchy(elements.capabilities);
+  }
+
+  // 4b. Infer relatedCapabilities on concepts from capabilities + stage co-occurrence
+  if (elements.concepts && elements.capabilities) {
+    inferConceptCapabilityLinks(
+      elements.concepts as Record<string, any>,
+      elements.capabilities as Record<string, any>,
+      (elements.activities ?? elements.valueStreamStages) as Record<string, any> | undefined,
+    );
   }
 
   // 5½. Ensure registries that VCC expects exist (even if empty)
@@ -445,7 +663,7 @@ export function normaliseBundle(bundle: Record<string, unknown>): ScaffoldData {
   const meta = bundle.meta as Record<string, any> | undefined;
   const scaffold: ScaffoldData = {
     schemaVersion: `ba-bundle-${meta?.bundleVersion ?? "1.0.0"}`,
-    scaffoldId: (bundle.scaffoldId as string) ?? "imported",
+    scaffoldId: (bundle.scaffoldId as string) ?? (meta?.scaffoldId as string) ?? "imported",
     name: (bundle.name as string) ?? "Imported Bundle",
     description: bundle.description as string | undefined,
     elements: elements as unknown as ScaffoldData["elements"],
