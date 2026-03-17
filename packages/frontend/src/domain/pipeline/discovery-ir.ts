@@ -23,6 +23,7 @@ export interface DiscoveryStage {
 // Scoped Capability Map — L1 → L2 → L3 taxonomy (VCC_PROMPT_DEFINITIONS.md §3)
 export interface DiscoveryCapabilityL3 {
   name: string;               // Verb-Noun, e.g. "Manage Trade Partner Orders"
+  number?: string;            // Taxonomy position e.g. "1.2.3"
   businessObject: string;     // core object e.g. "Orders"
   description?: string;
   stabilisationNote?: string; // ⚑ flagged inconsistencies for architect review
@@ -30,11 +31,14 @@ export interface DiscoveryCapabilityL3 {
 
 export interface DiscoveryCapabilityL2 {
   name: string;               // Business Domain e.g. "Order Management"
+  number?: string;            // Taxonomy position e.g. "1.2"
   capabilities: DiscoveryCapabilityL3[];
 }
 
 export interface DiscoveryCapabilityL1 {
   name: string;               // Business Area e.g. "Channel & Partner Management"
+  number?: string;            // Taxonomy position e.g. "1"
+  type?: "Execution" | "Governance";  // L1 classification
   domains: DiscoveryCapabilityL2[];
 }
 
@@ -56,6 +60,8 @@ export interface DiscoveryVS {
   name: string;
   description: string;
   zone: "ecosystem" | "knowledge";
+  valueObject?: string;       // primary business object flowing through the stream
+  recipient?: string;         // who receives value at stream end
   trigger?: string;
   terminalOutcome?: string;
   stakeholder?: string;
@@ -137,6 +143,8 @@ export function buildDiscoveryIR(
     name: vs1.name,
     description: vs1.description ?? "",
     zone: vs1.zone ?? "ecosystem",
+    valueObject: vs1.valueObject,
+    recipient: vs1.recipient,
     trigger: vs1.trigger,
     terminalOutcome: vs1.terminalOutcome,
     stakeholder: vs1.stakeholder ?? pass1Result.org?.stakeholder ?? "",
@@ -161,21 +169,39 @@ export function buildDiscoveryIR(
     }),
   }));
 
-  // Capability map — new L1/L2/L3 structure from A2
+  // Capability map — L1/L2/L3 structure from A2 (aligned with BA Capability Mapping Skill)
   // Graceful fallback: if A2 returned old capabilitiesByVS format, build minimal map
-  const capabilityMap: DiscoveryCapabilityMap = pass2Result.capabilityMap ?? {
-    l1Areas: (pass2Result.capabilitiesByVS ?? []).map((entry: any) => ({
-      name: "Extracted Capabilities",
-      domains: [{
-        name: entry.vsName ?? "General",
-        capabilities: (entry.capabilities ?? []).map((c: any) => ({
-          name: c.name,
-          businessObject: "",
-          description: c.description ?? "",
+  const capabilityMap: DiscoveryCapabilityMap = pass2Result.capabilityMap
+    ? {
+        l1Areas: (pass2Result.capabilityMap.l1Areas ?? []).map((l1: any) => ({
+          name: l1.name,
+          number: l1.number,
+          type: l1.type,
+          domains: (l1.domains ?? []).map((l2: any) => ({
+            name: l2.name,
+            number: l2.number,
+            capabilities: (l2.capabilities ?? []).map((cap: any) => ({
+              name: cap.name,
+              number: cap.number,
+              businessObject: cap.businessObject ?? "",
+              description: cap.description ?? "",
+            })),
+          })),
         })),
-      }],
-    })),
-  };
+      }
+    : {
+        l1Areas: (pass2Result.capabilitiesByVS ?? []).map((entry: any) => ({
+          name: "Extracted Capabilities",
+          domains: [{
+            name: entry.vsName ?? "General",
+            capabilities: (entry.capabilities ?? []).map((c: any) => ({
+              name: c.name,
+              businessObject: "",
+              description: c.description ?? "",
+            })),
+          }],
+        })),
+      };
 
   // Stage capability assignments — new structure from A2
   const stageCapabilities: DiscoveryStageCapabilities[] =

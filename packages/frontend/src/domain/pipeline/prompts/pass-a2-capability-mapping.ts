@@ -1,18 +1,22 @@
 // ─── Pass A2: Role & Capability Extraction ───────────────────────────────────
 // Input:  Confirmed VS + stages from Pass A1, plus raw transcript
-// Output: Roles, capability taxonomy, stage-to-cap assignments, signals
+// Output: Roles, L1/L2/L3 capability taxonomy, stage-to-cap assignments, signals
 //
-// This pass extracts organisational capabilities and maps them to VS stages.
-// Capabilities are enduring organisational abilities — NOT activities or tasks.
+// This pass extracts organisational capabilities in a structured hierarchy
+// and maps them to VS stages. Capabilities are enduring organisational
+// abilities — NOT activities or tasks.
 //
 // DECISION LOG:
 // - Session 14: Introduced L1→L2→L3 capability taxonomy
 // - Session 16: Added shared capability rules
 // - Session 17: Extracted to standalone prompt file
+// - Session 25: Aligned with BA Capability Mapping Skill — full L1/L2/L3
+//   hierarchy with numbering, business object grounding, Execution/Governance
+//   type, and explicit stage assignments per VS.
 
 export function buildPass2Prompt(transcript: string, confirmedVS: any[]): string {
   const vsStageRef = confirmedVS.map((vs: any) =>
-    `VS: "${vs.name}"\n  Stages: ${(vs.stages ?? []).map((s: any) => `"${s.name}"`).join(", ")}`
+    `VS: "${vs.name}"\n  Stages: ${(vs.stages ?? []).map((s: any) => `"${typeof s === "string" ? s : s.name}"`).join(", ")}`
   ).join("\n\n");
 
   return `You are extracting Roles and Capabilities for a business architecture diagnostic.
@@ -26,24 +30,66 @@ Identify all roles that participate in these value streams. Roles are responsibi
 - 4-10 roles total across all value streams
 - Names are title-case position names
 
-## Capabilities (Step 04)
-Identify the Capabilities required. Capabilities are enduring organisational abilities — persistent, deployable, investment-relevant.
+## Capability Map (Step 04)
+Produce a structured L1 → L2 → L3 capability hierarchy covering the business domain.
+
+### Hierarchy
+- L1 = Business Area: broad accountability domain (5-8 for an enterprise)
+- L2 = Business Domain: logical grouping within an area (3-7 per L1)
+- L3 = Business Capability: operational ability (3-8 per L2)
+
+### Rules
+- A Business Capability is the stable ability of the organisation to perform a business function, grounded in a core business object, independent of organisational structure.
 - CRITICAL: If the source material contains a capability map, capability register, named capabilities, or column headers that describe organisational abilities — extract those names VERBATIM. Do not rename, generalise, or replace them with generic alternatives.
-- If no explicit capabilities exist in the source, derive them from the VS/stage content using Verb-Noun convention (e.g. "Manage Member Credentials", not "Credential Management Execution")
-- Assign capabilities to the VS they primarily support
-- 3-8 capabilities per VS
+- If no explicit capabilities exist in the source, derive them using Verb-Noun convention (e.g. "Manage Member Credentials", not "Credential Management Execution")
+- Every L3 must be grounded in a named business object (the thing it manages)
+- Classify each L1 as "Execution" (directly enabling value delivery) or "Governance" (oversight, compliance, risk)
+- MECE: siblings must not overlap and must collectively cover the parent's scope
+- Number each node positionally: L1=1, L2=1.1, L3=1.1.1 — dot-separated integers
 - IMPORTANT: Capabilities are SHARED across activities and value streams. The same capability should appear in multiple VS where relevant. Do not create one capability per activity.
+
+## Stage-Capability Assignments
+For each VS, map which L3 capabilities participate in each stage.
+- Each stage should have 2-5 participating capabilities
+- Use the L3 capability names exactly as defined in the map
+- Flag any stage with zero capabilities (gap) or any L3 that participates in no stage (unused)
 
 Return ONLY valid JSON, no markdown fences:
 {
   "roles": [
     { "id": "role_credit_analyst", "name": "Credit Analyst", "type": "Internal", "description": "Responsible for quantitative credit assessment" }
   ],
-  "capabilitiesByVS": [
+  "capabilityMap": {
+    "l1Areas": [
+      {
+        "name": "Customer Management",
+        "number": "1",
+        "type": "Execution",
+        "domains": [
+          {
+            "name": "Customer Acquisition",
+            "number": "1.1",
+            "capabilities": [
+              {
+                "name": "Manage Lead Qualification",
+                "number": "1.1.1",
+                "businessObject": "Lead",
+                "description": "Ability to assess and qualify inbound leads for sales readiness"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "stageCapabilities": [
     {
       "vsName": "MUST MATCH confirmed VS name exactly",
-      "capabilities": [
-        { "id": "cap_member_onboarding", "name": "Member Onboarding", "description": "Ability to onboard and orient new members" }
+      "stages": [
+        {
+          "stageName": "MUST MATCH confirmed stage name exactly",
+          "capabilityNames": ["Manage Lead Qualification", "Manage Pipeline Tracking"]
+        }
       ]
     }
   ],
