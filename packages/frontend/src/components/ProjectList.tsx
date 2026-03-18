@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from "react";
 import { useProjectStore } from "../store/project-store.ts";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { useAuthStore } from "../store/auth-store.ts";
+import { autoSaveToProject } from "../utils/auto-save.ts";
 import { FileLoader } from "./FileLoader.tsx";
 import { ShareDialog } from "./ShareDialog.tsx";
 import type { ProjectModule } from "../types/database.ts";
@@ -371,6 +372,8 @@ export function ProjectList() {
                                 return;
                               }
                               canvasStore.backToNetwork();
+                              // Auto-create project and save to Supabase
+                              await autoSaveToProject({ cardRegistry: json.cardRegistry });
                             } catch (err) {
                               console.error("[ImportBundle] parse error:", err);
                               alert("Failed to parse JSON file.");

@@ -13,6 +13,7 @@ import { ConceptGraphView } from "./components/ConceptGraphView.tsx";
 import DiscoveryIntake from "./components/DiscoveryIntake.tsx";
 import { LoginPage } from "./components/LoginPage.tsx";
 import { ProjectList } from "./components/ProjectList.tsx";
+import { autoSaveToProject } from "./utils/auto-save.ts";
 
 export default function App() {
   const { user, loading: authLoading, isLocalMode, initialize: initAuth } = useAuthStore();
@@ -69,6 +70,8 @@ export default function App() {
             return;
           }
           store.backToNetwork();
+          // Auto-create project and save to Supabase
+          await autoSaveToProject({ cardRegistry: json.cardRegistry });
         } catch (err) {
           console.error("[App] Drop import error:", err);
         }
@@ -342,39 +345,11 @@ export default function App() {
           <DiscoveryIntake
             onComplete={async (bundle) => {
               const { scaffold, heatmaps = [], cardRegistry } = bundle;
-              // Load into canvas
               await loadScaffold(scaffold ?? bundle);
               for (const hm of heatmaps) await loadHeatmap(hm);
               if (cardRegistry) useCanvasStore.getState().loadCards(cardRegistry);
               backToNetwork();
-
-              // Persist to Supabase project
-              if (!isLocalMode) {
-                const projectStore = useProjectStore.getState();
-                let projectId = projectStore.currentProjectId;
-
-                // Auto-create project if we came from "+ New Discovery" without one
-                if (!projectId) {
-                  const name = scaffold?.name ?? bundle?.scaffold?.name ?? "Untitled Discovery";
-                  const module = scaffold?.elements?.valueStreams
-                    ? (Object.keys(scaffold.elements.valueStreams).length > 2 ? "Transformation" : "Sales Discovery")
-                    : "Sales Discovery";
-                  projectId = await projectStore.createProject(name, module, {});
-                }
-
-                if (projectId) {
-                  const saveable: Record<string, unknown> = {
-                    bundleVersion: "2.0",
-                    updatedAt: new Date().toISOString(),
-                    scaffold: useCanvasStore.getState().scaffoldData,
-                    heatmaps: Array.from(useCanvasStore.getState().heatmapsByVs.values()),
-                  };
-                  if (cardRegistry) saveable.cardRegistry = cardRegistry;
-                  const cr = useCanvasStore.getState().cardRegistry;
-                  if (cr && !cardRegistry) saveable.cardRegistry = cr;
-                  await projectStore.saveProject(projectId, saveable);
-                }
-              }
+              await autoSaveToProject({ cardRegistry });
             }}
           />
         </div>

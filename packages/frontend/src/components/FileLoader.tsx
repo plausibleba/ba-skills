@@ -11,6 +11,7 @@ import {
   normaliseValueStreamArtifact,
   mergeScaffolds,
 } from "../utils/bundle-import.ts";
+import { autoSaveToProject } from "../utils/auto-save.ts";
 import PURETEC_CARDS from "../../fixtures/cards/puretec-cards.json";
 
 /** Labels for user feedback on individual artifact imports */
@@ -113,8 +114,12 @@ export function FileLoader() {
               error:
                 "Unrecognized JSON file. Expected a scaffold, heatmap, VCC bundle, or PlausibleBA artifact (concept model, capability map, or value stream).",
             });
+            return; // Don't auto-save unrecognized files
           }
         }
+
+        // Auto-create project and save to Supabase
+        await autoSaveToProject();
       } catch (err) {
         console.error("[FileLoader] load error:", err);
         useCanvasStore.setState({
