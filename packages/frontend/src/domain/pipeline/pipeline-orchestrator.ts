@@ -19,18 +19,28 @@ import { buildPass1Prompt } from "./prompts/pass-a1-value-streams";
 import { buildPass2Prompt } from "./prompts/pass-a2-capability-mapping";
 
 // ── Post-Pass-B enrichment: inject capability hierarchy from DiscoveryIR ────
+// Pass B often renames capabilities from what Pass A2 proposed (e.g. "Manage Quote Requests" →
+// "Customer Relationship Management"). Exact name matching fails. Instead we:
+// 1. Add L1/L2 nodes from the hierarchy
+// 2. Try exact name match first for L3s
+// 3. Fall back: assign unmatched scaffold capabilities to their best-fit L2 domain
+//    based on the business objects and capability names
 function injectCapabilityHierarchy(scaffold: any, ir: DiscoveryIR): void {
   if (!scaffold?.elements?.capabilities || !ir.capabilityMap?.l1Areas?.length) return;
 
   const caps = scaffold.elements.capabilities as Record<string, any>;
 
-  // Build a lookup from capability name → existing cap id
+  // Build lookup from capability name → existing cap id (case-insensitive)
   const nameToId: Record<string, string> = {};
   for (const [id, cap] of Object.entries(caps)) {
-    nameToId[(cap as any).name?.toLowerCase()] = id;
+    if ((cap as any).name) nameToId[(cap as any).name.toLowerCase()] = id;
   }
 
-  // Walk the DiscoveryIR hierarchy and inject L1/L2 nodes + set level/parentId on L3s
+  // Track which scaffold caps get matched
+  const matched = new Set<string>();
+
+  // Phase 1: Add L1/L2 nodes and try exact name match for L3s
+  const l2Ids: string[] = [];
   for (const l1 of ir.capabilityMap.l1Areas) {
     const l1Id = makeId("cap_l1", l1.name);
     caps[l1Id] = {
@@ -44,6 +54,7 @@ function injectCapabilityHierarchy(scaffold: any, ir: DiscoveryIR): void {
         id: l2Id, name: l2.name, elementType: "Capability",
         level: 2, parentId: l1Id,
       };
+      l2Ids.push(l2Id);
 
       for (const l3 of l2.capabilities ?? []) {
         const existingId = nameToId[l3.name?.toLowerCase()];
@@ -51,14 +62,59 @@ function injectCapabilityHierarchy(scaffold: any, ir: DiscoveryIR): void {
           caps[existingId].level = 3;
           caps[existingId].parentId = l2Id;
           caps[existingId].businessObject = caps[existingId].businessObject ?? l3.businessObject;
+          matched.add(existingId);
+        } else {
+          // L3 from DiscoveryIR doesn't exist in scaffold — add it
+          const l3Id = makeId("cap", l3.name);
+          if (!caps[l3Id]) {
+            caps[l3Id] = {
+              id: l3Id, name: l3.name, elementType: "Capability",
+              level: 3, parentId: l2Id, businessObject: l3.businessObject ?? "",
+              description: l3.description ?? "",
+            };
+          } else {
+            caps[l3Id].level = 3;
+            caps[l3Id].parentId = l2Id;
+          }
+          matched.add(l3Id);
         }
       }
     }
   }
+
+  // Phase 2: Assign unmatched scaffold capabilities to best-fit L2 domains
+  // Use keyword overlap between capability name and L2 domain name
+  const unmatchedIds = Object.keys(caps).filter(id => {
+    const c = caps[id];
+    return !matched.has(id) && !id.startsWith("cap_l1_") && !id.startsWith("cap_l2_")
+      && c.level !== 1 && c.level !== 2;
+  });
+
+  if (unmatchedIds.length > 0 && l2Ids.length > 0) {
+    for (const capId of unmatchedIds) {
+      const cap = caps[capId];
+      const capWords = (cap.name ?? "").toLowerCase().split(/\s+/);
+
+      // Score each L2 by word overlap
+      let bestL2 = l2Ids[0];
+      let bestScore = 0;
+      for (const l2Id of l2Ids) {
+        const l2Name = (caps[l2Id]?.name ?? "").toLowerCase();
+        const score = capWords.filter((w: string) => w.length > 3 && l2Name.includes(w)).length;
+        if (score > bestScore) { bestScore = score; bestL2 = l2Id; }
+      }
+
+      // Find the L1 parent of the best L2 to check Execution vs Governance
+      cap.level = 3;
+      cap.parentId = bestL2;
+    }
+  }
 }
 
-// ── Post-Pass-B enrichment: derive concepts from scaffold info objects ───────
-function deriveConceptsFromScaffold(scaffold: any): void {
+// ── Post-Pass-B enrichment: derive concepts from scaffold + DiscoveryIR ──────
+// Uses DiscoveryIR for Resources (tech) since scaffold often doesn't have them.
+// Selective about Records — only key business objects, not every IO.
+function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): void {
   if (!scaffold?.elements) return;
   const concepts: Record<string, any> = scaffold.elements.concepts ?? {};
 
@@ -72,47 +128,71 @@ function deriveConceptsFromScaffold(scaffold: any): void {
         id: cId, name: r.name, type: "Party",
         definition: r.description ?? `Stakeholder role: ${r.name}`,
         lifecycleStates: [], relatedCapabilityIds: [],
-        elementType: "Concept",
-        relationships: [],
+        elementType: "Concept", relationships: [],
       };
     }
   }
 
-  // Derive Record concepts from information objects
+  // Derive Record concepts — SELECTIVE: only IOs referenced by 2+ activities (key business objects)
+  // or those whose names suggest core records (Order, Invoice, Contract, Application, etc.)
   const infoObjects = scaffold.elements.informationObjects ?? {};
+  const activities = scaffold.elements.activities ?? {};
+  const ioRefCount: Record<string, number> = {};
+  for (const act of Object.values(activities)) {
+    for (const ioId of (act as any).informationObjectIds ?? []) {
+      ioRefCount[ioId] = (ioRefCount[ioId] ?? 0) + 1;
+    }
+  }
+  const RECORD_KEYWORDS = /order|invoice|contract|application|request|record|report|plan|schedule|profile|account|claim|ticket|brief|quote|specification|model/i;
   for (const [id, obj] of Object.entries(infoObjects)) {
     const o = obj as any;
+    const isKeyRecord = (ioRefCount[id] ?? 0) >= 2 || RECORD_KEYWORDS.test(o.name ?? "");
+    if (!isKeyRecord) continue;
     const cId = `concept_record_${id}`;
     if (!concepts[cId]) {
       concepts[cId] = {
         id: cId, name: o.name, type: "Record",
-        definition: o.description ?? `Information object: ${o.name}`,
+        definition: o.description ?? `Business record: ${o.name}`,
         lifecycleStates: [], relatedCapabilityIds: [],
-        elementType: "Concept",
-        relationships: [],
+        elementType: "Concept", relationships: [],
       };
     }
   }
 
-  // Derive Resource concepts from technology applications
-  const techApps = scaffold.elements.technologyApplications ?? {};
-  for (const [id, app] of Object.entries(techApps)) {
-    const a = app as any;
-    const cId = `concept_resource_${id}`;
-    if (!concepts[cId]) {
-      concepts[cId] = {
-        id: cId, name: a.name, type: "Resource",
-        definition: a.description ?? `Technology application: ${a.name}`,
-        lifecycleStates: [], relatedCapabilityIds: [],
-        elementType: "Concept",
-        relationships: [],
-      };
+  // Derive Resource concepts from DiscoveryIR tech (scaffold rarely has technologyApplications)
+  if (ir?.tech?.length) {
+    for (const t of ir.tech) {
+      if (!t.name) continue;
+      const tId = makeId("tech", t.name);
+      const cId = `concept_resource_${tId}`;
+      if (!concepts[cId]) {
+        concepts[cId] = {
+          id: cId, name: t.name, type: "Resource",
+          definition: `Technology: ${t.name} (${t.type ?? "System"})`,
+          lifecycleStates: [], relatedCapabilityIds: [],
+          elementType: "Concept", relationships: [],
+        };
+      }
+    }
+  }
+  // Also check scaffold technologyApplications (in case they exist)
+  for (const key of ["technologyApplications", "technologyApps"]) {
+    const techApps = scaffold.elements[key] ?? {};
+    for (const [id, app] of Object.entries(techApps)) {
+      const a = app as any;
+      const cId = `concept_resource_${id}`;
+      if (!concepts[cId]) {
+        concepts[cId] = {
+          id: cId, name: a.name, type: "Resource",
+          definition: a.description ?? `Technology: ${a.name}`,
+          lifecycleStates: [], relatedCapabilityIds: [],
+          elementType: "Concept", relationships: [],
+        };
+      }
     }
   }
 
-  // Build relationships: Party → Record (roles use info objects)
-  // Walk activities to find role→infoObject connections
-  const activities = scaffold.elements.activities ?? {};
+  // Build relationships from PPIT: Party --creates/uses--> Record, Party --uses--> Resource
   for (const act of Object.values(activities)) {
     const a = act as any;
     const ppit = a.capabilityPPIT;
@@ -120,17 +200,23 @@ function deriveConceptsFromScaffold(scaffold: any): void {
     for (const decomp of Object.values(ppit) as any[]) {
       const roleIds = decomp?.roleIds ?? [];
       const infoIds = decomp?.informationObjectIds ?? [];
+      const techIds = decomp?.technologyAppIds ?? [];
       for (const rId of roleIds) {
         const partyCId = `concept_party_${rId}`;
-        if (concepts[partyCId]) {
-          for (const iId of infoIds) {
-            const recordCId = `concept_record_${iId}`;
-            if (concepts[recordCId]) {
-              const existing = concepts[partyCId].relationships as any[];
-              if (!existing.some((r: any) => r.targetId === recordCId)) {
-                existing.push({ targetId: recordCId, type: "relates-to", label: "uses" });
-              }
-            }
+        if (!concepts[partyCId]) continue;
+        const rels = concepts[partyCId].relationships as any[];
+        // Party → Record relationships
+        for (const iId of infoIds) {
+          const recordCId = `concept_record_${iId}`;
+          if (concepts[recordCId] && !rels.some((r: any) => r.targetId === recordCId)) {
+            rels.push({ targetId: recordCId, type: "produces", label: "produces" });
+          }
+        }
+        // Party → Resource relationships
+        for (const tId of techIds) {
+          const resCId = `concept_resource_${tId}`;
+          if (concepts[resCId] && !rels.some((r: any) => r.targetId === resCId)) {
+            rels.push({ targetId: resCId, type: "uses", label: "uses" });
           }
         }
       }
@@ -262,7 +348,7 @@ export async function continuePipeline(
   // Inject L1/L2/L3 capability hierarchy from DiscoveryIR (lost during Pass B flattening)
   injectCapabilityHierarchy(scaffold, discoveryIR);
   // Derive Capsicum Triad concepts (Party/Record/Resource) from scaffold registries
-  deriveConceptsFromScaffold(scaffold);
+  deriveConceptsFromScaffold(scaffold, discoveryIR);
 
   // Store pain points on the scaffold for later friction assessment
   const ppSummary = discoveryIR.painPoints
