@@ -491,24 +491,27 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
       return lines.join("\n");
     }
 
-    // Word (.docx) — try dynamic import of mammoth, fall back to message
+    // Word (.docx) — dynamic import of mammoth
     if (ext === "docx") {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mammoth = await (Function('return import("mammoth")')() as Promise<any>);
+        const mammoth = await import("mammoth");
         const buf = await file.arrayBuffer();
         const result = await mammoth.extractRawText({ arrayBuffer: buf });
         return result.value;
-      } catch {
-        throw new Error("Word (.docx) support requires the mammoth library. Run: npm install mammoth");
+      } catch (e) {
+        console.error("DOCX parse error:", e);
+        throw new Error("Failed to parse .docx file. Check console for details.");
       }
     }
 
-    // PDF — dynamic import of pdfjs-dist (Vite handles the resolution)
+    // PDF — dynamic import of pdfjs-dist with CDN worker
     if (ext === "pdf") {
       try {
         const pdfjsLib = await import("pdfjs-dist");
-        pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+        // Use CDN worker matching installed pdfjs-dist major version
+        if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+        }
         const buf = await file.arrayBuffer();
         const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
         const pages: string[] = [];
