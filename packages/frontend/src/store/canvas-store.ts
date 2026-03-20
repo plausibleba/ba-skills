@@ -131,8 +131,39 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   loadScaffold: async (json: ScaffoldData) => {
     // Normalise pipeline-generated scaffolds: ensure every metric has a measures block
     // and elements.measures exists, so downstream validators don't crash on undefined.
+    // Auto-derive layoutZones from VS layoutZone values if not present
+    let derivedLayoutZones = (json as any).layoutZones;
+    if (!derivedLayoutZones) {
+      const zoneIds = new Set<string>();
+      for (const vs of Object.values(json.elements.valueStreams) as any[]) {
+        const z = vs.layoutZone ?? vs.zone;
+        if (z) zoneIds.add(z);
+      }
+      if (zoneIds.size > 0) {
+        const ZONE_LABELS: Record<string, string> = {
+          ecosystem: "Ecosystem (external-facing)",
+          knowledge: "Knowledge (internal-facing)",
+          "front-office": "Front Office",
+          "back-office": "Back Office",
+          strategic: "Strategic",
+          core: "Core",
+          enabling: "Enabling",
+          genesis: "Genesis",
+          custom: "Custom-built",
+          product: "Product",
+          commodity: "Commodity",
+        };
+        derivedLayoutZones = [...zoneIds].map((id, i) => ({
+          id,
+          label: ZONE_LABELS[id] ?? id.charAt(0).toUpperCase() + id.slice(1),
+          row: i,
+        }));
+      }
+    }
+
     const normalised = {
       ...json,
+      ...(derivedLayoutZones ? { layoutZones: derivedLayoutZones } : {}),
       elements: {
         ...json.elements,
         measures: json.elements.measures ?? {},
