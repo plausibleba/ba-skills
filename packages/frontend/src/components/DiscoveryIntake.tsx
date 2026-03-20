@@ -250,6 +250,7 @@ function ExtractionSummary({ meta, form }: { meta: FormState["extractionMeta"]; 
 // ─── Main component ──────────────────────────────────────────────────────────
 export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: any) => void }) {
   const [mode, setMode] = useState("freeform"); // "freeform" | "structured"
+  const [scope, setScope] = useState<"business" | "initiative">("business");
   const [transcript, setTranscript] = useState("");
   const [form, setForm] = useState(EMPTY_FORM);
   const [extracting, setExtracting] = useState(false);
@@ -715,18 +716,43 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
               className="rounded-xl border-2 border-dashed border-slate-200 bg-white p-8 text-center hover:border-slate-400 transition-colors"
             >
               <div className="text-2xl mb-3">📋</div>
-              <p className="text-sm font-medium text-slate-700 mb-1">Drop your transcript or notes</p>
-              <p className="text-xs text-slate-400 mb-2">Meeting notes · Call transcript · Email thread · Voice memo text</p>
+              <p className="text-sm font-medium text-slate-700 mb-1">
+                Describe the {scope === "business" ? "business or business unit" : "initiative"} you are building a model for
+              </p>
+              <p className="text-xs text-slate-400 mb-3">
+                Paste in any content that describes what you're modelling — meeting notes, call transcripts, strategy documents, process descriptions, or just a written summary.
+              </p>
+
+              {/* Scope toggle */}
+              <div className="flex items-center justify-center gap-1 mb-3">
+                <span className="text-[10px] text-slate-400 mr-1">Scope:</span>
+                {([["business", "Business"], ["initiative", "Initiative"]] as const).map(([val, label]) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setScope(val); }}
+                    className={`rounded-md px-3 py-1 text-[11px] font-medium transition-all ${
+                      scope === val
+                        ? "bg-slate-800 text-white"
+                        : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                className="mb-3 inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50 transition-colors"
+                className="mb-2 inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50 transition-colors"
               >
                 <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                 </svg>
-                Upload file (.txt, .md, .xlsx, .docx, .pdf, .csv)
+                Upload files (.txt, .md, .xlsx, .docx, .pdf, .csv)
               </button>
+              <p className="text-[10px] text-slate-400 italic mb-3">Providing just the right amount of content yields the best model. This is where the art lies.</p>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -741,9 +767,13 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
               />
               <textarea
                 className="w-full h-48 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-300 resize-none"
-                placeholder="Or paste here…
+                placeholder={scope === "business"
+                  ? `Or paste here…
 
-Example: 'We met with the head of tech at Acme Corp. They have 4000+ SKUs and recurring subscription revenue. Main problem is reps going into customer visits with no consolidated account brief — spending 3 days a week on admin. Their ERP and CRM don't talk to each other properly, 9-month overrun on the integration…'"
+Example: 'We met with the head of tech at Acme Corp. They have 4000+ SKUs and recurring subscription revenue. Main problem is reps going into customer visits with no consolidated account brief — spending 3 days a week on admin. Their ERP and CRM don't talk to each other properly, 9-month overrun on the integration…'`
+                  : `Or paste here…
+
+Example: 'We're launching a new customer onboarding programme. Currently takes 45 days from contract signing to first value. Three handoffs between sales, implementation and customer success — each one drops context. The implementation team has no visibility into what was promised during the sales cycle…'`}
                 value={transcript}
                 onChange={e => setTranscript(e.target.value)}
               />
