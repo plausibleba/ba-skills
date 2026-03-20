@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
+import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
+import { useProjectStore } from "../store/project-store.ts";
 
 type GuideState = "empty" | "network" | "stage-no-assessment" | "stage-assessed" | "stage-enriched";
 
@@ -17,40 +19,143 @@ function deriveGuideState(
   return "empty";
 }
 
-const GUIDE_CONTENT: Record<GuideState, {
+interface GuideContent {
   where: string;
   what: string;
   next: string[];
-}> = {
-  empty: {
-    where: "Welcome",
-    what: "No model loaded. Start by running a discovery intake from your notes, or load an existing VCC scaffold.",
-    next: ["Click '+ New Discovery' to paste discovery notes", "Or load a saved VCC Bundle JSON file"],
-  },
-  network: {
-    where: "Step 2 — Network View",
-    what: "You're looking at the value stream network — how your client's operating model connects end to end. Each node shows the stream name, stage count, and friction signal.",
-    next: ["Click any node to enter the Stage view for that stream", "Nodes with a red border have friction observations"],
-  },
-  "stage-no-assessment": {
-    where: "Step 3 — Stage View",
-    what: "You're looking at the stage-by-stage flow for this value stream, including entry/exit states, roles, and metrics. No friction assessment has been run yet.",
-    next: ["Click '▶ Run new' under Assess Friction to identify friction points", "Or load a previously saved assessment with '↑ Load previous'"],
-  },
-  "stage-assessed": {
-    where: "Step 3 — Friction Assessed",
-    what: "Friction observations have been loaded. Stages with observations are highlighted — the binding constraint stage is shown in red. Click any highlighted stage to open the Friction Panel.",
-    next: ["Click a highlighted stage to review friction observations and binding constraint", "Edit observations directly in the Friction Panel if needed", "When ready, click '▶ Run new' under Enrich Solutions to map technology features"],
-  },
-  "stage-enriched": {
-    where: "Step 4 — Solutions Enriched",
-    what: "Technology feature recommendations have been mapped to each friction observation. Click any highlighted stage and expand the Solutions section in the Friction Panel to review.",
-    next: ["Click a highlighted stage to open the Friction Panel", "Expand 'Solutions' under each observation to see feature recommendations", "Download the edited heatmap to save your assessment"],
-  },
-};
+}
+
+/** Build the guide content based on current state and active module features */
+function getGuideContent(
+  state: GuideState,
+  features: { friction: boolean; solutions: boolean; userStories: boolean; mvcCards: boolean },
+  moduleName: string | null,
+): GuideContent {
+  const moduleLabel = moduleName
+    ? ({
+        "sales-discovery": "Sales Discovery",
+        "board-diagnostic": "Board Diagnostic",
+        "transformation": "Transformation",
+        "mvc": "MVC Governance",
+      }[moduleName] ?? moduleName)
+    : null;
+
+  switch (state) {
+    case "empty":
+      return {
+        where: "Getting Started",
+        what: "You don't have a model loaded yet. You can create one from scratch by pasting in business documentation, or load an existing bundle you've previously saved.",
+        next: [
+          "Click 'New Project' to start a fresh operating model",
+          "Or use 'Quick Discovery' to jump straight in — your work saves automatically",
+          "You can also drag and drop a .json bundle file to load previous work",
+        ],
+      };
+
+    case "network":
+      return {
+        where: "Network View — Operating Model",
+        what: "This is your value stream network — a map of how the business operates end to end. Each node represents a value stream with its stages, roles, and capabilities.",
+        next: [
+          "Click any value stream node to drill into its stage-by-stage detail",
+          "Nodes with a red border have friction observations from a previous assessment",
+          ...(features.mvcCards
+            ? ["Look for Concept and Policy Card indicators on each value stream"]
+            : []),
+        ],
+      };
+
+    case "stage-no-assessment": {
+      const nextSteps = [
+        "Click '\u25B6 Run new' under Assess Friction to identify friction points across stages",
+        "Review the stages, capabilities, roles, and activities before assessing",
+      ];
+      if (features.mvcCards) {
+        nextSteps.push("Expand the Concept Cards or Policy Cards panels to view governance bindings for each stage");
+      }
+      return {
+        where: "Stage View" + (moduleLabel ? ` — ${moduleLabel}` : ""),
+        what: "You're looking at the stage-by-stage flow for this value stream. Each stage shows its entry and exit criteria, participating roles, capabilities, and metrics. No friction assessment has been run yet.",
+        next: nextSteps,
+      };
+    }
+
+    case "stage-assessed": {
+      const nextSteps = [
+        "Click any highlighted stage to open the Friction Panel and review observations",
+        "The binding constraint stage (the biggest bottleneck) is highlighted in red",
+      ];
+      if (features.solutions) {
+        nextSteps.push("When ready, click '\u25B6 Run new' under Enrich Solutions to map technology features to each friction point");
+      }
+      if (features.userStories) {
+        nextSteps.push("Generate User Stories from friction observations for transformation planning");
+      }
+      if (features.mvcCards) {
+        nextSteps.push("Review how Concept and Policy Cards relate to the friction points identified");
+      }
+      return {
+        where: "Friction Assessed" + (moduleLabel ? ` — ${moduleLabel}` : ""),
+        what: "Friction observations have been loaded. Highlighted stages have identified friction — the binding constraint (the most critical bottleneck) is shown in red. Click any highlighted stage to review the detail.",
+        next: nextSteps,
+      };
+    }
+
+    case "stage-enriched": {
+      const nextSteps: string[] = [];
+      if (features.solutions) {
+        nextSteps.push("Expand 'Solutions' under each friction observation to see recommended technology features");
+      }
+      if (features.userStories) {
+        nextSteps.push("Review generated User Stories and export to Jira or CSV");
+      }
+      if (features.mvcCards) {
+        nextSteps.push("Review how Concept and Policy Cards align with the enriched friction points and solutions");
+      }
+      nextSteps.push("Use the download button to save your complete assessment as a bundle");
+      return {
+        where: "Enriched" + (moduleLabel ? ` — ${moduleLabel}` : ""),
+        what: features.solutions
+          ? "Technology feature recommendations have been mapped to each friction observation. Click any highlighted stage and expand the relevant section in the Friction Panel to review."
+          : features.userStories
+            ? "User stories have been generated from friction observations. Click any highlighted stage to review and export."
+            : "Your assessment is complete. Click any highlighted stage to review the full analysis.",
+        next: nextSteps,
+      };
+    }
+
+    default:
+      return {
+        where: "Getting Started",
+        what: "Choose an option above to begin.",
+        next: [],
+      };
+  }
+}
+
+/** Progress step labels, adapted to the active module */
+function getProgressSteps(features: { solutions: boolean; userStories: boolean; mvcCards: boolean }) {
+  const steps: { label: string; state: GuideState }[] = [
+    { label: "Discovery", state: "empty" },
+    { label: "Network", state: "network" },
+    { label: "Friction", state: "stage-assessed" },
+  ];
+  if (features.solutions) {
+    steps.push({ label: "Solutions", state: "stage-enriched" });
+  } else if (features.userStories) {
+    steps.push({ label: "Stories", state: "stage-enriched" });
+  } else if (features.mvcCards) {
+    steps.push({ label: "Cards", state: "stage-enriched" });
+  } else {
+    steps.push({ label: "Complete", state: "stage-enriched" });
+  }
+  return steps;
+}
 
 export function UserGuidePanel() {
   const { viewMode, scaffoldData, heatmapsByVs, canvasViewModel, enrichVersion } = useCanvasStore();
+  const features = useModuleFeatures();
+  const currentModule = useProjectStore((s) => s.currentModule);
   const [collapsed, setCollapsed] = useState(false);
 
   const isLoaded = !!scaffoldData;
@@ -61,7 +166,8 @@ export function UserGuidePanel() {
   const isEnriched = (enrichVersion ?? 0) > 0;
 
   const state = deriveGuideState(viewMode, isLoaded, hasAssessment, isEnriched);
-  const content = GUIDE_CONTENT[state];
+  const content = getGuideContent(state, features, currentModule);
+  const progressSteps = getProgressSteps(features);
 
   return (
     <div className="fixed bottom-4 left-4 z-40 w-64 rounded-xl border border-gray-200 bg-white shadow-lg">
@@ -75,7 +181,7 @@ export function UserGuidePanel() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">User Guide</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Guide</span>
         </div>
         <svg
           className={`h-3 w-3 text-gray-400 transition-transform ${collapsed ? "" : "rotate-180"}`}
@@ -90,7 +196,7 @@ export function UserGuidePanel() {
           {/* Where you are */}
           <div>
             <p className="text-[9px] font-semibold uppercase tracking-wider text-vcc-500 mb-1">
-              📍 Where you are
+              Where you are
             </p>
             <p className="text-[11px] font-semibold text-vcc-800">{content.where}</p>
           </div>
@@ -98,37 +204,41 @@ export function UserGuidePanel() {
           {/* What you're looking at */}
           <div>
             <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
-              👁 What you're looking at
+              What you see
             </p>
             <p className="text-[11px] leading-relaxed text-gray-600">{content.what}</p>
           </div>
 
           {/* Next steps */}
-          <div>
-            <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
-              ▶ Next steps
-            </p>
-            <ul className="space-y-1.5">
-              {content.next.map((step, i) => (
-                <li key={i} className="flex items-start gap-1.5">
-                  <span className="mt-0.5 flex-shrink-0 text-[9px] font-bold text-vcc-400">→</span>
-                  <span className="text-[11px] leading-relaxed text-gray-600">{step}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {content.next.length > 0 && (
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+                Next steps
+              </p>
+              <ul className="space-y-1.5">
+                {content.next.map((step, i) => (
+                  <li key={i} className="flex items-start gap-1.5">
+                    <span className="mt-0.5 flex-shrink-0 text-[9px] font-bold text-vcc-400">{"\u2192"}</span>
+                    <span className="text-[11px] leading-relaxed text-gray-600">{step}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Step progress dots */}
           <div className="flex items-center justify-center gap-1.5 pt-1 border-t border-gray-100">
-            {["Discovery", "Network", "Friction", "Solutions"].map((label, i) => {
-              const stepStates: GuideState[] = ["empty", "network", "stage-assessed", "stage-enriched"];
-              const isActive = state === stepStates[i];
-              const isPast = stepStates.indexOf(state) > i;
+            {progressSteps.map(({ label, state: stepState }, i) => {
+              const allStates: GuideState[] = progressSteps.map(s => s.state);
+              const currentIdx = allStates.indexOf(state) !== -1 ? allStates.indexOf(state) : -1;
+              const isActive = state === stepState ||
+                (state === "stage-no-assessment" && stepState === "stage-assessed");
+              const isPast = currentIdx > i;
               return (
                 <div key={label} className="flex flex-col items-center gap-0.5">
                   <div className={`h-1.5 w-1.5 rounded-full transition-colors
                     ${isPast ? "bg-emerald-400" : isActive ? "bg-vcc-500" : "bg-gray-200"}`} />
-                  <span className={`text-[8px] ${isActive ? "text-vcc-500 font-semibold" : "text-gray-300"}`}>
+                  <span className={`text-[8px] ${isActive ? "text-vcc-500 font-semibold" : isPast ? "text-emerald-500" : "text-gray-300"}`}>
                     {label}
                   </span>
                 </div>

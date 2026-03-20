@@ -21,7 +21,7 @@ const ARTIFACT_LABELS: Record<string, string> = {
   "value-stream": "Value Stream",
 };
 
-export function FileLoader() {
+export function FileLoader({ compact = false }: { compact?: boolean }) {
   const { loadScaffold, loadHeatmap, loading, error, scaffoldData } =
     useCanvasStore();
   const [dragOver, setDragOver] = useState(false);
@@ -182,6 +182,42 @@ export function FileLoader() {
   // Don't completely hide when scaffold is loaded — allow adding more artifacts
   const hasScaffold = !!scaffoldData && !loading && !error;
 
+  // ── Compact mode: button-style drop zone for inline use (e.g. empty state grid) ──
+  if (compact) {
+    return (
+      <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onClick={handleClick}
+        className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-3 text-sm font-medium transition-colors ${
+          dragOver
+            ? "border-vcc-500 bg-vcc-50 text-vcc-700"
+            : "border-gray-300 text-gray-700 hover:border-vcc-400 hover:bg-gray-50"
+        }`}
+      >
+        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+          />
+        </svg>
+        {loading ? "Importing..." : "Import File"}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          multiple
+          onChange={handleInputChange}
+          className="hidden"
+        />
+      </div>
+    );
+  }
+
+  // ── Full mode: large drop zone with status feedback ──
   return (
     <div className="flex flex-col items-center justify-center gap-4 p-8">
       <div

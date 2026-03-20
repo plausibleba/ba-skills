@@ -139,19 +139,6 @@ export function ProjectList() {
     return true;
   };
 
-  // Import bundle from standalone card (auto-detect module)
-  const handleImportToNewProject = async (file: File) => {
-    try {
-      const json = JSON.parse(await file.text());
-      if (await loadBundleIntoCanvas(json)) {
-        await autoSaveToProject({ cardRegistry: json.cardRegistry });
-      }
-    } catch (err) {
-      console.error("[ImportBundle] parse error:", err);
-      alert("Failed to parse JSON file.");
-    }
-  };
-
   // Import bundle from New Project dialog (use user-selected module and name)
   const handleImportWithModule = async (file: File, module: ProjectModule, projectName: string) => {
     try {
@@ -197,23 +184,12 @@ export function ProjectList() {
             {user?.email ?? "Local mode"}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowNewProject(true)}
-            className="flex items-center gap-1.5 rounded-lg bg-vcc-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-vcc-700"
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            New Project
-          </button>
-          <button
-            onClick={signOut}
-            className="rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-500 hover:bg-gray-50"
-          >
-            Sign out
-          </button>
-        </div>
+        <button
+          onClick={signOut}
+          className="rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-500 hover:bg-gray-50"
+        >
+          Sign out
+        </button>
       </div>
 
       {/* New project modal */}
@@ -235,7 +211,7 @@ export function ProjectList() {
             </div>
 
             <div className="mb-4">
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">Module (D-111)</label>
+              <label className="mb-1.5 block text-xs font-medium text-gray-700">Module</label>
               <div className="grid grid-cols-3 gap-2">
                 {(Object.keys(MODULE_INFO) as ProjectModule[]).map((mod) => {
                   const info = MODULE_INFO[mod];
@@ -312,32 +288,51 @@ export function ProjectList() {
         {loading ? (
           <div className="text-center text-sm text-gray-400">Loading projects...</div>
         ) : projects.length === 0 ? (
-          <div className="mx-auto max-w-md py-12 text-center">
-            <div className="mb-4 flex justify-center">
+          <div className="mx-auto max-w-2xl py-12">
+            <div className="mb-6 flex justify-center">
               <div className="rounded-full bg-gray-100 p-4">
                 <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                 </svg>
               </div>
             </div>
-            <h3 className="mb-1 text-sm font-semibold text-gray-900">No projects yet</h3>
-            <p className="mb-4 text-xs text-gray-500">Create a new project to get started, or run a quick discovery.</p>
-            <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={() => setShowNewProject(true)}
-                className="rounded-lg bg-vcc-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-vcc-700"
-              >
-                New Project
-              </button>
-              <span className="text-xs text-gray-400">or</span>
-              <button
-                onClick={handleQuickDiscovery}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                Quick Discovery
-              </button>
-              <span className="text-xs text-gray-400">or</span>
-              <FileLoader />
+            <h3 className="mb-1 text-center text-sm font-semibold text-gray-900">No projects yet</h3>
+            <p className="mb-8 text-center text-xs text-gray-500">Choose how you'd like to get started.</p>
+
+            <div className="grid grid-cols-3 gap-6">
+              {/* New Project */}
+              <div className="flex flex-col items-center text-center">
+                <button
+                  onClick={() => setShowNewProject(true)}
+                  className="mb-3 w-full rounded-lg bg-vcc-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-vcc-700 transition-colors"
+                >
+                  New Project
+                </button>
+                <p className="text-xs leading-relaxed text-gray-500">
+                  Start from scratch. Describe a business and let AI build the operating model for you.
+                </p>
+              </div>
+
+              {/* Quick Discovery */}
+              <div className="flex flex-col items-center text-center">
+                <button
+                  onClick={handleQuickDiscovery}
+                  className="mb-3 w-full rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Quick Discovery
+                </button>
+                <p className="text-xs leading-relaxed text-gray-500">
+                  Jump straight in without creating a project. Your work will be saved automatically.
+                </p>
+              </div>
+
+              {/* Drop Zone */}
+              <div className="flex flex-col items-center text-center">
+                <FileLoader compact />
+                <p className="mt-3 text-xs leading-relaxed text-gray-500">
+                  Import a VCC Bundle, PlausibleBA Bundle, or individual artifacts (.json).
+                </p>
+              </div>
             </div>
           </div>
         ) : (
