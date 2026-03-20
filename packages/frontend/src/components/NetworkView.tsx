@@ -1,9 +1,115 @@
 // @ts-nocheck
-import { useMemo, useState, useRef, useCallback } from "react";
+import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { useThemeStore } from "../store/theme-store.ts";
 import { tv } from "../theme.ts";
 import type { NetworkNode, NetworkEdge, HeatmapData } from "../types.ts";
+
+/* ── VS Editor Modal ──────────────────────────────────────────────── */
+
+function VSEditorModal({
+  vsId,
+  scaffoldData,
+  onClose,
+}: {
+  vsId: string;
+  scaffoldData: any;
+  onClose: () => void;
+}) {
+  const vs = scaffoldData.elements.valueStreams[vsId] as Record<string, any>;
+  const [name, setName] = useState(vs?.name ?? "");
+  const [description, setDescription] = useState(vs?.description ?? "");
+  const [layoutZone, setLayoutZone] = useState(vs?.layoutZone ?? "");
+  const [stakeholder, setStakeholder] = useState(vs?.accountableStakeholder ?? "");
+
+  const layoutZones = (scaffoldData.layoutZones as Array<{ id: string; label: string }>) ?? [];
+  const roles = Object.entries(scaffoldData.elements.roles ?? {}) as [string, { name: string }][];
+
+  const handleSave = () => {
+    const updatedVS = { ...vs, name, description, layoutZone, accountableStakeholder: stakeholder };
+    const updatedScaffold = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        valueStreams: {
+          ...scaffoldData.elements.valueStreams,
+          [vsId]: updatedVS,
+        },
+      },
+    };
+    // Update the scaffold in the canvas store — triggers re-render
+    useCanvasStore.getState().loadScaffold(updatedScaffold);
+    onClose();
+  };
+
+  const inputCls = "w-full rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+      <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
+          <h3 className="text-sm font-semibold text-slate-800">Edit Value Stream</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-lg leading-none">&times;</button>
+        </div>
+        <div className="space-y-3 px-5 py-4">
+          <div>
+            <label className="mb-1 block text-[11px] font-semibold text-slate-500">Name</label>
+            <input className={inputCls} value={name} onChange={e => setName(e.target.value)} />
+          </div>
+          <div>
+            <label className="mb-1 block text-[11px] font-semibold text-slate-500">Description</label>
+            <textarea className={`${inputCls} resize-none`} rows={3} value={description} onChange={e => setDescription(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-[11px] font-semibold text-slate-500">Layer</label>
+              {layoutZones.length > 0 ? (
+                <select className={inputCls} value={layoutZone} onChange={e => setLayoutZone(e.target.value)}>
+                  {layoutZones.map((z: any) => (
+                    <option key={z.id} value={z.id}>{z.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <input className={inputCls} value={layoutZone} onChange={e => setLayoutZone(e.target.value)} />
+              )}
+            </div>
+            <div>
+              <label className="mb-1 block text-[11px] font-semibold text-slate-500">Accountable Stakeholder</label>
+              {roles.length > 0 ? (
+                <select className={inputCls} value={stakeholder} onChange={e => setStakeholder(e.target.value)}>
+                  <option value="">— none —</option>
+                  {roles.map(([id, r]) => (
+                    <option key={id} value={id}>{r.name}</option>
+                  ))}
+                </select>
+              ) : (
+                <input className={inputCls} value={stakeholder} onChange={e => setStakeholder(e.target.value)} />
+              )}
+            </div>
+          </div>
+          <div>
+            <label className="mb-1 block text-[11px] font-semibold text-slate-500">Stages</label>
+            <div className="flex flex-wrap gap-1">
+              {(vs?.activityIds ?? []).map((actId: string) => {
+                const act = scaffoldData.elements.activities?.[actId];
+                return (
+                  <span key={actId} className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-600">
+                    {act?.name ?? actId}
+                  </span>
+                );
+              })}
+            </div>
+            <p className="mt-1 text-[10px] text-slate-400">Stage editing coming soon — use the Stage View for now.</p>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 border-t border-slate-100 px-5 py-3">
+          <button onClick={onClose} className="rounded-md px-3 py-1.5 text-xs text-slate-500 hover:bg-slate-50">Cancel</button>
+          <button onClick={handleSave} className="rounded-md bg-slate-800 px-4 py-1.5 text-xs font-medium text-white hover:bg-slate-700">Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ── Layout Constants ──────────────────────────────────────────────── */
 
@@ -245,6 +351,7 @@ function NetworkNodeCard({
   onHover,
   onLeave,
   onClick,
+  onEdit,
   couplingCount = 0,
 }: {
   node: NetworkNode;
@@ -253,6 +360,7 @@ function NetworkNodeCard({
   onHover: () => void;
   onLeave: () => void;
   onClick: () => void;
+  onEdit?: () => void;
   couplingCount?: number;
 }) {
 
@@ -305,12 +413,25 @@ function NetworkNodeCard({
         }`}
         style={{ ...borderStyle, ...bgStyle, fontFamily: "'DM Sans', system-ui, sans-serif" }}
       >
-        {/* Heat badge — top right, quiet */}
-        {frictionLevel && (
-          <span className="absolute right-3 top-3 rounded-full px-2 py-0.5 text-[9px] font-semibold" style={badgeStyle}>
-            {frictionLevel}
-          </span>
-        )}
+        {/* Edit pencil + Heat badge — top right */}
+        <div className="absolute right-3 top-3 flex items-center gap-1.5">
+          {onEdit && (
+            <button
+              onClick={e => { e.stopPropagation(); onEdit(); }}
+              className="rounded-full p-1 text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              title="Edit value stream properties"
+            >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
+          )}
+          {frictionLevel && (
+            <span className="rounded-full px-2 py-0.5 text-[9px] font-semibold" style={badgeStyle}>
+              {frictionLevel}
+            </span>
+          )}
+        </div>
 
         {/* Title — the hero */}
         <div>
@@ -442,6 +563,8 @@ export function NetworkView() {
 
   const isDark = useThemeStore((s) => s.mode) === "dark";
   const [hoveredVsId, setHoveredVsId] = useState<string | null>(null);
+  const [editingVsId, setEditingVsId] = useState<string | null>(null);
+  const [viewTab, setViewTab] = useState<"cards" | "graph">("cards");
   const heatmapInputRef = useRef<HTMLInputElement>(null);
   const { positions, canvasWidth, canvasHeight } = useNodePositions(networkNodes);
 
@@ -606,148 +729,305 @@ export function NetworkView() {
         </div>
       </div>
 
-      {/* Network canvas — scrollable in both directions */}
-      <div className="flex-1 overflow-auto rounded-xl mx-5 mb-5" style={{ background: tv.bgCard, border: `1px solid ${tv.borderSubtle}` }}>
-        <svg
-          width={Math.max(canvasWidth, 800)}
-          height={Math.max(canvasHeight, 400)}
-          style={{ minWidth: canvasWidth, minHeight: canvasHeight, display: "block", margin: "0 auto" }}
-        >
-          {/* Arrow markers */}
-          <defs>
-            <marker
-              id="arrowForward"
-              viewBox="0 0 10 7"
-              refX="10"
-              refY="3.5"
-              markerWidth="8"
-              markerHeight="6"
-              orient="auto"
+      {/* View toggle */}
+      <div className="flex items-center gap-2 px-5 pb-3">
+        <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 w-fit">
+          {([["cards", "Cards"], ["graph", "Graph"]] as const).map(([tab, label]) => (
+            <button
+              key={tab}
+              onClick={() => setViewTab(tab)}
+              className={`rounded-md px-3 py-1 text-[11px] font-medium transition-all ${
+                viewTab === tab ? "bg-slate-800 text-white" : "text-slate-500 hover:text-slate-700"
+              }`}
             >
-              <polygon points="0 0, 10 3.5, 0 7" fill="#4a9eda" opacity={0.6} />
-            </marker>
-            <marker
-              id="arrowFeedback"
-              viewBox="0 0 10 7"
-              refX="10"
-              refY="3.5"
-              markerWidth="8"
-              markerHeight="6"
-              orient="auto"
-            >
-              <polygon points="0 0, 10 3.5, 0 7" fill="#4a9eda" opacity={0.3} />
-            </marker>
-          </defs>
-
-          {/* Zone containers — dashed rectangles with labels */}
-          {scaffoldData.layoutZones && (scaffoldData.layoutZones as Array<{ id: string; label: string; row: number }>).map((zone) => {
-            const zoneNodes = networkNodes.filter((n) => {
-              const vs = scaffoldData.elements.valueStreams[n.vsId] as Record<string, unknown>;
-              return vs?.layoutZone === zone.id;
-            });
-            if (zoneNodes.length === 0) return null;
-
-            const zonePositions = zoneNodes.map((n) => positions.get(n.vsId)).filter(Boolean) as { x: number; y: number }[];
-            if (zonePositions.length === 0) return null;
-
-            const ZONE_PAD = 24;
-            const ZONE_LABEL_H = 28;
-            const minX = Math.min(...zonePositions.map((p) => p.x)) - ZONE_PAD;
-            const maxX = Math.max(...zonePositions.map((p) => p.x)) + NODE_WIDTH + ZONE_PAD;
-            // For row 0 (top zone): label above, so extend minY up for label space
-            // For row > 0 (lower zones): label below, no need to extend minY
-            const labelAbove = zone.row === 0;
-            const minY = Math.min(...zonePositions.map((p) => p.y)) - ZONE_PAD - (labelAbove ? ZONE_LABEL_H : 0);
-            const maxY = Math.max(...zonePositions.map((p) => p.y)) + NODE_HEIGHT + ZONE_PAD;
-
-            // Label position: above box for top zone, below box for lower zones
-            const labelX = minX + (maxX - minX) / 2;
-            const labelY = labelAbove ? minY - 8 : maxY + 20;
-
-            return (
-              <g key={zone.id}>
-                <rect
-                  x={minX}
-                  y={minY}
-                  width={maxX - minX}
-                  height={maxY - minY}
-                  rx={12}
-                  fill="none"
-                  stroke={tv.textDim}
-                  strokeWidth={1.5}
-                  strokeDasharray="8 4"
-                  opacity={0.5}
-                />
-                <text
-                  x={labelX}
-                  y={labelY}
-                  textAnchor="middle"
-                  fill={tv.textDim}
-                  fontSize={13}
-                  fontWeight={600}
-                  letterSpacing={0.5}
-                >
-                  {zone.label}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Edges — solid for production/dependency, dashed for influence/feedback */}
-          {networkForwardEdges.map((edge) => {
-            // Dashed if source is ecosystem and target is knowledge (influence/feedback)
-            const srcVs = scaffoldData.elements.valueStreams[edge.sourceVsId] as Record<string, unknown>;
-            const tgtVs = scaffoldData.elements.valueStreams[edge.targetVsId] as Record<string, unknown>;
-            const isDashed = srcVs?.layoutZone === "ecosystem" && tgtVs?.layoutZone === "knowledge";
-            return (
-              <ForwardEdge
-                key={`${edge.sourceVsId}-${edge.targetVsId}`}
-                edge={edge}
-                positions={positions}
-                isDashed={isDashed}
-              />
-            );
-          })}
-
-          {/* Legacy feedback edges (only used in non-zone DAG mode) */}
-          {networkFeedbackEdges.map((edge) => (
-            <ForwardEdge
-              key={`fb-${edge.sourceVsId}-${edge.targetVsId}`}
-              edge={edge}
-              positions={positions}
-              isDashed={true}
-            />
+              {label}
+            </button>
           ))}
-
-          {/* Nodes */}
-          {networkNodes.map((node) => {
-            const pos = positions.get(node.vsId);
-            if (!pos) return null;
-            return (
-              <NetworkNodeCard
-                key={node.vsId}
-                node={node}
-                position={pos}
-                isHovered={hoveredVsId === node.vsId}
-                onHover={() => setHoveredVsId(node.vsId)}
-                onLeave={() => setHoveredVsId(null)}
-                onClick={() => selectVs(node.vsId)}
-                couplingCount={couplingByVs.get(node.vsId) ?? 0}
-              />
-            );
-          })}
-
-          {/* Tooltip */}
-          {hoveredNode && hoveredPos && (
-            <NodeTooltip
-              node={hoveredNode}
-              position={hoveredPos}
-              canvasHeight={canvasHeight}
-              couplingCount={couplingByVs.get(hoveredNode.vsId) ?? 0}
-            />
-          )}
-        </svg>
+        </div>
       </div>
+
+      {/* VS Editor Modal */}
+      {editingVsId && scaffoldData && (
+        <VSEditorModal vsId={editingVsId} scaffoldData={scaffoldData} onClose={() => setEditingVsId(null)} />
+      )}
+
+      {/* ── Cards View ── */}
+      {viewTab === "cards" && (
+        <div className="flex-1 overflow-auto rounded-xl mx-5 mb-5" style={{ background: tv.bgCard, border: `1px solid ${tv.borderSubtle}` }}>
+          <svg
+            width={Math.max(canvasWidth, 800)}
+            height={Math.max(canvasHeight, 400)}
+            style={{ minWidth: canvasWidth, minHeight: canvasHeight, display: "block", margin: "0 auto" }}
+          >
+            {/* Arrow markers */}
+            <defs>
+              <marker id="arrowForward" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="8" markerHeight="6" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#4a9eda" opacity={0.6} />
+              </marker>
+              <marker id="arrowFeedback" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="8" markerHeight="6" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#4a9eda" opacity={0.3} />
+              </marker>
+            </defs>
+
+            {/* Zone containers — dashed rectangles with labels */}
+            {scaffoldData.layoutZones && (scaffoldData.layoutZones as Array<{ id: string; label: string; row: number }>).map((zone) => {
+              const zoneNodes = networkNodes.filter((n) => {
+                const vs = scaffoldData.elements.valueStreams[n.vsId] as Record<string, unknown>;
+                return vs?.layoutZone === zone.id;
+              });
+              if (zoneNodes.length === 0) return null;
+
+              const zonePositions = zoneNodes.map((n) => positions.get(n.vsId)).filter(Boolean) as { x: number; y: number }[];
+              if (zonePositions.length === 0) return null;
+
+              const ZONE_PAD = 24;
+              const ZONE_LABEL_H = 28;
+              const minX = Math.min(...zonePositions.map((p) => p.x)) - ZONE_PAD;
+              const maxX = Math.max(...zonePositions.map((p) => p.x)) + NODE_WIDTH + ZONE_PAD;
+              const labelAbove = zone.row === 0;
+              const minY = Math.min(...zonePositions.map((p) => p.y)) - ZONE_PAD - (labelAbove ? ZONE_LABEL_H : 0);
+              const maxY = Math.max(...zonePositions.map((p) => p.y)) + NODE_HEIGHT + ZONE_PAD;
+              const labelX = minX + (maxX - minX) / 2;
+              const labelY = labelAbove ? minY - 8 : maxY + 20;
+
+              return (
+                <g key={zone.id}>
+                  <rect x={minX} y={minY} width={maxX - minX} height={maxY - minY} rx={12}
+                    fill="none" stroke={tv.textDim} strokeWidth={1.5} strokeDasharray="8 4" opacity={0.5} />
+                  <text x={labelX} y={labelY} textAnchor="middle" fill={tv.textDim} fontSize={13} fontWeight={600} letterSpacing={0.5}>
+                    {zone.label}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* Edges */}
+            {networkForwardEdges.map((edge) => {
+              const srcVs = scaffoldData.elements.valueStreams[edge.sourceVsId] as Record<string, unknown>;
+              const tgtVs = scaffoldData.elements.valueStreams[edge.targetVsId] as Record<string, unknown>;
+              const isDashed = srcVs?.layoutZone === "ecosystem" && tgtVs?.layoutZone === "knowledge";
+              return <ForwardEdge key={`${edge.sourceVsId}-${edge.targetVsId}`} edge={edge} positions={positions} isDashed={isDashed} />;
+            })}
+            {networkFeedbackEdges.map((edge) => (
+              <ForwardEdge key={`fb-${edge.sourceVsId}-${edge.targetVsId}`} edge={edge} positions={positions} isDashed={true} />
+            ))}
+
+            {/* Nodes */}
+            {networkNodes.map((node) => {
+              const pos = positions.get(node.vsId);
+              if (!pos) return null;
+              return (
+                <NetworkNodeCard key={node.vsId} node={node} position={pos}
+                  isHovered={hoveredVsId === node.vsId}
+                  onHover={() => setHoveredVsId(node.vsId)} onLeave={() => setHoveredVsId(null)}
+                  onClick={() => selectVs(node.vsId)} onEdit={() => setEditingVsId(node.vsId)}
+                  couplingCount={couplingByVs.get(node.vsId) ?? 0} />
+              );
+            })}
+
+            {/* Tooltip */}
+            {hoveredNode && hoveredPos && (
+              <NodeTooltip node={hoveredNode} position={hoveredPos} canvasHeight={canvasHeight}
+                couplingCount={couplingByVs.get(hoveredNode.vsId) ?? 0} />
+            )}
+          </svg>
+        </div>
+      )}
+
+      {/* ── Graph View — draggable force-like layout with coupling edges ── */}
+      {viewTab === "graph" && (
+        <NetworkGraphView
+          nodes={networkNodes}
+          forwardEdges={networkForwardEdges}
+          feedbackEdges={networkFeedbackEdges}
+          couplingByVs={couplingByVs}
+          topologyView={topologyView}
+          scaffoldData={scaffoldData}
+          onSelectVs={selectVs}
+          onEditVs={setEditingVsId}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ── Graph View Component ─────────────────────────────────────────── */
+
+function NetworkGraphView({
+  nodes,
+  forwardEdges,
+  feedbackEdges,
+  couplingByVs,
+  topologyView,
+  scaffoldData,
+  onSelectVs,
+  onEditVs,
+}: {
+  nodes: NetworkNode[];
+  forwardEdges: NetworkEdge[];
+  feedbackEdges: NetworkEdge[];
+  couplingByVs: Map<string, number>;
+  topologyView: any;
+  scaffoldData: any;
+  onSelectVs: (vsId: string) => void;
+  onEditVs: (vsId: string) => void;
+}) {
+  const isDark = useThemeStore((s) => s.mode) === "dark";
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+  // Position state — initialise in a circle layout
+  const [nodePositions, setNodePositions] = useState<Map<string, { x: number; y: number }>>(() => {
+    const map = new Map<string, { x: number; y: number }>();
+    const cx = 400, cy = 300, r = Math.min(250, nodes.length * 40);
+    nodes.forEach((n, i) => {
+      const angle = (2 * Math.PI * i) / nodes.length - Math.PI / 2;
+      map.set(n.vsId, { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) });
+    });
+    return map;
+  });
+
+  const GRAPH_NODE_R = 50;
+
+  // Build coupling edges (VS-to-VS) from topology view
+  const couplingEdges = useMemo(() => {
+    if (!topologyView || !scaffoldData) return [];
+    const edges: { from: string; to: string; basis: string }[] = [];
+    const seen = new Set<string>();
+
+    for (const edge of topologyView.edges) {
+      // Find which VS each activity belongs to
+      let fromVs = "", toVs = "";
+      for (const [vsId, vs] of Object.entries(scaffoldData.elements.valueStreams) as [string, any][]) {
+        if (vs.activityIds?.includes(edge.sourceActivityId)) fromVs = vsId;
+        if (vs.activityIds?.includes(edge.targetActivityId)) toVs = vsId;
+      }
+      if (fromVs && toVs && fromVs !== toVs) {
+        const key = [fromVs, toVs].sort().join("--");
+        if (!seen.has(key)) {
+          seen.add(key);
+          edges.push({ from: fromVs, to: toVs, basis: edge.basis ?? "coupled" });
+        }
+      }
+    }
+    return edges;
+  }, [topologyView, scaffoldData]);
+
+  // Drag handlers
+  const handleMouseDown = (vsId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    const pos = nodePositions.get(vsId);
+    if (!pos) return;
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setDragId(vsId);
+    setDragOffset({ x: e.clientX - rect.left - pos.x, y: e.clientY - rect.top - pos.y });
+  };
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!dragId || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setNodePositions(prev => {
+      const next = new Map(prev);
+      next.set(dragId, { x: e.clientX - rect.left - dragOffset.x, y: e.clientY - rect.top - dragOffset.y });
+      return next;
+    });
+  }, [dragId, dragOffset]);
+
+  const handleMouseUp = useCallback(() => setDragId(null), []);
+
+  useEffect(() => {
+    if (dragId) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      return () => { window.removeEventListener("mousemove", handleMouseMove); window.removeEventListener("mouseup", handleMouseUp); };
+    }
+  }, [dragId, handleMouseMove, handleMouseUp]);
+
+  return (
+    <div ref={containerRef} className="flex-1 overflow-auto rounded-xl mx-5 mb-5 relative"
+      style={{ background: tv.bgCard, border: `1px solid ${tv.borderSubtle}`, minHeight: 500 }}>
+      <svg width="100%" height="100%" style={{ position: "absolute", inset: 0 }}>
+        <defs>
+          <marker id="graphArrow" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="8" markerHeight="6" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#4a9eda" opacity={0.6} />
+          </marker>
+        </defs>
+
+        {/* Forward edges — blue */}
+        {forwardEdges.map((edge) => {
+          const from = nodePositions.get(edge.sourceVsId);
+          const to = nodePositions.get(edge.targetVsId);
+          if (!from || !to) return null;
+          return (
+            <line key={`fwd-${edge.sourceVsId}-${edge.targetVsId}`}
+              x1={from.x} y1={from.y} x2={to.x} y2={to.y}
+              stroke="#4a9eda" strokeWidth={2} opacity={0.5} markerEnd="url(#graphArrow)" />
+          );
+        })}
+
+        {/* Coupling edges — purple dashed */}
+        {couplingEdges.map((edge) => {
+          const from = nodePositions.get(edge.from);
+          const to = nodePositions.get(edge.to);
+          if (!from || !to) return null;
+          return (
+            <line key={`coupling-${edge.from}-${edge.to}`}
+              x1={from.x} y1={from.y} x2={to.x} y2={to.y}
+              stroke={isDark ? "#a5b4fc" : "#6366f1"} strokeWidth={1.5} strokeDasharray="6 3" opacity={0.6} />
+          );
+        })}
+      </svg>
+
+      {/* Draggable nodes */}
+      {nodes.map((node) => {
+        const pos = nodePositions.get(node.vsId);
+        if (!pos) return null;
+        const coupling = couplingByVs.get(node.vsId) ?? 0;
+        return (
+          <div
+            key={node.vsId}
+            className={`absolute select-none rounded-xl border shadow-sm p-3 cursor-grab active:cursor-grabbing transition-shadow hover:shadow-md ${
+              dragId === node.vsId ? "ring-2 ring-blue-400/50 z-10" : ""
+            }`}
+            style={{
+              left: pos.x - 80,
+              top: pos.y - 40,
+              width: 160,
+              background: tv.bgCard,
+              borderColor: node.hasBindingConstraint ? "#dc2626" : tv.borderSubtle,
+              fontFamily: "'DM Sans', system-ui, sans-serif",
+            }}
+            onMouseDown={(e) => handleMouseDown(node.vsId, e)}
+            onDoubleClick={() => onSelectVs(node.vsId)}
+          >
+            <div className="flex items-start justify-between">
+              <h4 className="text-[12px] font-bold leading-tight" style={{ color: tv.textPrimary }}>
+                {node.name}
+              </h4>
+              <button
+                onClick={e => { e.stopPropagation(); onEditVs(node.vsId); }}
+                className="ml-1 flex-shrink-0 rounded-full p-0.5 text-slate-300 hover:text-slate-600 hover:bg-slate-100"
+                title="Edit"
+              >
+                <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </button>
+            </div>
+            <div className="mt-1 flex items-center gap-1.5 text-[9px]" style={{ color: tv.textDim }}>
+              <span>{node.stageCount} stages</span>
+              {coupling > 0 && (
+                <>
+                  <span className="opacity-40">|</span>
+                  <span style={{ color: isDark ? "#a5b4fc" : "#4f46e5" }}>{coupling} coupled</span>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
