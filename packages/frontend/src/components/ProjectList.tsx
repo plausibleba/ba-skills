@@ -65,7 +65,7 @@ export function ProjectList() {
 
     // Guard: empty project (no bundle saved yet)
     if (!bundle || (typeof bundle === "object" && Object.keys(bundle).length === 0)) {
-      useProjectStore.getState().setCurrentProject(id, project.revision);
+      useProjectStore.getState().setCurrentProject(id, project.revision, project.module);
       goToIntake();
       return;
     }
@@ -103,12 +103,13 @@ export function ProjectList() {
 
     const id = await createProject(newName.trim(), newModule, {});
     if (id) {
-      useProjectStore.getState().setCurrentProject(id, 1);
+      useProjectStore.getState().setCurrentProject(id, 1, newModule);
       goToIntake();
     }
     setCreating(false);
     setShowNewProject(false);
     setNewName("");
+    setNewModule("sales-discovery");
   };
 
   // Create a project from an imported bundle file

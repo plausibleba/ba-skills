@@ -17,6 +17,7 @@ export interface AccessGrant extends ProjectAccessRow {
 interface ProjectState {
   projects: ProjectRow[];
   currentProjectId: string | null;
+  currentModule: ProjectModule | null;
   currentRevision: number;
   loading: boolean;
   saving: boolean;
@@ -38,7 +39,7 @@ interface ProjectState {
   revokeAccess: (accessId: string) => Promise<{ error: string | null }>;
 
   // State management
-  setCurrentProject: (id: string | null, revision?: number) => void;
+  setCurrentProject: (id: string | null, revision?: number, module?: ProjectModule | null) => void;
   clearError: () => void;
   clearConflict: () => void;
 }
@@ -46,6 +47,7 @@ interface ProjectState {
 export const useProjectStore = create<ProjectState>((set, get) => ({
   projects: [],
   currentProjectId: null,
+  currentModule: null,
   currentRevision: 0,
   loading: false,
   saving: false,
@@ -111,6 +113,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     set({
       loading: false,
       currentProjectId: id,
+      currentModule: row.module,
       currentRevision: row.revision,
     });
     return row;
@@ -300,8 +303,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     return { error: null };
   },
 
-  setCurrentProject: (id, revision) => {
-    set({ currentProjectId: id, currentRevision: revision ?? 0 });
+  setCurrentProject: (id, revision, module) => {
+    set({ currentProjectId: id, currentRevision: revision ?? 0, currentModule: module ?? null });
   },
 
   clearError: () => set({ error: null }),
