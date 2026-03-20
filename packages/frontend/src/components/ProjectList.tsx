@@ -112,34 +112,69 @@ export function ProjectList() {
     setNewModule("sales-discovery");
   };
 
-  // Create a project from an imported bundle file
+  // Load a bundle file into the canvas store (shared helper)
+  const loadBundleIntoCanvas = async (json: any) => {
+    const { isPlausibleBABundle, normaliseBundle } = await import("../utils/bundle-import.ts");
+    const canvasStore = useCanvasStore.getState();
+
+    if (json.bundleVersion && json.scaffold) {
+      await canvasStore.loadScaffold(json.scaffold);
+      if (json.heatmaps) for (const hm of json.heatmaps) await canvasStore.loadHeatmap(hm);
+      if (json.userStoriesByActivity) {
+        for (const [actId, stories] of Object.entries(json.userStoriesByActivity)) {
+          canvasStore.setActivityStories(actId, stories as any[]);
+        }
+      }
+      if (json.cardRegistry) canvasStore.loadCards(json.cardRegistry);
+    } else if (isPlausibleBABundle(json)) {
+      const scaffold = normaliseBundle(json);
+      await canvasStore.loadScaffold(scaffold);
+    } else if (json.scaffoldId && json.elements) {
+      await canvasStore.loadScaffold(json);
+    } else {
+      alert("Unrecognized JSON file. Expected a VCC Bundle or PlausibleBA bundle.");
+      return false;
+    }
+    canvasStore.backToNetwork();
+    return true;
+  };
+
+  // Import bundle from standalone card (auto-detect module)
   const handleImportToNewProject = async (file: File) => {
     try {
-      const text = await file.text();
-      const json = JSON.parse(text);
-      const { isPlausibleBABundle, normaliseBundle } = await import("../utils/bundle-import.ts");
-      const canvasStore = useCanvasStore.getState();
-
-      if (json.bundleVersion && json.scaffold) {
-        await canvasStore.loadScaffold(json.scaffold);
-        if (json.heatmaps) for (const hm of json.heatmaps) await canvasStore.loadHeatmap(hm);
-        if (json.userStoriesByActivity) {
-          for (const [actId, stories] of Object.entries(json.userStoriesByActivity)) {
-            canvasStore.setActivityStories(actId, stories as any[]);
-          }
-        }
-        if (json.cardRegistry) canvasStore.loadCards(json.cardRegistry);
-      } else if (isPlausibleBABundle(json)) {
-        const scaffold = normaliseBundle(json);
-        await canvasStore.loadScaffold(scaffold);
-      } else if (json.scaffoldId && json.elements) {
-        await canvasStore.loadScaffold(json);
-      } else {
-        alert("Unrecognized JSON file. Expected a VCC Bundle or PlausibleBA bundle.");
-        return;
+      const json = JSON.parse(await file.text());
+      if (await loadBundleIntoCanvas(json)) {
+        await autoSaveToProject({ cardRegistry: json.cardRegistry });
       }
-      canvasStore.backToNetwork();
-      await autoSaveToProject({ cardRegistry: json.cardRegistry });
+    } catch (err) {
+      console.error("[ImportBundle] parse error:", err);
+      alert("Failed to parse JSON file.");
+    }
+  };
+
+  // Import bundle from New Project dialog (use user-selected module)
+  const handleImportWithModule = async (file: File, module: ProjectModule) => {
+    try {
+      const json = JSON.parse(await file.text());
+      if (!(await loadBundleIntoCanvas(json))) return;
+
+      // Build the bundle from what's now in the canvas store
+      const canvas = useCanvasStore.getState();
+      const bundle: Record<string, unknown> = {
+        bundleVersion: "2.0",
+        updatedAt: new Date().toISOString(),
+        scaffold: canvas.scaffoldData,
+        heatmaps: Array.from(canvas.heatmapsByVs.values()),
+      };
+      if (json.cardRegistry) bundle.cardRegistry = json.cardRegistry;
+      if (json.userStoriesByActivity) bundle.userStoriesByActivity = json.userStoriesByActivity;
+
+      // Create project with the user-chosen module (not auto-detected)
+      const name = canvas.scaffoldData?.name ?? "Imported Bundle";
+      const projectId = await createProject(name, module, bundle);
+      if (projectId) {
+        useProjectStore.getState().setCurrentProject(projectId, 1, module);
+      }
     } catch (err) {
       console.error("[ImportBundle] parse error:", err);
       alert("Failed to parse JSON file.");
@@ -245,9 +280,10 @@ export function ProjectList() {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      handleImportToNewProject(file);
+                      handleImportWithModule(file, newModule);
                       setShowNewProject(false);
                       setNewName("");
+                      setNewModule("sales-discovery");
                     }
                     e.target.value = "";
                   }}
