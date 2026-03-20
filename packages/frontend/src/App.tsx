@@ -157,7 +157,7 @@ export default function App() {
           </h1>
 
           {/* Mode switch */}
-          {isLoaded && (
+          {(isLoaded || (!isLocalMode && isIntake)) && (
             <div className="flex items-center rounded-lg bg-white/10 p-0.5">
               {!isLocalMode && (
                 <button

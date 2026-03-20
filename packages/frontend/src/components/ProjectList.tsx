@@ -106,6 +106,40 @@ export function ProjectList() {
     setNewName("");
   };
 
+  // Create a project from an imported bundle file
+  const handleImportToNewProject = async (file: File) => {
+    try {
+      const text = await file.text();
+      const json = JSON.parse(text);
+      const { isPlausibleBABundle, normaliseBundle } = await import("../utils/bundle-import.ts");
+      const canvasStore = useCanvasStore.getState();
+
+      if (json.bundleVersion && json.scaffold) {
+        await canvasStore.loadScaffold(json.scaffold);
+        if (json.heatmaps) for (const hm of json.heatmaps) await canvasStore.loadHeatmap(hm);
+        if (json.userStoriesByActivity) {
+          for (const [actId, stories] of Object.entries(json.userStoriesByActivity)) {
+            canvasStore.setActivityStories(actId, stories as any[]);
+          }
+        }
+        if (json.cardRegistry) canvasStore.loadCards(json.cardRegistry);
+      } else if (isPlausibleBABundle(json)) {
+        const scaffold = normaliseBundle(json);
+        await canvasStore.loadScaffold(scaffold);
+      } else if (json.scaffoldId && json.elements) {
+        await canvasStore.loadScaffold(json);
+      } else {
+        alert("Unrecognized JSON file. Expected a VCC Bundle or PlausibleBA bundle.");
+        return;
+      }
+      canvasStore.backToNetwork();
+      await autoSaveToProject({ cardRegistry: json.cardRegistry });
+    } catch (err) {
+      console.error("[ImportBundle] parse error:", err);
+      alert("Failed to parse JSON file.");
+    }
+  };
+
   // Quick action: start a new discovery without creating a project first
   // (local mode or quick start — project created on first save)
   const handleQuickDiscovery = () => {
@@ -195,6 +229,24 @@ export function ProjectList() {
               >
                 {creating ? "Creating..." : "Create Project"}
               </button>
+              <span className="text-xs text-gray-400">or</span>
+              <label className="cursor-pointer rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100">
+                Import Bundle
+                <input
+                  type="file"
+                  accept=".json"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handleImportToNewProject(file);
+                      setShowNewProject(false);
+                      setNewName("");
+                    }
+                    e.target.value = "";
+                  }}
+                />
+              </label>
               <button
                 onClick={() => { setShowNewProject(false); setNewName(""); }}
                 className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-500 hover:bg-gray-50"
@@ -279,8 +331,8 @@ export function ProjectList() {
                           Updated {new Date(project.updated_at).toLocaleDateString()}
                         </p>
                       </button>
-                      {/* Card actions — visible on hover */}
-                      <div className="absolute right-2 top-2 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                      {/* Card actions — always visible */}
+                      <div className="absolute right-2 top-2 flex items-center gap-0.5">
                         <button
                           onClick={(e) => { e.stopPropagation(); setShareTarget({ id: project.id, name: project.name }); }}
                           className="rounded-lg p-1.5 text-gray-300 hover:bg-gray-100 hover:text-gray-500"
