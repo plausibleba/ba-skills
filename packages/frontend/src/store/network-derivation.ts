@@ -221,67 +221,70 @@ export function computeNodePositions(
   forwardEdges: NetworkEdge[],
   scaffold?: ScaffoldData,
 ): Map<string, { layer: number; row: number }> {
-  // Check if scaffold has layoutZone metadata for two-layer mode
+  // Check if scaffold has layoutZone metadata for layered mode
   const hasLayerMeta = scaffold && Object.values(scaffold.elements.valueStreams).some(
     (vs) => (vs as Record<string, unknown>).layoutZone ?? (vs as Record<string, unknown>).zone,
   );
 
   if (hasLayerMeta && scaffold) {
-    return _twoLayerLayout(nodeIds, forwardEdges, scaffold);
+    return _layeredLayout(nodeIds, forwardEdges, scaffold);
   }
 
   // Fallback: DAG-depth layout (original algorithm)
   return _dagDepthLayout(nodeIds, forwardEdges);
 }
 
-function _twoLayerLayout(
+/**
+ * N-layer layout: groups value streams by their layoutZone into rows.
+ * Row order follows the layoutZones array if present, otherwise alphabetical.
+ * Within each row, columns are assigned by name order.
+ */
+function _layeredLayout(
   nodeIds: string[],
   forwardEdges: NetworkEdge[],
   scaffold: ScaffoldData,
 ): Map<string, { layer: number; row: number }> {
   const positions = new Map<string, { layer: number; row: number }>();
 
-  // Separate into ecosystem (row 0) and knowledge (row 1) layers
-  const ecosystem: string[] = [];
-  const knowledge: string[] = [];
-
-  // Define preferred column order within each layer
-  const ecosystemOrder = ["Member", "Community", "Partner"];
-  const knowledgeOrder = ["Certification", "Knowledge", "Thought"];
-
-  for (const vsId of nodeIds) {
-    const vs = scaffold.elements.valueStreams[vsId] as Record<string, unknown>;
-    const layer = (vs.layoutZone ?? vs.zone) as string;
-    if (layer === "ecosystem") {
-      ecosystem.push(vsId);
-    } else {
-      knowledge.push(vsId);
-    }
+  // Build a map of zone id → row index from layoutZones (if available)
+  const layoutZones = (scaffold as Record<string, unknown>).layoutZones as
+    Array<{ id: string; row: number }> | undefined;
+  const zoneRowMap = new Map<string, number>();
+  if (layoutZones?.length) {
+    for (const z of layoutZones) zoneRowMap.set(z.id, z.row);
   }
 
-  // Sort within layers by preferred order
-  const sortByOrder = (ids: string[], order: string[]) => {
-    return ids.sort((a, b) => {
-      const vsA = scaffold.elements.valueStreams[a];
-      const vsB = scaffold.elements.valueStreams[b];
-      const nameA = (vsA as { name?: string })?.name ?? "";
-      const nameB = (vsB as { name?: string })?.name ?? "";
-      const idxA = order.findIndex((prefix) => nameA.startsWith(prefix));
-      const idxB = order.findIndex((prefix) => nameB.startsWith(prefix));
-      return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
-    });
-  };
+  // Group VS ids by their zone
+  const buckets = new Map<string, string[]>();
+  for (const vsId of nodeIds) {
+    const vs = scaffold.elements.valueStreams[vsId] as Record<string, unknown>;
+    const zone = ((vs.layoutZone ?? vs.zone) as string) || "default";
+    if (!buckets.has(zone)) buckets.set(zone, []);
+    buckets.get(zone)!.push(vsId);
+  }
 
-  sortByOrder(ecosystem, ecosystemOrder);
-  sortByOrder(knowledge, knowledgeOrder);
-
-  // Ecosystem = row 0, Knowledge = row 1
-  // Columns assigned by position in sorted array
-  ecosystem.forEach((id, col) => {
-    positions.set(id, { layer: col, row: 0 });
+  // Determine row order: use layoutZones row if available, else discovery order
+  const zoneIds = [...buckets.keys()].sort((a, b) => {
+    const rowA = zoneRowMap.get(a) ?? 99;
+    const rowB = zoneRowMap.get(b) ?? 99;
+    return rowA - rowB;
   });
-  knowledge.forEach((id, col) => {
-    positions.set(id, { layer: col, row: 1 });
+
+  // Sort VS within each zone alphabetically by name
+  for (const [_zone, ids] of buckets) {
+    ids.sort((a, b) => {
+      const nameA = ((scaffold.elements.valueStreams[a] as { name?: string })?.name ?? "").toLowerCase();
+      const nameB = ((scaffold.elements.valueStreams[b] as { name?: string })?.name ?? "").toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+  }
+
+  // Assign positions: row = zone index, layer (column) = position within zone
+  zoneIds.forEach((zone, rowIdx) => {
+    const ids = buckets.get(zone) ?? [];
+    ids.forEach((id, col) => {
+      positions.set(id, { layer: col, row: rowIdx });
+    });
   });
 
   return positions;

@@ -139,7 +139,7 @@ You MUST populate the elements registries for EVERY ID referenced in activities:
 DO NOT leave any registry as empty when IDs reference it.
 
 ## Value Stream Fields (CRITICAL)
-Each VS must include: name, description, activityIds, layoutZone (use zone from inputs), accountableStakeholder (from inputs).
+Each VS must include: name, description, activityIds, layoutZone (use the zone value from the VS inputs — this is the layer id), accountableStakeholder (from inputs).
 
 ## Capability Assignment (CRITICAL — capabilities must be SHARED across activities)
 Each activity MUST have 2-4 capabilities in requiresCapabilityIds. Capabilities are enduring business
@@ -203,7 +203,7 @@ For each VS:
 - Wire metrics to the activities they measure
 
 Confirmed inputs:
-${JSON.stringify({ valueStreams: vsContext, roles: roleContext, tech: techContext, metrics: metricContext }, null, 2)}
+${JSON.stringify({ valueStreams: vsContext, roles: roleContext, tech: techContext, metrics: metricContext, layoutZones: ir.layoutZones ?? [] }, null, 2)}
 
 Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
 {
@@ -213,8 +213,9 @@ Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
   "description": "<brief>",
   "createdAt": "<ISO timestamp>",
   "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "layoutZones": ${JSON.stringify(ir.layoutZones ?? [{ id: "ecosystem", label: "Ecosystem (external-facing)", row: 0 }, { id: "knowledge", label: "Knowledge (internal-facing)", row: 1 }])},
   "elements": {
-    "valueStreams": { "<vs_id>": { "name": "...", "description": "...", "activityIds": [], "layoutZone": "ecosystem|knowledge", "accountableStakeholder": "role_...", "elementType": "ValueStream" } },
+    "valueStreams": { "<vs_id>": { "name": "...", "description": "...", "activityIds": [], "layoutZone": "<zone id from inputs>", "accountableStakeholder": "role_...", "elementType": "ValueStream" } },
     "activities": { "<act_id>": { "name": "...", "preOutcomeId": "...", "postOutcomeId": "...", "nextActivityId": "...|null", "requiresCapabilityIds": ["cap_a", "cap_b", "cap_c"], "performedByRoleIds": ["role_x"], "informationObjectIds": ["io_a", "io_b"], "metricIds": [], "controlIds": [], "capabilityPPIT": { "cap_a": { "roleIds": ["role_x"], "activities": ["sub-act 1", "sub-act 2", "sub-act 3"], "informationObjectIds": ["io_a"], "technologyAppIds": ["tech_x"] } }, "elementType": "Activity" } },
     "outcomes": { "<outcome_id>": { "name": "...", "elementType": "Outcome" } },
     "roles": { "<role_id>": { "name": "...", "description": "...", "elementType": "Role" } },

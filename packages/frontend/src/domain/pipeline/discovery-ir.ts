@@ -59,7 +59,7 @@ export interface DiscoveryVS {
   vsId: string;
   name: string;
   description: string;
-  zone: "ecosystem" | "knowledge";
+  zone: string;  // layer id from the active layer scheme (e.g. "ecosystem", "front-office", "strategic")
   valueObject?: string;       // primary business object flowing through the stream
   recipient?: string;         // who receives value at stream end
   trigger?: string;
@@ -108,11 +108,20 @@ export interface DiscoveryOrg {
   stakeholder?: string;
 }
 
+/** Layer definition for the network view layout */
+export interface LayoutZone {
+  id: string;
+  label: string;
+  row: number;
+  description?: string;
+}
+
 // The committed discovery artefact — persisted after Pass A completes
 export interface DiscoveryIR {
   extractedAt: string;
   org: DiscoveryOrg;
   valueStreams: DiscoveryVS[];
+  layoutZones?: LayoutZone[];                      // layer scheme for the network view
   roles: DiscoveryRole[];
   tech: DiscoveryTech[];
   painPoints: DiscoveryPainPoint[];
@@ -131,10 +140,12 @@ export function makeId(prefix: string, name: string): string {
 // Build the DiscoveryIR from raw extraction results
 // pass1Result: A1 output (VS + stages with full VSS structure)
 // pass2Result: A2 output (roles, capabilityMap, stageCapabilities, tech, painPoints, metrics, gaps)
+// layoutZones: optional layer scheme from the intake form
 export function buildDiscoveryIR(
   pass1Result: any,
   pass2Result: any,
-  confirmedVS: any[]
+  confirmedVS: any[],
+  layoutZones?: LayoutZone[],
 ): DiscoveryIR {
   const now = new Date().toISOString();
 
@@ -211,6 +222,7 @@ export function buildDiscoveryIR(
     extractedAt: now,
     org: { ...pass1Result.org },
     valueStreams,
+    ...(layoutZones?.length ? { layoutZones } : {}),
     roles: (pass2Result.roles ?? []).map((r: any, i: number) => ({
       id: r.id ?? String(Date.now() + i),
       name: r.name,

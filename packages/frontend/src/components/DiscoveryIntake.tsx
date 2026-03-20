@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { useProjectStore } from "../store/project-store.ts";
 import { runPipeline, continuePipeline } from "../domain/pipeline/pipeline-orchestrator";
 import type { PipelineProgress } from "../domain/pipeline/pipeline-orchestrator";
-import { buildDiscoveryIR, makeId } from "../domain/pipeline/discovery-ir";
+import { buildDiscoveryIR, makeId, type LayoutZone } from "../domain/pipeline/discovery-ir";
 import * as XLSX from "xlsx";
 
 // ─── Colour palette matching VCC design ───────────────────────────────────
@@ -54,6 +54,50 @@ function readinessLabel(score: number) {
   return { label: "Rich", colour: "text-emerald-600", bg: "bg-emerald-500" };
 }
 
+// ─── Layer Schemes ──────────────────────────────────────────────────────────
+interface LayerDef { id: string; label: string; description: string }
+interface LayerScheme { id: string; label: string; layers: LayerDef[] }
+
+const LAYER_SCHEMES: LayerScheme[] = [
+  {
+    id: "ecosystem-knowledge",
+    label: "Ecosystem / Knowledge",
+    layers: [
+      { id: "ecosystem", label: "Ecosystem (external-facing)", description: "Value streams that serve customers, partners, or external stakeholders" },
+      { id: "knowledge", label: "Knowledge (internal-facing)", description: "Value streams that govern, manage, or enable internal operations" },
+    ],
+  },
+  {
+    id: "front-back",
+    label: "Front Office / Back Office",
+    layers: [
+      { id: "front-office", label: "Front Office", description: "Revenue-generating and customer-facing operations" },
+      { id: "back-office", label: "Back Office", description: "Supporting operations, finance, HR, compliance" },
+    ],
+  },
+  {
+    id: "strategic-core-enabling",
+    label: "Strategic / Core / Enabling",
+    layers: [
+      { id: "strategic", label: "Strategic", description: "Value streams that define direction and competitive positioning" },
+      { id: "core", label: "Core", description: "Value streams that directly deliver the primary value proposition" },
+      { id: "enabling", label: "Enabling", description: "Value streams that support and enable the core operations" },
+    ],
+  },
+  {
+    id: "wardley",
+    label: "Wardley Zones",
+    layers: [
+      { id: "genesis", label: "Genesis", description: "Novel, uncertain, rapidly evolving value streams" },
+      { id: "custom", label: "Custom-built", description: "Differentiated, purpose-built value streams" },
+      { id: "product", label: "Product", description: "Standardised, well-understood value streams" },
+      { id: "commodity", label: "Commodity", description: "Utility, outsourceable value streams" },
+    ],
+  },
+];
+
+const DEFAULT_SCHEME = LAYER_SCHEMES[0];
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Stage { name: string; confidence?: string }
 interface VS { id: number; name: string; description: string; zone: string; stages: Stage[]; stakeholder: string; trigger?: string; terminalOutcome?: string; confidence?: string; extractedCapabilities?: any[] }
@@ -64,6 +108,8 @@ interface Metric { id: number; name: string; current: string; target: string; st
 interface Gap { severity: string; prompt: string }
 interface FormState {
   org: { name: string; industry: string; companySize: string; description: string; stakeholder: string; confidence?: string };
+  layerSchemeId: string;
+  customLayers: LayerDef[];
   valueStreams: VS[];
   roles: Role[];
   tech: Tech[];
@@ -77,7 +123,9 @@ interface FormState {
 // ─── Initial state ──────────────────────────────────────────────────────────
 const EMPTY_FORM: FormState = {
   org: { name: "", industry: "", companySize: "", description: "", stakeholder: "" },
-  valueStreams: [{ id: 1, name: "", description: "", zone: "ecosystem", stages: [], stakeholder: "" }],
+  layerSchemeId: DEFAULT_SCHEME.id,
+  customLayers: [],
+  valueStreams: [{ id: 1, name: "", description: "", zone: DEFAULT_SCHEME.layers[0].id, stages: [], stakeholder: "" }],
   roles: [],
   tech: [],
   painPoints: [],
@@ -270,16 +318,22 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
   const dropRef = useRef<HTMLDivElement>(null);
 
   const readiness = calcReadiness(form);
+
+  // ─── Active layer scheme ────────────────────────────────────────────────
+  const activeScheme = LAYER_SCHEMES.find(s => s.id === form.layerSchemeId) ?? DEFAULT_SCHEME;
+  const activeLayers = form.layerSchemeId === "custom" ? form.customLayers : activeScheme.layers;
+
   // ─── Form updaters ───────────────────────────────────────────────────────
   const setOrg = (patch: Partial<FormState["org"]>) => setForm(f => ({ ...f, org: { ...f.org, ...patch } }));
   const setVS = (id: number, patch: Partial<VS>) => setForm(f => ({
     ...f,
     valueStreams: f.valueStreams.map(vs => vs.id === id ? { ...vs, ...patch } : vs)
   }));
-  const addVS = () => setForm(f => ({
-    ...f,
-    valueStreams: [...f.valueStreams, { id: Date.now(), name: "", description: "", zone: "ecosystem", stages: [], stakeholder: "" }]
-  }));
+  const addVS = () => setForm(f => {
+    const scheme = LAYER_SCHEMES.find(s => s.id === f.layerSchemeId) ?? DEFAULT_SCHEME;
+    const layers = f.layerSchemeId === "custom" ? f.customLayers : scheme.layers;
+    return { ...f, valueStreams: [...f.valueStreams, { id: Date.now(), name: "", description: "", zone: layers[0]?.id ?? "ecosystem", stages: [], stakeholder: "" }] };
+  });
   const removeVS = (id: number) => setForm(f => ({ ...f, valueStreams: f.valueStreams.filter(vs => vs.id !== id) }));
 
   const addRole = () => setForm(f => ({ ...f, roles: [...f.roles, { id: Date.now(), name: "", type: "Internal", vsRefs: [], notes: "" }] }));
@@ -446,7 +500,11 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
       stages: vs.stages.map(s => ({ name: s.name })),
     }));
 
-    const discoveryIR = buildDiscoveryIR(pass1Shape, pass2Shape, confirmedVS);
+    // Build layoutZones from the active layer scheme
+    const formLayers = form.layerSchemeId === "custom" ? form.customLayers : (LAYER_SCHEMES.find(s => s.id === form.layerSchemeId) ?? DEFAULT_SCHEME).layers;
+    const layoutZones: LayoutZone[] = formLayers.map((l, i) => ({ id: l.id, label: l.label, row: i, description: l.description }));
+
+    const discoveryIR = buildDiscoveryIR(pass1Shape, pass2Shape, confirmedVS, layoutZones);
 
     // Run Pass B via the pipeline
     await continuePipeline(discoveryIR, (progress: PipelineProgress) => {
@@ -728,7 +786,9 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
                 you are building a model for
               </p>
               <p className="text-xs text-slate-400 mb-3">
-                Paste in any content that describes what you're modelling — meeting notes, call transcripts, strategy documents, process descriptions, or just a written summary.
+                Paste in any content that describes what you're modelling —
+                <br />
+                meeting notes, call transcripts, strategy documents, process descriptions, or just a written summary.
               </p>
 
               {/* Scope toggle */}
@@ -760,7 +820,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
                 </svg>
                 Upload files (.txt, .md, .xlsx, .docx, .pdf, .csv)
               </button>
-              <p className="text-[10px] text-slate-400 italic mb-3">Providing just the right amount of content yields the best model. This is where the art lies.</p>
+              <p className="text-xs text-slate-500 italic mb-3">Providing just the right amount of content yields the best model.<br />This is where the art lies.</p>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -847,7 +907,7 @@ Example: 'We're launching a new customer onboarding programme. Currently takes 4
                   <Field label="Organisation description">
                     <textarea className={textareaCls} rows={2} value={form.org.description}
                       onChange={e => setOrg({ description: e.target.value })}
-                      placeholder="Adelaide-based manufacturer and distributor of water filtration products…" />
+                      placeholder="Brief description of what the organisation does, its market, and key products or services…" />
                   </Field>
                 </div>
               </div>
@@ -856,6 +916,84 @@ Example: 'We're launching a new customer onboarding programme. Currently takes 4
             {/* ── Section 2: Value Streams ── */}
             <div className="rounded-xl border border-slate-200 bg-white p-6">
               <SectionHeader number="2" title="Value Streams" count={`${form.valueStreams.filter(v=>v.name).length} defined`} />
+
+              {/* Layer Scheme selector */}
+              <div className="mb-4 rounded-lg border border-slate-100 bg-slate-50/50 p-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="text-[11px] font-semibold text-slate-500">Layer scheme</span>
+                  <div className="flex gap-1 flex-wrap">
+                    {LAYER_SCHEMES.map(scheme => (
+                      <button
+                        key={scheme.id}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, layerSchemeId: scheme.id }))}
+                        className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-all ${
+                          form.layerSchemeId === scheme.id
+                            ? "bg-slate-800 text-white"
+                            : "bg-white text-slate-500 border border-slate-200 hover:bg-slate-100"
+                        }`}
+                      >
+                        {scheme.label}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({
+                        ...f,
+                        layerSchemeId: "custom",
+                        customLayers: f.customLayers.length ? f.customLayers : [{ id: "layer_1", label: "Layer 1", description: "" }],
+                      }))}
+                      className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-all ${
+                        form.layerSchemeId === "custom"
+                          ? "bg-slate-800 text-white"
+                          : "bg-white text-slate-500 border border-slate-200 hover:bg-slate-100"
+                      }`}
+                    >
+                      Custom
+                    </button>
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1.5">
+                  How value streams are grouped into layers on the network view.
+                  Current: {activeLayers.map(l => l.label).join(" / ")}
+                </p>
+
+                {/* Custom layer editor */}
+                {form.layerSchemeId === "custom" && (
+                  <div className="mt-3 space-y-1.5">
+                    {form.customLayers.map((layer, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <input
+                          className={`${inputCls} flex-1`}
+                          value={layer.label}
+                          onChange={e => {
+                            const updated = [...form.customLayers];
+                            updated[i] = { ...updated[i], label: e.target.value, id: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || `layer_${i}` };
+                            setForm(f => ({ ...f, customLayers: updated }));
+                          }}
+                          placeholder={`Layer ${i + 1} name`}
+                        />
+                        {form.customLayers.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setForm(f => ({ ...f, customLayers: f.customLayers.filter((_, j) => j !== i) }))}
+                            className="text-xs text-slate-400 hover:text-red-400"
+                          >×</button>
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({
+                        ...f,
+                        customLayers: [...f.customLayers, { id: `layer_${f.customLayers.length + 1}`, label: "", description: "" }],
+                      }))}
+                      className="text-[11px] text-slate-400 hover:text-slate-600"
+                    >+ Add layer</button>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-4">
                 {form.valueStreams.map((vs, idx) => (
                   <div key={vs.id} className="rounded-lg border border-slate-100 bg-slate-50 p-4 space-y-3">
@@ -870,11 +1008,12 @@ Example: 'We're launching a new customer onboarding programme. Currently takes 4
                         <input className={inputCls} value={vs.name}
                           onChange={e => setVS(vs.id, { name: e.target.value })} placeholder="Channel Sales" />
                       </Field>
-                      <Field label="Zone" required>
+                      <Field label="Layer" required>
                         <select className={inputCls} value={vs.zone}
                           onChange={e => setVS(vs.id, { zone: e.target.value })}>
-                          <option value="ecosystem">Ecosystem (external-facing)</option>
-                          <option value="knowledge">Knowledge (internal-facing)</option>
+                          {activeLayers.map(layer => (
+                            <option key={layer.id} value={layer.id}>{layer.label}</option>
+                          ))}
                         </select>
                       </Field>
                     </div>

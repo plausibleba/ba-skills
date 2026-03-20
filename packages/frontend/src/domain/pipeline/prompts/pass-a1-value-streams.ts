@@ -30,7 +30,7 @@ From the source material below, identify ALL Value Streams present. Do not cap t
 - Each VS is outcome-driven, not function-driven ("Member Certification Lifecycle" not "Certification Team Activities")
 - Each VS has a clear trigger event and a clear terminal outcome
 - VS names are concise, 2-5 words, title case. Use "<Trigger> to <Outcome>" pattern where natural (e.g. "Lead to Customer", "Order to Delivery", "Issue to Resolution", "Hire to Productive"). Name from the recipient's perspective where possible.
-- zone: "ecosystem" = externally-facing (customer, member, partner, market); "knowledge" = internally-facing (operations, reporting, governance)
+- zone: classify each VS by its orientation. Default to "ecosystem" (externally-facing: customer, member, partner, market) or "knowledge" (internally-facing: operations, reporting, governance). The user may reclassify later using their preferred layer scheme.
 - valueObject: the primary business object that flows through the stream and changes state at each stage (e.g. "Booking", "Order", "Claim", "Tenancy")
 - recipient: who receives the value at the end (e.g. "Guest", "Customer", "Member")
 - Stages: 4-8 per VS. Each stage = a governance phase or progression milestone, not a task. MECE — no gaps, no overlaps.
