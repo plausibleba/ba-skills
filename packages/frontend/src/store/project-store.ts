@@ -46,6 +46,8 @@ interface ProjectState {
   // UI hints (lightweight signals for contextual guide)
   isCreatingProject: boolean;
   setCreatingProject: (v: boolean) => void;
+  intakeTab: "provide" | "form" | null;
+  setIntakeTab: (v: "provide" | "form" | null) => void;
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -58,6 +60,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   error: null,
   conflict: false,
   isCreatingProject: false,
+  intakeTab: null,
+  setIntakeTab: (v) => set({ intakeTab: v }),
   setCreatingProject: (v) => set({ isCreatingProject: v }),
 
   fetchProjects: async () => {

@@ -163,14 +163,38 @@ const CREATING_PROJECT_CONTENT: GuideContent = {
   ],
 };
 
+/** Guide content for Discovery Intake — Provide Content tab */
+const INTAKE_PROVIDE_CONTENT: GuideContent = {
+  where: "Discovery Intake — Provide Content",
+  what: "This is where you feed the model its raw material. Paste in or upload any content that describes the business you're modelling — the richer the input, the better the generated operating model.",
+  next: [
+    "Choose Business or Initiative scope to tailor the model",
+    "Paste text directly, or upload files (.docx, .pdf, .xlsx, .csv, .txt, .md)",
+    "Hit 'Extract → Fill form' to let the AI parse your content into structured fields",
+  ],
+};
+
+/** Guide content for Discovery Intake — Fill Form tab */
+const INTAKE_FORM_CONTENT: GuideContent = {
+  where: "Discovery Intake — Fill Form",
+  what: "The structured form captures the key dimensions of the business: organisation details, value streams with stages, roles, and friction observations. You can fill this manually or let the extraction populate it for you.",
+  next: [
+    "Review and complete the Organisation section — company name, industry, and description",
+    "Define at least one Value Stream with its stages and zone",
+    "Add Roles and any known Friction observations, then hit Generate to build your model",
+  ],
+};
+
 export function UserGuidePanel() {
   const { viewMode, scaffoldData, heatmapsByVs, canvasViewModel, enrichVersion } = useCanvasStore();
   const features = useModuleFeatures();
   const currentModule = useProjectStore((s) => s.currentModule);
   const isCreatingProject = useProjectStore((s) => s.isCreatingProject);
+  const intakeTab = useProjectStore((s) => s.intakeTab);
   const [collapsed, setCollapsed] = useState(false);
 
   const isLoaded = !!scaffoldData;
+  const isIntake = viewMode === "intake";
   const currentVsId = canvasViewModel?.valueStreamId ?? null;
   const hasAssessment = currentVsId
     ? heatmapsByVs.has(currentVsId)
@@ -180,7 +204,11 @@ export function UserGuidePanel() {
   const state = deriveGuideState(viewMode, isLoaded, hasAssessment, isEnriched);
   const content = isCreatingProject
     ? CREATING_PROJECT_CONTENT
-    : getGuideContent(state, features, currentModule);
+    : isIntake && intakeTab === "form"
+      ? INTAKE_FORM_CONTENT
+      : isIntake && intakeTab === "provide"
+        ? INTAKE_PROVIDE_CONTENT
+        : getGuideContent(state, features, currentModule);
   const progressSteps = getProgressSteps(features);
 
   return (

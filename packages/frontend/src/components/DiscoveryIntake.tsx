@@ -1,4 +1,5 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { useProjectStore } from "../store/project-store.ts";
 import { runPipeline, continuePipeline } from "../domain/pipeline/pipeline-orchestrator";
 import type { PipelineProgress } from "../domain/pipeline/pipeline-orchestrator";
 import { buildDiscoveryIR, makeId } from "../domain/pipeline/discovery-ir";
@@ -250,6 +251,11 @@ function ExtractionSummary({ meta, form }: { meta: FormState["extractionMeta"]; 
 // ─── Main component ──────────────────────────────────────────────────────────
 export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: any) => void }) {
   const [mode, setMode] = useState("freeform"); // "freeform" | "structured"
+  const setIntakeTab = useProjectStore((s) => s.setIntakeTab);
+  useEffect(() => {
+    setIntakeTab(mode === "freeform" ? "provide" : "form");
+    return () => setIntakeTab(null);
+  }, [mode, setIntakeTab]);
   const [scope, setScope] = useState<"business" | "initiative">("business");
   const [transcript, setTranscript] = useState("");
   const [form, setForm] = useState(EMPTY_FORM);
@@ -695,7 +701,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
 
         {/* ── Mode toggle ── */}
         <div className="flex rounded-lg border border-slate-200 bg-white p-1 w-fit">
-          {[["freeform","Drop transcript"], ["structured","Fill form"]].map(([m, label]) => (
+          {[["freeform","Provide Content"], ["structured","Fill form"]].map(([m, label]) => (
             <button key={m} onClick={() => setMode(m)}
               className={`rounded-md px-4 py-1.5 text-xs font-medium transition-all ${
                 mode === m ? "bg-slate-800 text-white" : "text-slate-500 hover:text-slate-700"
@@ -717,7 +723,9 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
             >
               <div className="text-2xl mb-3">📋</div>
               <p className="text-sm font-medium text-slate-700 mb-1">
-                Describe the {scope === "business" ? "business or business unit" : "initiative"} you are building a model for
+                Describe the {scope === "business" ? "business or business unit" : "initiative"}
+                <br />
+                you are building a model for
               </p>
               <p className="text-xs text-slate-400 mb-3">
                 Paste in any content that describes what you're modelling — meeting notes, call transcripts, strategy documents, process descriptions, or just a written summary.
