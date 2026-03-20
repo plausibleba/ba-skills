@@ -57,7 +57,7 @@ export async function autoSaveToProject(extra?: { cardRegistry?: any }): Promise
     projectId = await projectStore.createProject(name, module, bundle);
     // createProject sets the project in the list but not as current — fix that
     if (projectId) {
-      projectStore.setCurrentProject(projectId, 1);
+      projectStore.setCurrentProject(projectId, 1, module);
     }
   } else {
     // Save to existing project
