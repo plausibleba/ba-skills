@@ -42,6 +42,10 @@ interface ProjectState {
   setCurrentProject: (id: string | null, revision?: number, module?: ProjectModule | null) => void;
   clearError: () => void;
   clearConflict: () => void;
+
+  // UI hints (lightweight signals for contextual guide)
+  isCreatingProject: boolean;
+  setCreatingProject: (v: boolean) => void;
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -53,6 +57,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   saving: false,
   error: null,
   conflict: false,
+  isCreatingProject: false,
+  setCreatingProject: (v) => set({ isCreatingProject: v }),
 
   fetchProjects: async () => {
     if (!isSupabaseConfigured) return;

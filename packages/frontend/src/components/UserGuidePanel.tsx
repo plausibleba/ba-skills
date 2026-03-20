@@ -152,10 +152,22 @@ function getProgressSteps(features: { solutions: boolean; userStories: boolean; 
   return steps;
 }
 
+/** Guide content for the Create New Project flow */
+const CREATING_PROJECT_CONTENT: GuideContent = {
+  where: "Creating a New Project",
+  what: "You're setting up a new project. Follow the three steps above to give it a name, choose a use case module, and create it.",
+  next: [
+    "Step 1: Enter a name that describes the business or engagement you're modelling",
+    "Step 2: Pick the module that matches your goal — each one enables different tools and outputs",
+    "Step 3: Hit 'Create Project' to begin, or 'Import Bundle' if you have an existing file to load",
+  ],
+};
+
 export function UserGuidePanel() {
   const { viewMode, scaffoldData, heatmapsByVs, canvasViewModel, enrichVersion } = useCanvasStore();
   const features = useModuleFeatures();
   const currentModule = useProjectStore((s) => s.currentModule);
+  const isCreatingProject = useProjectStore((s) => s.isCreatingProject);
   const [collapsed, setCollapsed] = useState(false);
 
   const isLoaded = !!scaffoldData;
@@ -166,7 +178,9 @@ export function UserGuidePanel() {
   const isEnriched = (enrichVersion ?? 0) > 0;
 
   const state = deriveGuideState(viewMode, isLoaded, hasAssessment, isEnriched);
-  const content = getGuideContent(state, features, currentModule);
+  const content = isCreatingProject
+    ? CREATING_PROJECT_CONTENT
+    : getGuideContent(state, features, currentModule);
   const progressSteps = getProgressSteps(features);
 
   return (

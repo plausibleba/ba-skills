@@ -38,10 +38,11 @@ const MODULE_INFO: Record<ProjectModule, { label: string; description: string; c
 
 export function ProjectList() {
   const { user, signOut } = useAuthStore();
-  const { projects, loading, error, fetchProjects, createProject, loadProject, deleteProject } = useProjectStore();
+  const { projects, loading, error, fetchProjects, createProject, loadProject, deleteProject, setCreatingProject } = useProjectStore();
   const { loadScaffold, loadHeatmap, backToNetwork, goToIntake } = useCanvasStore();
 
-  const [showNewProject, setShowNewProject] = useState(false);
+  const [showNewProject, _setShowNewProject] = useState(false);
+  const setShowNewProject = (v: boolean) => { _setShowNewProject(v); setCreatingProject(v); };
   const [newName, setNewName] = useState("");
   const [newModule, setNewModule] = useState<ProjectModule>("sales-discovery");
   const [creating, setCreating] = useState(false);
@@ -199,7 +200,7 @@ export function ProjectList() {
             <h3 className="mb-3 text-sm font-semibold text-gray-900">Create New Project</h3>
 
             <div className="mb-3">
-              <label className="mb-1 block text-xs font-medium text-gray-700">Project name</label>
+              <label className="mb-1 block text-xs font-semibold text-gray-700">Step 1: Give your project a name</label>
               <input
                 type="text"
                 value={newName}
@@ -211,7 +212,8 @@ export function ProjectList() {
             </div>
 
             <div className="mb-4">
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">Module</label>
+              <label className="mb-0.5 block text-xs font-semibold text-gray-700">Step 2: Select your use case</label>
+              <p className="mb-2 text-[11px] text-gray-400">This will determine which features get enabled in the project.</p>
               <div className="grid grid-cols-3 gap-2">
                 {(Object.keys(MODULE_INFO) as ProjectModule[]).map((mod) => {
                   const info = MODULE_INFO[mod];
@@ -238,6 +240,9 @@ export function ProjectList() {
               </div>
             </div>
 
+            <label className="mb-2 block text-xs font-semibold text-gray-700">
+              Step 3: Create your new project{newName.trim() ? `: '${newName.trim()}' — ${MODULE_INFO[newModule].label}` : ""}
+            </label>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleCreateProject}
@@ -289,29 +294,39 @@ export function ProjectList() {
           <div className="text-center text-sm text-gray-400">Loading projects...</div>
         ) : projects.length === 0 ? (
           <div className="mx-auto max-w-2xl py-12">
-            <div className="mb-6 flex justify-center">
-              <div className="rounded-full bg-gray-100 p-4">
-                <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                </svg>
+            {!showNewProject && (
+              <div className="mb-6 flex justify-center">
+                <div className="rounded-full bg-gray-100 p-4">
+                  <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                </div>
               </div>
-            </div>
-            <h3 className="mb-1 text-center text-sm font-semibold text-gray-900">No projects yet</h3>
-            <p className="mb-8 text-center text-xs text-gray-500">Choose how you'd like to get started.</p>
+            )}
+            <h3 className="mb-1 text-center text-sm font-semibold text-gray-900">
+              {showNewProject ? "Or: Select a different path" : "No projects yet"}
+            </h3>
+            <p className="mb-8 text-center text-xs text-gray-500">
+              {showNewProject
+                ? "Changed your mind? Jump straight in or import an existing file instead."
+                : "Choose how you'd like to get started."}
+            </p>
 
-            <div className="grid grid-cols-3 gap-6">
-              {/* New Project */}
-              <div className="flex flex-col items-center text-center">
-                <button
-                  onClick={() => setShowNewProject(true)}
-                  className="mb-3 w-full rounded-lg bg-vcc-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-vcc-700 transition-colors"
-                >
-                  New Project
-                </button>
-                <p className="text-xs leading-relaxed text-gray-500">
-                  Start from scratch. Describe a business and let AI build the operating model for you.
-                </p>
-              </div>
+            <div className={`grid gap-6 ${showNewProject ? "grid-cols-2" : "grid-cols-3"}`}>
+              {/* New Project — hide when the panel is already open */}
+              {!showNewProject && (
+                <div className="flex flex-col items-center text-center">
+                  <button
+                    onClick={() => setShowNewProject(true)}
+                    className="mb-3 w-full rounded-lg bg-vcc-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-vcc-700 transition-colors"
+                  >
+                    New Project
+                  </button>
+                  <p className="text-xs leading-relaxed text-gray-500">
+                    Start from scratch. Describe a business and let AI build the operating model for you.
+                  </p>
+                </div>
+              )}
 
               {/* Quick Discovery */}
               <div className="flex flex-col items-center text-center">
