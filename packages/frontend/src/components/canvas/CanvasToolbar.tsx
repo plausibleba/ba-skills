@@ -1,6 +1,7 @@
 import type { HeatmapData, ValidationReport } from "../../types.ts";
 import type { PPITLayer } from "./ppit.ts";
 import type { CardToggleLayer } from "./useCanvasControls.ts";
+import type { ModuleFeatures } from "../../lib/module-features.ts";
 import { PPIT_LABELS, PPIT_LAYERS } from "./ppit.ts";
 import { ChevronIcon } from "./ChevronIcon.tsx";
 import { useThemeStore } from "../../store/theme-store.ts";
@@ -67,6 +68,7 @@ export function CanvasToolbar({
   onToggleCard,
   heatmapData,
   validationReport,
+  features,
 }: {
   structureOpen: boolean;
   analyticsOpen: boolean;
@@ -80,6 +82,7 @@ export function CanvasToolbar({
   onToggleCard: (layer: CardToggleLayer) => void;
   heatmapData: HeatmapData | null;
   validationReport: ValidationReport | null;
+  features: ModuleFeatures;
 }) {
   const isDark = useThemeStore((s) => s.mode) === "dark";
   const layerPalette = isDark ? LAYER_COLORS_DARK : LAYER_COLORS_LIGHT;
@@ -92,11 +95,13 @@ export function CanvasToolbar({
           isOpen={structureOpen}
           onToggle={onToggleStructure}
         />
-        <ToggleBtn
-          label="Transformation"
-          isOpen={analyticsOpen}
-          onToggle={onToggleAnalytics}
-        />
+        {features.userStories && (
+          <ToggleBtn
+            label="Transformation"
+            isOpen={analyticsOpen}
+            onToggle={onToggleAnalytics}
+          />
+        )}
         <ToggleBtn
           label="Constraints"
           isOpen={constraintDAGOpen}
@@ -124,7 +129,7 @@ export function CanvasToolbar({
       </div>
 
       {/* MVC Card toggles */}
-      <div className="flex items-center gap-0.5 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard }}>
+      {features.mvcCards && <div className="flex items-center gap-0.5 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard }}>
         <span className="px-1 text-[9px] font-medium uppercase tracking-wider" style={{ color: tv.textDim }}>
           Cards
         </span>
@@ -148,7 +153,7 @@ export function CanvasToolbar({
         >
           P
         </button>
-      </div>
+      </div>}
 
       {/* State indicators */}
       <div className="flex items-center gap-2">

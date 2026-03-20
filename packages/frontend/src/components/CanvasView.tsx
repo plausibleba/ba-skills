@@ -17,6 +17,7 @@ import { CanvasToolbar } from "./canvas/CanvasToolbar.tsx";
 import { ConstraintDAGOverlay } from "./canvas/ConstraintDAGOverlay.tsx";
 import { ConflictBanner } from "./ConflictBanner.tsx";
 import { useCanvasControls } from "./canvas/useCanvasControls.ts";
+import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
 
 /* ── Canvas View — orchestrator ────────────────────────────────────── */
 
@@ -39,6 +40,7 @@ export function CanvasView() {
     togglePPIT,
     toggleCard,
   } = useCanvasControls();
+  const features = useModuleFeatures();
 
   const frictionMap = useMemo(() => {
     if (!heatmapData || !scaffoldData) return new Map();
@@ -173,8 +175,9 @@ export function CanvasView() {
               onToggleCard={toggleCard}
               heatmapData={heatmapData}
               validationReport={validationReport}
+              features={features}
             />
-            <ExportStoriesButton getAllUserStories={getAllUserStories} />
+            {features.userStories && <ExportStoriesButton getAllUserStories={getAllUserStories} />}
           </div>
         </div>
 

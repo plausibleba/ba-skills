@@ -5,7 +5,7 @@
  * Regenerate with `supabase gen types typescript` after schema changes.
  */
 
-export type ProjectModule = "sales-discovery" | "board-diagnostic" | "transformation";
+export type ProjectModule = "sales-discovery" | "board-diagnostic" | "transformation" | "mvc";
 
 export interface Database {
   public: {

@@ -29,6 +29,11 @@ const MODULE_INFO: Record<ProjectModule, { label: string; description: string; c
     description: "Transformation planning — friction to user stories, Jira export",
     color: "bg-amber-100 text-amber-700",
   },
+  "mvc": {
+    label: "MVC Governance",
+    description: "Agentic governance — friction assessment with Concept & Policy Cards",
+    color: "bg-indigo-100 text-indigo-700",
+  },
 };
 
 export function ProjectList() {

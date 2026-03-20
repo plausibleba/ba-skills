@@ -9,6 +9,7 @@ import type {
   VendorFeatureRef,
 } from "../types.ts";
 import { humanizeId } from "../lib/humanize-id.ts";
+import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
 import { classifyCategory, categoryLabel } from "./FrictionOverlay.tsx";
 import { ThroughputPanel } from "./ThroughputPanel.tsx";
 import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforce.json";
@@ -656,6 +657,7 @@ function ObservationCard({
   onUpdate,
   storyFilters,
   onStoryFiltersChange,
+  showSolutions = true,
 }: {
   obs: FrictionObservation;
   isBindingObs: boolean;
@@ -664,6 +666,7 @@ function ObservationCard({
   onUpdate: (patch: Partial<FrictionObservation>) => void;
   storyFilters: StoryFilters;
   onStoryFiltersChange: (f: StoryFilters) => void;
+  showSolutions?: boolean;
 }) {
   const group = classifyCategory(obs.category);
   const borderColor = group === "execution" ? "border-l-amber-500" : "border-l-red-500";
@@ -764,7 +767,7 @@ function ObservationCard({
       )}
 
       {/* Solutions */}
-      <SolutionsSection
+      {showSolutions && <SolutionsSection
         solutions={obs.solutions ?? []}
         editMode={editMode}
         onUpdate={(solId, patch) => {
@@ -776,7 +779,7 @@ function ObservationCard({
         onAdd={(sol) => onUpdate({ solutions: [...(obs.solutions ?? []), sol] })}
         storyFilters={storyFilters}
         onStoryFiltersChange={onStoryFiltersChange}
-      />
+      />}
     </div>
   );
 }
@@ -880,6 +883,7 @@ export function FrictionPanel({
   const [savedObservations, setSavedObservations] = useState<FrictionObservation[]>(initialObservations);
   const [showNewForm, setShowNewForm] = useState(false);
   const [storyFilters, setStoryFilters] = useState<StoryFilters>(EMPTY_FILTERS);
+  const moduleFeatures = useModuleFeatures();
 
   const bindingObsId = heatmap.bindingConstraint?.bindingAnchorObservationId ?? null;
   const sorted = [...observations].sort((a, b) => {
@@ -1041,6 +1045,7 @@ export function FrictionPanel({
             onUpdate={(patch) => handleUpdate(obs.observationId, patch)}
             storyFilters={storyFilters}
             onStoryFiltersChange={setStoryFilters}
+            showSolutions={moduleFeatures.solutions}
           />
         ))}
 

@@ -5,6 +5,7 @@ import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforc
 import SAP_LIB from "../fixtures/vendor-libraries/sap-s4hana.json";
 import type { VendorFeatureLibrary, Solution, FrictionObservation, HeatmapData } from "../types.ts";
 import { humanizeId } from "../lib/humanize-id.ts";
+import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
 import { callLLM } from "../domain/pipeline/llm-client";
 import { runPassC } from "../domain/pipeline/heatmap-analyser";
 
@@ -166,6 +167,7 @@ function Divider() {
 // ─── StageWizard ──────────────────────────────────────────────────────────────
 
 export function StageWizard() {
+  const features = useModuleFeatures();
   const {
     scaffoldData,
     canvasViewModel,
@@ -373,10 +375,10 @@ export function StageWizard() {
           className="hidden" />
       </div>
 
-      <Divider />
+      {features.solutions && <Divider />}
 
       {/* ── Step 3: Enrich Solutions ── */}
-      <div className="relative flex items-center gap-2 px-4 py-2.5">
+      {features.solutions && <div className="relative flex items-center gap-2 px-4 py-2.5">
         <StepBadge n={3} active={step2Complete} complete={step3Complete} />
         <div className="flex flex-col gap-1">
           <span className="text-[9px] font-semibold uppercase tracking-wider text-gray-400">Enrich Solutions</span>
@@ -449,7 +451,7 @@ export function StageWizard() {
         <input ref={enrichedInputRef} type="file" accept=".json"
           onChange={e => { const f = e.target.files?.[0]; if (f) void handleEnrichedFile(f); e.target.value = ""; }}
           className="hidden" />
-      </div>
+      </div>}
 
       <Divider />
 
