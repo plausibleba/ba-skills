@@ -152,8 +152,8 @@ export function ProjectList() {
     }
   };
 
-  // Import bundle from New Project dialog (use user-selected module)
-  const handleImportWithModule = async (file: File, module: ProjectModule) => {
+  // Import bundle from New Project dialog (use user-selected module and name)
+  const handleImportWithModule = async (file: File, module: ProjectModule, projectName: string) => {
     try {
       const json = JSON.parse(await file.text());
       if (!(await loadBundleIntoCanvas(json))) return;
@@ -169,8 +169,8 @@ export function ProjectList() {
       if (json.cardRegistry) bundle.cardRegistry = json.cardRegistry;
       if (json.userStoriesByActivity) bundle.userStoriesByActivity = json.userStoriesByActivity;
 
-      // Create project with the user-chosen module (not auto-detected)
-      const name = canvas.scaffoldData?.name ?? "Imported Bundle";
+      // Create project with the user-chosen name and module
+      const name = projectName.trim() || canvas.scaffoldData?.name || "Imported Bundle";
       const projectId = await createProject(name, module, bundle);
       if (projectId) {
         useProjectStore.getState().setCurrentProject(projectId, 1, module);
@@ -280,7 +280,7 @@ export function ProjectList() {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      handleImportWithModule(file, newModule);
+                      handleImportWithModule(file, newModule, newName);
                       setShowNewProject(false);
                       setNewName("");
                       setNewModule("sales-discovery");
