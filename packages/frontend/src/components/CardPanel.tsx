@@ -88,8 +88,8 @@ function ConceptCardBlock({ card }: { card: ConceptCard }) {
                     <p className="text-[10px] font-semibold text-sky-700">{sense.senseName}</p>
                     <p className="text-[10px] text-gray-600 mt-0.5">{sense.description}</p>
                     {sense.systemOfRecord && (
-                      <p className="text-[9px] text-gray-400 mt-0.5">
-                        SoR: <span className="font-medium text-gray-500">{sense.systemOfRecord}</span>
+                      <p className="text-[9px] text-gray-500 mt-0.5">
+                        SoR: <span className="font-medium text-gray-600">{sense.systemOfRecord}</span>
                       </p>
                     )}
                     {sense.disambiguationCues.length > 0 && (
@@ -121,7 +121,7 @@ function ConceptCardBlock({ card }: { card: ConceptCard }) {
                     </span>
                     <span className="text-gray-600">→</span>
                     <span className="font-medium text-sky-700">{rel.targetCardId}</span>
-                    {rel.label && <span className="text-gray-400">({rel.label})</span>}
+                    {rel.label && <span className="text-gray-500">({rel.label})</span>}
                   </div>
                 ))}
               </div>
@@ -130,11 +130,11 @@ function ConceptCardBlock({ card }: { card: ConceptCard }) {
 
           {/* Provenance */}
           <div className="border-t border-sky-100 pt-2">
-            <p className="text-[9px] text-gray-400">
+            <p className="text-[9px] text-gray-500">
               <span className="font-medium">Provenance:</span> {card.provenance}
             </p>
             {card.dataAcquisitionPlan && (
-              <p className="text-[9px] text-gray-400 mt-0.5">
+              <p className="text-[9px] text-gray-500 mt-0.5">
                 <span className="font-medium">Data Acquisition:</span> {card.dataAcquisitionPlan}
               </p>
             )}
@@ -187,7 +187,7 @@ function PolicyCardBlock({ card }: { card: PolicyCard }) {
           {/* Scope */}
           {card.scope && (
             <div>
-              <p className="text-[8px] font-bold uppercase tracking-widest text-rose-500 mb-1">Scope</p>
+              <p className="text-[8px] font-bold uppercase tracking-widest text-rose-700 mb-1">Scope</p>
               <div className="flex flex-wrap gap-1">
                 {card.scope.channel && (
                   <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[9px] text-rose-600">
@@ -211,7 +211,7 @@ function PolicyCardBlock({ card }: { card: PolicyCard }) {
           {/* Conditions */}
           {card.conditions.length > 0 && (
             <div>
-              <p className="text-[8px] font-bold uppercase tracking-widest text-rose-500 mb-1">
+              <p className="text-[8px] font-bold uppercase tracking-widest text-rose-700 mb-1">
                 Conditions
               </p>
               <div className="space-y-1">
@@ -236,7 +236,7 @@ function PolicyCardBlock({ card }: { card: PolicyCard }) {
           {/* Outcomes */}
           {card.outcomes.length > 0 && (
             <div>
-              <p className="text-[8px] font-bold uppercase tracking-widest text-rose-500 mb-1">
+              <p className="text-[8px] font-bold uppercase tracking-widest text-rose-700 mb-1">
                 Outcomes
               </p>
               <div className="space-y-1">
@@ -261,13 +261,13 @@ function PolicyCardBlock({ card }: { card: PolicyCard }) {
           {/* Exceptions */}
           {card.exceptions.length > 0 && (
             <div>
-              <p className="text-[8px] font-bold uppercase tracking-widest text-rose-500 mb-1">
+              <p className="text-[8px] font-bold uppercase tracking-widest text-rose-700 mb-1">
                 Exceptions
               </p>
               <ul className="space-y-0.5">
                 {card.exceptions.map((ex, i) => (
                   <li key={i} className="flex items-start gap-1.5 text-[10px] text-gray-600">
-                    <span className="mt-[3px] h-1 w-1 flex-shrink-0 rounded-full bg-gray-300" />
+                    <span className="mt-[3px] h-1 w-1 flex-shrink-0 rounded-full bg-gray-400" />
                     {ex}
                   </li>
                 ))}
@@ -278,7 +278,7 @@ function PolicyCardBlock({ card }: { card: PolicyCard }) {
           {/* Action Bindings */}
           {card.actionBindings.length > 0 && (
             <div>
-              <p className="text-[8px] font-bold uppercase tracking-widest text-rose-500 mb-1">
+              <p className="text-[8px] font-bold uppercase tracking-widest text-rose-700 mb-1">
                 Action Bindings
               </p>
               <div className="space-y-1">
@@ -286,7 +286,7 @@ function PolicyCardBlock({ card }: { card: PolicyCard }) {
                   <div key={i} className="rounded border border-rose-100 bg-white px-2 py-1.5">
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-semibold text-gray-700">{binding.system}</span>
-                      <span className="text-[10px] text-gray-400">→</span>
+                      <span className="text-[10px] text-gray-500">→</span>
                       <span className="text-[10px] font-mono text-gray-600">{binding.action}</span>
                     </div>
                     <span className={`mt-0.5 inline-block rounded px-1 py-0.5 text-[8px] font-medium ${
@@ -306,13 +306,13 @@ function PolicyCardBlock({ card }: { card: PolicyCard }) {
           {/* Effective dates + provenance */}
           <div className="border-t border-rose-100 pt-2">
             {card.effectiveDates && (
-              <p className="text-[9px] text-gray-400">
+              <p className="text-[9px] text-gray-500">
                 <span className="font-medium">Effective:</span>{" "}
                 {card.effectiveDates.from}
                 {card.effectiveDates.until ? ` → ${card.effectiveDates.until}` : " → ongoing"}
               </p>
             )}
-            <p className="text-[9px] text-gray-400 mt-0.5">
+            <p className="text-[9px] text-gray-500 mt-0.5">
               <span className="font-medium">Provenance:</span> {card.provenance}
             </p>
           </div>
@@ -394,7 +394,7 @@ export function CardPanel({
         {/* Policy Cards */}
         {policies.length > 0 && (
           <div>
-            <p className="mb-2 text-[9px] font-bold uppercase tracking-widest text-rose-500">
+            <p className="mb-2 text-[9px] font-bold uppercase tracking-widest text-rose-700">
               Policy Cards
             </p>
             <div className="space-y-2">
@@ -410,7 +410,7 @@ export function CardPanel({
             <svg className="h-8 w-8 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <p className="mt-2 text-xs text-gray-400">No cards anchored to this activity</p>
+            <p className="mt-2 text-xs text-gray-500">No cards anchored to this activity</p>
           </div>
         )}
       </div>
