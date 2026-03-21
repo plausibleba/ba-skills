@@ -14,6 +14,7 @@ import DiscoveryIntake from "./components/DiscoveryIntake.tsx";
 import { LoginPage } from "./components/LoginPage.tsx";
 import { ProjectList } from "./components/ProjectList.tsx";
 import { autoSaveToProject } from "./utils/auto-save.ts";
+import { VersionBadge } from "./components/ChangelogModal.tsx";
 
 export default function App() {
   const { user, loading: authLoading, isLocalMode, initialize: initAuth } = useAuthStore();
@@ -198,7 +199,7 @@ export default function App() {
           {/* Theme toggle */}
           <ThemeToggle />
 
-          <span className="text-[10px] text-vcc-300/50">v0.4.0</span>
+          <VersionBadge />
         </div>
       </header>
 

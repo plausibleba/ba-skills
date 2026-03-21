@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from "react";
 import { useProjectStore } from "../store/project-store.ts";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { useAuthStore } from "../store/auth-store.ts";
+import { ChangelogLink } from "./ChangelogModal.tsx";
 import { autoSaveToProject } from "../utils/auto-save.ts";
 import { FileLoader } from "./FileLoader.tsx";
 import { ShareDialog } from "./ShareDialog.tsx";
@@ -184,6 +185,9 @@ export function ProjectList() {
           <p className="text-xs text-gray-500">
             {user?.email ?? "Local mode"}
           </p>
+          <div className="mt-1">
+            <ChangelogLink />
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
