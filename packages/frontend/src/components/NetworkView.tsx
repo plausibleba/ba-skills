@@ -572,15 +572,12 @@ export function NetworkView() {
     [scaffoldData],
   );
 
-  /** Apply a different layer scheme — updates layoutZones + reassigns each VS.
+  /** Apply a different layer scheme — updates layoutZones + redistributes VS.
    *
-   *  Strategy:
-   *  1. If VS are well-distributed across old layers → positional mapping
-   *     (row N in old → row N in new, clamped).
-   *  2. If most VS sit in one layer (>80% in a single row) → distribute
-   *     across the new scheme's layers using journey order (topological).
-   *     This gives a meaningful starting point the user can refine via the
-   *     edit pencil. */
+   *  Always distributes VS across the new scheme's layers using journey order
+   *  (topological sort). This ensures every pill click produces a visibly
+   *  different grouping. Users can then fine-tune individual VS assignments
+   *  via the edit pencil. */
   const applyLayerScheme = useCallback((schemeId: string) => {
     if (!scaffoldData) return;
     const scheme = LAYER_SCHEMES.find(s => s.id === schemeId);
@@ -593,48 +590,23 @@ export function NetworkView() {
       description: l.description,
     }));
 
-    // Build a lookup: old zone id → row index (from current layoutZones)
-    const oldZones = (scaffoldData.layoutZones as Array<{ id: string; row: number }>) ?? [];
-    const oldZoneRow = new Map<string, number>();
-    for (const z of oldZones) oldZoneRow.set(z.id, z.row);
-
-    // Check if VS are concentrated in a single layer
+    // Distribute VS across new layers using journey order (from networkNodes
+    // which are already sorted by topological position).
     const vsEntries = Object.entries(scaffoldData.elements.valueStreams) as [string, any][];
-    const rowCounts = new Map<number, number>();
-    for (const [, vs] of vsEntries) {
-      const zone = vs.layoutZone ?? vs.zone;
-      const row = oldZoneRow.get(zone) ?? 0;
-      rowCounts.set(row, (rowCounts.get(row) ?? 0) + 1);
+    const orderedVsIds = networkNodes.map(n => n.vsId);
+    // Include any VS not in networkNodes (safety net)
+    for (const [vsId] of vsEntries) {
+      if (!orderedVsIds.includes(vsId)) orderedVsIds.push(vsId);
     }
-    const maxInOneRow = Math.max(...rowCounts.values(), 0);
-    const allInOneLayer = maxInOneRow >= vsEntries.length * 0.8;
 
     const updatedVS = { ...scaffoldData.elements.valueStreams } as Record<string, any>;
-
-    if (allInOneLayer && scheme.layers.length >= 2) {
-      // Distribute across new layers using journey order (from networkNodes which
-      // are already sorted by topological position).
-      const orderedVsIds = networkNodes.map(n => n.vsId);
-      // Include any VS not in networkNodes (shouldn't happen, but safety)
-      for (const [vsId] of vsEntries) {
-        if (!orderedVsIds.includes(vsId)) orderedVsIds.push(vsId);
-      }
-      const layerCount = scheme.layers.length;
-      const perLayer = Math.ceil(orderedVsIds.length / layerCount);
-      orderedVsIds.forEach((vsId, idx) => {
-        const layerIdx = Math.min(Math.floor(idx / perLayer), layerCount - 1);
-        const vs = updatedVS[vsId];
-        if (vs) updatedVS[vsId] = { ...vs, layoutZone: scheme.layers[layerIdx].id };
-      });
-    } else {
-      // Positional mapping — VS already distributed across layers
-      for (const [vsId, vs] of vsEntries) {
-        const currentZone = vs.layoutZone ?? vs.zone;
-        const oldRow = oldZoneRow.get(currentZone) ?? 0;
-        const newRow = Math.min(oldRow, scheme.layers.length - 1);
-        updatedVS[vsId] = { ...vs, layoutZone: scheme.layers[newRow].id };
-      }
-    }
+    const layerCount = scheme.layers.length;
+    const perLayer = Math.ceil(orderedVsIds.length / layerCount);
+    orderedVsIds.forEach((vsId, idx) => {
+      const layerIdx = Math.min(Math.floor(idx / perLayer), layerCount - 1);
+      const vs = updatedVS[vsId];
+      if (vs) updatedVS[vsId] = { ...vs, layoutZone: scheme.layers[layerIdx].id };
+    });
 
     const updatedScaffold = {
       ...scaffoldData,
