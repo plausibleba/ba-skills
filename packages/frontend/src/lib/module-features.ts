@@ -46,19 +46,20 @@ const MODULE_FEATURES: Record<ProjectModule | "mvc", ModuleFeatures> = {
   },
 };
 
-// Default: show everything (local mode / unknown module)
-const ALL_FEATURES: ModuleFeatures = {
+// Default: sales-discovery baseline (friction + solutions)
+// Quick Discovery and unknown modules get this — MVC cards only when explicitly chosen.
+const DEFAULT_FEATURES: ModuleFeatures = {
   friction: true,
   solutions: true,
-  userStories: true,
-  mvcCards: true,
+  userStories: false,
+  mvcCards: false,
 };
 
 /**
  * Get the feature set for the current module.
- * Falls back to all features enabled for unknown modules or local mode.
+ * Falls back to sales-discovery baseline for unknown modules or Quick Discovery.
  */
 export function getModuleFeatures(module: string | null | undefined): ModuleFeatures {
-  if (!module) return ALL_FEATURES;
-  return MODULE_FEATURES[module as keyof typeof MODULE_FEATURES] ?? ALL_FEATURES;
+  if (!module) return DEFAULT_FEATURES;
+  return MODULE_FEATURES[module as keyof typeof MODULE_FEATURES] ?? DEFAULT_FEATURES;
 }

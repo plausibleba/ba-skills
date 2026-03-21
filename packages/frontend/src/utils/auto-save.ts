@@ -47,13 +47,11 @@ export async function autoSaveToProject(extra?: { cardRegistry?: any }): Promise
     const vsCount = canvas.scaffoldData
       ? Object.keys(canvas.scaffoldData.elements?.valueStreams ?? {}).length
       : 0;
-    const hasCards = !!(bundle.cardRegistry && typeof bundle.cardRegistry === "object" &&
-      Object.keys(bundle.cardRegistry as Record<string, unknown>).length > 0);
-    const module: ProjectModule = hasCards
-      ? "mvc"
-      : vsCount > 2
-        ? "transformation"
-        : "sales-discovery";
+    // Quick Discovery defaults to sales-discovery — user picks module explicitly via New Project
+    // Cards are always generated (Pass D) but only shown when module is "mvc"
+    const module: ProjectModule = vsCount > 2
+      ? "transformation"
+      : "sales-discovery";
     projectId = await projectStore.createProject(name, module, bundle);
     // createProject sets the project in the list but not as current — fix that
     if (projectId) {
