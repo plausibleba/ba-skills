@@ -110,6 +110,7 @@ export interface DiscoveryMetric {
 export interface DiscoveryGap {
   severity: "required" | "recommended";
   prompt: string;
+  response?: string;
 }
 
 export interface DiscoveryOrg {

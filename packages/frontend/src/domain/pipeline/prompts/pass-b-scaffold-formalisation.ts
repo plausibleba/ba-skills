@@ -105,6 +105,20 @@ function buildTechContext(ir: DiscoveryIR) {
   }));
 }
 
+function buildGapContext(ir: DiscoveryIR): string {
+  const answered = (ir.gaps ?? []).filter(g => g.response?.trim());
+  if (answered.length === 0) return "";
+  const lines = answered.map(g =>
+    `Q: ${g.prompt}\nA: ${g.response!.trim()}`
+  ).join("\n\n");
+  return `## Additional Context from Gap Analysis
+The following questions were identified as gaps during discovery. The user has provided answers — use this additional information to produce a more accurate and complete scaffold.
+
+${lines}
+
+`;
+}
+
 // ── Main prompt builder ──────────────────────────────────────────────────────
 
 export function buildScaffoldPrompt(ir: DiscoveryIR): string {
@@ -251,7 +265,7 @@ For each VS:
 - Wire metrics to the activities they measure
 - Do NOT include capabilityPPIT — it is generated in a separate enrichment pass
 
-Confirmed inputs:
+${buildGapContext(ir)}Confirmed inputs:
 ${JSON.stringify({ valueStreams: vsContext, roles: roleContext, tech: techContext, metrics: metricContext, layoutZones: ir.layoutZones ?? [] }, null, 2)}
 
 Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:

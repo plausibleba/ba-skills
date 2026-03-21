@@ -65,7 +65,7 @@ interface Role { id: number; name: string; type: string; vsRefs?: string[]; note
 interface Tech { id: number; name: string; type: string; friction: boolean; notes: string; confidence?: string }
 interface PainPoint { id: number; description: string; category: string; intensity: number; affectedStage: string; binding: boolean; confidence?: string }
 interface Metric { id: number; name: string; current: string; target: string; stage: string; confidence?: string }
-interface Gap { severity: string; prompt: string }
+interface Gap { severity: string; prompt: string; response?: string }
 interface FormState {
   org: { name: string; industry: string; companySize: string; description: string; stakeholder: string; confidence?: string };
   layerSchemeId: string;
@@ -175,22 +175,47 @@ function StageTagInput({ stages, onChange }: { stages: Stage[]; onChange: (stage
 }
 
 // ─── Gap Prompter ─────────────────────────────────────────────────────────
-function GapPrompter({ gaps, onDismiss }: { gaps: Gap[]; onDismiss: (i: number) => void }) {
+function GapPrompter({
+  gaps,
+  onDismiss,
+  onResponse,
+}: {
+  gaps: Gap[];
+  onDismiss: (i: number) => void;
+  onResponse: (i: number, text: string) => void;
+}) {
   if (!gaps || gaps.length === 0) return null;
   const req = gaps.filter(g => g.severity === "required");
-  const rec = gaps.filter(g => g.severity === "recommended");
+  const answered = gaps.filter(g => g.response?.trim()).length;
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-2">
-      <p className="text-xs font-semibold text-amber-800">
-        {req.length > 0 ? `${req.length} gap${req.length > 1 ? "s" : ""} to fill for richer output` : "Recommendations"}
-      </p>
-      {[...req, ...rec].map((g, i) => (
-        <div key={i} className="flex items-start gap-2">
-          <span className={`mt-0.5 text-[10px] font-bold px-1 py-0.5 rounded ${
-            g.severity === "required" ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-600"
-          }`}>{g.severity === "required" ? "REQ" : "REC"}</span>
-          <p className="text-xs text-amber-900 leading-relaxed flex-1">{g.prompt}</p>
-          <button onClick={() => onDismiss(i)} className="text-amber-400 hover:text-amber-600 text-sm mt-0.5">×</button>
+    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-amber-800">
+          {req.length > 0 ? `${req.length} gap${req.length > 1 ? "s" : ""} to fill for richer output` : "Recommendations"}
+        </p>
+        {answered > 0 && (
+          <span className="text-[10px] text-emerald-600 font-medium">{answered}/{gaps.length} answered</span>
+        )}
+      </div>
+      {gaps.map((g, i) => (
+        <div key={i} className="space-y-1">
+          <div className="flex items-start gap-2">
+            <span className={`mt-0.5 text-[10px] font-bold px-1 py-0.5 rounded shrink-0 ${
+              g.severity === "required" ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-600"
+            }`}>{g.severity === "required" ? "REQ" : "REC"}</span>
+            <p className="text-xs text-amber-900 leading-relaxed flex-1">{g.prompt}</p>
+            <button onClick={() => onDismiss(i)} className="text-amber-400 hover:text-amber-600 text-sm mt-0.5 shrink-0">×</button>
+          </div>
+          <div className="ml-7">
+            <textarea
+              value={g.response ?? ""}
+              onChange={(e) => onResponse(i, e.target.value)}
+              placeholder="Your answer (optional — improves scaffold quality)…"
+              rows={1}
+              className="w-full rounded border border-amber-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-200 resize-y"
+              style={{ minHeight: 32 }}
+            />
+          </div>
         </div>
       ))}
     </div>
@@ -313,6 +338,10 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
   const removeMetric = (id: number) => setForm(f => ({ ...f, metrics: f.metrics.filter(m => m.id !== id) }));
 
   const dismissGap = (idx: number) => setForm(f => ({ ...f, gaps: f.gaps.filter((_, i) => i !== idx) }));
+  const respondToGap = (idx: number, text: string) => setForm(f => ({
+    ...f,
+    gaps: f.gaps.map((g, i) => i === idx ? { ...g, response: text } : g),
+  }));
 
   // ─── LLM Extraction — Phase A Discovery (Passes 1 & 2) ──────────────────
   // Delegates to pipeline-orchestrator.ts — SINGLE SOURCE OF TRUTH for prompts.
@@ -846,7 +875,7 @@ Example: 'We're launching a new customer onboarding programme. Currently takes 4
           <div className="space-y-6">
 
             {/* Gap prompts */}
-            <GapPrompter gaps={form.gaps} onDismiss={dismissGap} />
+            <GapPrompter gaps={form.gaps} onDismiss={dismissGap} onResponse={respondToGap} />
 
             {/* ── Section 1: Organisation ── */}
             <div className="rounded-xl border border-slate-200 bg-white p-6">
