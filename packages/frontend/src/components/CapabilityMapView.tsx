@@ -324,6 +324,12 @@ export function CapabilityMapView() {
         }
       }
     }
+    // Debug: log enrichment results
+    console.log("[CapMap] ppitByCapId size:", map.size,
+      "| activities:", Object.keys(scaffoldData.elements.activities).length,
+      "| sample entries:", [...map.entries()].slice(0, 2).map(([k, v]) => ({
+        id: k, roles: v.roles.length, acts: v.activityNames.length
+      })));
     return map;
   }, [scaffoldData]);
 
@@ -496,6 +502,7 @@ export function CapabilityMapView() {
             </div>
 
             {/* Enriched Inspector panel */}
+            {selectedL3 && console.log("[CapMap] Selected:", selectedL3.id, "| ppit found:", ppitByCapId.has(selectedL3.id), "| ppit keys sample:", [...ppitByCapId.keys()].slice(0, 5))}
             <CapabilityInspectorPanel cap={selectedL3} ppit={selectedL3 ? ppitByCapId.get(selectedL3.id) : undefined} />
           </>
         ) : (
