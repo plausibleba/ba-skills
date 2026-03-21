@@ -164,43 +164,13 @@ derive additional shared capabilities from the domain context (e.g. "Data Manage
 "Stakeholder Communication", "Performance Monitoring").
 Capabilities that appear in multiple activities create structural coupling — this is essential for the model.
 
-## capabilityPPIT — People, Process, Information, Technology (CRITICAL)
-For EACH capability referenced by an activity, create a PPIT decomposition in the activity's
-capabilityPPIT object. This breaks down HOW each capability is exercised at this specific stage.
-
-capabilityPPIT is an object keyed by capability ID. For each capability:
-- roleIds: which roles from performedByRoleIds exercise this capability here
-- activities: exactly 3 specific sub-activity descriptions (short verb phrases describing what is done)
-- informationObjectIds: which information objects this capability uses or produces at this stage
-- technologyAppIds: which technology systems support this capability (use tech_ prefixed IDs)
-
-Example:
-"capabilityPPIT": {
-  "cap_customer_relationship_management": {
-    "roleIds": ["role_sales_rep", "role_channel_partner"],
-    "activities": ["Review customer history and preferences", "Assess relationship health score", "Plan engagement approach"],
-    "informationObjectIds": ["io_customer_profile", "io_territory_plan"],
-    "technologyAppIds": ["tech_salesforce"]
-  },
-  "cap_data_management": {
-    "roleIds": ["role_sales_rep"],
-    "activities": ["Consolidate data from multiple sources", "Validate data accuracy", "Update central records"],
-    "informationObjectIds": ["io_market_data", "io_customer_profile"],
-    "technologyAppIds": ["tech_salesforce", "tech_netsuite"]
-  }
-}
-
-The sub-activities in PPIT should be specific to the stage context — not generic. For a "Territory Planning"
-stage, "Data Management" activities might be "Aggregate territory demand signals", "Reconcile forecast data",
-"Update territory assignment records". For an "Order Conversion" stage, the same capability's activities
-would be "Validate order data completeness", "Reconcile pricing against contracts", "Archive order records".
-
 ## Information Objects (CRITICAL)
+NOTE: capabilityPPIT is generated in a separate enrichment pass (Pass C) — do NOT include it here.
 For each activity, create 2-3 informationObjects (business documents, data records, reports) that the
 activity produces or consumes. E.g. "Customer Order", "Installation Record", "Service Schedule",
 "Territory Plan", "Sales Report". Put entries in elements.informationObjects with:
 { name, description, elementType: "InformationObject", lifecycleStates: [...] }
-Reference them in the activity via informationObjectIds: [...] AND in capabilityPPIT entries.
+Reference them in the activity via informationObjectIds: [...].
 
 ## Lifecycle States on Information Objects (CRITICAL — Capsicum alignment)
 Each information object MUST have 2-5 lifecycleStates describing how the business object changes state
@@ -276,10 +246,10 @@ Given the confirmed VS definitions, stages, roles, and capabilities below, produ
 For each VS:
 - Create one Outcome per stage boundary (n stages → n+1 outcomes)
 - Create one Activity per stage with pre/post outcomes, 2-4 capabilities, 1-2 roles, 2-3 information objects
-- For EACH capability on each activity, create a capabilityPPIT entry with roleIds, 3 sub-activities, informationObjectIds, technologyAppIds
 - Ensure capabilities are SHARED — the same capability should appear in multiple activities across VS
 - Distribute roles across activities sensibly based on stage content
 - Wire metrics to the activities they measure
+- Do NOT include capabilityPPIT — it is generated in a separate enrichment pass
 
 Confirmed inputs:
 ${JSON.stringify({ valueStreams: vsContext, roles: roleContext, tech: techContext, metrics: metricContext, layoutZones: ir.layoutZones ?? [] }, null, 2)}
@@ -295,7 +265,7 @@ Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
   "layoutZones": ${JSON.stringify(ir.layoutZones ?? [{ id: "ecosystem", label: "Ecosystem (external-facing)", row: 0 }, { id: "knowledge", label: "Knowledge (internal-facing)", row: 1 }])},
   "elements": {
     "valueStreams": { "<vs_id>": { "name": "...", "description": "...", "activityIds": [], "layoutZone": "<zone id from inputs>", "accountableStakeholder": "role_...", "elementType": "ValueStream" } },
-    "activities": { "<act_id>": { "name": "...", "preOutcomeId": "...", "postOutcomeId": "...", "nextActivityId": "...|null", "requiresCapabilityIds": ["cap_a", "cap_b", "cap_c"], "performedByRoleIds": ["role_x"], "informationObjectIds": ["io_a", "io_b"], "outcomeId": "outcome_xxx", "metricIds": [], "controlIds": [], "capabilityPPIT": { "cap_a": { "roleIds": ["role_x"], "activities": ["sub-act 1", "sub-act 2", "sub-act 3"], "informationObjectIds": ["io_a"], "technologyAppIds": ["tech_x"] } }, "elementType": "Activity" } },
+    "activities": { "<act_id>": { "name": "...", "preOutcomeId": "...", "postOutcomeId": "...", "nextActivityId": "...|null", "requiresCapabilityIds": ["cap_a", "cap_b", "cap_c"], "performedByRoleIds": ["role_x"], "informationObjectIds": ["io_a", "io_b"], "outcomeId": "outcome_xxx", "metricIds": [], "controlIds": [], "elementType": "Activity" } },
     "outcomes": { "<outcome_id>": { "name": "...", "elementType": "Outcome" } },
     "roles": { "<role_id>": { "name": "...", "description": "...", "elementType": "Role" } },
     "capabilities": { "<cap_id>": { "name": "...", "description": "...", "level": 4, "parentId": null, "businessObject": "...", "elementType": "Capability" } },
@@ -314,7 +284,8 @@ Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
   }
 }
 
-CRITICAL: All element maps must be present, even if empty. Every ID referenced in activities MUST have a corresponding registry entry. Every activity MUST have a capabilityPPIT entry for each of its requiresCapabilityIds.
+CRITICAL: All element maps must be present, even if empty. Every ID referenced in activities MUST have a corresponding registry entry.
+CRITICAL: Do NOT include capabilityPPIT on activities — this is generated separately in Pass C.
 CRITICAL: Every informationObject MUST have lifecycleStates (2-5 states with initial→terminal progression).
 CRITICAL: Every activity MUST have a corresponding entry in elements.subActivityGraphs with 3-6 sub-activity nodes.
 CRITICAL: Capabilities in elements.capabilities MUST have level: 4 and businessObject fields. L1/L2/L3 hierarchy nodes will be injected post-generation — only emit L4 operational capabilities.`;

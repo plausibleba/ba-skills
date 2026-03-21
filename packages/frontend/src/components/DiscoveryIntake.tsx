@@ -270,7 +270,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
   const [extractPass, setExtractPass] = useState(0); // 1 = VS & stages, 2 = roles & capabilities
   const [extractDone, setExtractDone] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [generateStep, setGenerateStep] = useState(""); // "scaffold" | "validating" | ""
+  const [generateStep, setGenerateStep] = useState(""); // "scaffold" | "validating" | "enriching" | ""
   const [generated, setGenerated] = useState(false);
   const [generatedBundle, setGeneratedBundle] = useState<any>(null);
   const [pipelineError, setPipelineError] = useState<string | null>(null);
@@ -471,6 +471,8 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
         setGenerateStep("scaffold");
       } else if (progress.status === "pass-b-repairing") {
         setGenerateStep("validating");
+      } else if (progress.status === "pass-c") {
+        setGenerateStep("enriching");
       } else if (progress.status === "pass-b-failed") {
         console.error("Scaffold generation failed:", progress.errorMessage);
         setPipelineError(progress.errorMessage ?? "Scaffold generation failed validation");
@@ -694,7 +696,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
               className="rounded-lg bg-slate-800 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
               {generating
-                ? generateStep === "validating" ? "Validating scaffold…" : "Generating scaffold…"
+                ? generateStep === "validating" ? "Validating scaffold…" : generateStep === "enriching" ? "Enriching PPIT…" : "Generating scaffold…"
                 : "Generate →"}
             </button>
           </div>
@@ -1151,7 +1153,7 @@ Example: 'We're launching a new customer onboarding programme. Currently takes 4
                   className="rounded-lg bg-slate-800 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all whitespace-nowrap"
                 >
                   {generating
-                    ? generateStep === "validating" ? "Validating scaffold…" : "Generating scaffold…"
+                    ? generateStep === "validating" ? "Validating scaffold…" : generateStep === "enriching" ? "Enriching PPIT…" : "Generating scaffold…"
                     : `Generate scaffold →`}
                 </button>
               </div>

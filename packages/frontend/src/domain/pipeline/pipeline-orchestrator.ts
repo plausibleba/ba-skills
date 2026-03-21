@@ -3,14 +3,16 @@
 //
 // Pass A — Discovery IR  (two LLM calls: A1 VS+stages, A2 roles+caps+signals)
 // Pass B — Scaffold      (one LLM call, Gate 1 + repair + Gate 2)
+// Pass C — PPIT          (one LLM call: People/Process/Info/Tech per activity×capability)
 // Pass D — Cards         (one LLM call: concept cards + policy cards from scaffold)
 //
 // Prompts are in domain/pipeline/prompts/ — one file per pass.
-// Heatmaps (Pass C) are generated separately via "Assess Friction".
+// Heatmaps are generated separately via "Assess Friction".
 
 import { buildDiscoveryIR, makeId } from "./discovery-ir";
 import type { DiscoveryIR } from "./discovery-ir";
 import { runPassB } from "./scaffold-formaliser";
+import { runPassC } from "./ppit-enricher";
 import type { GateResult } from "./scaffold-gates";
 import { generateCards } from "./card-generator";
 import type { CardRegistry } from "../../types/cards";
@@ -281,6 +283,7 @@ export type PipelineStatus =
   | "pass-b"           // formalising scaffold
   | "pass-b-repairing" // Gate 1 failed, attempting repair
   | "pass-b-failed"    // Gate 1 still failed after repair — surface to user
+  | "pass-c"           // PPIT enrichment (People/Process/Info/Tech per capability)
   | "pass-d"           // generating concept + policy cards
   | "done"
   | "error";
@@ -392,7 +395,16 @@ export async function continuePipeline(
   // ── Post-Pass-B enrichment ──────────────────────────────────────────────────
   // Inject L1/L2/L3 capability hierarchy from DiscoveryIR (lost during Pass B flattening)
   injectCapabilityHierarchy(scaffold, discoveryIR);
+
+  // ── Pass C: PPIT Enrichment ────────────────────────────────────────────────
+  onProgress({ status: "pass-c", discoveryIR, scaffold });
+  const ppitResult = await runPassC(scaffold);
+  if (!ppitResult.success) {
+    console.warn("[pipeline] Pass C (PPIT) failed — continuing without PPIT:", ppitResult.error);
+  }
+
   // Derive Capsicum Triad concepts (Party/Record/Resource) from scaffold registries
+  // (runs after PPIT so concept relationships can use PPIT data)
   deriveConceptsFromScaffold(scaffold, discoveryIR);
 
   // Store pain points on the scaffold for later friction assessment

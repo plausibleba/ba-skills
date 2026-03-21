@@ -17,15 +17,15 @@ export interface FormaliseResult {
 }
 
 /** Estimate a reasonable max_tokens ceiling based on input complexity.
- *  Each VS with ~4 stages generates roughly 3-4k tokens of scaffold output
- *  (activities, outcomes, capabilityPPIT, info objects, lifecycle states, DAGs).
+ *  Each stage generates roughly 2k tokens of scaffold output (activities,
+ *  outcomes, info objects, lifecycle states, DAGs — PPIT is in Pass C now).
  *  We add headroom for registries and the JSON envelope. */
 function estimateMaxTokens(ir: DiscoveryIR): number {
   const totalStages = ir.valueStreams.reduce((sum, vs) => sum + (vs.stages?.length ?? 0), 0);
-  // ~4k per activity (with PPIT, lifecycle states, DAG), + 2k for registries/envelope
-  const estimate = totalStages * 4000 + 2000;
-  // Clamp between 8k (minimum viable) and 32k (Sonnet limit)
-  return Math.max(8000, Math.min(32000, estimate));
+  // ~2k per activity (without PPIT), + 2k for registries/envelope
+  const estimate = totalStages * 2000 + 2000;
+  // Clamp between 6k (minimum viable) and 24k (comfortable ceiling without PPIT)
+  return Math.max(6000, Math.min(24000, estimate));
 }
 
 export async function runPassB(
