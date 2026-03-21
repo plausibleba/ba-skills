@@ -127,25 +127,27 @@ function useNodePositions(nodes: NetworkNode[]) {
   return useMemo(() => {
     if (nodes.length === 0) return { positions: new Map(), canvasWidth: 0, canvasHeight: 0 };
 
-    // Detect two-layer mode: nodes use row for Y-zone (0=ecosystem, 1=knowledge)
-    const hasRow0 = nodes.some((n) => n.row === 0);
-    const hasRow1 = nodes.some((n) => n.row === 1);
-    const twoLayerMode = hasRow0 && hasRow1;
-
     const positions = new Map<string, { x: number; y: number }>();
 
-    if (twoLayerMode) {
-      const ZONE_GAP = 80;    // vertical gap between ecosystem and knowledge zones
+    // Detect N-zone mode: group nodes by row
+    const uniqueRows = [...new Set(nodes.map((n) => n.row))].sort((a, b) => a - b);
+    const multiZone = uniqueRows.length >= 2;
+
+    if (multiZone) {
+      const ZONE_GAP = 80;    // vertical gap between zones
       const WRAP_GAP = 40;    // vertical gap between wrapped rows within a zone
       const COLS = 4;         // max nodes per row within a zone
+      const LEFT_LABEL_W = uniqueRows.length >= 3 ? 100 : 0; // space for left labels
 
-      const zone0 = nodes.filter((n) => n.row === 0);
-      const zone1 = nodes.filter((n) => n.row === 1);
-      zone0.sort((a, b) => a.layer - b.layer);
-      zone1.sort((a, b) => a.layer - b.layer);
+      // Group and sort nodes within each zone
+      const zoneBuckets = uniqueRows.map((rowIdx) => {
+        const zoneNodes = nodes.filter((n) => n.row === rowIdx);
+        zoneNodes.sort((a, b) => a.layer - b.layer);
+        return zoneNodes;
+      });
 
       // Split a zone's nodes into wrapped rows of COLS
-      function chunkZone(zoneNodes: NetworkNode[]) {
+      function chunkZone(zoneNodes: NetworkNode[]): NetworkNode[][] {
         const rows: NetworkNode[][] = [];
         for (let i = 0; i < zoneNodes.length; i += COLS) {
           rows.push(zoneNodes.slice(i, i + COLS));
@@ -153,40 +155,33 @@ function useNodePositions(nodes: NetworkNode[]) {
         return rows;
       }
 
-      const zone0Rows = chunkZone(zone0);
-      const zone1Rows = chunkZone(zone1);
+      const allChunked = zoneBuckets.map(chunkZone);
 
-      // Width = widest row across both zones
+      // Width = widest row across all zones
       const rowWidth = (count: number) => count * NODE_WIDTH + (count - 1) * LAYER_GAP;
-      const maxCols = Math.min(COLS, Math.max(zone0.length, zone1.length));
-      const totalWidth = rowWidth(maxCols);
+      const globalMaxCols = Math.min(COLS, Math.max(...zoneBuckets.map((b) => b.length)));
+      const totalWidth = rowWidth(globalMaxCols);
 
-      // Place a zone's rows starting at yStart, return next yStart
-      function placeZone(zoneRows: NetworkNode[][], yStart: number) {
+      // Place each zone's rows sequentially
+      let yStart = PADDING_Y;
+      for (const zoneRows of allChunked) {
         zoneRows.forEach((row, rowIdx) => {
           const rw = rowWidth(row.length);
           const xOffset = (totalWidth - rw) / 2;
           row.forEach((node, colIdx) => {
             positions.set(node.vsId, {
-              x: PADDING_X + xOffset + colIdx * (NODE_WIDTH + LAYER_GAP),
+              x: PADDING_X + LEFT_LABEL_W + xOffset + colIdx * (NODE_WIDTH + LAYER_GAP),
               y: yStart + rowIdx * (NODE_HEIGHT + WRAP_GAP),
             });
           });
         });
-        return yStart + zone0Rows.length * (NODE_HEIGHT + WRAP_GAP) - WRAP_GAP;
+        const zoneHeight = zoneRows.length * (NODE_HEIGHT + WRAP_GAP) - WRAP_GAP;
+        yStart += zoneHeight + ZONE_GAP;
       }
 
-      const zone0Bottom = placeZone(zone0Rows, PADDING_Y);
-      placeZone(zone1Rows, zone0Bottom + ZONE_GAP);
-
-      const zone1RowCount = zone1Rows.length;
-      const canvasWidth = PADDING_X * 2 + totalWidth;
-      const BOTTOM_LABEL_SPACE = 32; // room for zone label below bottom box
-      const canvasHeight = PADDING_Y * 2
-        + zone0Rows.length * (NODE_HEIGHT + WRAP_GAP) - WRAP_GAP
-        + ZONE_GAP
-        + zone1RowCount * (NODE_HEIGHT + WRAP_GAP) - WRAP_GAP
-        + BOTTOM_LABEL_SPACE;
+      const canvasWidth = PADDING_X * 2 + LEFT_LABEL_W + totalWidth;
+      const BOTTOM_LABEL_SPACE = 32;
+      const canvasHeight = yStart - ZONE_GAP + PADDING_Y + BOTTOM_LABEL_SPACE;
 
       return { positions, canvasWidth, canvasHeight };
     }
@@ -795,36 +790,58 @@ export function NetworkView() {
             </defs>
 
             {/* Zone containers — dashed rectangles with labels */}
-            {scaffoldData.layoutZones && (scaffoldData.layoutZones as Array<{ id: string; label: string; row: number }>).map((zone) => {
-              const zoneNodes = networkNodes.filter((n) => {
-                const vs = scaffoldData.elements.valueStreams[n.vsId] as Record<string, unknown>;
-                return vs?.layoutZone === zone.id;
+            {scaffoldData.layoutZones && (() => {
+              const zones = scaffoldData.layoutZones as Array<{ id: string; label: string; row: number }>;
+              const useLeftLabels = zones.length >= 3;
+              return zones.map((zone) => {
+                const zoneNodes = networkNodes.filter((n) => {
+                  const vs = scaffoldData.elements.valueStreams[n.vsId] as Record<string, unknown>;
+                  return vs?.layoutZone === zone.id;
+                });
+                if (zoneNodes.length === 0) return null;
+
+                const zonePositions = zoneNodes.map((n) => positions.get(n.vsId)).filter(Boolean) as { x: number; y: number }[];
+                if (zonePositions.length === 0) return null;
+
+                const ZONE_PAD = 24;
+                const ZONE_LABEL_H = 28;
+                const minX = Math.min(...zonePositions.map((p) => p.x)) - ZONE_PAD;
+                const maxX = Math.max(...zonePositions.map((p) => p.x)) + NODE_WIDTH + ZONE_PAD;
+                const minY = Math.min(...zonePositions.map((p) => p.y)) - ZONE_PAD;
+                const maxY = Math.max(...zonePositions.map((p) => p.y)) + NODE_HEIGHT + ZONE_PAD;
+
+                if (useLeftLabels) {
+                  // Label on the left, vertically centred within the zone
+                  const labelX = minX - 12;
+                  const labelY = minY + (maxY - minY) / 2;
+                  return (
+                    <g key={zone.id}>
+                      <rect x={minX} y={minY} width={maxX - minX} height={maxY - minY} rx={12}
+                        fill="none" stroke={tv.textDim} strokeWidth={1.5} strokeDasharray="8 4" opacity={0.5} />
+                      <text x={labelX} y={labelY} textAnchor="end" dominantBaseline="central"
+                        fill={tv.textDim} fontSize={12} fontWeight={600} letterSpacing={0.5}>
+                        {zone.label}
+                      </text>
+                    </g>
+                  );
+                }
+
+                // 2-zone: label above first zone, below second
+                const labelAbove = zone.row === 0;
+                const rectMinY = minY - (labelAbove ? ZONE_LABEL_H : 0);
+                const labelX = minX + (maxX - minX) / 2;
+                const labelY = labelAbove ? rectMinY - 8 : maxY + 20;
+                return (
+                  <g key={zone.id}>
+                    <rect x={minX} y={rectMinY} width={maxX - minX} height={maxY - rectMinY + (labelAbove ? 0 : 0)} rx={12}
+                      fill="none" stroke={tv.textDim} strokeWidth={1.5} strokeDasharray="8 4" opacity={0.5} />
+                    <text x={labelX} y={labelY} textAnchor="middle" fill={tv.textDim} fontSize={13} fontWeight={600} letterSpacing={0.5}>
+                      {zone.label}
+                    </text>
+                  </g>
+                );
               });
-              if (zoneNodes.length === 0) return null;
-
-              const zonePositions = zoneNodes.map((n) => positions.get(n.vsId)).filter(Boolean) as { x: number; y: number }[];
-              if (zonePositions.length === 0) return null;
-
-              const ZONE_PAD = 24;
-              const ZONE_LABEL_H = 28;
-              const minX = Math.min(...zonePositions.map((p) => p.x)) - ZONE_PAD;
-              const maxX = Math.max(...zonePositions.map((p) => p.x)) + NODE_WIDTH + ZONE_PAD;
-              const labelAbove = zone.row === 0;
-              const minY = Math.min(...zonePositions.map((p) => p.y)) - ZONE_PAD - (labelAbove ? ZONE_LABEL_H : 0);
-              const maxY = Math.max(...zonePositions.map((p) => p.y)) + NODE_HEIGHT + ZONE_PAD;
-              const labelX = minX + (maxX - minX) / 2;
-              const labelY = labelAbove ? minY - 8 : maxY + 20;
-
-              return (
-                <g key={zone.id}>
-                  <rect x={minX} y={minY} width={maxX - minX} height={maxY - minY} rx={12}
-                    fill="none" stroke={tv.textDim} strokeWidth={1.5} strokeDasharray="8 4" opacity={0.5} />
-                  <text x={labelX} y={labelY} textAnchor="middle" fill={tv.textDim} fontSize={13} fontWeight={600} letterSpacing={0.5}>
-                    {zone.label}
-                  </text>
-                </g>
-              );
-            })}
+            })()}
 
             {/* Edges */}
             {networkForwardEdges.map((edge) => {
