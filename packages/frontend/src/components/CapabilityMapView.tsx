@@ -12,10 +12,34 @@ function isGov(name: string): boolean {
   return GOV_WORDS.some((w) => lower.includes(w));
 }
 
-/** Also check the capability's own `type` field from PlausibleBA */
 function isGovCap(cap: CapNode): boolean {
   if ((cap as any).type === "Governance") return true;
   return false;
+}
+
+/* ── Layout types ──────────────────────────────────────────── */
+
+/** Layout mode for any container level */
+type LayoutMode = "wrap" | "vertical" | "horizontal";
+
+/** A key like "l1_<id>" or "l2_<id>" → layout preference */
+type LayoutMap = Record<string, LayoutMode>;
+
+const LAYOUT_ICONS: Record<LayoutMode, string> = {
+  wrap: "⊞",       // grid/wrap
+  vertical: "↕",   // stack
+  horizontal: "↔", // row
+};
+const LAYOUT_LABELS: Record<LayoutMode, string> = {
+  wrap: "Grid",
+  vertical: "Stack",
+  horizontal: "Row",
+};
+const LAYOUT_CYCLE: LayoutMode[] = ["wrap", "vertical", "horizontal"];
+
+function nextLayout(current: LayoutMode): LayoutMode {
+  const idx = LAYOUT_CYCLE.indexOf(current);
+  return LAYOUT_CYCLE[(idx + 1) % LAYOUT_CYCLE.length];
 }
 
 /* ── Hierarchy builder ────────────────────────────────────── */
@@ -37,8 +61,8 @@ interface L3Group {
 interface L2Group {
   id: string;
   name: string;
-  l3s: L3Group[];       // L3 capability groups (when 4-level) or synthetic wrapper
-  caps: CapNode[];       // leaf capabilities directly under L2 (when 3-level fallback)
+  l3s: L3Group[];
+  caps: CapNode[];
 }
 
 interface L1Block {
@@ -50,8 +74,6 @@ interface L1Block {
 
 function buildHierarchy(caps: Record<string, any>): L1Block[] {
   const all = Object.values(caps) as CapNode[];
-
-  // If capabilities have level/parentId, use them
   const hasLevels = all.some((c) => typeof c.level === "number");
 
   if (hasLevels) {
@@ -67,13 +89,10 @@ function buildHierarchy(caps: Record<string, any>): L1Block[] {
       l2s: l2s
         .filter((l2) => l2.parentId === l1.id)
         .map((l2) => {
-          // L3 capability groups under this L2
           const l3Groups = l3s.filter((l3) => l3.parentId === l2.id);
-          // L4 capabilities parented directly to L2 (3-level fallback)
           const directCaps = l4s.filter((l4) => l4.parentId === l2.id);
 
           if (l3Groups.length > 0) {
-            // 4-level: L2 → L3 groups → L4 caps
             return {
               id: l2.id,
               name: l2.name,
@@ -82,21 +101,14 @@ function buildHierarchy(caps: Record<string, any>): L1Block[] {
                 name: l3.name,
                 caps: l4s.filter((l4) => l4.parentId === l3.id),
               })),
-              caps: directCaps, // any orphaned L4s under L2
+              caps: directCaps,
             };
           }
-          // 3-level fallback: L2 → L4 caps directly (no L3 groups)
-          return {
-            id: l2.id,
-            name: l2.name,
-            l3s: [],
-            caps: directCaps,
-          };
+          return { id: l2.id, name: l2.name, l3s: [], caps: directCaps };
         }),
     }));
   }
 
-  // Fallback: flat capabilities → single L1 with one L2
   return [
     {
       id: "flat",
@@ -114,6 +126,81 @@ function buildHierarchy(caps: Record<string, any>): L1Block[] {
   ];
 }
 
+/* ── Layout toggle button ─────────────────────────────────── */
+function LayoutToggle({
+  mode,
+  onToggle,
+}: {
+  mode: LayoutMode;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
+      className="inline-flex items-center justify-center rounded px-1 py-0.5 transition-colors"
+      style={{
+        background: tv.bgSurface,
+        border: `1px solid ${tv.borderSubtle}`,
+        color: tv.textDim,
+        fontSize: 9,
+        lineHeight: 1,
+        cursor: "pointer",
+        minWidth: 18,
+      }}
+      title={`Layout: ${LAYOUT_LABELS[mode]} — click to cycle`}
+    >
+      {LAYOUT_ICONS[mode]}
+    </button>
+  );
+}
+
+/* ── Container style for a given layout mode ──────────────── */
+function layoutStyle(mode: LayoutMode, cols?: number): React.CSSProperties {
+  switch (mode) {
+    case "vertical":
+      return { display: "flex", flexDirection: "column", gap: 4 };
+    case "horizontal":
+      return { display: "flex", flexDirection: "row", flexWrap: "nowrap", gap: 4, overflowX: "auto" };
+    case "wrap":
+    default:
+      return cols
+        ? { display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 4 }
+        : { display: "flex", flexWrap: "wrap", gap: 4 };
+  }
+}
+
+/* ── Column count control ─────────────────────────────────── */
+function ColControl({
+  cols,
+  onInc,
+  onDec,
+}: {
+  cols: number;
+  onInc: () => void;
+  onDec: () => void;
+}) {
+  return (
+    <span className="inline-flex items-center gap-0.5 ml-1">
+      <button
+        onClick={(e) => { e.stopPropagation(); onDec(); }}
+        className="rounded px-0.5 transition-colors"
+        style={{ color: tv.textDim, fontSize: 9, cursor: "pointer", background: tv.bgSurface, border: `1px solid ${tv.borderSubtle}` }}
+        title="Fewer columns"
+      >−</button>
+      <span style={{ color: tv.textDim, fontSize: 8 }}>{cols}col</span>
+      <button
+        onClick={(e) => { e.stopPropagation(); onInc(); }}
+        className="rounded px-0.5 transition-colors"
+        style={{ color: tv.textDim, fontSize: 9, cursor: "pointer", background: tv.bgSurface, border: `1px solid ${tv.borderSubtle}` }}
+        title="More columns"
+      >+</button>
+    </span>
+  );
+}
+
 /* ── Component ────────────────────────────────────────────── */
 export function CapabilityMapView() {
   const scaffoldData = useCanvasStore((s) => s.scaffoldData);
@@ -121,12 +208,28 @@ export function CapabilityMapView() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
 
+  // Layout state: per-container layout preferences
+  const [layouts, setLayouts] = useState<LayoutMap>({});
+  const [colCounts, setColCounts] = useState<Record<string, number>>({});
+
+  const getLayout = useCallback((key: string): LayoutMode => layouts[key] ?? "wrap", [layouts]);
+  const toggleLayout = useCallback((key: string) => {
+    setLayouts((prev) => ({ ...prev, [key]: nextLayout(prev[key] ?? "wrap") }));
+  }, []);
+  const getCols = useCallback((key: string) => colCounts[key] ?? 0, [colCounts]); // 0 = auto
+  const incCols = useCallback((key: string) => {
+    setColCounts((prev) => ({ ...prev, [key]: Math.min((prev[key] ?? 2) + 1, 8) }));
+  }, []);
+  const decCols = useCallback((key: string) => {
+    setColCounts((prev) => ({ ...prev, [key]: Math.max((prev[key] ?? 2) - 1, 1) }));
+  }, []);
+
   const hierarchy = useMemo(() => {
     if (!scaffoldData?.elements?.capabilities) return [];
     return buildHierarchy(scaffoldData.elements.capabilities as Record<string, any>);
   }, [scaffoldData]);
 
-  // Build PPIT lookup: capId → { roles, activities, infoObjects, techApps }
+  // Build PPIT lookup
   const ppitByCapId = useMemo(() => {
     if (!scaffoldData?.elements?.activities) return new Map<string, { roles: string[]; activityNames: string[]; infoObjects: string[]; techApps: string[] }>();
     const map = new Map<string, { roles: string[]; activityNames: string[]; infoObjects: string[]; techApps: string[] }>();
@@ -161,11 +264,14 @@ export function CapabilityMapView() {
 
   const stats = useMemo(() => {
     const l2Count = hierarchy.reduce((a, b) => a + b.l2s.length, 0);
+    const l3Count = hierarchy.reduce(
+      (a, l1) => a + l1.l2s.reduce((b, l2) => b + l2.l3s.length, 0), 0,
+    );
     const capCount = hierarchy.reduce(
       (a, l1) => a + l1.l2s.reduce((b, l2) =>
         b + l2.caps.length + l2.l3s.reduce((c, l3) => c + l3.caps.length, 0), 0), 0,
     );
-    return { l1: hierarchy.length, l2: l2Count, caps: capCount };
+    return { l1: hierarchy.length, l2: l2Count, l3: l3Count, caps: capCount };
   }, [hierarchy]);
 
   /* ── Inline rename ──────────────────────────────────────── */
@@ -194,6 +300,10 @@ export function CapabilityMapView() {
 
   if (!scaffoldData) return null;
 
+  const topLayoutKey = "top";
+  const topLayout = getLayout(topLayoutKey);
+  const topCols = getCols(topLayoutKey);
+
   return (
     <div
       className="h-full overflow-auto"
@@ -218,12 +328,13 @@ export function CapabilityMapView() {
             {scaffoldData.name} — Operating Capabilities
           </div>
           <div className="text-[11px]" style={{ color: tv.textSecondary }}>
-            {stats.l1} business areas · {stats.l2} domains · {stats.caps}{" "}
-            capabilities
+            {stats.l1} business areas · {stats.l2} domains
+            {stats.l3 > 0 && <> · {stats.l3} groups</>}
+            {" "}· {stats.caps} capabilities
           </div>
         </div>
 
-        {/* Legend */}
+        {/* Legend + top layout toggle */}
         <div className="mb-4 flex flex-wrap items-center gap-5">
           <div
             className="flex items-center gap-1.5 text-[10px]"
@@ -245,6 +356,15 @@ export function CapabilityMapView() {
             />
             Governance
           </div>
+          <div className="flex items-center gap-1.5">
+            <div className="text-[9px]" style={{ color: tv.textDim }}>
+              Layout:
+            </div>
+            <LayoutToggle mode={topLayout} onToggle={() => toggleLayout(topLayoutKey)} />
+            {topLayout === "wrap" && topCols > 0 && (
+              <ColControl cols={topCols} onInc={() => incCols(topLayoutKey)} onDec={() => decCols(topLayoutKey)} />
+            )}
+          </div>
           <div
             className="ml-1 text-[9px]"
             style={{ color: tv.textDim }}
@@ -253,12 +373,17 @@ export function CapabilityMapView() {
           </div>
         </div>
 
-        {/* Treemap grid */}
+        {/* Treemap grid — top level uses grid with configurable columns */}
         <div
-          className="grid gap-1.5"
-          style={{
-            gridTemplateColumns: "repeat(auto-fill, minmax(195px, 1fr))",
-          }}
+          style={
+            topLayout === "wrap" && topCols > 0
+              ? { display: "grid", gridTemplateColumns: `repeat(${topCols}, 1fr)`, gap: 6 }
+              : topLayout === "vertical"
+                ? { display: "flex", flexDirection: "column", gap: 6 }
+                : topLayout === "horizontal"
+                  ? { display: "flex", flexDirection: "row", flexWrap: "nowrap", gap: 6, overflowX: "auto" }
+                  : { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 6 }
+          }
         >
           {hierarchy.map((l1) => (
             <L1Card
@@ -271,6 +396,11 @@ export function CapabilityMapView() {
               onStartEdit={startEdit}
               onEditTextChange={setEditText}
               onCommitEdit={commitEdit}
+              getLayout={getLayout}
+              toggleLayout={toggleLayout}
+              getCols={getCols}
+              incCols={incCols}
+              decCols={decCols}
             />
           ))}
         </div>
@@ -364,6 +494,11 @@ function L1Card({
   onStartEdit,
   onEditTextChange,
   onCommitEdit,
+  getLayout,
+  toggleLayout,
+  getCols,
+  incCols,
+  decCols,
 }: {
   block: L1Block;
   selectedL3: CapNode | null;
@@ -373,11 +508,20 @@ function L1Card({
   onStartEdit: (c: CapNode) => void;
   onEditTextChange: (t: string) => void;
   onCommitEdit: () => void;
+  getLayout: (key: string) => LayoutMode;
+  toggleLayout: (key: string) => void;
+  getCols: (key: string) => number;
+  incCols: (key: string) => void;
+  decCols: (key: string) => void;
 }) {
   const borderColor = block.gov ? tv.govColor : tv.accentBorder;
   const headerBg = block.gov ? tv.govMuted : tv.accentMuted;
   const capCount = block.l2s.reduce((a, l2) =>
     a + l2.caps.length + l2.l3s.reduce((b, l3) => b + l3.caps.length, 0), 0);
+
+  const l1Key = `l1_${block.id}`;
+  const l1Layout = getLayout(l1Key);
+  const l1Cols = getCols(l1Key);
 
   return (
     <div
@@ -389,90 +533,136 @@ function L1Card({
     >
       {/* L1 header */}
       <div
-        className="border-b px-2.5 py-2"
+        className="flex items-center justify-between border-b px-2.5 py-2"
         style={{ background: headerBg, borderColor: tv.borderSubtle }}
       >
-        <div
-          className="overflow-hidden text-ellipsis whitespace-nowrap text-[10px] font-bold uppercase tracking-wider"
-          style={{ color: tv.textPrimary }}
-          title={block.name}
-        >
-          {block.name}
+        <div>
+          <div
+            className="overflow-hidden text-ellipsis whitespace-nowrap text-[10px] font-bold uppercase tracking-wider"
+            style={{ color: tv.textPrimary }}
+            title={block.name}
+          >
+            {block.name}
+          </div>
+          <div className="mt-0.5 text-[9px]" style={{ color: tv.textSecondary }}>
+            {block.l2s.length} domains · {capCount} capabilities
+          </div>
         </div>
-        <div className="mt-0.5 text-[9px]" style={{ color: tv.textSecondary }}>
-          {block.l2s.length} domains · {capCount} capabilities
+        <div className="flex items-center gap-1">
+          <LayoutToggle mode={l1Layout} onToggle={() => toggleLayout(l1Key)} />
+          {l1Layout === "wrap" && l1Cols > 0 && (
+            <ColControl cols={l1Cols} onInc={() => incCols(l1Key)} onDec={() => decCols(l1Key)} />
+          )}
         </div>
       </div>
 
       {/* L2 groups */}
-      <div className="p-1.5">
-        {block.l2s.map((l2) => (
-          <div
-            key={l2.id}
-            className="mb-1 overflow-hidden rounded last:mb-0"
-            style={{ border: `1px solid ${tv.borderSubtle}` }}
-          >
+      <div
+        className="p-1.5"
+        style={
+          l1Layout === "wrap" && l1Cols > 0
+            ? { display: "grid", gridTemplateColumns: `repeat(${l1Cols}, 1fr)`, gap: 4 }
+            : l1Layout === "horizontal"
+              ? { display: "flex", flexDirection: "row", gap: 4, overflowX: "auto" }
+              : { display: "flex", flexDirection: "column", gap: 4 }
+        }
+      >
+        {block.l2s.map((l2) => {
+          const l2Key = `l2_${l2.id}`;
+          const l2Layout = getLayout(l2Key);
+          const l2Cols = getCols(l2Key);
+
+          return (
             <div
-              className="px-2 py-1"
+              key={l2.id}
+              className="overflow-hidden rounded"
               style={{
-                background: tv.bgSurface,
-                borderBottom: `1px solid ${tv.borderSubtle}`,
+                border: `1px solid ${tv.borderSubtle}`,
+                minWidth: l1Layout === "horizontal" ? 200 : undefined,
+                flex: l1Layout === "horizontal" ? "0 0 auto" : undefined,
               }}
             >
               <div
-                className="text-[9px] font-semibold"
-                style={{ color: tv.textSecondary }}
+                className="flex items-center justify-between px-2 py-1"
+                style={{
+                  background: tv.bgSurface,
+                  borderBottom: `1px solid ${tv.borderSubtle}`,
+                }}
               >
-                {l2.name}
+                <div
+                  className="text-[9px] font-semibold"
+                  style={{ color: tv.textSecondary }}
+                >
+                  {l2.name}
+                </div>
+                <LayoutToggle mode={l2Layout} onToggle={() => toggleLayout(l2Key)} />
+              </div>
+              <div
+                className="px-1.5 py-1.5"
+                style={
+                  l2Layout === "wrap" && l2Cols > 0
+                    ? { display: "grid", gridTemplateColumns: `repeat(${l2Cols}, 1fr)`, gap: 4 }
+                    : l2Layout === "horizontal"
+                      ? { display: "flex", flexDirection: "row", flexWrap: "nowrap", gap: 4, overflowX: "auto" }
+                      : { display: "flex", flexDirection: "column", gap: 4 }
+                }
+              >
+                {/* L3 capability groups */}
+                {l2.l3s.map((l3) => {
+                  const l3Key = `l3_${l3.id}`;
+                  const l3Layout = getLayout(l3Key);
+
+                  return (
+                    <div key={l3.id} className="rounded" style={{
+                      border: `1px dashed ${tv.borderSubtle}`,
+                      padding: 4,
+                      flex: l2Layout === "horizontal" ? "0 0 auto" : undefined,
+                      minWidth: l2Layout === "horizontal" ? 160 : undefined,
+                    }}>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="text-[8px] font-semibold uppercase tracking-wider" style={{ color: tv.textDim }}>
+                          {l3.name}
+                        </div>
+                        <LayoutToggle mode={l3Layout} onToggle={() => toggleLayout(l3Key)} />
+                      </div>
+                      <div style={layoutStyle(l3Layout)}>
+                        {l3.caps.map((cap) => (
+                          <CapTile
+                            key={cap.id}
+                            cap={cap}
+                            gov={block.gov}
+                            isSelected={selectedL3?.id === cap.id}
+                            isEditing={editingId === cap.id}
+                            editText={editText}
+                            onSelect={() => onSelectL3(cap)}
+                            onStartEdit={() => onStartEdit(cap)}
+                            onEditTextChange={onEditTextChange}
+                            onCommitEdit={onCommitEdit}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                {/* Direct L4 caps under L2 (no L3 groups) */}
+                {l2.caps.map((cap) => (
+                  <CapTile
+                    key={cap.id}
+                    cap={cap}
+                    gov={block.gov}
+                    isSelected={selectedL3?.id === cap.id}
+                    isEditing={editingId === cap.id}
+                    editText={editText}
+                    onSelect={() => onSelectL3(cap)}
+                    onStartEdit={() => onStartEdit(cap)}
+                    onEditTextChange={onEditTextChange}
+                    onCommitEdit={onCommitEdit}
+                  />
+                ))}
               </div>
             </div>
-            <div className="px-1.5 py-1.5">
-              {/* L3 capability groups (when 4-level hierarchy) */}
-              {l2.l3s.map((l3) => (
-                <div key={l3.id} className="mb-1 last:mb-0">
-                  <div className="mb-0.5 text-[8px] font-semibold uppercase tracking-wider" style={{ color: tv.textDim }}>
-                    {l3.name}
-                  </div>
-                  <div className="flex flex-wrap gap-0.5">
-                    {l3.caps.map((cap) => (
-                      <CapTile
-                        key={cap.id}
-                        cap={cap}
-                        gov={block.gov}
-                        isSelected={selectedL3?.id === cap.id}
-                        isEditing={editingId === cap.id}
-                        editText={editText}
-                        onSelect={() => onSelectL3(cap)}
-                        onStartEdit={() => onStartEdit(cap)}
-                        onEditTextChange={onEditTextChange}
-                        onCommitEdit={onCommitEdit}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-              {/* Direct L4 caps under L2 (3-level fallback) */}
-              {l2.caps.length > 0 && (
-                <div className="flex flex-wrap gap-0.5">
-                  {l2.caps.map((cap) => (
-                    <CapTile
-                      key={cap.id}
-                      cap={cap}
-                      gov={block.gov}
-                      isSelected={selectedL3?.id === cap.id}
-                      isEditing={editingId === cap.id}
-                      editText={editText}
-                      onSelect={() => onSelectL3(cap)}
-                      onStartEdit={() => onStartEdit(cap)}
-                      onEditTextChange={onEditTextChange}
-                      onCommitEdit={onCommitEdit}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -535,6 +725,7 @@ function CapTile({
         background: isSelected ? selectedBg : tv.tileBg,
         border: `0.5px solid ${isSelected ? selectedBorder : tv.borderSubtle}`,
         color: isSelected ? selectedColor : tv.textSecondary,
+        whiteSpace: "nowrap",
       }}
       title={cap.description || cap.name}
     >
