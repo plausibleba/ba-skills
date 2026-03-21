@@ -144,6 +144,47 @@ export function runGate2(scaffold: any): GateResult {
     }
   }
 
+  // V-SCAFFOLD-09: lifecycle states on information objects
+  const informationObjects = elements.informationObjects ?? {};
+  for (const [ioId, io] of Object.entries(informationObjects) as [string, any][]) {
+    const states = io.lifecycleStates ?? [];
+    if (states.length === 0) {
+      warnings.push(`InfoObject ${ioId}: no lifecycleStates defined`);
+    } else {
+      const hasInitial = states.some((s: any) => s.position === "initial");
+      const hasTerminal = states.some((s: any) => s.position === "terminal");
+      if (!hasInitial) warnings.push(`InfoObject ${ioId}: no initial lifecycle state`);
+      if (!hasTerminal) warnings.push(`InfoObject ${ioId}: no terminal lifecycle state`);
+    }
+  }
+
+  // V-SCAFFOLD-10: sub-activity graphs exist for activities
+  const subActivityGraphs = elements.subActivityGraphs ?? {};
+  for (const actId of Object.keys(activities)) {
+    if (!subActivityGraphs[actId]) {
+      warnings.push(`Activity ${actId}: no sub-activity graph in subActivityGraphs`);
+    }
+  }
+  // Validate sub-activity DAG structure
+  for (const [actId, dag] of Object.entries(subActivityGraphs) as [string, any][]) {
+    const nodes = dag?.nodes ?? [];
+    if (nodes.length === 0) {
+      warnings.push(`SubActivityGraph ${actId}: empty nodes array`);
+      continue;
+    }
+    const nodeIds = new Set(nodes.map((n: any) => n.id));
+    for (const node of nodes) {
+      for (const nextId of (node.nextIds ?? [])) {
+        if (!nodeIds.has(nextId)) {
+          warnings.push(`SubActivityGraph ${actId}: node ${node.id} references unknown nextId ${nextId}`);
+        }
+      }
+      if (node.nodeType === "gate" && (!node.nextIds || node.nextIds.length < 2)) {
+        warnings.push(`SubActivityGraph ${actId}: gate node ${node.id} has fewer than 2 nextIds`);
+      }
+    }
+  }
+
   return { passed: errors.length === 0, errors, warnings };
 }
 

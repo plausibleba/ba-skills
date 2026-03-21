@@ -19,12 +19,17 @@ import { buildPass1Prompt } from "./prompts/pass-a1-value-streams";
 import { buildPass2Prompt } from "./prompts/pass-a2-capability-mapping";
 
 // ── Post-Pass-B enrichment: inject capability hierarchy from DiscoveryIR ────
-// Pass B often renames capabilities from what Pass A2 proposed (e.g. "Manage Quote Requests" →
-// "Customer Relationship Management"). Exact name matching fails. Instead we:
-// 1. Add L1/L2 nodes from the hierarchy
-// 2. Try exact name match first for L3s
-// 3. Fall back: assign unmatched scaffold capabilities to their best-fit L2 domain
-//    based on the business objects and capability names
+// Pass B generates flat L4 capabilities. This function adds L1/L2/L3 hierarchy
+// nodes from the DiscoveryIR and parents L4s under L3 groups.
+//
+// Handles two formats:
+//   1. New 4-level: L1 > L2.capabilityGroups (L3) > capabilities (L4)
+//   2. Old 3-level: L1 > L2.capabilities (leaf L3, treated as L4 under synthetic L3)
+//
+// Pass B often renames capabilities — exact name matching fails. Instead we:
+// 1. Add L1/L2/L3 nodes from the hierarchy
+// 2. Try exact name match first for L4s
+// 3. Fall back: assign unmatched scaffold capabilities to their best-fit L3 group
 function injectCapabilityHierarchy(scaffold: any, ir: DiscoveryIR): void {
   if (!scaffold?.elements?.capabilities || !ir.capabilityMap?.l1Areas?.length) return;
 
@@ -39,7 +44,8 @@ function injectCapabilityHierarchy(scaffold: any, ir: DiscoveryIR): void {
   // Track which scaffold caps get matched
   const matched = new Set<string>();
 
-  // Phase 1: Add L1/L2 nodes and try exact name match for L3s
+  // Phase 1: Add L1/L2/L3 nodes and match L4 leaves
+  const l3Ids: string[] = [];
   const l2Ids: string[] = [];
   for (const l1 of ir.capabilityMap.l1Areas) {
     const l1Id = makeId("cap_l1", l1.name);
@@ -56,57 +62,96 @@ function injectCapabilityHierarchy(scaffold: any, ir: DiscoveryIR): void {
       };
       l2Ids.push(l2Id);
 
-      for (const l3 of l2.capabilities ?? []) {
-        const existingId = nameToId[l3.name?.toLowerCase()];
-        if (existingId && caps[existingId]) {
-          caps[existingId].level = 3;
-          caps[existingId].parentId = l2Id;
-          caps[existingId].businessObject = caps[existingId].businessObject ?? l3.businessObject;
-          matched.add(existingId);
-        } else {
-          // L3 from DiscoveryIR doesn't exist in scaffold — add it
-          const l3Id = makeId("cap", l3.name);
-          if (!caps[l3Id]) {
-            caps[l3Id] = {
-              id: l3Id, name: l3.name, elementType: "Capability",
-              level: 3, parentId: l2Id, businessObject: l3.businessObject ?? "",
-              description: l3.description ?? "",
-            };
-          } else {
-            caps[l3Id].level = 3;
-            caps[l3Id].parentId = l2Id;
+      // Detect 4-level vs 3-level format
+      const l2Any = l2 as any;
+      if (l2Any.capabilityGroups?.length) {
+        // 4-level: L2 > L3 capabilityGroups > L4 capabilities
+        for (const l3 of l2Any.capabilityGroups) {
+          const l3Id = makeId("cap_l3", l3.name);
+          caps[l3Id] = {
+            id: l3Id, name: l3.name, elementType: "Capability",
+            level: 3, parentId: l2Id, businessObject: l3.businessObject ?? "",
+            description: l3.description ?? "",
+          };
+          l3Ids.push(l3Id);
+
+          for (const l4 of (l3.capabilities ?? [])) {
+            const existingId = nameToId[l4.name?.toLowerCase()];
+            if (existingId && caps[existingId]) {
+              caps[existingId].level = 4;
+              caps[existingId].parentId = l3Id;
+              caps[existingId].businessObject = caps[existingId].businessObject ?? l4.businessObject;
+              matched.add(existingId);
+            } else {
+              const l4Id = makeId("cap", l4.name);
+              if (!caps[l4Id]) {
+                caps[l4Id] = {
+                  id: l4Id, name: l4.name, elementType: "Capability",
+                  level: 4, parentId: l3Id, businessObject: l4.businessObject ?? "",
+                  description: l4.description ?? "",
+                };
+              } else {
+                caps[l4Id].level = 4;
+                caps[l4Id].parentId = l3Id;
+              }
+              matched.add(l4Id);
+            }
           }
-          matched.add(l3Id);
+        }
+      } else {
+        // 3-level fallback: L2.capabilities are leaf — treat as L4 under L2 directly
+        // (no L3 groups in old format, so parent to L2)
+        for (const leaf of (l2.capabilities ?? [])) {
+          const existingId = nameToId[leaf.name?.toLowerCase()];
+          if (existingId && caps[existingId]) {
+            caps[existingId].level = 4;
+            caps[existingId].parentId = l2Id;
+            caps[existingId].businessObject = caps[existingId].businessObject ?? leaf.businessObject;
+            matched.add(existingId);
+          } else {
+            const leafId = makeId("cap", leaf.name);
+            if (!caps[leafId]) {
+              caps[leafId] = {
+                id: leafId, name: leaf.name, elementType: "Capability",
+                level: 4, parentId: l2Id, businessObject: leaf.businessObject ?? "",
+                description: leaf.description ?? "",
+              };
+            } else {
+              caps[leafId].level = 4;
+              caps[leafId].parentId = l2Id;
+            }
+            matched.add(leafId);
+          }
         }
       }
     }
   }
 
-  // Phase 2: Assign unmatched scaffold capabilities to best-fit L2 domains
-  // Use keyword overlap between capability name and L2 domain name
+  // Phase 2: Assign unmatched scaffold capabilities to best-fit parent
+  // Prefer L3 groups if available, fall back to L2 domains
+  const parentPool = l3Ids.length > 0 ? l3Ids : l2Ids;
   const unmatchedIds = Object.keys(caps).filter(id => {
     const c = caps[id];
-    return !matched.has(id) && !id.startsWith("cap_l1_") && !id.startsWith("cap_l2_")
-      && c.level !== 1 && c.level !== 2;
+    return !matched.has(id) && !id.startsWith("cap_l1_") && !id.startsWith("cap_l2_") && !id.startsWith("cap_l3_")
+      && c.level !== 1 && c.level !== 2 && c.level !== 3;
   });
 
-  if (unmatchedIds.length > 0 && l2Ids.length > 0) {
+  if (unmatchedIds.length > 0 && parentPool.length > 0) {
     for (const capId of unmatchedIds) {
       const cap = caps[capId];
       const capWords = (cap.name ?? "").toLowerCase().split(/\s+/);
 
-      // Score each L2 by word overlap
-      let bestL2 = l2Ids[0];
+      // Score each parent by word overlap
+      let bestParent = parentPool[0];
       let bestScore = 0;
-      for (const l2Id of l2Ids) {
-        const l2Name = (caps[l2Id]?.name ?? "").toLowerCase();
-        const score = capWords.filter((w: string) => w.length > 3 && l2Name.includes(w)).length;
-        if (score > bestScore) { bestScore = score; bestL2 = l2Id; }
+      for (const pId of parentPool) {
+        const pName = (caps[pId]?.name ?? "").toLowerCase();
+        const score = capWords.filter((w: string) => w.length > 3 && pName.includes(w)).length;
+        if (score > bestScore) { bestScore = score; bestParent = pId; }
       }
 
-      // Find the L1 parent of the best L2 to check Execution vs Governance
-      cap.level = 3;
-      cap.parentId = bestL2;
+      cap.level = 4;
+      cap.parentId = bestParent;
     }
   }
 }

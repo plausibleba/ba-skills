@@ -20,19 +20,30 @@ export interface DiscoveryStage {
   metrics?: DiscoveryStageMetric[];
 }
 
-// Scoped Capability Map — L1 → L2 → L3 taxonomy (VCC_PROMPT_DEFINITIONS.md §3)
-export interface DiscoveryCapabilityL3 {
+// Scoped Capability Map — L1 → L2 → L3 → L4 Capsicum hierarchy
+// L1=Business Area, L2=Domain, L3=Capability Group, L4=Capability (operational)
+export interface DiscoveryCapabilityL4 {
   name: string;               // Verb-Noun, e.g. "Manage Trade Partner Orders"
-  number?: string;            // Taxonomy position e.g. "1.2.3"
+  number?: string;            // Taxonomy position e.g. "1.2.3.1"
   businessObject: string;     // core object e.g. "Orders"
   description?: string;
   stabilisationNote?: string; // ⚑ flagged inconsistencies for architect review
 }
 
+export interface DiscoveryCapabilityL3 {
+  name: string;               // Capability Group e.g. "Lead Management"
+  number?: string;            // Taxonomy position e.g. "1.2.3"
+  businessObject: string;     // core object e.g. "Orders"
+  description?: string;
+  stabilisationNote?: string; // ⚑ flagged inconsistencies for architect review
+  capabilities: DiscoveryCapabilityL4[]; // L4 operational capabilities
+}
+
 export interface DiscoveryCapabilityL2 {
   name: string;               // Business Domain e.g. "Order Management"
   number?: string;            // Taxonomy position e.g. "1.2"
-  capabilities: DiscoveryCapabilityL3[];
+  capabilities?: DiscoveryCapabilityL4[];   // backward compat: old 3-level format
+  capabilityGroups?: DiscoveryCapabilityL3[]; // new 4-level format
 }
 
 export interface DiscoveryCapabilityL1 {
@@ -180,24 +191,50 @@ export function buildDiscoveryIR(
     }),
   }));
 
-  // Capability map — L1/L2/L3 structure from A2 (aligned with BA Capability Mapping Skill)
-  // Graceful fallback: if A2 returned old capabilitiesByVS format, build minimal map
+  // Capability map — L1/L2/L3/L4 Capsicum hierarchy from A2
+  // Handles three formats:
+  //   1. New 4-level: l1 > l2.capabilityGroups (L3) > capabilities (L4)
+  //   2. Old 3-level: l1 > l2.capabilities (L3 leaf)
+  //   3. Legacy: capabilitiesByVS flat format
   const capabilityMap: DiscoveryCapabilityMap = pass2Result.capabilityMap
     ? {
         l1Areas: (pass2Result.capabilityMap.l1Areas ?? []).map((l1: any) => ({
           name: l1.name,
           number: l1.number,
           type: l1.type,
-          domains: (l1.domains ?? []).map((l2: any) => ({
-            name: l2.name,
-            number: l2.number,
-            capabilities: (l2.capabilities ?? []).map((cap: any) => ({
-              name: cap.name,
-              number: cap.number,
-              businessObject: cap.businessObject ?? "",
-              description: cap.description ?? "",
-            })),
-          })),
+          domains: (l1.domains ?? []).map((l2: any) => {
+            // Detect format: capabilityGroups (4-level) vs capabilities (3-level)
+            if (l2.capabilityGroups?.length) {
+              // New 4-level format: L2 > L3 capabilityGroups > L4 capabilities
+              return {
+                name: l2.name,
+                number: l2.number,
+                capabilityGroups: (l2.capabilityGroups ?? []).map((l3: any) => ({
+                  name: l3.name,
+                  number: l3.number,
+                  businessObject: l3.businessObject ?? "",
+                  description: l3.description ?? "",
+                  capabilities: (l3.capabilities ?? []).map((l4: any) => ({
+                    name: l4.name,
+                    number: l4.number,
+                    businessObject: l4.businessObject ?? l3.businessObject ?? "",
+                    description: l4.description ?? "",
+                  })),
+                })),
+              };
+            }
+            // Old 3-level format: L2.capabilities are leaf L3 → treat as L4 under synthetic L3 group
+            return {
+              name: l2.name,
+              number: l2.number,
+              capabilities: (l2.capabilities ?? []).map((cap: any) => ({
+                name: cap.name,
+                number: cap.number,
+                businessObject: cap.businessObject ?? "",
+                description: cap.description ?? "",
+              })),
+            };
+          }),
         })),
       }
     : {
