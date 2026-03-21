@@ -168,8 +168,16 @@ function DagGraph({ nodes, pal }: { nodes: SubActivity[]; pal: Pal }) {
     const GAP_Y = 20;
     const PAD = 16;
 
+    // Detect if any upstream edges exist (target layer <= source layer)
+    const layerOf = new Map<string, number>();
+    layers.forEach((layer, li) => layer.forEach(n => layerOf.set(n.id, li)));
+    const hasUpstream = nodes.some(n =>
+      (n.nextIds ?? []).some(nxt => (layerOf.get(nxt) ?? 999) <= (layerOf.get(n.id) ?? 0))
+    );
+    const ROUTE_MARGIN = hasUpstream ? 20 : 0; // extra space for side-routed edges
+
     const maxCols = Math.max(...layers.map(l => l.length), 1);
-    const svgW = maxCols * (NODE_W + GAP_X) - GAP_X + PAD * 2;
+    const svgW = maxCols * (NODE_W + GAP_X) - GAP_X + PAD * 2 + ROUTE_MARGIN * 2;
     const svgH = layers.length * (NODE_H + GAP_Y) - GAP_Y + PAD * 2;
 
     const positions = new Map<string, { x: number; y: number; w: number; h: number }>();
@@ -185,10 +193,10 @@ function DagGraph({ nodes, pal }: { nodes: SubActivity[]; pal: Pal }) {
       });
     });
 
-    return { positions, svgW, svgH, nodeMap };
+    return { positions, svgW, svgH };
   }, [nodes]);
 
-  const { positions, svgW, svgH, nodeMap } = layout;
+  const { positions, svgW, svgH } = layout;
 
   return (
     <svg width={svgW} height={svgH} className="w-full" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="xMidYMin meet">
@@ -197,29 +205,59 @@ function DagGraph({ nodes, pal }: { nodes: SubActivity[]; pal: Pal }) {
           <polygon points="0 0, 8 3, 0 6" fill={pal.activ.fg} opacity={0.5} />
         </marker>
       </defs>
-      {/* Edges — elbow connectors */}
+      {/* Edges — smart elbow connectors */}
       {nodes.map(node => {
         const from = positions.get(node.id);
         if (!from) return null;
         return (node.nextIds ?? []).map(nxtId => {
           const to = positions.get(nxtId);
           if (!to) return null;
-          const x1 = from.x + from.w / 2;
-          const y1 = from.y + from.h;
-          const x2 = to.x + to.w / 2;
-          const y2 = to.y;
-          const midY = (y1 + y2) / 2;
           const edgeLabel = node.edgeLabels?.[nxtId];
-          // Elbow path: down → horizontal → down
-          const d = x1 === x2
-            ? `M${x1},${y1} L${x2},${y2}`
-            : `M${x1},${y1} L${x1},${midY} L${x2},${midY} L${x2},${y2}`;
+
+          const fromCx = from.x + from.w / 2;
+          const fromBot = from.y + from.h;
+          const toCx = to.x + to.w / 2;
+          const toTop = to.y;
+          const isUpstream = toTop <= fromBot + 4; // target is at same level or above
+
+          let d: string;
+          let labelX: number;
+          let labelY: number;
+
+          if (!isUpstream && fromCx === toCx) {
+            // Same column, downward: straight line
+            d = `M${fromCx},${fromBot} L${toCx},${toTop}`;
+            labelX = fromCx + 6;
+            labelY = (fromBot + toTop) / 2;
+          } else if (!isUpstream) {
+            // Normal downward with horizontal offset: elbow from bottom
+            const midY = (fromBot + toTop) / 2;
+            d = `M${fromCx},${fromBot} L${fromCx},${midY} L${toCx},${midY} L${toCx},${toTop}`;
+            labelX = (fromCx + toCx) / 2;
+            labelY = midY - 3;
+          } else {
+            // Upstream or same-level: exit from outer side, route around
+            const goRight = toCx >= fromCx;
+            // Exit from the outer side (AWAY from target) so the path goes wide
+            const exitX = goRight ? from.x + from.w : from.x;
+            const exitY = from.y + from.h / 2;
+            // Enter target from top
+            const MARGIN = 14;
+            // Route wide around the nodes
+            const outerX = goRight
+              ? Math.max(from.x + from.w, to.x + to.w) + MARGIN
+              : Math.min(from.x, to.x) - MARGIN;
+            d = `M${exitX},${exitY} L${outerX},${exitY} L${outerX},${toTop - MARGIN} L${toCx},${toTop - MARGIN} L${toCx},${toTop}`;
+            labelX = outerX + (goRight ? 4 : -4);
+            labelY = (exitY + (toTop - MARGIN)) / 2;
+          }
+
           return (
             <g key={`${node.id}-${nxtId}`}>
               <path d={d} fill="none"
                 stroke={pal.activ.fg} strokeWidth={1} opacity={0.4} markerEnd="url(#dagArrowStruct)" />
               {edgeLabel && (
-                <text x={(x1 + x2) / 2} y={midY - 3} textAnchor="middle" fontSize={7} fill={pal.activ.fg} opacity={0.7}>
+                <text x={labelX} y={labelY} textAnchor="middle" fontSize={7} fill={pal.activ.fg} opacity={0.7}>
                   {edgeLabel}
                 </text>
               )}
@@ -339,22 +377,38 @@ function LifecycleStateDiagram({ states, pal }: { states: LifecycleState[]; pal:
           <polygon points="0 0, 8 3, 0 6" fill={pal.info.fg} opacity={0.5} />
         </marker>
       </defs>
-      {/* Transition edges — elbow connectors */}
+      {/* Transition edges — smart elbow connectors */}
       {states.map(state => {
         const from = positions.get(state.id);
         if (!from) return null;
         return (state.transitionsTo ?? []).map(toId => {
           const to = positions.get(toId);
           if (!to) return null;
-          const x1 = from.x + NODE_W / 2;
-          const y1 = from.y + NODE_H;
-          const x2 = to.x + NODE_W / 2;
-          const y2 = to.y;
-          const midY = (y1 + y2) / 2;
-          // Elbow path: down → horizontal → down
-          const d = x1 === x2
-            ? `M${x1},${y1} L${x2},${y2}`
-            : `M${x1},${y1} L${x1},${midY} L${x2},${midY} L${x2},${y2}`;
+
+          const fromCx = from.x + NODE_W / 2;
+          const fromBot = from.y + NODE_H;
+          const toCx = to.x + NODE_W / 2;
+          const toTop = to.y;
+          const isUpstream = toTop <= fromBot + 4;
+
+          let d: string;
+          if (!isUpstream && fromCx === toCx) {
+            d = `M${fromCx},${fromBot} L${toCx},${toTop}`;
+          } else if (!isUpstream) {
+            const midY = (fromBot + toTop) / 2;
+            d = `M${fromCx},${fromBot} L${fromCx},${midY} L${toCx},${midY} L${toCx},${toTop}`;
+          } else {
+            // Upstream or same-level: exit from outer side, route around
+            const goRight = toCx >= fromCx;
+            const exitX = goRight ? from.x + NODE_W : from.x;
+            const exitY = from.y + NODE_H / 2;
+            const MARGIN = 14;
+            const outerX = goRight
+              ? Math.max(from.x + NODE_W, to.x + NODE_W) + MARGIN
+              : Math.min(from.x, to.x) - MARGIN;
+            d = `M${exitX},${exitY} L${outerX},${exitY} L${outerX},${toTop - MARGIN} L${toCx},${toTop - MARGIN} L${toCx},${toTop}`;
+          }
+
           return (
             <path key={`${state.id}-${toId}`} d={d} fill="none"
               stroke={pal.info.fg} strokeWidth={1} opacity={0.4}
