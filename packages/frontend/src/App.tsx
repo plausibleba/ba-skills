@@ -10,6 +10,7 @@ import { UserGuidePanel } from "./components/UserGuidePanel.tsx";
 import { NetworkView } from "./components/NetworkView.tsx";
 import { CapabilityMapView } from "./components/CapabilityMapView.tsx";
 import { ConceptGraphView } from "./components/ConceptGraphView.tsx";
+import { FrictionView } from "./components/FrictionView.tsx";
 import DiscoveryIntake from "./components/DiscoveryIntake.tsx";
 import { LoginPage } from "./components/LoginPage.tsx";
 import { ProjectList } from "./components/ProjectList.tsx";
@@ -28,6 +29,7 @@ export default function App() {
     goToIntake,
     goToCapabilityMap,
     goToConceptGraph,
+    goToFriction,
     loading,
     loadScaffold,
     loadHeatmap,
@@ -111,6 +113,7 @@ export default function App() {
   const isIntake = viewMode === "intake";
   const isCapabilityMap = viewMode === "capabilityMap";
   const isConceptGraph = viewMode === "conceptGraph";
+  const isFriction = viewMode === "friction";
 
   // Auth gate: show login page if not authenticated and not local mode
   if (authLoading) {
@@ -179,6 +182,7 @@ export default function App() {
                 }, active: isStage },
                 { id: "capabilities", label: "Capabilities", onClick: goToCapabilityMap, active: isCapabilityMap },
                 { id: "concepts", label: "Concepts", onClick: goToConceptGraph, active: isConceptGraph },
+                { id: "friction", label: "Friction", onClick: goToFriction, active: isFriction },
               ]}
             />
           )}
@@ -298,6 +302,7 @@ export default function App() {
         {!isIntake && isStageReady && <CanvasView />}
         {!isIntake && isLoaded && isCapabilityMap && <CapabilityMapView />}
         {!isIntake && isLoaded && isConceptGraph && <ConceptGraphView />}
+        {!isIntake && isLoaded && isFriction && <FrictionView />}
       </main>
       <UserGuidePanel />
     </div>
