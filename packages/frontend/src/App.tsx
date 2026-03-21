@@ -129,11 +129,6 @@ export default function App() {
   // In local mode, skip project list and show original landing page
   const showProjectList = !isLocalMode && !isLoaded && !isIntake;
 
-  // Get selected VS name for breadcrumb
-  const selectedVsName = selectedVsId && scaffoldData
-    ? ((scaffoldData.elements.valueStreams[selectedVsId] as { name?: string })?.name ?? selectedVsId)
-    : null;
-
   // Navigate back to project list — flush any pending save first
   const goToProjects = async () => {
     const canvas = useCanvasStore.getState();
@@ -147,169 +142,63 @@ export default function App() {
   return (
     <div className="flex h-screen flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-gray-200 bg-vcc-900 px-6 py-3">
-        <div className="flex items-center gap-4">
-          <h1
-            className="cursor-pointer text-base font-semibold tracking-tight text-white"
-            onClick={!isLocalMode ? goToProjects : undefined}
-          >
-            Value Cognition Canvas
-          </h1>
+      <header className="flex items-center justify-between border-b border-gray-200 bg-vcc-900 px-6 py-2.5">
+        <div className="flex items-center gap-5">
+          <div className="flex items-center gap-2.5">
+            <h1
+              className="cursor-pointer text-sm font-semibold tracking-tight text-white"
+              onClick={!isLocalMode ? goToProjects : undefined}
+            >
+              VCC
+            </h1>
+            {/* Project name */}
+            {scaffoldData?.name && (
+              <span className="text-[11px] font-medium text-white/60">
+                {scaffoldData.name}
+              </span>
+            )}
+            {showProjectList && !isLocalMode && (
+              <span className="text-[11px] font-medium text-white/60">
+                Projects
+              </span>
+            )}
+          </div>
 
-          {/* Mode switch */}
+          {/* Subway nav */}
           {(isLoaded || (!isLocalMode && isIntake)) && (
-            <div className="flex items-center rounded-lg bg-white/10 p-0.5">
-              {!isLocalMode && (
-                <button
-                  onClick={goToProjects}
-                  className="rounded-md px-3 py-1 text-[11px] font-medium text-white/50 transition-all hover:text-white/80"
-                >
-                  Projects
-                </button>
-              )}
-              <button
-                onClick={goToIntake}
-                className={`rounded-md px-3 py-1 text-[11px] font-medium transition-all ${
-                  isIntake
-                    ? "bg-white/20 text-white shadow-sm"
-                    : "text-white/50 hover:text-white/80"
-                }`}
-              >
-                Discovery
-              </button>
-              <button
-                onClick={backToNetwork}
-                className={`rounded-md px-3 py-1 text-[11px] font-medium transition-all ${
-                  isNetwork
-                    ? "bg-white/20 text-white shadow-sm"
-                    : "text-white/50 hover:text-white/80"
-                }`}
-              >
-                Network
-              </button>
-              <button
-                onClick={() => {
-                  // Navigate to last-viewed VS, or first available
+            <SubwayNav
+              stations={[
+                ...(isLocalMode ? [] : [{ id: "projects", label: "Projects", onClick: goToProjects, active: false }]),
+                { id: "discovery", label: "Discovery", onClick: goToIntake, active: isIntake },
+                { id: "network", label: "Network", onClick: backToNetwork, active: isNetwork },
+                { id: "stream", label: "Stream", onClick: () => {
                   const store = useCanvasStore.getState();
                   const vsId = store.selectedVsId
                     || Object.keys(store.scaffoldData?.elements?.valueStreams ?? {})[0];
                   if (vsId) store.selectVs(vsId);
-                }}
-                className={`rounded-md px-3 py-1 text-[11px] font-medium transition-all ${
-                  isStage
-                    ? "bg-white/20 text-white shadow-sm"
-                    : "text-white/50 hover:text-white/80"
-                }`}
-              >
-                Value Stream
-              </button>
-              <button
-                onClick={goToCapabilityMap}
-                className={`rounded-md px-3 py-1 text-[11px] font-medium transition-all ${
-                  isCapabilityMap
-                    ? "bg-white/20 text-white shadow-sm"
-                    : "text-white/50 hover:text-white/80"
-                }`}
-              >
-                Capabilities
-              </button>
-              <button
-                onClick={goToConceptGraph}
-                className={`rounded-md px-3 py-1 text-[11px] font-medium transition-all ${
-                  isConceptGraph
-                    ? "bg-white/20 text-white shadow-sm"
-                    : "text-white/50 hover:text-white/80"
-                }`}
-              >
-                Concepts
-              </button>
-            </div>
-          )}
-
-          {/* Breadcrumb */}
-          {isStage && selectedVsName && scaffoldData && (
-            <nav className="flex items-center gap-1.5 text-[11px]">
-              <button
-                onClick={backToNetwork}
-                className="text-white/50 transition-colors hover:text-white/80"
-              >
-                {scaffoldData.name}
-              </button>
-              <svg className="h-3 w-3 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              <span className="font-medium text-white/90">{selectedVsName}</span>
-            </nav>
-          )}
-
-          {/* Intake breadcrumb */}
-          {isIntake && (
-            <nav className="flex items-center gap-1.5 text-[11px]">
-              {isLoaded && (
-                <>
-                  <button
-                    onClick={backToNetwork}
-                    className="text-white/50 transition-colors hover:text-white/80"
-                  >
-                    {scaffoldData?.name ?? "Network"}
-                  </button>
-                  <svg className="h-3 w-3 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </>
-              )}
-              <span className="font-medium text-white/90">
-                {isLoaded ? "Edit Discovery" : "New Discovery"}
-              </span>
-            </nav>
-          )}
-
-          {/* Project list breadcrumb */}
-          {showProjectList && !isLocalMode && (
-            <nav className="flex items-center gap-1.5 text-[11px]">
-              <span className="font-medium text-white/90">Projects</span>
-            </nav>
+                }, active: isStage },
+                { id: "capabilities", label: "Capabilities", onClick: goToCapabilityMap, active: isCapabilityMap },
+                { id: "concepts", label: "Concepts", onClick: goToConceptGraph, active: isConceptGraph },
+              ]}
+            />
           )}
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Save indicator */}
+          {/* Save indicator (subtle) */}
           {saving && (
             <span className="text-[10px] text-white/40">Saving...</span>
           )}
 
-          {/* Current project name */}
-          {currentProjectId && isLoaded && (
-            <span className="text-[10px] text-white/40">
-              Project saved
-            </span>
-          )}
-
-          {/* New Discovery button — always visible when in canvas/network */}
-          {(isLoaded || isIntake) && (
-            <button
-              onClick={goToIntake}
-              className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
-                isIntake
-                  ? "border-white/30 bg-white/20 text-white"
-                  : "border-white/20 text-white/60 hover:border-white/30 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              + New Discovery
-            </button>
-          )}
-
-          {/* User info & sign out */}
+          {/* User info */}
           {!isLocalMode && user && (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-white/40">{user.email}</span>
-            </div>
+            <span className="text-[10px] text-white/35">{user.email}</span>
           )}
 
           {/* Theme toggle */}
           <ThemeToggle />
 
-          <span className="text-xs text-vcc-300">v0.3.0</span>
+          <span className="text-[10px] text-vcc-300/50">v0.4.0</span>
         </div>
       </header>
 
@@ -412,6 +301,55 @@ export default function App() {
       </main>
       <UserGuidePanel />
     </div>
+  );
+}
+
+/* ── Subway Navigation ────────────────────────────────────── */
+
+interface SubwayStation {
+  id: string;
+  label: string;
+  onClick: () => void;
+  active: boolean;
+}
+
+function SubwayNav({ stations }: { stations: SubwayStation[] }) {
+  return (
+    <nav className="flex items-center gap-0">
+      {stations.map((station, i) => (
+        <div key={station.id} className="flex items-center">
+          {/* Connecting line (before each station except the first) */}
+          {i > 0 && (
+            <div className="h-px w-4" style={{ background: "rgba(255,255,255,0.2)" }} />
+          )}
+          {/* Station */}
+          <button
+            onClick={station.onClick}
+            className="group flex items-center gap-1.5 rounded-full px-2.5 py-1 transition-all"
+            style={station.active
+              ? { background: "rgba(255,255,255,0.15)" }
+              : {}}
+          >
+            {/* Dot */}
+            <span
+              className="inline-block h-2 w-2 rounded-full border transition-all"
+              style={station.active
+                ? { background: "#4a9eda", borderColor: "#4a9eda" }
+                : { background: "transparent", borderColor: "rgba(255,255,255,0.35)" }}
+            />
+            {/* Label */}
+            <span
+              className="text-[11px] font-medium transition-colors"
+              style={station.active
+                ? { color: "#ffffff" }
+                : { color: "rgba(255,255,255,0.45)" }}
+            >
+              {station.label}
+            </span>
+          </button>
+        </div>
+      ))}
+    </nav>
   );
 }
 

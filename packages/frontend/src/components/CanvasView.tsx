@@ -165,18 +165,11 @@ export function CanvasView() {
 
           <div className="flex items-center gap-2">
             <CanvasToolbar
-              structureOpen={structureOpen}
-              analyticsOpen={analyticsOpen}
-              constraintDAGOpen={constraintDAGOpen}
               ppitToggles={ppitToggles}
               cardToggles={cardToggles}
-              onToggleStructure={toggleStructure}
-              onToggleAnalytics={toggleAnalytics}
-              onToggleConstraintDAG={toggleConstraintDAG}
               onTogglePPIT={togglePPIT}
               onToggleCard={toggleCard}
               heatmapData={heatmapData}
-              validationReport={validationReport}
               features={features}
             />
             {features.userStories && <ExportStoriesButton getAllUserStories={getAllUserStories} />}

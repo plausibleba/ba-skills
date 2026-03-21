@@ -191,7 +191,7 @@ export function UserGuidePanel() {
   const currentModule = useProjectStore((s) => s.currentModule);
   const isCreatingProject = useProjectStore((s) => s.isCreatingProject);
   const intakeTab = useProjectStore((s) => s.intakeTab);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   const isLoaded = !!scaffoldData;
   const isIntake = viewMode === "intake";

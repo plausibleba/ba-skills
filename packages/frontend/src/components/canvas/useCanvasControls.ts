@@ -4,7 +4,7 @@ import type { PPITLayer } from "./ppit.ts";
 export type CardToggleLayer = "concepts" | "policies";
 
 export function useCanvasControls() {
-  const [structureOpen, setStructureOpen] = useState(true);
+  const [structureOpen, setStructureOpen] = useState(false);
   const [analyticsOpen, setAnalyticsOpen] = useState(true);
   const [ppitToggles, setPpitToggles] = useState<Record<PPITLayer, boolean>>({
     roles: false,

@@ -1,41 +1,10 @@
-import type { HeatmapData, ValidationReport } from "../../types.ts";
+import type { HeatmapData } from "../../types.ts";
 import type { PPITLayer } from "./ppit.ts";
 import type { CardToggleLayer } from "./useCanvasControls.ts";
 import type { ModuleFeatures } from "../../lib/module-features.ts";
 import { PPIT_LABELS, PPIT_LAYERS } from "./ppit.ts";
-import { ChevronIcon } from "./ChevronIcon.tsx";
 import { useThemeStore } from "../../store/theme-store.ts";
 import { tv } from "../../theme.ts";
-
-/* ── Toggle Button ─────────────────────────────────────────────────── */
-
-function ToggleBtn({
-  label,
-  isOpen,
-  onToggle,
-}: {
-  label: string;
-  isOpen: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      onClick={onToggle}
-      className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all ${
-        isOpen
-          ? "shadow-sm"
-          : ""
-      }`}
-      style={isOpen ? { background: "rgba(74,158,218,0.15)", color: tv.accent } : { color: tv.textDim }}
-    >
-      <ChevronIcon
-        open={isOpen}
-        className={isOpen ? "text-blue-400" : "text-gray-500"}
-      />
-      {label}
-    </button>
-  );
-}
 
 /* ── Layer colour map — dark/light variants for contrast ──────────── */
 
@@ -56,62 +25,24 @@ const LAYER_COLORS_LIGHT: Record<PPITLayer, { bg: string; fg: string }> = {
 /* ── Canvas Toolbar ────────────────────────────────────────────────── */
 
 export function CanvasToolbar({
-  analyticsOpen,
-  constraintDAGOpen,
   ppitToggles,
   cardToggles,
-  onToggleAnalytics,
-  onToggleConstraintDAG,
   onTogglePPIT,
   onToggleCard,
   heatmapData,
   features,
 }: {
-  structureOpen?: boolean;       // kept for backward compat
-  analyticsOpen: boolean;
-  constraintDAGOpen: boolean;
   ppitToggles: Record<PPITLayer, boolean>;
   cardToggles: Record<CardToggleLayer, boolean>;
-  onToggleStructure?: () => void; // kept for backward compat
-  onToggleAnalytics: () => void;
-  onToggleConstraintDAG: () => void;
   onTogglePPIT: (layer: PPITLayer) => void;
   onToggleCard: (layer: CardToggleLayer) => void;
   heatmapData: HeatmapData | null;
-  validationReport?: ValidationReport | null;
   features: ModuleFeatures;
 }) {
   const isDark = useThemeStore((s) => s.mode) === "dark";
   const layerPalette = isDark ? LAYER_COLORS_DARK : LAYER_COLORS_LIGHT;
   return (
     <div className="flex flex-shrink-0 items-center gap-3">
-      {/* View controls */}
-      <div className="flex items-center gap-1 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard }}>
-        {features.userStories && (
-          <ToggleBtn
-            label="Transformation"
-            isOpen={analyticsOpen}
-            onToggle={onToggleAnalytics}
-          />
-        )}
-        {/* Dependencies — compact graph icon */}
-        <button
-          onClick={onToggleConstraintDAG}
-          className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
-            constraintDAGOpen ? "shadow-sm" : ""
-          }`}
-          style={constraintDAGOpen ? { background: "rgba(74,158,218,0.15)", color: tv.accent } : { color: tv.textDim }}
-          title="Dependency Graph"
-        >
-          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
-            <circle cx="5" cy="6" r="2" />
-            <circle cx="19" cy="6" r="2" />
-            <circle cx="12" cy="18" r="2" />
-            <path d="M7 7l3.5 9M17 7l-3.5 9" />
-          </svg>
-        </button>
-      </div>
-
       {/* Layer toggles */}
       <div className="flex items-center gap-0.5 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard }}>
         <span className="px-1 text-[9px] font-medium uppercase tracking-wider" style={{ color: tv.textDim }}>
