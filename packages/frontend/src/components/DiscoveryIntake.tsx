@@ -4,6 +4,7 @@ import { runPipeline, continuePipeline } from "../domain/pipeline/pipeline-orche
 import type { PipelineProgress } from "../domain/pipeline/pipeline-orchestrator";
 import { buildDiscoveryIR, makeId, type LayoutZone } from "../domain/pipeline/discovery-ir";
 import { LAYER_SCHEMES, DEFAULT_SCHEME, type LayerDef } from "../lib/layer-schemes";
+import WaitPuzzle from "./WaitPuzzle";
 import * as XLSX from "xlsx";
 
 // ─── Colour palette matching VCC design ───────────────────────────────────
@@ -715,6 +716,16 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
               </div>
               <button onClick={() => setPipelineError(null)} className="text-red-400 hover:text-red-600 text-sm">×</button>
             </div>
+          </div>
+        )}
+
+        {/* ── Puzzle game during generation ── */}
+        {generating && (
+          <div className="py-4">
+            <p className="text-center text-[11px] text-slate-400 mb-3">
+              This will take a minute or two. Here's a puzzle while you wait!
+            </p>
+            <WaitPuzzle step={generateStep} />
           </div>
         )}
 
