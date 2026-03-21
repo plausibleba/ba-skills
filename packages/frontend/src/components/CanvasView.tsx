@@ -37,7 +37,6 @@ export function CanvasView() {
     ppitToggles,
     cardToggles,
     toggleStructure,
-    toggleAnalytics,
     toggleConstraintDAG,
     togglePPIT,
     toggleCard,
@@ -103,14 +102,6 @@ export function CanvasView() {
       ? (scaffoldData.elements.roles[topRole[0]]?.name ?? topRole[0])
       : "—";
   }, [scaffoldData]);
-
-  // Detect if this is a stub VS in an enterprise scaffold
-  const isEnterpriseScaffold = Object.keys(scaffoldData.elements.valueStreams).length > 1;
-  const vsActivities = canvasViewModel.columns.flatMap((c) => c.activityIds);
-  const totalMetrics = vsActivities.reduce(
-    (s, a) => s + (scaffoldData.elements.activities[a]?.metricIds?.length ?? 0), 0,
-  );
-  const isStub = isEnterpriseScaffold && vsActivities.length <= 5 && totalMetrics <= 2;
 
   /* ── Drag-to-reorder state ── */
   const [dragIdx, setDragIdx] = useState<number | null>(null);

@@ -27,13 +27,7 @@ interface Rel {
 /* ═══════════════════════════════════════════════════════════════
    Colour + ER styling
    ═══════════════════════════════════════════════════════════════ */
-const GREY_PALETTE = { bg: "#fafafa", border: "#d4d4d4", accent: "#525252", text: "#262626", headerBg: "#f0f0f0" };
-const TYPE_COLORS: Record<string, typeof GREY_PALETTE> = {
-  Party:    GREY_PALETTE,
-  Record:   GREY_PALETTE,
-  Resource: GREY_PALETTE,
-};
-function typeColor(_type: string) { return GREY_PALETTE; }
+const ER_STYLE = { bg: "#fafafa", border: "#d4d4d4", accent: "#525252", text: "#262626", headerBg: "#f0f0f0" };
 
 /* ═══════════════════════════════════════════════════════════════
    Auto-generate attributes for a concept based on type + name
@@ -217,7 +211,7 @@ function ERNodeSVG({
   onMouseDown: (e: React.MouseEvent) => void;
 }) {
   const { concept, x, y, w, h, expanded } = node;
-  const tc = typeColor(concept.type);
+  const tc = ER_STYLE;
   const attrs = expanded ? deriveAttributes(concept) : [];
   const HEADER_H = 42;
   const borderWidth = isFocus ? 2 : isSelected ? 1.5 : 0.75;
@@ -508,8 +502,8 @@ export function ConceptGraphView() {
               {focusConcept?.name ?? "Select a concept"}
               {focusConcept && (
                 <span className="ml-2 text-[9px] font-normal px-1.5 py-0.5 rounded" style={{
-                  background: GREY_PALETTE.headerBg,
-                  color: GREY_PALETTE.accent,
+                  background: ER_STYLE.headerBg,
+                  color: ER_STYLE.accent,
                 }}>
                   {focusConcept.type}
                 </span>

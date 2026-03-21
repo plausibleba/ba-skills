@@ -18,12 +18,11 @@ import { VersionBadge } from "./components/ChangelogModal.tsx";
 
 export default function App() {
   const { user, loading: authLoading, isLocalMode, initialize: initAuth } = useAuthStore();
-  const { currentProjectId, saving } = useProjectStore();
+  const { saving } = useProjectStore();
   const {
     scaffoldData,
     canvasViewModel,
     viewMode,
-    selectedVsId,
     error,
     backToNetwork,
     goToIntake,

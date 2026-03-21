@@ -1,6 +1,10 @@
 import { useState, useMemo, useCallback } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { tv } from "../theme.ts";
+import { buildPPITByCapId } from "../domain/ppit-enrichment.ts";
+import { CapNode, L1Block, LayoutMode, LayoutMap } from "./capability-map-types.ts";
+import { CapabilityTable } from "./CapabilityTable.tsx";
+import { CapabilityInspectorPanel } from "./CapabilityInspector.tsx";
 
 /* ── Governance detection ─────────────────────────────────── */
 const GOV_WORDS = [
@@ -17,14 +21,7 @@ function isGovCap(cap: CapNode): boolean {
   return false;
 }
 
-/* ── Layout types ──────────────────────────────────────────── */
-
-/** Layout mode for any container level */
-type LayoutMode = "wrap" | "vertical" | "horizontal";
-
-/** A key like "l1_<id>" or "l2_<id>" → layout preference */
-type LayoutMap = Record<string, LayoutMode>;
-
+/* ── Layout helpers ────────────────────────────────────── */
 const LAYOUT_ICONS: Record<LayoutMode, string> = {
   wrap: "⊞",       // grid/wrap
   vertical: "↕",   // stack
@@ -40,36 +37,6 @@ const LAYOUT_CYCLE: LayoutMode[] = ["wrap", "vertical", "horizontal"];
 function nextLayout(current: LayoutMode): LayoutMode {
   const idx = LAYOUT_CYCLE.indexOf(current);
   return LAYOUT_CYCLE[(idx + 1) % LAYOUT_CYCLE.length];
-}
-
-/* ── Hierarchy builder ────────────────────────────────────── */
-interface CapNode {
-  id: string;
-  name: string;
-  level: number;
-  parentId: string | null;
-  description?: string;
-  businessObject?: string;
-}
-
-interface L3Group {
-  id: string;
-  name: string;
-  caps: CapNode[];
-}
-
-interface L2Group {
-  id: string;
-  name: string;
-  l3s: L3Group[];
-  caps: CapNode[];
-}
-
-interface L1Block {
-  id: string;
-  name: string;
-  gov: boolean;
-  l2s: L2Group[];
 }
 
 function buildHierarchy(caps: Record<string, any>): L1Block[] {
@@ -239,97 +206,8 @@ export function CapabilityMapView() {
   //   1. Activity→capability links (always present from Pass B): enabledByCapabilityIds,
   //      performedByRoleIds, subActivities, informationObjectIds, technologyAppIds
   //   2. capabilityPPIT (only present if Pass C ran): fine-grained per-capability decomposition
-  interface PPITEntry {
-    roles: string[];
-    activityNames: string[];
-    subActivities: string[];
-    infoObjects: string[];
-    techApps: string[];
-    vsNames: string[];
-    vsActivityPairs: { vs: string; activity: string }[];
-  }
   const ppitByCapId = useMemo(() => {
-    if (!scaffoldData?.elements?.activities) return new Map<string, PPITEntry>();
-    const map = new Map<string, PPITEntry>();
-    const rolesLookup = scaffoldData.elements.roles ?? {};
-    const infoObjs = (scaffoldData.elements as any).informationObjects ?? {};
-    const techAppsLookup = (scaffoldData.elements as any).technologyApplications ?? (scaffoldData.elements as any).technologyApps ?? {};
-    const vsLookup = scaffoldData.elements.valueStreams ?? {};
-
-    const ensure = (capId: string): PPITEntry => {
-      if (!map.has(capId)) map.set(capId, {
-        roles: [], activityNames: [], subActivities: [], infoObjects: [], techApps: [],
-        vsNames: [], vsActivityPairs: [],
-      });
-      return map.get(capId)!;
-    };
-    const addUnique = (arr: string[], val: string) => { if (val && !arr.includes(val)) arr.push(val); };
-
-    for (const [, act] of Object.entries(scaffoldData.elements.activities)) {
-      const a = act as any;
-      const vsId = a.valueStreamId ?? a.vsId;
-      const vsName = vsId ? ((vsLookup as any)[vsId]?.name ?? "") : "";
-
-      // Source 1: activity→capability links from Pass B (always present)
-      const capIds: string[] = a.enabledByCapabilityIds ?? a.requiresCapabilityIds ?? [];
-      for (const capId of capIds) {
-        const entry = ensure(capId);
-        // Roles from the activity
-        for (const rId of (a.performedByRoleIds ?? [])) {
-          addUnique(entry.roles, (rolesLookup as any)[rId]?.name ?? rId);
-        }
-        addUnique(entry.activityNames, a.name ?? "");
-        // Sub-activities (string array on the activity)
-        for (const sub of (a.subActivities ?? [])) {
-          if (typeof sub === "string") addUnique(entry.subActivities, sub);
-          else if (sub?.name) addUnique(entry.subActivities, sub.name);
-        }
-        // Info objects from the activity
-        for (const iId of (a.informationObjectIds ?? [])) {
-          addUnique(entry.infoObjects, (infoObjs as any)[iId]?.name ?? iId);
-        }
-        // Tech from the activity
-        for (const tId of (a.technologyAppIds ?? [])) {
-          addUnique(entry.techApps, (techAppsLookup as any)[tId]?.name ?? tId);
-        }
-        if (vsName) addUnique(entry.vsNames, vsName);
-        if (vsName && a.name) {
-          const pair = { vs: vsName, activity: a.name };
-          if (!entry.vsActivityPairs.some((p: any) => p.vs === pair.vs && p.activity === pair.activity)) {
-            entry.vsActivityPairs.push(pair);
-          }
-        }
-      }
-
-      // Source 2: capabilityPPIT from Pass C (fine-grained, may not exist)
-      const ppit = a.capabilityPPIT;
-      if (!ppit) continue;
-      for (const [capId, decomp] of Object.entries(ppit)) {
-        const d = decomp as any;
-        const entry = ensure(capId);
-        for (const rId of d.roleIds ?? []) {
-          addUnique(entry.roles, (rolesLookup as any)[rId]?.name ?? rId);
-        }
-        addUnique(entry.activityNames, a.name ?? "");
-        for (const sub of d.activities ?? []) {
-          addUnique(entry.subActivities, sub);
-        }
-        for (const iId of d.informationObjectIds ?? []) {
-          addUnique(entry.infoObjects, (infoObjs as any)[iId]?.name ?? iId);
-        }
-        for (const tId of d.technologyAppIds ?? []) {
-          addUnique(entry.techApps, (techAppsLookup as any)[tId]?.name ?? tId);
-        }
-        if (vsName) addUnique(entry.vsNames, vsName);
-        if (vsName && a.name) {
-          const pair = { vs: vsName, activity: a.name };
-          if (!entry.vsActivityPairs.some((p: any) => p.vs === pair.vs && p.activity === pair.activity)) {
-            entry.vsActivityPairs.push(pair);
-          }
-        }
-      }
-    }
-    return map;
+    return buildPPITByCapId(scaffoldData);
   }, [scaffoldData]);
 
   const stats = useMemo(() => {
@@ -766,219 +644,3 @@ function CapTile({
   );
 }
 
-/* ── Enriched Inspector Panel ──────────────────────────────── */
-interface PPITData {
-  roles: string[];
-  activityNames: string[];
-  subActivities: string[];
-  infoObjects: string[];
-  techApps: string[];
-  vsNames: string[];
-  vsActivityPairs: { vs: string; activity: string }[];
-}
-
-function CapabilityInspectorPanel({ cap, ppit }: { cap: CapNode | null; ppit?: PPITData }) {
-  if (!cap) {
-    return (
-      <div
-        className="mt-3 rounded-lg p-4"
-        style={{ background: tv.bgCard, border: `1.5px solid ${tv.borderAccent}`, minHeight: 72 }}
-      >
-        <p className="text-[12px]" style={{ color: tv.textDim }}>
-          Select a capability tile to see its definition, business object, and relationships.
-        </p>
-      </div>
-    );
-  }
-
-  const SECTIONS: { label: string; items: string[]; color: string }[] = [
-    { label: "People (Roles)", items: ppit?.roles ?? [], color: "#f59e0b" },
-    { label: "Process (Activities)", items: ppit?.activityNames ?? [], color: "#10b981" },
-    { label: "Sub-Activities", items: ppit?.subActivities ?? [], color: "#6366f1" },
-    { label: "Information Objects", items: ppit?.infoObjects ?? [], color: "#3b82f6" },
-    { label: "Technology", items: ppit?.techApps ?? [], color: "#8b5cf6" },
-  ].filter(s => s.items.length > 0);
-
-  return (
-    <div
-      className="mt-3 rounded-lg p-4"
-      style={{ background: tv.bgCard, border: `1.5px solid ${tv.borderAccent}`, minHeight: 72 }}
-    >
-      {/* Header */}
-      <div className="mb-1 text-[15px] font-bold" style={{ color: tv.textPrimary }}>
-        {cap.name}
-      </div>
-      {cap.businessObject && (
-        <div className="mb-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: tv.accent }}>
-          Business Object: {cap.businessObject}
-        </div>
-      )}
-      {cap.description ? (
-        <div className="text-[12px] leading-relaxed mb-2" style={{ color: tv.textSecondary }}>
-          {cap.description}
-        </div>
-      ) : (
-        <div className="text-[12px] mb-2" style={{ color: tv.textDim }}>
-          No description. Double-click the tile to edit.
-        </div>
-      )}
-
-      {/* PPIT Sections */}
-      {SECTIONS.length > 0 && (
-        <div className="grid gap-3" style={{ gridTemplateColumns: SECTIONS.length >= 4 ? "1fr 1fr" : "1fr" }}>
-          {SECTIONS.map(s => (
-            <div key={s.label}>
-              <div className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: s.color }}>
-                {s.label} ({s.items.length})
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {s.items.map(item => (
-                  <span key={item} className="inline-block rounded px-1.5 py-0.5 text-[10px]" style={{ backgroundColor: `${s.color}18`, color: s.color }}>
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Cross-VS Usage */}
-      {ppit && ppit.vsActivityPairs.length > 1 && (
-        <div className="mt-3">
-          <div className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: "#ec4899" }}>
-            Shared Across {ppit.vsNames.length} Value Streams
-          </div>
-          <div className="space-y-0.5">
-            {ppit.vsActivityPairs.map((p, i) => (
-              <div key={i} className="flex items-center gap-1.5 text-[10px]">
-                <span className="rounded px-1.5 py-0.5" style={{ backgroundColor: "rgba(236,72,153,0.1)", color: "#ec4899" }}>
-                  {p.vs}
-                </span>
-                <span style={{ color: tv.textDim }}>→</span>
-                <span style={{ color: tv.textSecondary }}>{p.activity}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ── Capability Table View ─────────────────────────────────── */
-function CapabilityTable({
-  hierarchy,
-  ppitByCapId,
-  onSelect,
-  selectedId,
-}: {
-  hierarchy: L1Block[];
-  ppitByCapId: Map<string, PPITData>;
-  onSelect: (c: CapNode) => void;
-  selectedId: string | null;
-}) {
-  // Flatten all caps with their L1/L2/L3 ancestry
-  const rows = useMemo(() => {
-    const result: {
-      cap: CapNode;
-      l1Name: string;
-      l2Name: string;
-      l3Name: string;
-      ppit: PPITData | undefined;
-    }[] = [];
-    for (const l1 of hierarchy) {
-      for (const l2 of l1.l2s) {
-        // Caps under L3 groups
-        for (const l3 of l2.l3s) {
-          for (const cap of l3.caps) {
-            result.push({ cap, l1Name: l1.name, l2Name: l2.name, l3Name: l3.name, ppit: ppitByCapId.get(cap.id) });
-          }
-        }
-        // Direct caps under L2
-        for (const cap of l2.caps) {
-          result.push({ cap, l1Name: l1.name, l2Name: l2.name, l3Name: "—", ppit: ppitByCapId.get(cap.id) });
-        }
-      }
-    }
-    return result;
-  }, [hierarchy, ppitByCapId]);
-
-  const thStyle: React.CSSProperties = {
-    padding: "6px 8px",
-    fontSize: 9,
-    fontWeight: 700,
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.05em",
-    color: tv.textDim,
-    borderBottom: `1px solid ${tv.borderSubtle}`,
-    textAlign: "left" as const,
-    position: "sticky" as const,
-    top: 0,
-    background: tv.bgSurface,
-    zIndex: 1,
-  };
-  const tdStyle: React.CSSProperties = {
-    padding: "4px 8px",
-    fontSize: 10,
-    color: tv.textSecondary,
-    borderBottom: `1px solid ${tv.borderSubtle}`,
-    verticalAlign: "top" as const,
-  };
-
-  const chipList = (items: string[], color: string) => {
-    if (!items || items.length === 0) return <span style={{ color: tv.textDim, fontSize: 9 }}>—</span>;
-    return (
-      <div className="flex flex-wrap gap-0.5">
-        {items.slice(0, 4).map(item => (
-          <span key={item} className="inline-block rounded px-1 py-0 text-[8px]" style={{ backgroundColor: `${color}18`, color }}>
-            {item}
-          </span>
-        ))}
-        {items.length > 4 && <span className="text-[8px]" style={{ color: tv.textDim }}>+{items.length - 4}</span>}
-      </div>
-    );
-  };
-
-  return (
-    <div className="rounded-lg" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard, maxHeight: 600, overflow: "auto" }}>
-      <table className="w-full" style={{ borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th style={thStyle}>Business Area</th>
-            <th style={thStyle}>Domain</th>
-            <th style={thStyle}>Group</th>
-            <th style={thStyle}>Capability</th>
-            <th style={thStyle}>People</th>
-            <th style={thStyle}>Process</th>
-            <th style={thStyle}>Information</th>
-            <th style={thStyle}>Technology</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr
-              key={row.cap.id}
-              onClick={() => onSelect(row.cap)}
-              className="cursor-pointer transition-colors"
-              style={{
-                background: selectedId === row.cap.id ? tv.accentMuted : undefined,
-              }}
-              onMouseOver={(e) => { if (selectedId !== row.cap.id) (e.currentTarget.style.background = tv.bgSurface); }}
-              onMouseOut={(e) => { if (selectedId !== row.cap.id) (e.currentTarget.style.background = ""); }}
-            >
-              <td style={tdStyle}>{row.l1Name}</td>
-              <td style={tdStyle}>{row.l2Name}</td>
-              <td style={tdStyle}>{row.l3Name}</td>
-              <td style={{ ...tdStyle, color: tv.textPrimary, fontWeight: 500 }}>{row.cap.name}</td>
-              <td style={tdStyle}>{chipList(row.ppit?.roles ?? [], "#f59e0b")}</td>
-              <td style={tdStyle}>{chipList(row.ppit?.activityNames ?? [], "#10b981")}</td>
-              <td style={tdStyle}>{chipList(row.ppit?.infoObjects ?? [], "#3b82f6")}</td>
-              <td style={tdStyle}>{chipList(row.ppit?.techApps ?? [], "#8b5cf6")}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
