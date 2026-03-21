@@ -16,10 +16,24 @@ export interface FormaliseResult {
   error?: string;
 }
 
+/** Estimate a reasonable max_tokens ceiling based on input complexity.
+ *  Each VS with ~4 stages generates roughly 3-4k tokens of scaffold output
+ *  (activities, outcomes, capabilityPPIT, info objects, lifecycle states, DAGs).
+ *  We add headroom for registries and the JSON envelope. */
+function estimateMaxTokens(ir: DiscoveryIR): number {
+  const totalStages = ir.valueStreams.reduce((sum, vs) => sum + (vs.stages?.length ?? 0), 0);
+  // ~4k per activity (with PPIT, lifecycle states, DAG), + 2k for registries/envelope
+  const estimate = totalStages * 4000 + 2000;
+  // Clamp between 8k (minimum viable) and 32k (Sonnet limit)
+  return Math.max(8000, Math.min(32000, estimate));
+}
+
 export async function runPassB(
   ir: DiscoveryIR,
 ): Promise<FormaliseResult> {
   const scaffoldPrompt = buildScaffoldPrompt(ir);
+  const maxTokens = estimateMaxTokens(ir);
+  console.log(`Pass B: ${ir.valueStreams.length} VS, ${ir.valueStreams.reduce((s, v) => s + (v.stages?.length ?? 0), 0)} stages → max_tokens=${maxTokens}`);
 
   let scaffold: any = null;
   let repairAttempted = false;
@@ -28,7 +42,7 @@ export async function runPassB(
   try {
     const llmRes = await callLLM({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 32000,
+      max_tokens: maxTokens,
       temperature: 0,
       messages: [{ role: "user", content: scaffoldPrompt }],
     });
@@ -58,7 +72,7 @@ export async function runPassB(
     try {
       const llmRes = await callLLM({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 32000,
+        max_tokens: maxTokens,
         temperature: 0,
         messages: [{ role: "user", content: repairPrompt }],
       });

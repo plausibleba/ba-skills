@@ -4,13 +4,70 @@
 // In production (/api/claude), the proxy forces stream: true and returns SSE.
 // In dev mode (Vite proxy), the response may be plain JSON.
 // This client auto-detects the response format and handles both.
+//
+// Retry behaviour: network errors and 5xx/429 responses are retried up to 2
+// times with exponential backoff (2s → 4s). Non-retryable errors throw immediately.
 
 export interface LLMResponse {
   text: string;
   stopReason: string;
 }
 
+const MAX_RETRIES = 2;
+const BASE_DELAY_MS = 2000;
+
+/** Returns true for errors that are worth retrying (network issues, server overload) */
+function isRetryable(error: unknown): boolean {
+  if (error instanceof TypeError) return true; // "Failed to fetch" — network error
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    return (
+      msg.includes("network") ||
+      msg.includes("fetch") ||
+      msg.includes("aborted") ||
+      msg.includes("timeout") ||
+      msg.includes("api 429") ||
+      msg.includes("api 500") ||
+      msg.includes("api 502") ||
+      msg.includes("api 503") ||
+      msg.includes("api 529")
+    );
+  }
+  return false;
+}
+
 export async function callLLM(params: {
+  model: string;
+  max_tokens: number;
+  temperature: number;
+  messages: { role: string; content: string }[];
+}): Promise<LLMResponse> {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      if (attempt > 0) {
+        const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
+        console.warn(`LLM retry ${attempt}/${MAX_RETRIES} after ${delay}ms…`);
+        await sleep(delay);
+      }
+      return await doCallLLM(params);
+    } catch (e) {
+      lastError = e;
+      if (attempt < MAX_RETRIES && isRetryable(e)) {
+        console.warn("LLM call failed (retryable):", e instanceof Error ? e.message : String(e));
+        continue;
+      }
+      throw e; // non-retryable or out of retries
+    }
+  }
+
+  throw lastError; // unreachable but TS wants it
+}
+
+// ── Single-attempt call ─────────────────────────────────────────────────────
+
+async function doCallLLM(params: {
   model: string;
   max_tokens: number;
   temperature: number;
@@ -86,4 +143,10 @@ async function collectStream(res: Response): Promise<LLMResponse> {
   }
 
   return { text: fullText, stopReason };
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
