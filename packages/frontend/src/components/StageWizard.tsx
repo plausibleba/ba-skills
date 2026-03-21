@@ -3,8 +3,8 @@ import { useCanvasStore } from "../store/canvas-store.ts";
 import { useDiscoverySessionStore } from "../store/discovery-session-store.ts";
 import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforce.json";
 import SAP_LIB from "../fixtures/vendor-libraries/sap-s4hana.json";
-import TRADIEBOT_LIB from "../../fixtures/vendor-libraries/tradiebot.json";
 import type { VendorFeatureLibrary, Solution, FrictionObservation, HeatmapData } from "../types.ts";
+import { useVendorLibraryStore } from "../store/vendor-library-store.ts";
 import { humanizeId } from "../lib/humanize-id.ts";
 import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
 import { callLLM } from "../domain/pipeline/llm-client";
@@ -15,7 +15,6 @@ import { runPassC } from "../domain/pipeline/heatmap-analyser";
 const VENDOR_LIBRARIES: (VendorFeatureLibrary & { logoColour: string })[] = [
   { ...(SALESFORCE_LIB as VendorFeatureLibrary), logoColour: "bg-blue-500" },
   { ...(SAP_LIB as VendorFeatureLibrary), logoColour: "bg-amber-600" },
-  { ...(TRADIEBOT_LIB as VendorFeatureLibrary), logoColour: "bg-green-600" },
 ];
 
 // ─── Pass C: Run friction assessment via proper pipeline ─────────────────────
@@ -337,6 +336,19 @@ export function StageWizard() {
                   title="Load different assessment"
                 >↑ Load</button>
                 <button
+                  onClick={() => {
+                    const hm = useCanvasStore.getState().heatmapData;
+                    if (!hm) return;
+                    const blob = new Blob([JSON.stringify(hm, null, 2)], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a"); a.href = url;
+                    a.download = `${hm.heatmapId}-${Date.now()}.json`; a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="rounded px-1.5 py-0.5 text-[9px] font-medium text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  title="Save assessment"
+                >↓ Save</button>
+                <button
                   onClick={handleRunAssessment}
                   disabled={assessing}
                   className="rounded px-1.5 py-0.5 text-[9px] font-medium text-vcc-500 hover:bg-vcc-50 hover:text-vcc-700 disabled:opacity-40"
@@ -391,6 +403,19 @@ export function StageWizard() {
                   className="rounded px-1.5 py-0.5 text-[9px] font-medium text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                 >↑ Load</button>
                 <button
+                  onClick={() => {
+                    const hm = useCanvasStore.getState().heatmapData;
+                    if (!hm) return;
+                    const blob = new Blob([JSON.stringify(hm, null, 2)], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a"); a.href = url;
+                    a.download = `${hm.heatmapId}-enriched-${Date.now()}.json`; a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="rounded px-1.5 py-0.5 text-[9px] font-medium text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  title="Save enriched assessment"
+                >↓ Save</button>
+                <button
                   onClick={() => setShowVendorPicker(v => !v)}
                   disabled={enriching}
                   className="rounded px-1.5 py-0.5 text-[9px] font-medium text-vcc-500 hover:bg-vcc-50 hover:text-vcc-700 disabled:opacity-40"
@@ -430,7 +455,7 @@ export function StageWizard() {
             <div className="border-b border-gray-100 px-3 py-2">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Select vendor library</p>
             </div>
-            {VENDOR_LIBRARIES.map(lib => (
+            {[...VENDOR_LIBRARIES, ...useVendorLibraryStore.getState().customLibraries.map(l => ({ ...l, logoColour: "bg-purple-500" }))].map(lib => (
               <button key={lib.vendorId} onClick={() => handleEnrich(lib)}
                 className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-xs font-medium text-gray-700 hover:bg-gray-50">
                 <div className={`flex h-4 w-4 items-center justify-center rounded ${lib.logoColour}`}>
@@ -443,7 +468,7 @@ export function StageWizard() {
               </button>
             ))}
             <div className="border-t border-gray-100 px-3 py-2">
-              <p className="text-[10px] italic text-gray-400">More vendors coming soon</p>
+              <p className="text-[10px] italic text-gray-400">Upload custom libraries via Friction → Solutions</p>
             </div>
           </div>
         )}

@@ -8,12 +8,16 @@ import type {
   AnchorRef,
 } from "../types.ts";
 import { classifyCategory, categoryLabel, buildActivityFrictionMap } from "./FrictionOverlay.tsx";
+import { useVendorLibraryStore, type CustomerStory, type CustomerStoryCatalogue } from "../store/vendor-library-store.ts";
+import type { VendorFeatureLibrary } from "../types.ts";
+import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforce.json";
+import SF_STORIES_RAW from "../../fixtures/vendor-libraries/agentforce-customer-stories.json";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tab type
 // ─────────────────────────────────────────────────────────────────────────────
 
-type FrictionTab = "observations" | "howItWorks" | "survey" | "settings";
+type FrictionTab = "observations" | "howItWorks" | "survey" | "solutions" | "settings";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Friction category metadata
@@ -114,6 +118,7 @@ export function FrictionView() {
   const tabs: { id: FrictionTab; label: string; icon: string }[] = [
     { id: "observations", label: "Observations", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" },
     { id: "survey", label: "Survey", icon: "M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
+    { id: "solutions", label: "Solutions", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
     { id: "howItWorks", label: "How it works", icon: "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
     { id: "settings", label: "Signals", icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" },
   ];
@@ -145,6 +150,7 @@ export function FrictionView() {
         {activeTab === "observations" && (
           <ObservationsTab scaffoldData={scaffoldData} heatmapsByVs={heatmapsByVs} />
         )}
+        {activeTab === "solutions" && <SolutionsTab />}
         {activeTab === "howItWorks" && <HowItWorksTab />}
         {activeTab === "survey" && <SurveyTab scaffoldData={scaffoldData} />}
         {activeTab === "settings" && <SettingsTab />}
@@ -314,15 +320,78 @@ function ObservationsTab({
           </select>
         </div>
 
-        <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center gap-1.5 rounded-lg bg-vcc-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-vcc-700"
-        >
-          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Save assessment */}
+          <button
+            onClick={() => {
+              const allHeatmaps: Record<string, any> = {};
+              for (const [vsId, hm] of heatmapsByVs.entries()) {
+                allHeatmaps[vsId] = hm;
+              }
+              const bundle = { exportedAt: new Date().toISOString(), heatmaps: allHeatmaps };
+              const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a"); a.href = url;
+              a.download = `friction-assessment-${Date.now()}.json`; a.click();
+              URL.revokeObjectURL(url);
+            }}
+            className="flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+            title="Save all friction observations as JSON"
+          >
+            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Save
+          </button>
+          {/* Load assessment */}
+          <label
+            className="flex cursor-pointer items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+            title="Load friction observations from JSON"
+          >
+            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            Load
+            <input type="file" accept=".json" className="hidden" onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                try {
+                  const data = JSON.parse(ev.target?.result as string);
+                  const store = useCanvasStore.getState();
+                  if (data.heatmaps) {
+                    // Bundle format
+                    for (const [vsId, hm] of Object.entries(data.heatmaps)) {
+                      store.heatmapsByVs.set(vsId, hm as HeatmapData);
+                    }
+                  } else if (data.observations) {
+                    // Single heatmap format
+                    const vsId = data.valueStreamId || "unknown";
+                    store.heatmapsByVs.set(vsId, data as HeatmapData);
+                  }
+                  useCanvasStore.setState({ heatmapsByVs: new Map(store.heatmapsByVs), scaffoldDirty: true });
+                } catch (err) {
+                  alert("Failed to parse assessment file: " + (err as Error).message);
+                }
+              };
+              reader.readAsText(file);
+              e.target.value = "";
+            }} />
+          </label>
+
+          <div className="h-4 w-px bg-gray-200" />
+
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="flex items-center gap-1.5 rounded-lg bg-vcc-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-vcc-700"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add
+          </button>
+        </div>
       </div>
 
       {showAddForm && (
@@ -654,6 +723,518 @@ function resolveAnchorName(anchor: AnchorRef, scaffold: ScaffoldData): string {
   if (anchorType === "Metric") return elts.metrics[anchorId]?.name || anchorId;
   if (anchorType === "Constraint") return elts.constraints[anchorId]?.name || anchorId;
   return anchorId;
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// SOLUTIONS TAB — manage vendor libraries and customer stories
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Built-in vendor libraries (read-only)
+const BUILTIN_VENDOR_LIBRARIES: (VendorFeatureLibrary & { builtIn: true })[] = [
+  { ...(SALESFORCE_LIB as VendorFeatureLibrary), builtIn: true as const },
+];
+
+const BUILTIN_STORY_CATALOGUES: (CustomerStoryCatalogue & { builtIn: true })[] = [
+  { ...(SF_STORIES_RAW as unknown as CustomerStoryCatalogue), builtIn: true as const },
+];
+
+function SolutionsTab() {
+  const { customLibraries, customStories, addLibrary, removeLibrary, addStoryCatalogue, removeStoryCatalogue } = useVendorLibraryStore();
+  const [activeSection, setActiveSection] = useState<"libraries" | "stories">("libraries");
+  const [showUploadLib, setShowUploadLib] = useState(false);
+  const [showUploadStories, setShowUploadStories] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [expandedVendor, setExpandedVendor] = useState<string | null>(null);
+  const [expandedStory, setExpandedStory] = useState<string | null>(null);
+
+  // Merge built-in + custom
+  const allLibraries = useMemo(() => [
+    ...BUILTIN_VENDOR_LIBRARIES,
+    ...customLibraries.map(l => ({ ...l, builtIn: false as const })),
+  ], [customLibraries]);
+
+  const allStoryCatalogues = useMemo(() => [
+    ...BUILTIN_STORY_CATALOGUES,
+    ...customStories.map(c => ({ ...c, builtIn: false as const })),
+  ], [customStories]);
+
+  // JSON upload handler for vendor libraries
+  const handleLibUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target?.result as string) as VendorFeatureLibrary;
+        if (!data.vendorId || !data.vendorName || !data.categories) {
+          throw new Error("Invalid vendor library format — needs vendorId, vendorName, categories");
+        }
+        addLibrary(data);
+        setShowUploadLib(false);
+      } catch (err) {
+        alert("Failed to parse vendor library: " + (err as Error).message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  }, [addLibrary]);
+
+  // JSON upload handler for customer stories
+  const handleStoryUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target?.result as string) as CustomerStoryCatalogue;
+        if (!data.vendorId || !data.stories?.length) {
+          throw new Error("Invalid story catalogue format — needs vendorId, stories[]");
+        }
+        if (!data.catalogueId) data.catalogueId = `custom-${data.vendorId}-${Date.now()}`;
+        if (!data.title) data.title = `${data.vendorId} Customer Stories`;
+        addStoryCatalogue(data);
+        setShowUploadStories(false);
+      } catch (err) {
+        alert("Failed to parse story catalogue: " + (err as Error).message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  }, [addStoryCatalogue]);
+
+  // PDF export
+  const handleExportPdf = useCallback(() => {
+    // Build HTML content for PDF
+    let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Solutions & Customer Stories</title>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; color: #333; font-size: 12px; line-height: 1.6; }
+      h1 { font-size: 22px; border-bottom: 2px solid #6366f1; padding-bottom: 8px; }
+      h2 { font-size: 16px; color: #4f46e5; margin-top: 30px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+      h3 { font-size: 13px; color: #374151; margin-top: 16px; }
+      .feature { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 14px; margin: 6px 0; }
+      .feature-name { font-weight: 600; color: #111827; }
+      .feature-desc { color: #6b7280; font-size: 11px; margin-top: 2px; }
+      .story { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px 14px; margin: 8px 0; }
+      .story-header { font-weight: 600; color: #1e40af; font-size: 13px; }
+      .story-meta { color: #6b7280; font-size: 10px; margin-top: 2px; }
+      .story-section { margin-top: 6px; }
+      .story-section strong { color: #374151; }
+      .metric { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 6px 10px; margin-top: 6px; font-weight: 500; color: #166534; }
+      @media print { body { padding: 20px; } }
+    </style></head><body>`;
+
+    html += `<h1>Solutions & Customer Stories Catalogue</h1>`;
+    html += `<p style="color:#6b7280;">Exported ${new Date().toLocaleDateString()}</p>`;
+
+    // Vendor libraries
+    for (const lib of allLibraries) {
+      const featureCount = lib.categories.reduce((n, c) => n + c.features.length, 0);
+      html += `<h2>${lib.vendorName} — ${featureCount} features</h2>`;
+      for (const cat of lib.categories) {
+        html += `<h3>${cat.categoryName} (${cat.features.length})</h3>`;
+        for (const f of cat.features) {
+          html += `<div class="feature"><div class="feature-name">${f.name}</div><div class="feature-desc">${f.description}</div></div>`;
+        }
+      }
+    }
+
+    // Customer stories
+    for (const catalogue of allStoryCatalogues) {
+      html += `<h2>${catalogue.title ?? catalogue.vendorId} — Customer Stories</h2>`;
+      for (const story of catalogue.stories) {
+        html += `<div class="story">`;
+        html += `<div class="story-header">${story.company}</div>`;
+        html += `<div class="story-meta">${story.industry} · ${story.companySize} employees · ${story.region ?? ""} · ${story.status}</div>`;
+        html += `<div class="story-section"><strong>Use Case:</strong> ${story.useCase}</div>`;
+        html += `<div class="story-section"><strong>Challenge:</strong> ${story.challenge}</div>`;
+        html += `<div class="story-section"><strong>Solution:</strong> ${story.solution}</div>`;
+        html += `<div class="metric">${story.keyMetric}</div>`;
+        html += `</div>`;
+      }
+    }
+
+    html += `</body></html>`;
+
+    // Open in new window for print-to-PDF
+    const printWin = window.open("", "_blank");
+    if (printWin) {
+      printWin.document.write(html);
+      printWin.document.close();
+      setTimeout(() => printWin.print(), 500);
+    }
+  }, [allLibraries, allStoryCatalogues]);
+
+  return (
+    <div className="mx-auto max-w-4xl p-8">
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-vcc-500">Enrichment Content</span>
+          <h2 className="mt-1 text-lg font-bold text-gray-900">Vendor Solutions & Customer Stories</h2>
+          <p className="mt-1 text-xs text-gray-500 leading-relaxed">
+            Manage vendor feature libraries and customer stories used to enrich friction observations with solution recommendations.
+          </p>
+        </div>
+        <button
+          onClick={handleExportPdf}
+          className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+        >
+          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          Export PDF
+        </button>
+      </div>
+
+      {/* Section toggle */}
+      <div className="mb-6 flex gap-1 rounded-lg bg-gray-100 p-1">
+        {(["libraries", "stories"] as const).map((s) => (
+          <button
+            key={s}
+            onClick={() => setActiveSection(s)}
+            className={`flex-1 rounded-md py-2 text-xs font-medium transition-colors ${
+              activeSection === s ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            {s === "libraries" ? `Feature Libraries (${allLibraries.length})` : `Customer Stories (${allStoryCatalogues.reduce((n, c) => n + c.stories.length, 0)})`}
+          </button>
+        ))}
+      </div>
+
+      {/* ─── Feature Libraries section ──────────────────────────────── */}
+      {activeSection === "libraries" && (
+        <div>
+          {/* Action bar */}
+          <div className="mb-4 flex items-center gap-2">
+            <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-violet-300 bg-white px-3 py-2 text-xs font-medium text-violet-600 hover:border-violet-400 hover:bg-violet-50/40">
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              Upload JSON
+              <input type="file" accept=".json" className="hidden" onChange={handleLibUpload} />
+            </label>
+            <button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="flex items-center gap-1.5 rounded-md border border-dashed border-emerald-300 bg-white px-3 py-2 text-xs font-medium text-emerald-600 hover:border-emerald-400 hover:bg-emerald-50/40"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Create New Library
+            </button>
+          </div>
+
+          {/* Add form */}
+          {showAddForm && <AddVendorLibraryForm onAdd={(lib) => { addLibrary(lib); setShowAddForm(false); }} onCancel={() => setShowAddForm(false)} />}
+
+          {/* Library list */}
+          <div className="space-y-3">
+            {allLibraries.map((lib) => {
+              const featureCount = lib.categories.reduce((n, c) => n + c.features.length, 0);
+              const isExpanded = expandedVendor === lib.vendorId;
+              return (
+                <div key={lib.vendorId} className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+                  <div
+                    className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50"
+                    onClick={() => setExpandedVendor(isExpanded ? null : lib.vendorId)}
+                  >
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${lib.builtIn ? "bg-blue-500" : "bg-purple-500"}`}>
+                      <span className="text-sm font-bold text-white">{lib.vendorName[0]}</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-gray-900">{lib.vendorName}</span>
+                        {lib.builtIn && <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[9px] font-medium text-gray-500">Built-in</span>}
+                        {!lib.builtIn && <span className="rounded bg-purple-100 px-1.5 py-0.5 text-[9px] font-medium text-purple-600">Custom</span>}
+                      </div>
+                      <p className="text-[10px] text-gray-500">
+                        {lib.categories.length} categories · {featureCount} features · v{(lib as any).version ?? "1.0"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {!lib.builtIn && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removeLibrary(lib.vendorId); }}
+                          className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                          title="Remove library"
+                        >
+                          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                      {/* Export single library */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const blob = new Blob([JSON.stringify(lib, null, 2)], { type: "application/json" });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement("a"); a.href = url;
+                          a.download = `${lib.vendorId}-feature-library.json`; a.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                        className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                        title="Download JSON"
+                      >
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                      </button>
+                      <svg className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Expanded category/features */}
+                  {isExpanded && (
+                    <div className="border-t border-gray-100 bg-gray-50/50 px-4 py-3">
+                      {lib.categories.map((cat) => (
+                        <div key={cat.categoryId} className="mb-3 last:mb-0">
+                          <h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-gray-600">{cat.categoryName}</h4>
+                          <div className="space-y-1">
+                            {cat.features.map((f) => (
+                              <div key={f.featureId} className="rounded border border-gray-100 bg-white px-3 py-2">
+                                <span className="text-xs font-medium text-gray-800">{f.name}</span>
+                                <p className="mt-0.5 text-[10px] text-gray-500 leading-relaxed">{f.description}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ─── Customer Stories section ──────────────────────────────── */}
+      {activeSection === "stories" && (
+        <div>
+          <div className="mb-4 flex items-center gap-2">
+            <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-violet-300 bg-white px-3 py-2 text-xs font-medium text-violet-600 hover:border-violet-400 hover:bg-violet-50/40">
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              Upload Stories JSON
+              <input type="file" accept=".json" className="hidden" onChange={handleStoryUpload} />
+            </label>
+          </div>
+
+          {/* Story catalogues */}
+          <div className="space-y-3">
+            {allStoryCatalogues.map((catalogue) => {
+              const isExpanded = expandedStory === catalogue.catalogueId;
+              return (
+                <div key={catalogue.catalogueId} className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+                  <div
+                    className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50"
+                    onClick={() => setExpandedStory(isExpanded ? null : catalogue.catalogueId)}
+                  >
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${catalogue.builtIn ? "bg-blue-500" : "bg-purple-500"}`}>
+                      <span className="text-sm font-bold text-white">{(catalogue.title ?? catalogue.vendorId)[0]}</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-gray-900">{catalogue.title ?? catalogue.vendorId}</span>
+                        {catalogue.builtIn && <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[9px] font-medium text-gray-500">Built-in</span>}
+                        {!catalogue.builtIn && <span className="rounded bg-purple-100 px-1.5 py-0.5 text-[9px] font-medium text-purple-600">Custom</span>}
+                      </div>
+                      <p className="text-[10px] text-gray-500">{catalogue.stories.length} stories · {catalogue.vendorId}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {!catalogue.builtIn && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removeStoryCatalogue(catalogue.vendorId); }}
+                          className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                          title="Remove catalogue"
+                        >
+                          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const blob = new Blob([JSON.stringify(catalogue, null, 2)], { type: "application/json" });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement("a"); a.href = url;
+                          a.download = `${catalogue.vendorId}-customer-stories.json`; a.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                        className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                        title="Download JSON"
+                      >
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                      </button>
+                      <svg className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {isExpanded && (
+                    <div className="border-t border-gray-100 bg-gray-50/50 px-4 py-3 space-y-3">
+                      {catalogue.stories.map((story) => (
+                        <div key={story.storyId} className="rounded-lg border border-blue-100 bg-blue-50/40 p-3">
+                          <div className="flex items-start justify-between mb-1">
+                            <span className="text-xs font-semibold text-blue-900">{story.company}</span>
+                            <span className="text-[9px] text-gray-400">{story.storyId}</span>
+                          </div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="rounded bg-white px-1.5 py-0.5 text-[9px] font-medium text-gray-600 border border-gray-100">{story.industry}</span>
+                            <span className="rounded bg-white px-1.5 py-0.5 text-[9px] font-medium text-gray-600 border border-gray-100">{story.companySize} emp</span>
+                            {story.region && <span className="rounded bg-white px-1.5 py-0.5 text-[9px] font-medium text-gray-600 border border-gray-100">{story.region}</span>}
+                            <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[9px] font-medium text-emerald-700 border border-emerald-100">{story.status}</span>
+                          </div>
+                          <p className="text-[10px] text-gray-500 mb-1"><span className="font-medium text-gray-700">Use Case:</span> {story.useCase}</p>
+                          <p className="text-[10px] text-gray-500 mb-1"><span className="font-medium text-gray-700">Challenge:</span> {story.challenge}</p>
+                          <p className="text-[10px] text-gray-500 mb-1"><span className="font-medium text-gray-700">Solution:</span> {story.solution}</p>
+                          <div className="mt-2 rounded bg-emerald-50 border border-emerald-200 px-2 py-1.5">
+                            <span className="text-[10px] font-semibold text-emerald-800">{story.keyMetric}</span>
+                          </div>
+                          {story.productsUsed?.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {story.productsUsed.map((p) => (
+                                <span key={p} className="rounded bg-violet-50 px-1.5 py-0.5 text-[9px] font-medium text-violet-600 border border-violet-100">{p}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <p className="mt-6 text-[10px] text-gray-400 leading-relaxed">
+        Upload vendor feature libraries and customer stories as JSON to make them available for friction enrichment. Built-in libraries cannot be removed. Use "Export PDF" to generate a printable catalogue of all solutions and stories.
+      </p>
+    </div>
+  );
+}
+
+// ── Add Vendor Library form ──────────────────────────────────────────────────
+
+function AddVendorLibraryForm({ onAdd, onCancel }: { onAdd: (lib: VendorFeatureLibrary) => void; onCancel: () => void }) {
+  const [vendorId, setVendorId] = useState("");
+  const [vendorName, setVendorName] = useState("");
+  const [categories, setCategories] = useState<{ categoryId: string; categoryName: string; features: { featureId: string; name: string; description: string }[] }[]>([]);
+  const [newCatName, setNewCatName] = useState("");
+
+  const addCategory = () => {
+    if (!newCatName.trim()) return;
+    const id = newCatName.trim().toLowerCase().replace(/\s+/g, "-");
+    setCategories([...categories, { categoryId: id, categoryName: newCatName.trim(), features: [] }]);
+    setNewCatName("");
+  };
+
+  const addFeature = (catIdx: number) => {
+    const updated = [...categories];
+    updated[catIdx] = {
+      ...updated[catIdx],
+      features: [...updated[catIdx].features, { featureId: `feat-${Date.now()}`, name: "", description: "" }],
+    };
+    setCategories(updated);
+  };
+
+  const updateFeature = (catIdx: number, featIdx: number, field: "name" | "description", value: string) => {
+    const updated = [...categories];
+    const feats = [...updated[catIdx].features];
+    feats[featIdx] = { ...feats[featIdx], [field]: value };
+    if (field === "name") feats[featIdx].featureId = value.toLowerCase().replace(/\s+/g, "-") || feats[featIdx].featureId;
+    updated[catIdx] = { ...updated[catIdx], features: feats };
+    setCategories(updated);
+  };
+
+  const removeFeature = (catIdx: number, featIdx: number) => {
+    const updated = [...categories];
+    updated[catIdx] = {
+      ...updated[catIdx],
+      features: updated[catIdx].features.filter((_, i) => i !== featIdx),
+    };
+    setCategories(updated);
+  };
+
+  const removeCategory = (catIdx: number) => {
+    setCategories(categories.filter((_, i) => i !== catIdx));
+  };
+
+  const handleSubmit = () => {
+    if (!vendorId.trim() || !vendorName.trim() || categories.length === 0) return;
+    const lib: VendorFeatureLibrary = {
+      vendorId: vendorId.trim(),
+      vendorName: vendorName.trim(),
+      version: "1.0",
+      categories: categories.map(c => ({
+        ...c,
+        features: c.features.filter(f => f.name.trim()),
+      })),
+    } as VendorFeatureLibrary;
+    onAdd(lib);
+  };
+
+  return (
+    <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50/30 p-4">
+      <h4 className="mb-3 text-xs font-semibold text-gray-700">Create Vendor Feature Library</h4>
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label className="mb-1 block text-[10px] font-medium text-gray-500 uppercase tracking-wide">Vendor ID</label>
+          <input value={vendorId} onChange={(e) => setVendorId(e.target.value)} placeholder="e.g. my-vendor" className="w-full rounded border border-gray-200 px-2 py-1.5 text-xs" />
+        </div>
+        <div>
+          <label className="mb-1 block text-[10px] font-medium text-gray-500 uppercase tracking-wide">Vendor Name</label>
+          <input value={vendorName} onChange={(e) => setVendorName(e.target.value)} placeholder="e.g. My Vendor" className="w-full rounded border border-gray-200 px-2 py-1.5 text-xs" />
+        </div>
+      </div>
+
+      {/* Categories */}
+      {categories.map((cat, catIdx) => (
+        <div key={cat.categoryId} className="mb-3 rounded border border-gray-200 bg-white p-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-gray-700">{cat.categoryName}</span>
+            <div className="flex gap-1">
+              <button onClick={() => addFeature(catIdx)} className="rounded bg-vcc-100 px-2 py-0.5 text-[10px] font-medium text-vcc-700 hover:bg-vcc-200">+ Feature</button>
+              <button onClick={() => removeCategory(catIdx)} className="rounded p-1 text-gray-400 hover:text-red-500">
+                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+          </div>
+          {cat.features.map((feat, featIdx) => (
+            <div key={featIdx} className="mb-1 flex items-start gap-2">
+              <div className="flex-1 grid grid-cols-2 gap-2">
+                <input value={feat.name} onChange={(e) => updateFeature(catIdx, featIdx, "name", e.target.value)} placeholder="Feature name" className="rounded border border-gray-200 px-2 py-1 text-[10px]" />
+                <input value={feat.description} onChange={(e) => updateFeature(catIdx, featIdx, "description", e.target.value)} placeholder="Description" className="rounded border border-gray-200 px-2 py-1 text-[10px]" />
+              </div>
+              <button onClick={() => removeFeature(catIdx, featIdx)} className="rounded p-1 text-gray-400 hover:text-red-500">
+                <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      ))}
+
+      {/* Add category */}
+      <div className="mb-3 flex items-center gap-2">
+        <input value={newCatName} onChange={(e) => setNewCatName(e.target.value)} placeholder="New category name" className="rounded border border-gray-200 px-2 py-1.5 text-xs flex-1" onKeyDown={(e) => e.key === "Enter" && addCategory()} />
+        <button onClick={addCategory} disabled={!newCatName.trim()} className="rounded bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-40">Add Category</button>
+      </div>
+
+      <div className="flex gap-2">
+        <button onClick={handleSubmit} disabled={!vendorId.trim() || !vendorName.trim() || categories.length === 0} className="rounded bg-vcc-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-vcc-700 disabled:opacity-40">Create Library</button>
+        <button onClick={onCancel} className="rounded border border-gray-200 px-4 py-1.5 text-xs text-gray-600 hover:bg-gray-50">Cancel</button>
+      </div>
+    </div>
+  );
 }
 
 // ═════════════════════════════════════════════════════════════════════════════

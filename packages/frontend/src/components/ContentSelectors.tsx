@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforce.json";
-import TRADIEBOT_LIB from "../../fixtures/vendor-libraries/tradiebot.json";
 import type { VendorFeatureLibrary, Solution, FrictionObservation } from "../types.ts";
+import { useVendorLibraryStore } from "../store/vendor-library-store.ts";
 import { humanizeId } from "../lib/humanize-id.ts";
 import { callLLM } from "../domain/pipeline/llm-client";
 
@@ -10,7 +10,6 @@ import { callLLM } from "../domain/pipeline/llm-client";
 
 const VENDOR_LIBRARIES: (VendorFeatureLibrary & { logoColour: string })[] = [
   { ...(SALESFORCE_LIB as VendorFeatureLibrary), logoColour: "bg-blue-500" },
-  { ...(TRADIEBOT_LIB as VendorFeatureLibrary), logoColour: "bg-green-600" },
 ];
 
 function buildFeatureCatalogue(lib: VendorFeatureLibrary) {
@@ -274,7 +273,7 @@ export function ContentSelectors() {
                 Select vendor library
               </p>
             </div>
-            {VENDOR_LIBRARIES.map(lib => (
+            {[...VENDOR_LIBRARIES, ...useVendorLibraryStore.getState().customLibraries.map(l => ({ ...l, logoColour: "bg-purple-500" }))].map(lib => (
               <button
                 key={lib.vendorId}
                 onClick={() => handleEnrich(lib)}

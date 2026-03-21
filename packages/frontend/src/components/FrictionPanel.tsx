@@ -11,11 +11,10 @@ import type {
 import { humanizeId } from "../lib/humanize-id.ts";
 import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
 import { classifyCategory, categoryLabel } from "./FrictionOverlay.tsx";
+import { useVendorLibraryStore } from "../store/vendor-library-store.ts";
 import { ThroughputPanel } from "./ThroughputPanel.tsx";
 import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforce.json";
-import TRADIEBOT_LIB from "../../fixtures/vendor-libraries/tradiebot.json";
 import CUSTOMER_STORIES_RAW from "../../fixtures/vendor-libraries/agentforce-customer-stories.json";
-import TRADIEBOT_STORIES_RAW from "../../fixtures/vendor-libraries/tradiebot-customer-stories.json";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -63,12 +62,20 @@ const SOLUTION_COLOURS: Record<SolutionType, { badge: string; bg: string; border
   Technology:  { badge: "bg-emerald-100 text-emerald-700", bg: "bg-emerald-50/40", border: "border-emerald-200" },
 };
 
-const VENDOR_LIBRARIES: VendorFeatureLibrary[] = [SALESFORCE_LIB as VendorFeatureLibrary, TRADIEBOT_LIB as VendorFeatureLibrary];
+const BUILTIN_VENDOR_LIBRARIES: VendorFeatureLibrary[] = [SALESFORCE_LIB as VendorFeatureLibrary];
 
-const ALL_STORIES: CustomerStory[] = [
+// Merge built-in + custom libraries at access time
+function getVendorLibraries(): VendorFeatureLibrary[] {
+  return [...BUILTIN_VENDOR_LIBRARIES, ...useVendorLibraryStore.getState().customLibraries];
+}
+
+const BUILTIN_STORIES: CustomerStory[] = [
   ...((CUSTOMER_STORIES_RAW as { stories: CustomerStory[] }).stories ?? []),
-  ...((TRADIEBOT_STORIES_RAW as { stories: CustomerStory[] }).stories ?? []),
 ];
+
+function getAllStories(): CustomerStory[] {
+  return [...BUILTIN_STORIES, ...useVendorLibraryStore.getState().getAllStories()];
+}
 
 // Extended feature type with optional customerStoryIds
 type FeatureWithStories = {
@@ -82,17 +89,17 @@ type FeatureWithStories = {
 // Story filter options (extracted once from loaded data)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const STORY_INDUSTRIES = [...new Set(ALL_STORIES.map((s) => s.industry))].sort();
+const STORY_INDUSTRIES = [...new Set(getAllStories().map((s) => s.industry))].sort();
 const STORY_SIZES = (() => {
   // Sort company sizes by approximate headcount order
   const ORDER = ["0-500","500-1k","1k-5k","5k-10k","10k-50k","10k-50k+","50k-100k","100k-200k","200k-300k","300k+"];
-  const raw = [...new Set(ALL_STORIES.map((s) => s.companySize))];
+  const raw = [...new Set(getAllStories().map((s) => s.companySize))];
   return raw.sort((a, b) => {
     const ia = ORDER.indexOf(a); const ib = ORDER.indexOf(b);
     return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
   });
 })();
-const STORY_STATUSES = [...new Set(ALL_STORIES.map((s) => s.status))].sort();
+const STORY_STATUSES = [...new Set(getAllStories().map((s) => s.status))].sort();
 
 const EMPTY_FILTERS: StoryFilters = { industry: "", companySize: "", status: "" };
 
@@ -110,14 +117,14 @@ function applyStoryFilters(stories: CustomerStory[], filters: StoryFilters): Cus
 // ─────────────────────────────────────────────────────────────────────────────
 
 function getStoriesForFeature(vendorId: string, featureId: string, filters?: StoryFilters): CustomerStory[] {
-  const lib = VENDOR_LIBRARIES.find((l) => l.vendorId === vendorId);
+  const lib = getVendorLibraries().find((l) => l.vendorId === vendorId);
   if (!lib) return [];
   for (const cat of lib.categories) {
     const feat = cat.features.find((f) => f.featureId === featureId) as FeatureWithStories | undefined;
     if (!feat) continue; // not in this category — try next
     if (!feat.customerStoryIds?.length) return [];
     let matched = feat.customerStoryIds
-      .map((id) => ALL_STORIES.find((s) => s.storyId === id))
+      .map((id) => getAllStories().find((s) => s.storyId === id))
       .filter((s): s is CustomerStory => !!s);
     if (filters) matched = applyStoryFilters(matched, filters);
     return matched.slice(0, 5);
@@ -365,8 +372,8 @@ function VendorFeatureSelector({
   value: VendorFeatureRef | undefined;
   onChange: (ref: VendorFeatureRef | undefined) => void;
 }) {
-  const [vendorId, setVendorId] = useState(value?.vendorId ?? VENDOR_LIBRARIES[0].vendorId);
-  const library = VENDOR_LIBRARIES.find((l) => l.vendorId === vendorId) ?? VENDOR_LIBRARIES[0];
+  const [vendorId, setVendorId] = useState(value?.vendorId ?? getVendorLibraries()[0].vendorId);
+  const library = getVendorLibraries().find((l) => l.vendorId === vendorId) ?? getVendorLibraries()[0];
 
   function handleFeatureChange(featureId: string) {
     if (!featureId) { onChange(undefined); return; }
@@ -393,7 +400,7 @@ function VendorFeatureSelector({
         onChange={(e) => setVendorId(e.target.value)}
         className="w-full rounded border border-gray-200 bg-white px-1.5 py-1 text-[10px] text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-400"
       >
-        {VENDOR_LIBRARIES.map((l) => (
+        {getVendorLibraries().map((l) => (
           <option key={l.vendorId} value={l.vendorId}>{l.vendorName}</option>
         ))}
       </select>
