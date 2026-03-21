@@ -3,7 +3,8 @@ import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { useThemeStore } from "../store/theme-store.ts";
 import { tv } from "../theme.ts";
-import type { NetworkNode, NetworkEdge, HeatmapData } from "../types.ts";
+import type { NetworkNode, NetworkEdge } from "../types.ts";
+import { LAYER_SCHEMES, detectSchemeId } from "../lib/layer-schemes.ts";
 
 /* ── VS Editor Modal ──────────────────────────────────────────────── */
 
@@ -556,17 +557,92 @@ export function NetworkView() {
     networkFeedbackEdges,
     topologyView,
     selectVs,
-    loadHeatmap,
     heatmapsByVs,
-    saveFullBundle,
   } = useCanvasStore();
 
   const isDark = useThemeStore((s) => s.mode) === "dark";
   const [hoveredVsId, setHoveredVsId] = useState<string | null>(null);
   const [editingVsId, setEditingVsId] = useState<string | null>(null);
   const [viewTab, setViewTab] = useState<"cards" | "graph">("cards");
-  const heatmapInputRef = useRef<HTMLInputElement>(null);
   const { positions, canvasWidth, canvasHeight } = useNodePositions(networkNodes);
+
+  // Detect the current layer scheme from the scaffold's layoutZones
+  const currentSchemeId = useMemo(
+    () => detectSchemeId(scaffoldData?.layoutZones as Array<{ id: string }> | undefined),
+    [scaffoldData],
+  );
+
+  /** Apply a different layer scheme — updates layoutZones + reassigns each VS.
+   *
+   *  Strategy:
+   *  1. If VS are well-distributed across old layers → positional mapping
+   *     (row N in old → row N in new, clamped).
+   *  2. If most VS sit in one layer (>80% in a single row) → distribute
+   *     across the new scheme's layers using journey order (topological).
+   *     This gives a meaningful starting point the user can refine via the
+   *     edit pencil. */
+  const applyLayerScheme = useCallback((schemeId: string) => {
+    if (!scaffoldData) return;
+    const scheme = LAYER_SCHEMES.find(s => s.id === schemeId);
+    if (!scheme) return;
+
+    const newLayoutZones = scheme.layers.map((l, i) => ({
+      id: l.id,
+      label: l.label,
+      row: i,
+      description: l.description,
+    }));
+
+    // Build a lookup: old zone id → row index (from current layoutZones)
+    const oldZones = (scaffoldData.layoutZones as Array<{ id: string; row: number }>) ?? [];
+    const oldZoneRow = new Map<string, number>();
+    for (const z of oldZones) oldZoneRow.set(z.id, z.row);
+
+    // Check if VS are concentrated in a single layer
+    const vsEntries = Object.entries(scaffoldData.elements.valueStreams) as [string, any][];
+    const rowCounts = new Map<number, number>();
+    for (const [, vs] of vsEntries) {
+      const zone = vs.layoutZone ?? vs.zone;
+      const row = oldZoneRow.get(zone) ?? 0;
+      rowCounts.set(row, (rowCounts.get(row) ?? 0) + 1);
+    }
+    const maxInOneRow = Math.max(...rowCounts.values(), 0);
+    const allInOneLayer = maxInOneRow >= vsEntries.length * 0.8;
+
+    const updatedVS = { ...scaffoldData.elements.valueStreams } as Record<string, any>;
+
+    if (allInOneLayer && scheme.layers.length >= 2) {
+      // Distribute across new layers using journey order (from networkNodes which
+      // are already sorted by topological position).
+      const orderedVsIds = networkNodes.map(n => n.vsId);
+      // Include any VS not in networkNodes (shouldn't happen, but safety)
+      for (const [vsId] of vsEntries) {
+        if (!orderedVsIds.includes(vsId)) orderedVsIds.push(vsId);
+      }
+      const layerCount = scheme.layers.length;
+      const perLayer = Math.ceil(orderedVsIds.length / layerCount);
+      orderedVsIds.forEach((vsId, idx) => {
+        const layerIdx = Math.min(Math.floor(idx / perLayer), layerCount - 1);
+        const vs = updatedVS[vsId];
+        if (vs) updatedVS[vsId] = { ...vs, layoutZone: scheme.layers[layerIdx].id };
+      });
+    } else {
+      // Positional mapping — VS already distributed across layers
+      for (const [vsId, vs] of vsEntries) {
+        const currentZone = vs.layoutZone ?? vs.zone;
+        const oldRow = oldZoneRow.get(currentZone) ?? 0;
+        const newRow = Math.min(oldRow, scheme.layers.length - 1);
+        updatedVS[vsId] = { ...vs, layoutZone: scheme.layers[newRow].id };
+      }
+    }
+
+    const updatedScaffold = {
+      ...scaffoldData,
+      layoutZones: newLayoutZones,
+      elements: { ...scaffoldData.elements, valueStreams: updatedVS },
+    };
+    useCanvasStore.getState().loadScaffold(updatedScaffold);
+  }, [scaffoldData, networkNodes]);
 
   if (!scaffoldData || networkNodes.length === 0) return null;
 
@@ -609,28 +685,6 @@ export function NetworkView() {
   const highestFrictionNode = networkNodes.reduce<NetworkNode | null>(
     (best, n) => (!best || n.frictionCount > best.frictionCount) ? n : best,
     null,
-  );
-
-  const handleHeatmapFile = useCallback(
-    async (file: File) => {
-      try {
-        const text = await file.text();
-        const json = JSON.parse(text) as Record<string, unknown>;
-        if ("heatmapId" in json && "observations" in json) {
-          const heatmap = json as unknown as HeatmapData;
-          if (scaffoldData && heatmap.scaffoldId !== scaffoldData.scaffoldId) {
-            useCanvasStore.setState({
-              error: `Heatmap scaffold mismatch: generated for "${heatmap.scaffoldId}", loaded scaffold is "${scaffoldData.scaffoldId}".`,
-            });
-            return;
-          }
-          await loadHeatmap(heatmap);
-        }
-      } catch {
-        useCanvasStore.setState({ error: "Failed to parse heatmap JSON." });
-      }
-    },
-    [loadHeatmap, scaffoldData],
   );
 
   return (
@@ -698,39 +752,11 @@ export function NetworkView() {
               Highest friction: <span className="font-medium" style={{ color: tv.textPrimary }}>{highestFrictionNode.name}</span>
             </span>
           )}
-
-          {/* Load assessment heatmaps */}
-          <button
-            onClick={() => heatmapInputRef.current?.click()}
-            className="rounded-full border border-dashed px-3 py-1 transition-colors"
-            style={{ borderColor: tv.borderSubtle, color: tv.textDim }}
-          >
-            + Load Assessment
-          </button>
-          <button
-            onClick={() => void saveFullBundle()}
-            className="rounded-full border px-3 py-1 transition-colors"
-            style={{ borderColor: tv.borderSubtle, color: tv.textDim }}
-            title="Download scaffold, heatmaps, and user stories as a VCC bundle JSON file"
-          >
-            ↓ Download Bundle
-          </button>
-          <input
-            ref={heatmapInputRef}
-            type="file"
-            accept=".json"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleHeatmapFile(file);
-              e.target.value = "";
-            }}
-          />
         </div>
       </div>
 
-      {/* View toggle */}
-      <div className="flex items-center gap-2 px-5 pb-3">
+      {/* View toggle + Layer scheme selector */}
+      <div className="flex items-center justify-between gap-2 px-5 pb-3">
         <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 w-fit">
           {([["cards", "Cards"], ["graph", "Graph"]] as const).map(([tab, label]) => (
             <button
@@ -743,6 +769,29 @@ export function NetworkView() {
               {label}
             </button>
           ))}
+        </div>
+
+        {/* Layer scheme selector */}
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: tv.textDim }}>
+            Layers
+          </span>
+          <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 w-fit">
+            {LAYER_SCHEMES.map((scheme) => (
+              <button
+                key={scheme.id}
+                onClick={() => applyLayerScheme(scheme.id)}
+                className={`rounded-md px-2.5 py-1 text-[10px] font-medium transition-all ${
+                  currentSchemeId === scheme.id
+                    ? "bg-slate-800 text-white"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+                title={scheme.layers.map(l => l.label).join(" / ")}
+              >
+                {scheme.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

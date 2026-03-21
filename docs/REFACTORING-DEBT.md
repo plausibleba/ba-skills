@@ -88,6 +88,26 @@ Tracked choices where we picked expediency over elegance. Each item is a candida
 **What we should do:** Add a "Back to Projects" action (already noted as upsell trigger point). Needs a `closeProject()` action that clears canvas-store and project-store state cleanly. This is also where the journey state machine (R-001) would help — transitioning from `{ phase: "canvas" }` back to `{ phase: "project-list" }`.
 **Payoff:** Basic navigation. Also the trigger point Terry identified for upsell/signup flow.
 
+## R-013: Topology coupling is resource-based, not record-lifecycle-based
+**Filed:** 2026-03-21
+**Where:** `network-derivation.ts` (`deriveTopologyView`), `NetworkView.tsx` (Graph View coupling edges)
+**What we did:** The topology mesh derives coupling from six structural signals: shared roles, shared controls, shared application functions, shared primary records, shared capabilities, and outcome adjacency. This creates "interference" coupling — e.g. a `customer-care` role used in 4 VS makes all 4 appear fully coupled, which is structurally true but semantically misleading.
+**What we should do:** True flow coupling should be driven by **record lifecycle continuity** — the state transitions of the core Record in each VS (e.g. Lead → Created → Qualified → Converted). VS-to-VS coupling should be determined by outcome handoffs: when one VS's terminal record state triggers another VS's initial record state (or when a record transforms, e.g. Lead becomes Opportunity). This is the foundation for making the flow logic executable as a state machine in the agentic orchestration layer.
+**Prerequisites:** (a) Make the Record → Outcome Lifecycle mapping explicit and first-class in the scaffold, not implicit in the activity chain. (b) Support record handoff/transformation at VS boundaries (one record's terminal outcome triggers another record's initial outcome). (c) Model decision gates (e.g. Approved/Rejected branches) as explicit state transitions.
+**Payoff:** Coupling graph reflects causal flow, not just organisational overlap. Directly enables executable orchestration. The existing resource-based coupling remains valuable as an "operational interference" diagnostic — but it should be presented separately from flow coupling.
+
+## R-014: R-006 partially addressed — topological sort replaces alphabetical
+**Filed:** 2026-03-21 (update to R-006)
+**Where:** `network-derivation.ts` (`_layeredLayout`, `_topologicalOrder`)
+**What we did:** Replaced alphabetical sort with Kahn's-algorithm topological ordering based on forward edges. This gives journey-sequence ordering within each layer. Alphabetical is now tie-breaker only.
+**What remains:** User-draggable positioning and edge-crossing minimisation (original R-006 scope).
+
+## R-015: R-011 partially addressed — LAYER_SCHEMES extracted to shared config
+**Filed:** 2026-03-21 (update to R-011)
+**Where:** `lib/layer-schemes.ts`
+**What we did:** Extracted LAYER_SCHEMES, DEFAULT_SCHEME, LayerDef, LayerScheme, and detectSchemeId to `lib/layer-schemes.ts`. Both DiscoveryIntake and NetworkView now import from one place.
+**What remains:** The scheme choice isn't yet persisted as a project-level setting (R-007 scope).
+
 ---
 
 *This register is append-only. When we fix an item, mark it with a completion date rather than deleting it.*

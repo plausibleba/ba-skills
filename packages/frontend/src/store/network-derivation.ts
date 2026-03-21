@@ -235,9 +235,51 @@ export function computeNodePositions(
 }
 
 /**
+ * Compute a topological ordering index for VS nodes based on forward edges.
+ * Uses Kahn's algorithm (BFS). VS with no incoming edges come first (journey start).
+ * Returns a Map<vsId, orderIndex> where lower index = earlier in the journey.
+ */
+function _topologicalOrder(
+  nodeIds: string[],
+  forwardEdges: NetworkEdge[],
+): Map<string, number> {
+  const adj = new Map<string, string[]>();
+  const inDeg = new Map<string, number>();
+  for (const id of nodeIds) { adj.set(id, []); inDeg.set(id, 0); }
+  for (const e of forwardEdges) {
+    adj.get(e.sourceVsId)?.push(e.targetVsId);
+    inDeg.set(e.targetVsId, (inDeg.get(e.targetVsId) ?? 0) + 1);
+  }
+
+  const queue: string[] = [];
+  for (const [id, deg] of inDeg) {
+    if (deg === 0) queue.push(id);
+  }
+
+  const order = new Map<string, number>();
+  let idx = 0;
+  while (queue.length > 0) {
+    const n = queue.shift()!;
+    order.set(n, idx++);
+    for (const t of adj.get(n) ?? []) {
+      const d = (inDeg.get(t) ?? 1) - 1;
+      inDeg.set(t, d);
+      if (d === 0) queue.push(t);
+    }
+  }
+
+  // Any nodes not reached (cycles) get appended at the end
+  for (const id of nodeIds) {
+    if (!order.has(id)) order.set(id, idx++);
+  }
+
+  return order;
+}
+
+/**
  * N-layer layout: groups value streams by their layoutZone into rows.
  * Row order follows the layoutZones array if present, otherwise alphabetical.
- * Within each row, columns are assigned by name order.
+ * Within each row, columns are assigned by journey sequence (topological order).
  */
 function _layeredLayout(
   nodeIds: string[],
@@ -270,9 +312,15 @@ function _layeredLayout(
     return rowA - rowB;
   });
 
-  // Sort VS within each zone alphabetically by name
+  // Sort VS within each zone by journey sequence (topological order from forward edges)
+  // rather than alphabetically — R-006: edge-based ordering
+  const topoOrder = _topologicalOrder(nodeIds, forwardEdges);
   for (const [_zone, ids] of buckets) {
     ids.sort((a, b) => {
+      const orderA = topoOrder.get(a) ?? 999;
+      const orderB = topoOrder.get(b) ?? 999;
+      if (orderA !== orderB) return orderA - orderB;
+      // Tie-break by name when no edge relationship
       const nameA = ((scaffold.elements.valueStreams[a] as { name?: string })?.name ?? "").toLowerCase();
       const nameB = ((scaffold.elements.valueStreams[b] as { name?: string })?.name ?? "").toLowerCase();
       return nameA.localeCompare(nameB);
