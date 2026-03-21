@@ -28,10 +28,17 @@ interface CapNode {
   businessObject?: string;
 }
 
+interface L3Group {
+  id: string;
+  name: string;
+  caps: CapNode[];
+}
+
 interface L2Group {
   id: string;
   name: string;
-  l3s: CapNode[];
+  l3s: L3Group[];       // L3 capability groups (when 4-level) or synthetic wrapper
+  caps: CapNode[];       // leaf capabilities directly under L2 (when 3-level fallback)
 }
 
 interface L1Block {
@@ -44,13 +51,14 @@ interface L1Block {
 function buildHierarchy(caps: Record<string, any>): L1Block[] {
   const all = Object.values(caps) as CapNode[];
 
-  // If capabilities have level/parentId (PlausibleBA bundle), use them
+  // If capabilities have level/parentId, use them
   const hasLevels = all.some((c) => typeof c.level === "number");
 
   if (hasLevels) {
     const l1s = all.filter((c) => c.level === 1);
     const l2s = all.filter((c) => c.level === 2);
     const l3s = all.filter((c) => c.level === 3);
+    const l4s = all.filter((c) => c.level === 4);
 
     return l1s.map((l1) => ({
       id: l1.id,
@@ -58,11 +66,33 @@ function buildHierarchy(caps: Record<string, any>): L1Block[] {
       gov: isGovCap(l1) || isGov(l1.name),
       l2s: l2s
         .filter((l2) => l2.parentId === l1.id)
-        .map((l2) => ({
-          id: l2.id,
-          name: l2.name,
-          l3s: l3s.filter((l3) => l3.parentId === l2.id),
-        })),
+        .map((l2) => {
+          // L3 capability groups under this L2
+          const l3Groups = l3s.filter((l3) => l3.parentId === l2.id);
+          // L4 capabilities parented directly to L2 (3-level fallback)
+          const directCaps = l4s.filter((l4) => l4.parentId === l2.id);
+
+          if (l3Groups.length > 0) {
+            // 4-level: L2 → L3 groups → L4 caps
+            return {
+              id: l2.id,
+              name: l2.name,
+              l3s: l3Groups.map((l3) => ({
+                id: l3.id,
+                name: l3.name,
+                caps: l4s.filter((l4) => l4.parentId === l3.id),
+              })),
+              caps: directCaps, // any orphaned L4s under L2
+            };
+          }
+          // 3-level fallback: L2 → L4 caps directly (no L3 groups)
+          return {
+            id: l2.id,
+            name: l2.name,
+            l3s: [],
+            caps: directCaps,
+          };
+        }),
     }));
   }
 
@@ -76,7 +106,8 @@ function buildHierarchy(caps: Record<string, any>): L1Block[] {
         {
           id: "flat_l2",
           name: "All Capabilities",
-          l3s: all.map((c) => ({ ...c, level: 3, parentId: "flat_l2" })),
+          l3s: [],
+          caps: all.map((c) => ({ ...c, level: 4, parentId: "flat_l2" })),
         },
       ],
     },
@@ -130,11 +161,11 @@ export function CapabilityMapView() {
 
   const stats = useMemo(() => {
     const l2Count = hierarchy.reduce((a, b) => a + b.l2s.length, 0);
-    const l3Count = hierarchy.reduce(
-      (a, b) => a + b.l2s.reduce((c, d) => c + d.l3s.length, 0),
-      0,
+    const capCount = hierarchy.reduce(
+      (a, l1) => a + l1.l2s.reduce((b, l2) =>
+        b + l2.caps.length + l2.l3s.reduce((c, l3) => c + l3.caps.length, 0), 0), 0,
     );
-    return { l1: hierarchy.length, l2: l2Count, l3: l3Count };
+    return { l1: hierarchy.length, l2: l2Count, caps: capCount };
   }, [hierarchy]);
 
   /* ── Inline rename ──────────────────────────────────────── */
@@ -187,7 +218,7 @@ export function CapabilityMapView() {
             {scaffoldData.name} — Operating Capabilities
           </div>
           <div className="text-[11px]" style={{ color: tv.textSecondary }}>
-            {stats.l1} business areas · {stats.l2} domains · {stats.l3}{" "}
+            {stats.l1} business areas · {stats.l2} domains · {stats.caps}{" "}
             capabilities
           </div>
         </div>
@@ -218,7 +249,7 @@ export function CapabilityMapView() {
             className="ml-1 text-[9px]"
             style={{ color: tv.textDim }}
           >
-            Click any L3 tile to inspect · Double-click to rename
+            Click any capability tile to inspect · Double-click to rename
           </div>
         </div>
 
@@ -345,7 +376,8 @@ function L1Card({
 }) {
   const borderColor = block.gov ? tv.govColor : tv.accentBorder;
   const headerBg = block.gov ? tv.govMuted : tv.accentMuted;
-  const l3Count = block.l2s.reduce((a, l2) => a + l2.l3s.length, 0);
+  const capCount = block.l2s.reduce((a, l2) =>
+    a + l2.caps.length + l2.l3s.reduce((b, l3) => b + l3.caps.length, 0), 0);
 
   return (
     <div
@@ -368,7 +400,7 @@ function L1Card({
           {block.name}
         </div>
         <div className="mt-0.5 text-[9px]" style={{ color: tv.textSecondary }}>
-          {block.l2s.length} domains · {l3Count} capabilities
+          {block.l2s.length} domains · {capCount} capabilities
         </div>
       </div>
 
@@ -394,21 +426,50 @@ function L1Card({
                 {l2.name}
               </div>
             </div>
-            <div className="flex flex-wrap gap-0.5 px-1.5 py-1.5">
+            <div className="px-1.5 py-1.5">
+              {/* L3 capability groups (when 4-level hierarchy) */}
               {l2.l3s.map((l3) => (
-                <L3Tile
-                  key={l3.id}
-                  cap={l3}
-                  gov={block.gov}
-                  isSelected={selectedL3?.id === l3.id}
-                  isEditing={editingId === l3.id}
-                  editText={editText}
-                  onSelect={() => onSelectL3(l3)}
-                  onStartEdit={() => onStartEdit(l3)}
-                  onEditTextChange={onEditTextChange}
-                  onCommitEdit={onCommitEdit}
-                />
+                <div key={l3.id} className="mb-1 last:mb-0">
+                  <div className="mb-0.5 text-[8px] font-semibold uppercase tracking-wider" style={{ color: tv.textDim }}>
+                    {l3.name}
+                  </div>
+                  <div className="flex flex-wrap gap-0.5">
+                    {l3.caps.map((cap) => (
+                      <CapTile
+                        key={cap.id}
+                        cap={cap}
+                        gov={block.gov}
+                        isSelected={selectedL3?.id === cap.id}
+                        isEditing={editingId === cap.id}
+                        editText={editText}
+                        onSelect={() => onSelectL3(cap)}
+                        onStartEdit={() => onStartEdit(cap)}
+                        onEditTextChange={onEditTextChange}
+                        onCommitEdit={onCommitEdit}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
+              {/* Direct L4 caps under L2 (3-level fallback) */}
+              {l2.caps.length > 0 && (
+                <div className="flex flex-wrap gap-0.5">
+                  {l2.caps.map((cap) => (
+                    <CapTile
+                      key={cap.id}
+                      cap={cap}
+                      gov={block.gov}
+                      isSelected={selectedL3?.id === cap.id}
+                      isEditing={editingId === cap.id}
+                      editText={editText}
+                      onSelect={() => onSelectL3(cap)}
+                      onStartEdit={() => onStartEdit(cap)}
+                      onEditTextChange={onEditTextChange}
+                      onCommitEdit={onCommitEdit}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -417,8 +478,8 @@ function L1Card({
   );
 }
 
-/* ── L3 Tile ──────────────────────────────────────────────── */
-function L3Tile({
+/* ── Capability Tile (L4 or L3 leaf) ─────────────────────── */
+function CapTile({
   cap,
   gov,
   isSelected,
