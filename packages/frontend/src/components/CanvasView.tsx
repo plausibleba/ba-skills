@@ -208,7 +208,7 @@ export function CanvasView() {
         )}
 
         {/* ── Stage columns ── */}
-        <div className="flex flex-1 min-h-0 items-stretch overflow-auto pb-4">
+        <div className="flex flex-1 min-h-0 items-start overflow-auto pb-4">
           {canvasViewModel.columns.map((col, i) => (
             <div key={col.columnId} className="flex items-stretch">
               <StageColumn

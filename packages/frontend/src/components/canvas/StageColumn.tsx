@@ -82,15 +82,23 @@ export function StageColumn({
         }`}
         style={hasBinding ? {} : { borderColor: tv.borderSubtle, background: tv.bgCard }}
       >
-        <div
-          className="flex items-center justify-between px-4 py-2 cursor-pointer"
-          onClick={() => onInspect?.({ kind: "stage", activityId: primaryId })}
-          title="Inspect this stage"
-        >
+        <div className="flex items-center justify-between px-4 py-2">
           <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: hasBinding ? dk.textDim : tv.textDim }}>
             Stage {index + 1} of {total}
           </span>
           <div className="flex items-center gap-1.5">
+            {onInspect && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onInspect({ kind: "stage", activityId: primaryId }); }}
+                className="rounded p-0.5 transition-colors hover:bg-black/10"
+                style={{ color: hasBinding ? dk.textDim : tv.textDim }}
+                title="Inspect this stage"
+              >
+                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+            )}
             {hasBinding && (
               <span className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-tight text-white backdrop-blur-sm">
                 ⚠ Binding
@@ -147,7 +155,7 @@ export function StageColumn({
 
       {/* Card body */}
       <div
-        className={`flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto rounded-b-lg border border-t-0 p-2.5 ${
+        className={`flex flex-1 flex-col gap-2 rounded-b-lg border border-t-0 p-2.5 ${
           hasBinding
             ? "border-status-binding/40"
             : ""
