@@ -197,7 +197,7 @@ function DagGraph({ nodes, pal }: { nodes: SubActivity[]; pal: Pal }) {
           <polygon points="0 0, 8 3, 0 6" fill={pal.activ.fg} opacity={0.5} />
         </marker>
       </defs>
-      {/* Edges */}
+      {/* Edges — elbow connectors */}
       {nodes.map(node => {
         const from = positions.get(node.id);
         if (!from) return null;
@@ -208,13 +208,18 @@ function DagGraph({ nodes, pal }: { nodes: SubActivity[]; pal: Pal }) {
           const y1 = from.y + from.h;
           const x2 = to.x + to.w / 2;
           const y2 = to.y;
+          const midY = (y1 + y2) / 2;
           const edgeLabel = node.edgeLabels?.[nxtId];
+          // Elbow path: down → horizontal → down
+          const d = x1 === x2
+            ? `M${x1},${y1} L${x2},${y2}`
+            : `M${x1},${y1} L${x1},${midY} L${x2},${midY} L${x2},${y2}`;
           return (
             <g key={`${node.id}-${nxtId}`}>
-              <line x1={x1} y1={y1} x2={x2} y2={y2}
+              <path d={d} fill="none"
                 stroke={pal.activ.fg} strokeWidth={1} opacity={0.4} markerEnd="url(#dagArrowStruct)" />
               {edgeLabel && (
-                <text x={(x1 + x2) / 2 + 4} y={(y1 + y2) / 2} fontSize={7} fill={pal.activ.fg} opacity={0.7}>
+                <text x={(x1 + x2) / 2} y={midY - 3} textAnchor="middle" fontSize={7} fill={pal.activ.fg} opacity={0.7}>
                   {edgeLabel}
                 </text>
               )}
@@ -334,17 +339,24 @@ function LifecycleStateDiagram({ states, pal }: { states: LifecycleState[]; pal:
           <polygon points="0 0, 8 3, 0 6" fill={pal.info.fg} opacity={0.5} />
         </marker>
       </defs>
-      {/* Transition edges */}
+      {/* Transition edges — elbow connectors */}
       {states.map(state => {
         const from = positions.get(state.id);
         if (!from) return null;
         return (state.transitionsTo ?? []).map(toId => {
           const to = positions.get(toId);
           if (!to) return null;
+          const x1 = from.x + NODE_W / 2;
+          const y1 = from.y + NODE_H;
+          const x2 = to.x + NODE_W / 2;
+          const y2 = to.y;
+          const midY = (y1 + y2) / 2;
+          // Elbow path: down → horizontal → down
+          const d = x1 === x2
+            ? `M${x1},${y1} L${x2},${y2}`
+            : `M${x1},${y1} L${x1},${midY} L${x2},${midY} L${x2},${y2}`;
           return (
-            <line key={`${state.id}-${toId}`}
-              x1={from.x + NODE_W / 2} y1={from.y + NODE_H}
-              x2={to.x + NODE_W / 2} y2={to.y}
+            <path key={`${state.id}-${toId}`} d={d} fill="none"
               stroke={pal.info.fg} strokeWidth={1} opacity={0.4}
               markerEnd="url(#stateArrow)" />
           );
