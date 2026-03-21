@@ -1,0 +1,78 @@
+{
+  "catalogueId": "tradiebot-design-partner-stories-v1",
+  "vendorId": "tradiebot",
+  "title": "TradieBot Design Partner Stories",
+  "lastUpdated": "2026-03-22",
+  "stories": [
+    {
+      "storyId": "plumber-mark-cashflow",
+      "company": "Mark's Plumbing Services",
+      "industry": "Plumbing",
+      "companySize": "1",
+      "status": "Design Partner",
+      "region": "Western Sydney",
+      "useCase": "Cash Flow & Invoice Management",
+      "challenge": "Mark regularly finished jobs on Friday but didn't send invoices until the following week. Three clients owed a combined $14,200 with invoices 30+ days overdue. He had no forward visibility of cash flow and BAS was always a quarterly shock. He was too uncomfortable to chase payment from clients he wanted repeat work from.",
+      "solution": "TradieBot detected 3 overdue invoices in the first Business Health Diagnosis. Morning Briefs now surface overdue invoices with pre-drafted follow-up messages. Cash flow forecasting showed a projected shortfall 3 weeks out, giving Mark time to chase payments and adjust scheduling. BAS estimates are now surfaced monthly rather than as a quarterly surprise.",
+      "keyMetric": "Invoice-to-payment cycle reduced from 32 days to 14 days; $8,400 in overdue payments recovered in first month",
+      "productsUsed": ["Morning Brief", "Financial Intelligence", "Xero Integration"],
+      "featureTags": ["overdue-invoice-alert", "payment-follow-up", "cashflow-forecast", "bas-estimator"]
+    },
+    {
+      "storyId": "sparky-jess-overdue",
+      "company": "Jess Sparks Electrical",
+      "industry": "Electrical",
+      "companySize": "1",
+      "status": "Design Partner",
+      "region": "Northern Beaches",
+      "useCase": "Lead Response & Quote Intelligence",
+      "challenge": "Jess was losing quote requests because she couldn't respond while on the tools. By the time she checked email at 7pm, customers had already booked someone else. She had no idea what her quote win rate was, and was consistently underpricing switchboard upgrades compared to her actual costs.",
+      "solution": "TradieBot detects quote requests in email within 2 hours and surfaces them in a push notification. AI-drafted responses based on Jess's historical pricing mean she can send a professional reply in one tap during a break. Win rate tracking revealed she was winning only 15% of switchboard jobs because her prices were 30% below her actual cost base.",
+      "keyMetric": "Lead response time reduced from 8 hours to 2 hours; switchboard quote prices adjusted upward by 25%, win rate stable",
+      "productsUsed": ["Morning Brief", "Quote Intelligence", "Email Integration"],
+      "featureTags": ["quote-request-detect", "quote-draft", "pricing-intelligence", "win-rate-tracking"]
+    },
+    {
+      "storyId": "chippy-dave-late-payers",
+      "company": "Dave Wilson Carpentry",
+      "industry": "Carpentry",
+      "companySize": "2",
+      "status": "Design Partner",
+      "region": "Inner West",
+      "useCase": "Client Intelligence & Repeat Business",
+      "challenge": "Dave had been in business 8 years but had no client database. He couldn't quickly look up past job details when a client called back. Two of his best repeat clients had started using other carpenters because Dave hadn't followed up after completing their last job. He'd never asked a single client for a Google review.",
+      "solution": "TradieBot built client profiles automatically from Dave's email and Xero history. Relationship flags identified the two drifting repeat clients. Repeat client nurture drafted check-in messages that Dave approved. The Google Review agent sent review requests after completed jobs, generating 12 five-star reviews in 8 weeks.",
+      "keyMetric": "2 repeat clients re-engaged; 12 Google reviews generated; client lifetime value visibility for first time",
+      "productsUsed": ["Morning Brief", "Client Intelligence", "Email Integration", "Xero Integration"],
+      "featureTags": ["client-profile", "relationship-flags", "repeat-client-nurture", "review-prompt"]
+    },
+    {
+      "storyId": "painter-sam-seasonal",
+      "company": "Sam Rossi Painting",
+      "industry": "Painting",
+      "companySize": "1",
+      "status": "Design Partner",
+      "region": "Hills District",
+      "useCase": "Scheduling & Pipeline Management",
+      "challenge": "Sam's work was feast or famine — flat out for 3 weeks, then nothing for a week. He had no forward visibility beyond the next few days. He regularly drove across Sydney between jobs when he could have clustered by area. He once drove to a job site only to find the client wasn't home because he forgot to confirm.",
+      "solution": "Pipeline gap detection now alerts Sam 10 days ahead when work is thin, giving him time to follow up on open quotes. Next-day prep briefs confirm all jobs and flag unconfirmed access. Schedule conflict detection caught a double-booking that would have cost him a client relationship.",
+      "keyMetric": "Zero no-access site visits in 6 weeks; pipeline gaps identified 10 days ahead; one double-booking prevented",
+      "productsUsed": ["Morning Brief", "Schedule Intelligence", "Calendar Sync"],
+      "featureTags": ["schedule-conflicts", "gap-detection", "client-confirmation", "next-day-prep"]
+    },
+    {
+      "storyId": "tiler-ricky-tax",
+      "company": "Ricky Tran Tiling",
+      "industry": "Tiling",
+      "companySize": "1",
+      "status": "Design Partner",
+      "region": "South-West Sydney",
+      "useCase": "Tax & Compliance Management",
+      "challenge": "Ricky's accountant charged him $2,800 last year because his records were a mess — receipts in a shoebox, personal and business expenses mixed, no categorisation. His BAS was always late, costing penalty fees. He had no idea which jobs were actually profitable after materials and time.",
+      "solution": "Passive expense capture from bank feed automatically categorises 85% of transactions. BAS estimator surfaces liability monthly so Ricky sets money aside progressively. Job profitability tracking showed his large format tiling jobs were consistently loss-making — he was undercharging by $400–600 per job.",
+      "keyMetric": "Accounting fees reduced by $1,200; zero late BAS lodgements; unprofitable job type identified and repriced",
+      "productsUsed": ["Morning Brief", "Financial Intelligence", "Bank Feed", "Xero Integration"],
+      "featureTags": ["expense-capture", "bas-estimator", "job-profitability", "confidence-labels"]
+    }
+  ]
+}

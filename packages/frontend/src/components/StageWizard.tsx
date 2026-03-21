@@ -3,6 +3,7 @@ import { useCanvasStore } from "../store/canvas-store.ts";
 import { useDiscoverySessionStore } from "../store/discovery-session-store.ts";
 import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforce.json";
 import SAP_LIB from "../fixtures/vendor-libraries/sap-s4hana.json";
+import TRADIEBOT_LIB from "../../fixtures/vendor-libraries/tradiebot.json";
 import type { VendorFeatureLibrary, Solution, FrictionObservation, HeatmapData } from "../types.ts";
 import { humanizeId } from "../lib/humanize-id.ts";
 import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
@@ -14,6 +15,7 @@ import { runPassC } from "../domain/pipeline/heatmap-analyser";
 const VENDOR_LIBRARIES: (VendorFeatureLibrary & { logoColour: string })[] = [
   { ...(SALESFORCE_LIB as VendorFeatureLibrary), logoColour: "bg-blue-500" },
   { ...(SAP_LIB as VendorFeatureLibrary), logoColour: "bg-amber-600" },
+  { ...(TRADIEBOT_LIB as VendorFeatureLibrary), logoColour: "bg-green-600" },
 ];
 
 // ─── Pass C: Run friction assessment via proper pipeline ─────────────────────

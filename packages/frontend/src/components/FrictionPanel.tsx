@@ -13,7 +13,9 @@ import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
 import { classifyCategory, categoryLabel } from "./FrictionOverlay.tsx";
 import { ThroughputPanel } from "./ThroughputPanel.tsx";
 import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforce.json";
+import TRADIEBOT_LIB from "../../fixtures/vendor-libraries/tradiebot.json";
 import CUSTOMER_STORIES_RAW from "../../fixtures/vendor-libraries/agentforce-customer-stories.json";
+import TRADIEBOT_STORIES_RAW from "../../fixtures/vendor-libraries/tradiebot-customer-stories.json";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -61,10 +63,12 @@ const SOLUTION_COLOURS: Record<SolutionType, { badge: string; bg: string; border
   Technology:  { badge: "bg-emerald-100 text-emerald-700", bg: "bg-emerald-50/40", border: "border-emerald-200" },
 };
 
-const VENDOR_LIBRARIES: VendorFeatureLibrary[] = [SALESFORCE_LIB as VendorFeatureLibrary];
+const VENDOR_LIBRARIES: VendorFeatureLibrary[] = [SALESFORCE_LIB as VendorFeatureLibrary, TRADIEBOT_LIB as VendorFeatureLibrary];
 
-const ALL_STORIES: CustomerStory[] =
-  (CUSTOMER_STORIES_RAW as { stories: CustomerStory[] }).stories ?? [];
+const ALL_STORIES: CustomerStory[] = [
+  ...((CUSTOMER_STORIES_RAW as { stories: CustomerStory[] }).stories ?? []),
+  ...((TRADIEBOT_STORIES_RAW as { stories: CustomerStory[] }).stories ?? []),
+];
 
 // Extended feature type with optional customerStoryIds
 type FeatureWithStories = {
