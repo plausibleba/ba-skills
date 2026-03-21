@@ -84,6 +84,7 @@ interface CanvasState {
   removeCapabilityFromActivity: (activityId: string, capabilityId: string) => void;
   addActivity: (vsId: string, activityName: string, afterActivityId?: string) => string;
   removeActivity: (vsId: string, activityId: string) => void;
+  moveActivity: (vsId: string, activityId: string, toIndex: number) => void;
   addRole: (roleName: string) => string;
   removeRoleFromActivity: (activityId: string, roleId: string) => void;
   addRoleToActivity: (activityId: string, roleId: string) => void;
@@ -757,6 +758,35 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         valueStreams: {
           ...scaffoldData.elements.valueStreams,
           [vsId]: { ...vs, activityIds: updatedIds },
+        },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    get().generateCanvasForVs(vsId);
+    _refreshNetworkNodes(get, set, updated);
+  },
+
+  moveActivity: (vsId: string, activityId: string, toIndex: number) => {
+    const { scaffoldData } = get();
+    if (!scaffoldData) return;
+    const vs = scaffoldData.elements.valueStreams[vsId];
+    if (!vs) return;
+
+    const currentIds = [...(vs.activityIds ?? [])];
+    const fromIndex = currentIds.indexOf(activityId);
+    if (fromIndex < 0 || fromIndex === toIndex) return;
+
+    // Remove from old position and insert at new
+    currentIds.splice(fromIndex, 1);
+    currentIds.splice(toIndex, 0, activityId);
+
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        valueStreams: {
+          ...scaffoldData.elements.valueStreams,
+          [vsId]: { ...vs, activityIds: currentIds },
         },
       },
     };

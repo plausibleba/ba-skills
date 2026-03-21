@@ -85,7 +85,12 @@ export function StageColumn({
         style={hasBinding ? {} : { borderColor: tv.borderSubtle, background: tv.bgCard }}
       >
         <div className="flex items-center justify-between px-4 py-2">
-          <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: hasBinding ? dk.textDim : tv.textDim }}>
+          <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: hasBinding ? dk.textDim : tv.textDim }}>
+            {/* Drag grip indicator */}
+            <svg className="h-3 w-3 opacity-40" fill="currentColor" viewBox="0 0 16 16">
+              <circle cx="4" cy="3" r="1.2" /><circle cx="4" cy="8" r="1.2" /><circle cx="4" cy="13" r="1.2" />
+              <circle cx="10" cy="3" r="1.2" /><circle cx="10" cy="8" r="1.2" /><circle cx="10" cy="13" r="1.2" />
+            </svg>
             Stage {index + 1} of {total}
           </span>
           <div className="flex items-center gap-1.5">

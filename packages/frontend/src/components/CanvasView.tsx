@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback, useRef } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { tv } from "../theme.ts";
 import type { TransformationUserStory, ScaffoldElement, ScaffoldActivity } from "../types.ts";
@@ -23,7 +23,7 @@ import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
 /* ── Canvas View — orchestrator ────────────────────────────────────── */
 
 export function CanvasView() {
-  const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories, updateVsName, updateVsDescription, addActivity, removeActivity, cardRegistry, topologyView, capabilityInstanceView } =
+  const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories, updateVsName, updateVsDescription, addActivity, removeActivity, moveActivity, cardRegistry, topologyView, capabilityInstanceView } =
     useCanvasStore();
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
     null,
@@ -112,6 +112,55 @@ export function CanvasView() {
   );
   const isStub = isEnterpriseScaffold && vsActivities.length <= 5 && totalMetrics <= 2;
 
+  /* ── Drag-to-reorder state ── */
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dropIdx, setDropIdx] = useState<number | null>(null);
+  const dragCounterRef = useRef(0);  // track nested dragenter/leave
+
+  const handleDragStart = useCallback((colIndex: number) => (e: React.DragEvent) => {
+    setDragIdx(colIndex);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(colIndex));
+    // Slight delay so the browser captures the element as a ghost image
+    requestAnimationFrame(() => {
+      (e.target as HTMLElement).style.opacity = "0.4";
+    });
+  }, []);
+
+  const handleDragEnd = useCallback((e: React.DragEvent) => {
+    (e.target as HTMLElement).style.opacity = "";
+    setDragIdx(null);
+    setDropIdx(null);
+    dragCounterRef.current = 0;
+  }, []);
+
+  const handleDragOver = useCallback((colIndex: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragIdx === null) return;
+    // Determine which side of the column we're closest to
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const midX = rect.left + rect.width / 2;
+    const insertBefore = e.clientX < midX;
+    const targetIdx = insertBefore ? colIndex : colIndex + 1;
+    if (targetIdx !== dropIdx) setDropIdx(targetIdx);
+  }, [dragIdx, dropIdx]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    if (dragIdx === null || dropIdx === null) return;
+    // Adjust target index: if dragging right, the removal shifts indices
+    let toIndex = dropIdx > dragIdx ? dropIdx - 1 : dropIdx;
+    if (toIndex < 0) toIndex = 0;
+    if (toIndex !== dragIdx) {
+      const actId = canvasViewModel.columns[dragIdx]?.activityIds[0];
+      if (actId) moveActivity(canvasViewModel.valueStreamId, actId, toIndex);
+    }
+    setDragIdx(null);
+    setDropIdx(null);
+    dragCounterRef.current = 0;
+  }, [dragIdx, dropIdx, canvasViewModel, moveActivity]);
+
   return (
     <div className="flex h-full gap-0" style={{ background: tv.bgSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <div className="flex h-full flex-1 flex-col gap-4 overflow-hidden pl-6 pt-4">
@@ -192,34 +241,50 @@ export function CanvasView() {
           />
         )}
 
-        {/* ── Stage columns ── */}
-        <div className="flex flex-1 min-h-0 items-start overflow-auto pb-4">
+        {/* ── Stage columns (drag-to-reorder) ── */}
+        <div className="flex flex-1 min-h-0 items-start overflow-auto pb-4" onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
           {canvasViewModel.columns.map((col, i) => (
             <div key={col.columnId} className="flex items-stretch">
-              <StageColumn
-                column={col}
-                scaffold={scaffoldData}
-                index={i}
-                total={canvasViewModel.columns.length}
-                frictionMap={frictionMap}
-                bindingActivityIds={bindingActivityIds}
-                selectedActivityId={selectedActivityId}
-                hasHeatmap={!!heatmapData}
-                ppitToggles={ppitToggles}
-                cardToggles={cardToggles}
-                cardRegistry={cardRegistry}
-                structureOpen={structureOpen}
-                onToggleStructure={toggleStructure}
-                analyticsOpen={analyticsOpen}
-                onFrictionClick={setSelectedActivityId}
-                onCardClick={setSelectedCardActivityId}
-                onInspect={setInspectorTarget}
-                maxMetricRows={maxMetricRows}
-                onRemoveActivity={canvasViewModel.columns.length > 1
-                  ? () => removeActivity(canvasViewModel.valueStreamId, col.activityIds[0])
-                  : undefined}
-              />
+              {/* Drop indicator — left edge */}
+              {dropIdx === i && dragIdx !== null && dragIdx !== i && dragIdx !== i - 1 && (
+                <div className="flex w-1 flex-shrink-0 self-stretch rounded-full mx-0.5" style={{ background: tv.accent }} />
+              )}
+              <div
+                draggable
+                onDragStart={handleDragStart(i)}
+                onDragEnd={handleDragEnd}
+                onDragOver={handleDragOver(i)}
+                className="cursor-grab active:cursor-grabbing"
+              >
+                <StageColumn
+                  column={col}
+                  scaffold={scaffoldData}
+                  index={i}
+                  total={canvasViewModel.columns.length}
+                  frictionMap={frictionMap}
+                  bindingActivityIds={bindingActivityIds}
+                  selectedActivityId={selectedActivityId}
+                  hasHeatmap={!!heatmapData}
+                  ppitToggles={ppitToggles}
+                  cardToggles={cardToggles}
+                  cardRegistry={cardRegistry}
+                  structureOpen={structureOpen}
+                  onToggleStructure={toggleStructure}
+                  analyticsOpen={analyticsOpen}
+                  onFrictionClick={setSelectedActivityId}
+                  onCardClick={setSelectedCardActivityId}
+                  onInspect={setInspectorTarget}
+                  maxMetricRows={maxMetricRows}
+                  onRemoveActivity={canvasViewModel.columns.length > 1
+                    ? () => removeActivity(canvasViewModel.valueStreamId, col.activityIds[0])
+                    : undefined}
+                />
+              </div>
               {i < canvasViewModel.columns.length - 1 && <FlowChevron />}
+              {/* Drop indicator — right edge of last column */}
+              {i === canvasViewModel.columns.length - 1 && dropIdx === canvasViewModel.columns.length && dragIdx !== null && dragIdx !== i && (
+                <div className="flex w-1 flex-shrink-0 self-stretch rounded-full mx-0.5" style={{ background: tv.accent }} />
+              )}
             </div>
           ))}
           {/* Add Stage button */}
