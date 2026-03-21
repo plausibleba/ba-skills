@@ -727,43 +727,47 @@ export function NetworkView() {
         </div>
       </div>
 
-      {/* View toggle + Layer scheme selector */}
+      {/* Graph toggle + Domain Zones dropdown */}
       <div className="flex items-center justify-between gap-2 px-5 pb-3">
-        <div className="flex rounded-lg p-0.5 w-fit" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard }}>
-          {([["cards", "Cards"], ["graph", "Graph"]] as const).map(([tab, label]) => (
-            <button
-              key={tab}
-              onClick={() => setViewTab(tab)}
-              className="rounded-md px-3 py-1 text-[11px] font-medium transition-all"
-              style={viewTab === tab
-                ? { background: isDark ? "rgba(255,255,255,0.12)" : "#1e293b", color: isDark ? "#f1f5f9" : "#ffffff" }
-                : { color: tv.textDim }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        {/* Graph view toggle icon */}
+        <button
+          onClick={() => setViewTab(viewTab === "graph" ? "cards" : "graph")}
+          className="flex items-center justify-center rounded-lg p-1.5 transition-all"
+          style={viewTab === "graph"
+            ? { background: isDark ? "rgba(255,255,255,0.12)" : "rgba(74,158,218,0.15)", color: tv.accent, border: `1px solid ${tv.borderSubtle}` }
+            : { color: tv.textDim, border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard }}
+          title={viewTab === "graph" ? "Switch to card view" : "Switch to graph view"}
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+            <circle cx="5" cy="6" r="2" />
+            <circle cx="19" cy="6" r="2" />
+            <circle cx="12" cy="18" r="2" />
+            <path d="M7 7l3.5 9M17 7l-3.5 9" />
+          </svg>
+        </button>
 
-        {/* Layer scheme selector */}
+        {/* Domain Zones dropdown */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: tv.textDim }}>
-            Layers
-          </span>
-          <div className="flex rounded-lg p-0.5 w-fit" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard }}>
+          <select
+            value={currentSchemeId}
+            onChange={(e) => applyLayerScheme(e.target.value)}
+            className="rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all appearance-none cursor-pointer pr-6"
+            style={{
+              border: `1px solid ${tv.borderSubtle}`,
+              background: tv.bgCard,
+              color: tv.textPrimary,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${isDark ? '%239ca3af' : '%236b7280'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 6px center",
+            }}
+            title="Domain Zones"
+          >
             {LAYER_SCHEMES.map((scheme) => (
-              <button
-                key={scheme.id}
-                onClick={() => applyLayerScheme(scheme.id)}
-                className="rounded-md px-2.5 py-1 text-[10px] font-medium transition-all"
-                style={currentSchemeId === scheme.id
-                  ? { background: isDark ? "rgba(255,255,255,0.12)" : "#1e293b", color: isDark ? "#f1f5f9" : "#ffffff" }
-                  : { color: tv.textDim }}
-                title={scheme.layers.map(l => l.label).join(" / ")}
-              >
+              <option key={scheme.id} value={scheme.id}>
                 {scheme.label}
-              </button>
+              </option>
             ))}
-          </div>
+          </select>
         </div>
       </div>
 

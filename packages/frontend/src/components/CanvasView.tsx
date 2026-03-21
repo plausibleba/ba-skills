@@ -118,17 +118,7 @@ export function CanvasView() {
         {/* Conflict banner — optimistic lock failure */}
         <ConflictBanner />
 
-        {/* Stub banner */}
-        {isStub && (
-          <div className="flex flex-shrink-0 items-center gap-2 rounded-lg px-4 py-2" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard }}>
-            <svg className="h-4 w-4 flex-shrink-0" style={{ color: tv.accent }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p className="text-[11px]" style={{ color: tv.textDim }}>
-              Enterprise topology view — {vsActivities.length} stages modelled. For full stream diagnostics with friction analysis and throughput projections, load the dedicated stream scaffold.
-            </p>
-          </div>
-        )}
+        {/* Stub banner removed — not useful for end users */}
 
         {/* ── Narrative header ── */}
         <div className="flex flex-shrink-0 flex-wrap items-start justify-between gap-4">
@@ -165,8 +155,10 @@ export function CanvasView() {
 
           <div className="flex items-center gap-2">
             <CanvasToolbar
+              constraintDAGOpen={constraintDAGOpen}
               ppitToggles={ppitToggles}
               cardToggles={cardToggles}
+              onToggleConstraintDAG={toggleConstraintDAG}
               onTogglePPIT={togglePPIT}
               onToggleCard={toggleCard}
               heatmapData={heatmapData}

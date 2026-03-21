@@ -25,15 +25,19 @@ const LAYER_COLORS_LIGHT: Record<PPITLayer, { bg: string; fg: string }> = {
 /* ── Canvas Toolbar ────────────────────────────────────────────────── */
 
 export function CanvasToolbar({
+  constraintDAGOpen,
   ppitToggles,
   cardToggles,
+  onToggleConstraintDAG,
   onTogglePPIT,
   onToggleCard,
   heatmapData,
   features,
 }: {
+  constraintDAGOpen: boolean;
   ppitToggles: Record<PPITLayer, boolean>;
   cardToggles: Record<CardToggleLayer, boolean>;
+  onToggleConstraintDAG: () => void;
   onTogglePPIT: (layer: PPITLayer) => void;
   onToggleCard: (layer: CardToggleLayer) => void;
   heatmapData: HeatmapData | null;
@@ -43,6 +47,23 @@ export function CanvasToolbar({
   const layerPalette = isDark ? LAYER_COLORS_DARK : LAYER_COLORS_LIGHT;
   return (
     <div className="flex flex-shrink-0 items-center gap-3">
+      {/* Dependencies graph icon */}
+      <button
+        onClick={onToggleConstraintDAG}
+        className="flex items-center justify-center rounded-lg p-1.5 transition-all"
+        style={constraintDAGOpen
+          ? { background: "rgba(74,158,218,0.15)", color: tv.accent, border: `1px solid ${tv.borderSubtle}` }
+          : { color: tv.textDim, border: `1px solid transparent` }}
+        title="Dependency Graph"
+      >
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+          <circle cx="5" cy="6" r="2" />
+          <circle cx="19" cy="6" r="2" />
+          <circle cx="12" cy="18" r="2" />
+          <path d="M7 7l3.5 9M17 7l-3.5 9" />
+        </svg>
+      </button>
+
       {/* Layer toggles */}
       <div className="flex items-center gap-0.5 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard }}>
         <span className="px-1 text-[9px] font-medium uppercase tracking-wider" style={{ color: tv.textDim }}>
