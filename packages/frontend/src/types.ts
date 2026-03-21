@@ -347,6 +347,67 @@ export interface ScaffoldElement {
   name?: string;
 }
 
+/**
+ * Capability hierarchy — all levels share one type with a level discriminator.
+ * Level 1 = Business Area, Level 2 = Domain, Level 3 = Capability Group,
+ * Level 4 = Capability (operational, mapped to stages).
+ * UI labels are derived from level; persistence is polymorphic.
+ */
+export interface ScaffoldCapability extends ScaffoldElement {
+  level?: 1 | 2 | 3 | 4;
+  parentId?: string | null;
+  description?: string;
+  /** Business object / record class this capability governs (level 4 only) */
+  businessObject?: string;
+}
+
+export const CAPABILITY_LEVEL_LABELS: Record<number, string> = {
+  1: "Business Area",
+  2: "Domain",
+  3: "Capability Group",
+  4: "Capability",
+};
+
+/**
+ * Information Object with optional lifecycle states for state-diagram rendering.
+ * States represent the governed lifecycle of the record (e.g. Lead: New → Qualified → Converted).
+ */
+export interface ScaffoldInfoObject extends ScaffoldElement {
+  description?: string;
+  /** Ordered lifecycle states for this information object */
+  lifecycleStates?: LifecycleState[];
+}
+
+export interface LifecycleState {
+  id: string;
+  label: string;
+  /** Position in lifecycle: initial, terminal, or intermediate */
+  position: "initial" | "intermediate" | "terminal" | "decision";
+  /** IDs of states this state can transition to */
+  transitionsTo?: string[];
+  /** Activity that triggers this transition */
+  triggerActivityId?: string;
+}
+
+/**
+ * Sub-activity within a stage, with DAG edges for sequencing.
+ * Used for the activity flow graph in the Stage Inspector.
+ */
+export interface SubActivity {
+  id: string;
+  label: string;
+  /** "activity" = work step, "gate" = decision point */
+  nodeType: "activity" | "gate";
+  /** IDs of sub-activities this flows into */
+  nextIds?: string[];
+  /** For gates: condition labels for each outgoing edge */
+  edgeLabels?: Record<string, string>;
+  /** Associated role ID (Responsibility) */
+  roleId?: string;
+  /** Associated outcome description */
+  outcome?: string;
+}
+
 /** Extended metric element with measure data for throughput calculations */
 export interface ScaffoldMetric extends ScaffoldElement {
   unit?: string;
@@ -398,13 +459,17 @@ export interface ScaffoldData {
     activities: Record<string, ScaffoldActivity>;
     outcomes: Record<string, ScaffoldElement>;
     roles: Record<string, ScaffoldElement>;
-    capabilities: Record<string, ScaffoldElement>;
+    capabilities: Record<string, ScaffoldCapability>;
     controls: Record<string, ScaffoldElement>;
     constraints: Record<string, ScaffoldElement>;
     metrics: Record<string, ScaffoldMetric>;
+    /** Information objects with optional lifecycle states */
+    informationObjects?: Record<string, ScaffoldInfoObject>;
     // D-053: New reference registries (Session 11)
     applicationFunctions?: Record<string, ApplicationFunction>;
     recordClasses?: Record<string, RecordClass>;
+    /** Sub-activity DAGs per stage (keyed by activity/stage ID) */
+    subActivityGraphs?: Record<string, { nodes: SubActivity[] }>;
     [key: string]: Record<string, unknown> | undefined;
   };
 }
