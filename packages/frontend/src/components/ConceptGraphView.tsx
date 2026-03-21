@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { tv } from "../theme.ts";
 
@@ -27,12 +27,13 @@ interface Rel {
 /* ═══════════════════════════════════════════════════════════════
    Colour + ER styling
    ═══════════════════════════════════════════════════════════════ */
-const TYPE_COLORS: Record<string, { bg: string; border: string; accent: string; text: string; headerBg: string }> = {
-  Party:    { bg: "#f0fdfa", border: "#99f6e4", accent: "#0d9488", text: "#134e4a", headerBg: "#ccfbf1" },
-  Record:   { bg: "#fdf2f8", border: "#fbcfe8", accent: "#db2777", text: "#831843", headerBg: "#fce7f3" },
-  Resource: { bg: "#eff6ff", border: "#bfdbfe", accent: "#2563eb", text: "#1e3a5f", headerBg: "#dbeafe" },
+const GREY_PALETTE = { bg: "#fafafa", border: "#d4d4d4", accent: "#525252", text: "#262626", headerBg: "#f0f0f0" };
+const TYPE_COLORS: Record<string, typeof GREY_PALETTE> = {
+  Party:    GREY_PALETTE,
+  Record:   GREY_PALETTE,
+  Resource: GREY_PALETTE,
 };
-function typeColor(type: string) { return TYPE_COLORS[type] ?? TYPE_COLORS.Record; }
+function typeColor(_type: string) { return GREY_PALETTE; }
 
 /* ═══════════════════════════════════════════════════════════════
    Auto-generate attributes for a concept based on type + name
@@ -206,26 +207,33 @@ function EREdgeSVG({ edge }: { edge: EREdge }) {
    SVG: ER Node — entity box with header + attribute rows
    ═══════════════════════════════════════════════════════════════ */
 function ERNodeSVG({
-  node, isFocus, isSelected, onClick, onDoubleClick,
+  node, isFocus, isSelected, onClick, onDoubleClick, onMouseDown,
 }: {
   node: ERNode;
   isFocus: boolean;
   isSelected: boolean;
   onClick: () => void;
   onDoubleClick: () => void;
+  onMouseDown: (e: React.MouseEvent) => void;
 }) {
   const { concept, x, y, w, h, expanded } = node;
   const tc = typeColor(concept.type);
   const attrs = expanded ? deriveAttributes(concept) : [];
   const HEADER_H = 42;
   const borderWidth = isFocus ? 2 : isSelected ? 1.5 : 0.75;
+  const borderColor = isFocus ? "#737373" : tc.border;
 
   return (
-    <g onClick={onClick} onDoubleClick={onDoubleClick} style={{ cursor: "pointer" }}>
+    <g
+      onClick={onClick}
+      onDoubleClick={onDoubleClick}
+      onMouseDown={onMouseDown}
+      style={{ cursor: "grab" }}
+    >
       {/* Shadow */}
       <rect x={x + 2} y={y + 2} width={w} height={h} rx={4} fill="rgba(0,0,0,0.06)" />
       {/* Body */}
-      <rect x={x} y={y} width={w} height={h} rx={4} fill={tc.bg} stroke={tc.border} strokeWidth={borderWidth} />
+      <rect x={x} y={y} width={w} height={h} rx={4} fill={tc.bg} stroke={borderColor} strokeWidth={borderWidth} />
       {/* Header */}
       <rect x={x} y={y} width={w} height={HEADER_H} rx={4} fill={tc.headerBg} />
       <rect x={x} y={y + HEADER_H - 4} width={w} height={4} fill={tc.headerBg} />
@@ -305,7 +313,6 @@ function TreeSidebar({
       </div>
       {tree.map(root => {
         const isOpen = !collapsed.has(root.id);
-        const tc = typeColor(root.type);
         const count = root.children?.length ?? 0;
         return (
           <div key={root.id}>
@@ -315,8 +322,7 @@ function TreeSidebar({
               onClick={() => toggle(root.id)}
             >
               <span style={{ fontSize: 9, color: tv.textDim, width: 12 }}>{isOpen ? "▼" : "▶"}</span>
-              <span className="inline-block w-2 h-2 rounded-sm" style={{ background: tc.accent }} />
-              <span className="text-[11px] font-semibold" style={{ color: tc.accent }}>{root.label}</span>
+              <span className="text-[11px] font-semibold" style={{ color: "#525252" }}>{root.label}</span>
               <span className="text-[9px] ml-auto" style={{ color: tv.textDim }}>{count}</span>
             </div>
             {isOpen && root.children?.map(child => {
@@ -326,12 +332,12 @@ function TreeSidebar({
                   key={child.id}
                   className="flex items-center gap-1.5 pl-7 pr-3 py-1 cursor-pointer transition-colors"
                   style={{
-                    background: isSel ? tc.bg : "transparent",
-                    borderLeft: isSel ? `2px solid ${tc.accent}` : "2px solid transparent",
+                    background: isSel ? "#f0f0f0" : "transparent",
+                    borderLeft: isSel ? `2px solid #525252` : "2px solid transparent",
                   }}
                   onClick={() => onSelect(child.id)}
                 >
-                  <span className="text-[10px]" style={{ color: isSel ? tc.accent : tv.textSecondary }}>
+                  <span className="text-[10px]" style={{ color: isSel ? "#262626" : tv.textSecondary }}>
                     {child.label}
                   </span>
                   {child.subtype && (
@@ -355,6 +361,12 @@ export function ConceptGraphView() {
   const [focusId, setFocusId] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
+  // Drag state: position overrides keyed by concept id
+  const [dragOffsets, setDragOffsets] = useState<Record<string, { dx: number; dy: number }>>({});
+  const svgRef = useRef<SVGSVGElement>(null);
+  const dragRef = useRef<{ nodeId: string; startMouseX: number; startMouseY: number; origDx: number; origDy: number } | null>(null);
+  const didDragRef = useRef(false);
+
   const concepts = useMemo<Record<string, ConceptNode>>(() => {
     if (!scaffoldData?.elements?.concepts) return {};
     const raw = scaffoldData.elements.concepts as Record<string, any>;
@@ -370,10 +382,78 @@ export function ConceptGraphView() {
   // Auto-select first concept if none selected
   const effectiveFocusId = focusId ?? Object.keys(concepts)[0] ?? null;
 
-  const { nodes, edges } = useMemo(() => {
+  // Reset drag offsets when focus changes
+  const prevFocusRef = useRef<string | null>(null);
+  if (effectiveFocusId !== prevFocusRef.current) {
+    prevFocusRef.current = effectiveFocusId;
+    if (Object.keys(dragOffsets).length > 0) setDragOffsets({});
+  }
+
+  const { nodes: layoutNodes, edges: layoutEdges } = useMemo(() => {
     if (!effectiveFocusId) return { nodes: [], edges: [] };
     return layoutER(effectiveFocusId, concepts, expandedIds);
   }, [effectiveFocusId, concepts, expandedIds]);
+
+  // Apply drag offsets to produce final node positions
+  const nodes = useMemo(() => layoutNodes.map(n => {
+    const off = dragOffsets[n.concept.id];
+    if (!off) return n;
+    return { ...n, x: n.x + off.dx, y: n.y + off.dy };
+  }), [layoutNodes, dragOffsets]);
+
+  // Recompute edge endpoints from final (dragged) node positions
+  const edges = useMemo(() => {
+    const nodeMap = new Map(nodes.map(n => [n.concept.id, n]));
+    return layoutEdges.map(e => {
+      const from = nodeMap.get(e.fromId);
+      const to = nodeMap.get(e.toId);
+      if (!from || !to) return e;
+      return {
+        ...e,
+        fromX: from.x + from.w / 2,
+        fromY: from.y + from.h / 2,
+        toX: to.x + to.w / 2,
+        toY: to.y + to.h / 2,
+      };
+    });
+  }, [nodes, layoutEdges]);
+
+  // SVG coordinate helper
+  const svgPoint = useCallback((clientX: number, clientY: number) => {
+    const svg = svgRef.current;
+    if (!svg) return { x: clientX, y: clientY };
+    const pt = svg.createSVGPoint();
+    pt.x = clientX;
+    pt.y = clientY;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: clientX, y: clientY };
+    const svgP = pt.matrixTransform(ctm.inverse());
+    return { x: svgP.x, y: svgP.y };
+  }, []);
+
+  const handleDragStart = useCallback((nodeId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const pos = svgPoint(e.clientX, e.clientY);
+    const existing = dragOffsets[nodeId] ?? { dx: 0, dy: 0 };
+    dragRef.current = { nodeId, startMouseX: pos.x, startMouseY: pos.y, origDx: existing.dx, origDy: existing.dy };
+    didDragRef.current = false;
+  }, [svgPoint, dragOffsets]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!dragRef.current) return;
+    const pos = svgPoint(e.clientX, e.clientY);
+    const { nodeId, startMouseX, startMouseY, origDx, origDy } = dragRef.current;
+    const dx = origDx + (pos.x - startMouseX);
+    const dy = origDy + (pos.y - startMouseY);
+    if (Math.abs(pos.x - startMouseX) > 3 || Math.abs(pos.y - startMouseY) > 3) {
+      didDragRef.current = true;
+    }
+    setDragOffsets(prev => ({ ...prev, [nodeId]: { dx, dy } }));
+  }, [svgPoint]);
+
+  const handleMouseUp = useCallback(() => {
+    dragRef.current = null;
+  }, []);
 
   const handleTreeSelect = useCallback((id: string) => {
     setFocusId(id);
@@ -381,6 +461,7 @@ export function ConceptGraphView() {
   }, []);
 
   const handleNodeClick = useCallback((id: string) => {
+    if (didDragRef.current) return; // ignore click after drag
     if (id === effectiveFocusId) return;
     setExpandedIds(prev => {
       const next = new Set(prev);
@@ -427,8 +508,8 @@ export function ConceptGraphView() {
               {focusConcept?.name ?? "Select a concept"}
               {focusConcept && (
                 <span className="ml-2 text-[9px] font-normal px-1.5 py-0.5 rounded" style={{
-                  background: typeColor(focusConcept.type).headerBg,
-                  color: typeColor(focusConcept.type).accent,
+                  background: GREY_PALETTE.headerBg,
+                  color: GREY_PALETTE.accent,
                 }}>
                   {focusConcept.type}
                 </span>
@@ -444,7 +525,16 @@ export function ConceptGraphView() {
 
         {/* ER Diagram */}
         <div className="flex-1 overflow-auto">
-          <svg width={SVG_W} height={SVG_H} viewBox={`0 0 ${SVG_W} ${SVG_H}`} style={{ display: "block", minWidth: SVG_W }}>
+          <svg
+            ref={svgRef}
+            width={SVG_W}
+            height={SVG_H}
+            viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+            style={{ display: "block", minWidth: SVG_W, cursor: dragRef.current ? "grabbing" : "default" }}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
             <GridBackground width={SVG_W} height={SVG_H} />
 
             {/* Edges first (under nodes) */}
@@ -459,6 +549,7 @@ export function ConceptGraphView() {
                 isSelected={expandedIds.has(n.concept.id)}
                 onClick={() => handleNodeClick(n.concept.id)}
                 onDoubleClick={() => handleNodeDoubleClick(n.concept.id)}
+                onMouseDown={(e) => handleDragStart(n.concept.id, e)}
               />
             ))}
           </svg>
