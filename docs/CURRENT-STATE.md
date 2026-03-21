@@ -1,6 +1,6 @@
 # Current State — VCC Frontend
 
-_Last updated: 2026-03-10 — Session 20_
+_Last updated: 2026-03-21 — Session 23 (UX polish & Network View overhaul) — v0.4.0 DRAFT_
 
 ---
 
@@ -89,11 +89,25 @@ The canvas is now a **living document**, not a read-only output:
 - Entry/exit states, friction observations, binding constraint display
 - User story generation via TransformationPane
 
-### Network View ✅
+### Network View ✅ (MAJOR UPDATE — Session 23)
 
+- **Layer Scheme Selector**: toggle pills for Ecosystem/Knowledge, Front/Back Office, Strategic/Core/Enabling, Wardley Zones — redistributes VS across layers on each switch using journey order
+- **Graph View**: draggable node-edge coupling visualisation with purple dashed coupling edges and blue flow edges
+- **VS Editor Modal**: edit pencil on each card opens modal to change name, description, layer, stakeholder
+- **Journey-Ordered Layout**: topological sort (Kahn's algorithm) replaces alphabetical within each zone row
+- **Auto-Derive Layout Zones**: older scaffolds without `layoutZones` array auto-derive from per-VS fields
 - All VS nodes render with friction badges and constrained indicator
 - Topology coupling counts from derived TopologyView
 - Click-through to Stage View works
+- Load Assessment and Download Bundle buttons removed from header (declutter)
+
+### Discovery Intake ✅ (UPDATED — Session 23)
+
+- "Drop Transcript" renamed to "Provide Content"
+- Tab-aware User Guide content (Provide Content vs Fill Form)
+- Layer scheme selector replaces hardcoded Zone dropdown — 4 presets + Custom
+- Heading line breaks, generic placeholder text, improved advice text prominence
+- Scope toggle syncs to project store
 
 ---
 
@@ -142,34 +156,70 @@ VCC deliberately separates ontology (enforced) from repository (absent). The sca
 
 ---
 
+## Versioning
+
+Starting v0.4.0, each working session produces a dot-release. Release notes live in `CHANGELOG.md` at the repo root and will be surfaced in-app via a "What's New" modal (TBD).
+
 ## Decision Log State
 
 Decisions numbered D-001 through D-097. Single source of truth: `docs/DECISIONS.md`.
+
+## Refactoring Debt Register
+
+15 items tracked in `docs/REFACTORING-DEBT.md` (R-001 through R-015). Key items:
+- R-001: Journey state machine (replaces scattered UI flags)
+- R-005: Discovery Intake monolith (~1000 lines)
+- R-007: Layer scheme not persisted as project setting
+- R-010: Scaffold type is `any` throughout
+- R-013: Topology coupling is resource-based, not record-lifecycle-based (critical for agentic orchestration)
+- R-014/R-015: Partially addressed (topological sort, shared layer schemes)
+
+---
+
+## PlausibleBA Website (plausibleba.com)
+
+_Last updated: 2026-03-19_
+
+### Deployment
+- Repo: `plausibleba/website` on GitHub → auto-deploys to Vercel
+- Local working copy: `vcc/website/` (has own `.git` pointing at plausibleba/website remote)
+- Push from laptop: `cd vcc/website && git push origin main`
+
+### Lead Capture (fully operational as of 19 March)
+- **Email gate**: Name + email collected before first canvas generation
+- **Rate limiting**: 3 canvas sessions per email (2-min session window deduplicates multi-pass runs)
+- **Vercel KV (Upstash Redis)**: `user:{email}` keys with count, timestamps — syd1 free tier
+- **Google Sheets**: Webhook fires on each new session → "PlausibleBA Leads" spreadsheet
+- **Leads API**: `GET /api/leads?key=PBA-LEADS-2026` returns all leads as JSON
+- **Env vars**: ANTHROPIC_API_KEY, KV_REST_API_URL, KV_REST_API_TOKEN, LEADS_API_KEY, GSHEET_WEBHOOK_URL
+
+### API Endpoints
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/generate` | POST | LLM proxy — rate-limited, streams SSE from Anthropic |
+| `/api/leads` | GET | Lead list — protected by LEADS_API_KEY query param |
 
 ---
 
 ## Known Gaps / Next Steps
 
-### Immediate
-1. Test Enrich Solutions after streaming wiring — confirm vendor feature suggestions work
-2. Verify binding constraint highlighting on Stage View after Pass C wiring
-3. PDS update — reflect Sessions 12–20 progress
+### Immediate (v0.4.0 completion)
+1. Review VS Canvas (Stage View) with Eric/John testing in mind
+2. Wire "What's New" modal + version bump to v0.4.0 in app header
+3. Docker Compose stack for local deployment
 
 ### Near Term
-4. **Capability selector** — pick from existing capabilities before "create new" (D-097 Step 1 lite)
-5. **Client-side graph index** — in-memory adjacency map on bundle load (D-097 Step 1)
-6. **TypeScript type drift cleanup** — align types with runtime data (D-096)
-7. Customer Story filtering by company size/revenue/industry
+4. **Record-lifecycle coupling** — make Record → Outcome Lifecycle mapping explicit in scaffold (R-013, foundation for agentic orchestration)
+5. **Capability selector** — pick from existing capabilities before "create new" (D-097 Step 1 lite)
+6. **Client-side graph index** — in-memory adjacency map on bundle load (D-097 Step 1)
+7. **TypeScript type drift cleanup** — align types with runtime data (D-096)
 8. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
-9. Prompt logic review session (user requested)
-10. Jira export button for user stories
+9. Refactoring sprint using debt register (R-001 through R-015)
 
 ### Future
-11. **Graph visualisation** — D3-force/vis.js client-side scaffold network (D-097 Step 3)
-12. **Ontology-as-schema validation** — formal metamodel definitions (D-097 Step 2)
-13. **GPT design spar: Data Architecture Trajectory** — review D-095/D-097
-14. F-001 phase 2: delete observations, reassign binding constraint
-15. Multi-vendor support beyond Salesforce
-16. Eric Broda MVC demo — Governance Kernel overlay on StageCard
-17. Slack MCP integration
-18. Multi-user modelling backend (D-097 upgrade trigger)
+10. **Agentic orchestration** — executable state machine driven by record lifecycle (R-013)
+11. **Ontology-as-schema validation** — formal metamodel definitions (D-097 Step 2)
+12. F-001 phase 2: delete observations, reassign binding constraint
+13. Multi-vendor support beyond Salesforce
+14. Eric Broda MVC demo — Governance Kernel overlay on StageCard
+15. Multi-user modelling backend (D-097 upgrade trigger)
