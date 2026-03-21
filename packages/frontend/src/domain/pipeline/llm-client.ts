@@ -13,8 +13,9 @@ export interface LLMResponse {
   stopReason: string;
 }
 
-const MAX_RETRIES = 2;
-const BASE_DELAY_MS = 2000;
+const MAX_RETRIES = 3;
+const BASE_DELAY_MS = 1500;
+const FETCH_TIMEOUT_MS = 55_000; // client-side abort if edge fn dies silently
 
 /** Returns true for errors that are worth retrying (network issues, server overload) */
 function isRetryable(error: unknown): boolean {
@@ -75,11 +76,28 @@ async function doCallLLM(params: {
 }): Promise<LLMResponse> {
   const apiUrl = import.meta.env.DEV ? "/api/anthropic/v1/messages" : "/api/claude";
 
-  const res = await fetch(apiUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
-  });
+  // Client-side timeout so we detect dead connections faster than browser default
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(params),
+      signal: controller.signal,
+    });
+  } catch (e) {
+    clearTimeout(timer);
+    // Convert AbortError to a retryable network error
+    if (e instanceof DOMException && e.name === "AbortError") {
+      throw new Error("network timeout — request took too long");
+    }
+    throw e;
+  }
+
+  clearTimeout(timer);
 
   if (!res.ok) {
     const errText = await res.text();

@@ -239,17 +239,26 @@ export function buildDiscoveryIR(
         })),
       }
     : {
-        l1Areas: (pass2Result.capabilitiesByVS ?? []).map((entry: any) => ({
-          name: "Extracted Capabilities",
-          domains: [{
-            name: entry.vsName ?? "General",
-            capabilities: (entry.capabilities ?? []).map((c: any) => ({
-              name: c.name,
-              businessObject: "",
-              description: c.description ?? "",
-            })),
-          }],
-        })),
+        // Legacy fallback: group all capabilities under a single L1/L2 rather than
+        // creating L2 domains named after value streams (which is semantically wrong).
+        l1Areas: [{
+          name: "Business Capabilities",
+          type: "Execution" as const,
+          domains: (pass2Result.capabilitiesByVS ?? []).length > 0
+            ? [{
+                name: "Core Operations",
+                capabilities: (pass2Result.capabilitiesByVS ?? []).flatMap((entry: any) =>
+                  (entry.capabilities ?? []).map((c: any) => ({
+                    name: c.name,
+                    businessObject: "",
+                    description: c.description ?? "",
+                  }))
+                )
+                // Deduplicate by name
+                .filter((c: any, i: number, arr: any[]) => arr.findIndex((x: any) => x.name === c.name) === i),
+              }]
+            : [],
+        }],
       };
 
   // Stage capability assignments — new structure from A2

@@ -163,7 +163,7 @@ function layoutStyle(mode: LayoutMode, cols?: number): React.CSSProperties {
     case "vertical":
       return { display: "flex", flexDirection: "column", gap: 4 };
     case "horizontal":
-      return { display: "flex", flexDirection: "row", flexWrap: "nowrap", gap: 4, overflowX: "auto" };
+      return { display: "flex", flexDirection: "row", flexWrap: "nowrap", gap: 4, overflowX: "auto", minWidth: 0 };
     case "wrap":
     default:
       return cols
@@ -207,6 +207,7 @@ export function CapabilityMapView() {
   const [selectedL3, setSelectedL3] = useState<CapNode | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const [viewMode, setViewMode] = useState<"treemap" | "table">("treemap");
 
   // Layout state: per-container layout preferences
   const [layouts, setLayouts] = useState<LayoutMap>({});
@@ -229,26 +230,48 @@ export function CapabilityMapView() {
     return buildHierarchy(scaffoldData.elements.capabilities as Record<string, any>);
   }, [scaffoldData]);
 
-  // Build PPIT lookup
+  // Build enriched PPIT lookup — includes VS context, sub-activities, and cross-VS data
+  interface PPITEntry {
+    roles: string[];
+    activityNames: string[];
+    subActivities: string[];
+    infoObjects: string[];
+    techApps: string[];
+    vsNames: string[];                  // which value streams this cap appears in
+    vsActivityPairs: { vs: string; activity: string }[]; // cross-VS usage map
+  }
   const ppitByCapId = useMemo(() => {
-    if (!scaffoldData?.elements?.activities) return new Map<string, { roles: string[]; activityNames: string[]; infoObjects: string[]; techApps: string[] }>();
-    const map = new Map<string, { roles: string[]; activityNames: string[]; infoObjects: string[]; techApps: string[] }>();
+    if (!scaffoldData?.elements?.activities) return new Map<string, PPITEntry>();
+    const map = new Map<string, PPITEntry>();
     const roles = scaffoldData.elements.roles ?? {};
     const infoObjs = scaffoldData.elements.informationObjects ?? {};
     const techApps = scaffoldData.elements.technologyApplications ?? {};
+    const vsLookup = scaffoldData.elements.valueStreams ?? {};
+
     for (const [, act] of Object.entries(scaffoldData.elements.activities)) {
       const a = act as any;
       const ppit = a.capabilityPPIT;
       if (!ppit) continue;
+
+      // Resolve VS name for this activity
+      const vsId = a.valueStreamId ?? a.vsId;
+      const vsName = vsId ? ((vsLookup as any)[vsId]?.name ?? "") : "";
+
       for (const [capId, decomp] of Object.entries(ppit)) {
         const d = decomp as any;
-        if (!map.has(capId)) map.set(capId, { roles: [], activityNames: [], infoObjects: [], techApps: [] });
+        if (!map.has(capId)) map.set(capId, {
+          roles: [], activityNames: [], subActivities: [], infoObjects: [], techApps: [],
+          vsNames: [], vsActivityPairs: [],
+        });
         const entry = map.get(capId)!;
         for (const rId of d.roleIds ?? []) {
           const rName = (roles as any)[rId]?.name ?? rId;
           if (!entry.roles.includes(rName)) entry.roles.push(rName);
         }
         if (a.name && !entry.activityNames.includes(a.name)) entry.activityNames.push(a.name);
+        for (const sub of d.activities ?? []) {
+          if (sub && !entry.subActivities.includes(sub)) entry.subActivities.push(sub);
+        }
         for (const iId of d.informationObjectIds ?? []) {
           const iName = (infoObjs as any)[iId]?.name ?? iId;
           if (!entry.infoObjects.includes(iName)) entry.infoObjects.push(iName);
@@ -256,6 +279,13 @@ export function CapabilityMapView() {
         for (const tId of d.technologyAppIds ?? []) {
           const tName = (techApps as any)[tId]?.name ?? tId;
           if (!entry.techApps.includes(tName)) entry.techApps.push(tName);
+        }
+        if (vsName && !entry.vsNames.includes(vsName)) entry.vsNames.push(vsName);
+        if (vsName && a.name) {
+          const pair = { vs: vsName, activity: a.name };
+          if (!entry.vsActivityPairs.some(p => p.vs === pair.vs && p.activity === pair.activity)) {
+            entry.vsActivityPairs.push(pair);
+          }
         }
       }
     }
@@ -365,120 +395,78 @@ export function CapabilityMapView() {
               <ColControl cols={topCols} onInc={() => incCols(topLayoutKey)} onDec={() => decCols(topLayoutKey)} />
             )}
           </div>
-          <div
-            className="ml-1 text-[9px]"
-            style={{ color: tv.textDim }}
-          >
-            Click any capability tile to inspect · Double-click to rename
+          {/* View mode toggle */}
+          <div className="flex items-center gap-1.5 ml-auto">
+            <button
+              onClick={() => setViewMode("treemap")}
+              className="rounded px-1.5 py-0.5 text-[9px] transition-colors"
+              style={{
+                background: viewMode === "treemap" ? tv.accent : tv.bgSurface,
+                color: viewMode === "treemap" ? "#fff" : tv.textDim,
+                border: `1px solid ${viewMode === "treemap" ? tv.accent : tv.borderSubtle}`,
+                cursor: "pointer",
+              }}
+              title="Treemap view"
+            >
+              ⊞ Map
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className="rounded px-1.5 py-0.5 text-[9px] transition-colors"
+              style={{
+                background: viewMode === "table" ? tv.accent : tv.bgSurface,
+                color: viewMode === "table" ? "#fff" : tv.textDim,
+                border: `1px solid ${viewMode === "table" ? tv.accent : tv.borderSubtle}`,
+                cursor: "pointer",
+              }}
+              title="Table view"
+            >
+              ☰ Table
+            </button>
           </div>
         </div>
 
-        {/* Treemap grid — top level uses grid with configurable columns */}
-        <div
-          style={
-            topLayout === "wrap" && topCols > 0
-              ? { display: "grid", gridTemplateColumns: `repeat(${topCols}, 1fr)`, gap: 6 }
-              : topLayout === "vertical"
-                ? { display: "flex", flexDirection: "column", gap: 6 }
-                : topLayout === "horizontal"
-                  ? { display: "flex", flexDirection: "row", flexWrap: "nowrap", gap: 6, overflowX: "auto" }
-                  : { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 6 }
-          }
-        >
-          {hierarchy.map((l1) => (
-            <L1Card
-              key={l1.id}
-              block={l1}
-              selectedL3={selectedL3}
-              editingId={editingId}
-              editText={editText}
-              onSelectL3={setSelectedL3}
-              onStartEdit={startEdit}
-              onEditTextChange={setEditText}
-              onCommitEdit={commitEdit}
-              getLayout={getLayout}
-              toggleLayout={toggleLayout}
-              getCols={getCols}
-              incCols={incCols}
-              decCols={decCols}
-            />
-          ))}
-        </div>
+        {viewMode === "treemap" ? (
+          <>
+            {/* Treemap grid — top level uses grid with configurable columns */}
+            <div
+              style={
+                topLayout === "wrap" && topCols > 0
+                  ? { display: "grid", gridTemplateColumns: `repeat(${topCols}, 1fr)`, gap: 6 }
+                  : topLayout === "vertical"
+                    ? { display: "flex", flexDirection: "column", gap: 6 }
+                    : topLayout === "horizontal"
+                      ? { display: "flex", flexDirection: "row", flexWrap: "nowrap", gap: 6, overflowX: "auto", paddingBottom: 6 }
+                      : { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 6 }
+              }
+            >
+              {hierarchy.map((l1) => (
+                <L1Card
+                  key={l1.id}
+                  block={l1}
+                  selectedL3={selectedL3}
+                  editingId={editingId}
+                  editText={editText}
+                  onSelectL3={setSelectedL3}
+                  onStartEdit={startEdit}
+                  onEditTextChange={setEditText}
+                  onCommitEdit={commitEdit}
+                  getLayout={getLayout}
+                  toggleLayout={toggleLayout}
+                  getCols={getCols}
+                  incCols={incCols}
+                  decCols={decCols}
+                />
+              ))}
+            </div>
 
-        {/* Inspector panel */}
-        <div
-          className="mt-3 rounded-lg p-4"
-          style={{
-            background: tv.bgCard,
-            border: `1.5px solid ${tv.borderAccent}`,
-            minHeight: 72,
-          }}
-        >
-          {selectedL3 ? (
-            <>
-              <div
-                className="mb-1 text-[15px] font-bold"
-                style={{ color: tv.textPrimary }}
-              >
-                {selectedL3.name}
-              </div>
-              {selectedL3.businessObject && (
-                <div
-                  className="mb-1.5 text-[10px] font-bold uppercase tracking-wider"
-                  style={{ color: tv.accent }}
-                >
-                  Business Object: {selectedL3.businessObject}
-                </div>
-              )}
-              {selectedL3.description && (
-                <div
-                  className="text-[12px] leading-relaxed"
-                  style={{ color: tv.textSecondary }}
-                >
-                  {selectedL3.description}
-                </div>
-              )}
-              {!selectedL3.description && (
-                <div className="text-[12px]" style={{ color: tv.textDim }}>
-                  No description available. Double-click the tile to edit.
-                </div>
-              )}
-              {/* PPIT Mappings */}
-              {(() => {
-                const ppit = ppitByCapId.get(selectedL3.id);
-                if (!ppit) return null;
-                const sections = [
-                  { label: "People", items: ppit.roles, color: "#f59e0b" },
-                  { label: "Process", items: ppit.activityNames, color: "#10b981" },
-                  { label: "Information", items: ppit.infoObjects, color: "#3b82f6" },
-                  { label: "Technology", items: ppit.techApps, color: "#8b5cf6" },
-                ].filter(s => s.items.length > 0);
-                if (sections.length === 0) return null;
-                return (
-                  <div className="mt-3 space-y-2">
-                    {sections.map(s => (
-                      <div key={s.label}>
-                        <div className="text-[9px] font-bold uppercase tracking-wider mb-0.5" style={{ color: s.color }}>{s.label}</div>
-                        <div className="flex flex-wrap gap-1">
-                          {s.items.map(item => (
-                            <span key={item} className="inline-block rounded px-1.5 py-0.5 text-[10px]" style={{ backgroundColor: `${s.color}22`, color: s.color }}>
-                              {item}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })()}
-            </>
-          ) : (
-            <p className="text-[12px]" style={{ color: tv.textDim }}>
-              Select a capability tile to see its definition, business object,
-              and relationships.
-            </p>
-          )}
-        </div>
+            {/* Enriched Inspector panel */}
+            <CapabilityInspectorPanel cap={selectedL3} ppit={selectedL3 ? ppitByCapId.get(selectedL3.id) : undefined} />
+          </>
+        ) : (
+          /* Table view */
+          <CapabilityTable hierarchy={hierarchy} ppitByCapId={ppitByCapId} onSelect={setSelectedL3} selectedId={selectedL3?.id ?? null} />
+        )}
       </div>
     </div>
   );
@@ -525,10 +513,11 @@ function L1Card({
 
   return (
     <div
-      className="overflow-hidden rounded-lg"
+      className="rounded-lg"
       style={{
         border: `1.5px solid ${borderColor}`,
         background: tv.bgCard,
+        overflow: "visible",
       }}
     >
       {/* L1 header */}
@@ -563,7 +552,7 @@ function L1Card({
           l1Layout === "wrap" && l1Cols > 0
             ? { display: "grid", gridTemplateColumns: `repeat(${l1Cols}, 1fr)`, gap: 4 }
             : l1Layout === "horizontal"
-              ? { display: "flex", flexDirection: "row", gap: 4, overflowX: "auto" }
+              ? { display: "flex", flexDirection: "row", gap: 4, overflowX: "auto", paddingBottom: 4, minWidth: 0 }
               : { display: "flex", flexDirection: "column", gap: 4 }
         }
       >
@@ -575,11 +564,12 @@ function L1Card({
           return (
             <div
               key={l2.id}
-              className="overflow-hidden rounded"
+              className="rounded"
               style={{
                 border: `1px solid ${tv.borderSubtle}`,
                 minWidth: l1Layout === "horizontal" ? 200 : undefined,
                 flex: l1Layout === "horizontal" ? "0 0 auto" : undefined,
+                overflow: "visible",
               }}
             >
               <div
@@ -603,7 +593,7 @@ function L1Card({
                   l2Layout === "wrap" && l2Cols > 0
                     ? { display: "grid", gridTemplateColumns: `repeat(${l2Cols}, 1fr)`, gap: 4 }
                     : l2Layout === "horizontal"
-                      ? { display: "flex", flexDirection: "row", flexWrap: "nowrap", gap: 4, overflowX: "auto" }
+                      ? { display: "flex", flexDirection: "row", flexWrap: "nowrap", gap: 4, overflowX: "auto", paddingBottom: 4, minWidth: 0 }
                       : { display: "flex", flexDirection: "column", gap: 4 }
                 }
               >
@@ -725,11 +715,230 @@ function CapTile({
         background: isSelected ? selectedBg : tv.tileBg,
         border: `0.5px solid ${isSelected ? selectedBorder : tv.borderSubtle}`,
         color: isSelected ? selectedColor : tv.textSecondary,
-        whiteSpace: "nowrap",
+        whiteSpace: "normal",
+        minWidth: 60,
+        flexShrink: 0,
       }}
       title={cap.description || cap.name}
     >
       {cap.name}
+    </div>
+  );
+}
+
+/* ── Enriched Inspector Panel ──────────────────────────────── */
+interface PPITData {
+  roles: string[];
+  activityNames: string[];
+  subActivities: string[];
+  infoObjects: string[];
+  techApps: string[];
+  vsNames: string[];
+  vsActivityPairs: { vs: string; activity: string }[];
+}
+
+function CapabilityInspectorPanel({ cap, ppit }: { cap: CapNode | null; ppit?: PPITData }) {
+  if (!cap) {
+    return (
+      <div
+        className="mt-3 rounded-lg p-4"
+        style={{ background: tv.bgCard, border: `1.5px solid ${tv.borderAccent}`, minHeight: 72 }}
+      >
+        <p className="text-[12px]" style={{ color: tv.textDim }}>
+          Select a capability tile to see its definition, business object, and relationships.
+        </p>
+      </div>
+    );
+  }
+
+  const SECTIONS: { label: string; items: string[]; color: string }[] = [
+    { label: "People (Roles)", items: ppit?.roles ?? [], color: "#f59e0b" },
+    { label: "Process (Activities)", items: ppit?.activityNames ?? [], color: "#10b981" },
+    { label: "Sub-Activities", items: ppit?.subActivities ?? [], color: "#6366f1" },
+    { label: "Information Objects", items: ppit?.infoObjects ?? [], color: "#3b82f6" },
+    { label: "Technology", items: ppit?.techApps ?? [], color: "#8b5cf6" },
+  ].filter(s => s.items.length > 0);
+
+  return (
+    <div
+      className="mt-3 rounded-lg p-4"
+      style={{ background: tv.bgCard, border: `1.5px solid ${tv.borderAccent}`, minHeight: 72 }}
+    >
+      {/* Header */}
+      <div className="mb-1 text-[15px] font-bold" style={{ color: tv.textPrimary }}>
+        {cap.name}
+      </div>
+      {cap.businessObject && (
+        <div className="mb-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: tv.accent }}>
+          Business Object: {cap.businessObject}
+        </div>
+      )}
+      {cap.description ? (
+        <div className="text-[12px] leading-relaxed mb-2" style={{ color: tv.textSecondary }}>
+          {cap.description}
+        </div>
+      ) : (
+        <div className="text-[12px] mb-2" style={{ color: tv.textDim }}>
+          No description. Double-click the tile to edit.
+        </div>
+      )}
+
+      {/* PPIT Sections */}
+      {SECTIONS.length > 0 && (
+        <div className="grid gap-3" style={{ gridTemplateColumns: SECTIONS.length >= 4 ? "1fr 1fr" : "1fr" }}>
+          {SECTIONS.map(s => (
+            <div key={s.label}>
+              <div className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: s.color }}>
+                {s.label} ({s.items.length})
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {s.items.map(item => (
+                  <span key={item} className="inline-block rounded px-1.5 py-0.5 text-[10px]" style={{ backgroundColor: `${s.color}18`, color: s.color }}>
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Cross-VS Usage */}
+      {ppit && ppit.vsActivityPairs.length > 1 && (
+        <div className="mt-3">
+          <div className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: "#ec4899" }}>
+            Shared Across {ppit.vsNames.length} Value Streams
+          </div>
+          <div className="space-y-0.5">
+            {ppit.vsActivityPairs.map((p, i) => (
+              <div key={i} className="flex items-center gap-1.5 text-[10px]">
+                <span className="rounded px-1.5 py-0.5" style={{ backgroundColor: "rgba(236,72,153,0.1)", color: "#ec4899" }}>
+                  {p.vs}
+                </span>
+                <span style={{ color: tv.textDim }}>→</span>
+                <span style={{ color: tv.textSecondary }}>{p.activity}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Capability Table View ─────────────────────────────────── */
+function CapabilityTable({
+  hierarchy,
+  ppitByCapId,
+  onSelect,
+  selectedId,
+}: {
+  hierarchy: L1Block[];
+  ppitByCapId: Map<string, PPITData>;
+  onSelect: (c: CapNode) => void;
+  selectedId: string | null;
+}) {
+  // Flatten all caps with their L1/L2/L3 ancestry
+  const rows = useMemo(() => {
+    const result: {
+      cap: CapNode;
+      l1Name: string;
+      l2Name: string;
+      l3Name: string;
+      ppit: PPITData | undefined;
+    }[] = [];
+    for (const l1 of hierarchy) {
+      for (const l2 of l1.l2s) {
+        // Caps under L3 groups
+        for (const l3 of l2.l3s) {
+          for (const cap of l3.caps) {
+            result.push({ cap, l1Name: l1.name, l2Name: l2.name, l3Name: l3.name, ppit: ppitByCapId.get(cap.id) });
+          }
+        }
+        // Direct caps under L2
+        for (const cap of l2.caps) {
+          result.push({ cap, l1Name: l1.name, l2Name: l2.name, l3Name: "—", ppit: ppitByCapId.get(cap.id) });
+        }
+      }
+    }
+    return result;
+  }, [hierarchy, ppitByCapId]);
+
+  const thStyle: React.CSSProperties = {
+    padding: "6px 8px",
+    fontSize: 9,
+    fontWeight: 700,
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.05em",
+    color: tv.textDim,
+    borderBottom: `1px solid ${tv.borderSubtle}`,
+    textAlign: "left" as const,
+    position: "sticky" as const,
+    top: 0,
+    background: tv.bgSurface,
+    zIndex: 1,
+  };
+  const tdStyle: React.CSSProperties = {
+    padding: "4px 8px",
+    fontSize: 10,
+    color: tv.textSecondary,
+    borderBottom: `1px solid ${tv.borderSubtle}`,
+    verticalAlign: "top" as const,
+  };
+
+  const chipList = (items: string[], color: string) => {
+    if (!items || items.length === 0) return <span style={{ color: tv.textDim, fontSize: 9 }}>—</span>;
+    return (
+      <div className="flex flex-wrap gap-0.5">
+        {items.slice(0, 4).map(item => (
+          <span key={item} className="inline-block rounded px-1 py-0 text-[8px]" style={{ backgroundColor: `${color}18`, color }}>
+            {item}
+          </span>
+        ))}
+        {items.length > 4 && <span className="text-[8px]" style={{ color: tv.textDim }}>+{items.length - 4}</span>}
+      </div>
+    );
+  };
+
+  return (
+    <div className="rounded-lg" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard, maxHeight: 600, overflow: "auto" }}>
+      <table className="w-full" style={{ borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            <th style={thStyle}>Business Area</th>
+            <th style={thStyle}>Domain</th>
+            <th style={thStyle}>Group</th>
+            <th style={thStyle}>Capability</th>
+            <th style={thStyle}>People</th>
+            <th style={thStyle}>Process</th>
+            <th style={thStyle}>Information</th>
+            <th style={thStyle}>Technology</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={row.cap.id}
+              onClick={() => onSelect(row.cap)}
+              className="cursor-pointer transition-colors"
+              style={{
+                background: selectedId === row.cap.id ? tv.accentMuted : undefined,
+              }}
+              onMouseOver={(e) => { if (selectedId !== row.cap.id) (e.currentTarget.style.background = tv.bgSurface); }}
+              onMouseOut={(e) => { if (selectedId !== row.cap.id) (e.currentTarget.style.background = ""); }}
+            >
+              <td style={tdStyle}>{row.l1Name}</td>
+              <td style={tdStyle}>{row.l2Name}</td>
+              <td style={tdStyle}>{row.l3Name}</td>
+              <td style={{ ...tdStyle, color: tv.textPrimary, fontWeight: 500 }}>{row.cap.name}</td>
+              <td style={tdStyle}>{chipList(row.ppit?.roles ?? [], "#f59e0b")}</td>
+              <td style={tdStyle}>{chipList(row.ppit?.activityNames ?? [], "#10b981")}</td>
+              <td style={tdStyle}>{chipList(row.ppit?.infoObjects ?? [], "#3b82f6")}</td>
+              <td style={tdStyle}>{chipList(row.ppit?.techApps ?? [], "#8b5cf6")}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

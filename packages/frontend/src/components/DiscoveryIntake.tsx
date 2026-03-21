@@ -78,6 +78,10 @@ interface FormState {
   gaps: Gap[];
   source: string;
   extractionMeta: { extractedAt: string; passes?: number } | null;
+  /** Preserved from A2 — full L1/L2/L3/L4 hierarchy so Pass B gets proper domain names */
+  capabilityMap?: any;
+  /** Preserved from A2 — stage → capability assignments */
+  stageCapabilities?: any[];
 }
 
 // ─── Initial state ──────────────────────────────────────────────────────────
@@ -373,9 +377,17 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
         }));
 
         // Attach capabilities from capability map via stageCapabilities
+        // Handle both 3-level (l2.capabilities) and 4-level (l2.capabilityGroups → l3.capabilities)
         const capMap: Record<string, any> = {};
         for (const l1 of (ir.capabilityMap?.l1Areas ?? [])) {
           for (const l2 of (l1.domains ?? [])) {
+            // 4-level format: L2 > L3 capabilityGroups > L4 capabilities
+            for (const l3 of (l2.capabilityGroups ?? [])) {
+              for (const cap of (l3.capabilities ?? [])) {
+                capMap[cap.name] = { id: makeId("cap", cap.name), name: cap.name, description: cap.description ?? "" };
+              }
+            }
+            // 3-level format: L2 > capabilities (leaf)
             for (const cap of (l2.capabilities ?? [])) {
               capMap[cap.name] = { id: makeId("cap", cap.name), name: cap.name, description: cap.description ?? "" };
             }
@@ -423,6 +435,8 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
           painPoints: normalisedPainPoints,
           metrics: normalisedMetrics,
           gaps: ir.gaps ?? [],
+          capabilityMap: ir.capabilityMap,
+          stageCapabilities: ir.stageCapabilities,
           source: "freeform_extraction",
           extractionMeta: { extractedAt: new Date().toISOString(), passes: 2 },
         }));
@@ -459,15 +473,21 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
 
     const pass2Shape = {
       roles: form.roles.filter(r => r.name).map(r => ({ name: r.name, description: r.notes ?? "" })),
-      // Build capabilitiesByVS from extractedCapabilities on each VS
-      capabilitiesByVS: form.valueStreams.filter(vs => vs.name).map(vs => ({
-        vsName: vs.name,
-        capabilities: (vs.extractedCapabilities ?? []).map((c: any) => ({
-          id: c.id ?? id("cap", c.name),
-          name: c.name,
-          description: c.description ?? `Ability to ${c.name.toLowerCase()}`,
-        })),
-      })),
+      // Pass the preserved A2 capabilityMap (proper L1/L2/L3/L4 hierarchy) if available;
+      // fall back to capabilitiesByVS for backward compat
+      ...(form.capabilityMap
+        ? { capabilityMap: form.capabilityMap, stageCapabilities: form.stageCapabilities ?? [] }
+        : {
+            capabilitiesByVS: form.valueStreams.filter(vs => vs.name).map(vs => ({
+              vsName: vs.name,
+              capabilities: (vs.extractedCapabilities ?? []).map((c: any) => ({
+                id: c.id ?? id("cap", c.name),
+                name: c.name,
+                description: c.description ?? `Ability to ${c.name.toLowerCase()}`,
+              })),
+            })),
+          }
+      ),
       tech: form.tech.filter(t => t.name).map(t => ({ name: t.name, type: t.type ?? "Other" })),
       painPoints: form.painPoints.filter(p => p.description).map(p => ({
         description: p.description,
