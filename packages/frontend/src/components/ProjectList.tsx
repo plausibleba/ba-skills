@@ -185,12 +185,20 @@ export function ProjectList() {
             {user?.email ?? "Local mode"}
           </p>
         </div>
-        <button
-          onClick={signOut}
-          className="rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-500 hover:bg-gray-50"
-        >
-          Sign out
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowNewProject(true)}
+            className="rounded-lg bg-vcc-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-vcc-700"
+          >
+            + New Project
+          </button>
+          <button
+            onClick={signOut}
+            className="rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-500 hover:bg-gray-50"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
 
       {/* New project modal */}
