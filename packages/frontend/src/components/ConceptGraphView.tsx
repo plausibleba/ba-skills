@@ -1,517 +1,348 @@
 // @ts-nocheck
-import { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
-import { useThemeStore } from "../store/theme-store.ts";
-import { getTheme, tv } from "../theme.ts";
-import type { ConceptRelationship } from "../types/cards.ts";
+import { tv } from "../theme.ts";
 
 /* ═══════════════════════════════════════════════════════════════
-   Colour palette & helpers — theme-aware
-   ═══════════════════════════════════════════════════════════════ */
-function getColors(mode: string) {
-  const t = getTheme(mode as any);
-  const isDark = mode === "dark";
-  return {
-    party: t.partyColor, partyDim: isDark ? "rgba(45,212,191,0.12)" : "rgba(13,148,136,0.08)", partyBorder: isDark ? "rgba(45,212,191,0.5)" : "rgba(13,148,136,0.4)",
-    resource: t.resourceColor, resourceDim: isDark ? "rgba(74,158,218,0.12)" : "rgba(37,99,235,0.08)", resourceBorder: isDark ? "rgba(74,158,218,0.5)" : "rgba(37,99,235,0.4)",
-    record: t.recordColor, recordDim: isDark ? "rgba(224,91,138,0.12)" : "rgba(219,39,119,0.08)", recordBorder: isDark ? "rgba(224,91,138,0.5)" : "rgba(219,39,119,0.4)",
-    border: t.borderDefault, textDim: t.textDim, textMed: t.textSecondary, textHi: t.textPrimary,
-    interaction: t.interactionColor, structural: t.structuralColor,
-    bgPrimary: t.bgPrimary, bgCard: t.bgCard, bgSurface: t.bgSurface, accent: t.accent,
-  };
-}
-
-// Kept as fallback for file-level scope — actual usage should pass COLORS from component
-const COLORS = getColors("dark");
-
-function colFor(type: string, colors = COLORS) {
-  const isDark = colors.bgPrimary?.startsWith("#1") ?? true;
-  if (type === "Party") return { fill: colors.partyDim, stroke: colors.partyBorder, text: isDark ? "#e0fdf9" : "#134e4a", accent: colors.party };
-  if (type === "Resource") return { fill: colors.resourceDim, stroke: colors.resourceBorder, text: isDark ? "#e0f2fe" : "#1e3a5f", accent: colors.resource };
-  return { fill: colors.recordDim, stroke: colors.recordBorder, text: isDark ? "#fce7f3" : "#831843", accent: colors.record };
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   SVG Icons (jalapeno)
-   ═══════════════════════════════════════════════════════════════ */
-function PartyIcon({ x, y, size, color }: { x: number; y: number; size: number; color: string }) {
-  const s = size / 24;
-  return (
-    <g transform={`translate(${x - size / 2},${y - size / 2}) scale(${s})`} fill={color}>
-      <path d="M12,10c-1.654,0-3,1.346-3,3c0,1.654,1.346,3,3,3c1.654,0,3-1.346,3-3C15,11.346,13.654,10,12,10z M12,14c-0.552,0-1-0.448-1-1c0-0.551,0.448-1,1-1s1,0.449,1,1C13,13.552,12.552,14,12,14z" />
-      <path d="M21,5h-6V3c0-0.552-0.447-1-1-1h-4C9.448,2,9,2.448,9,3v2H3C2.448,5,2,5.448,2,6v16c0,0.553,0.448,1,1,1h18c0.553,0,1-0.447,1-1V6C22,5.448,21.553,5,21,5z M11,4h2v3h-2V4z M15,21H9v-1c0-0.561,0.438-1,0.998-1h4.004C14.562,19,15,19.439,15,20V21z M20,21h-3v-1c0-1.654-1.346-3-2.998-3H9.998C8.345,17,7,18.346,7,20v1H4V7h5v1c0,0.552,0.448,1,1,1h4c0.553,0,1-0.448,1-1V7h5V21z" />
-    </g>
-  );
-}
-function ResourceIcon({ x, y, size, color }: { x: number; y: number; size: number; color: string }) {
-  const s = size / 24;
-  return (
-    <g transform={`translate(${x - size / 2},${y - size / 2}) scale(${s})`} fill={color}>
-      <path d="M22,1H2C1.448,1,1,1.449,1,2.002v4.009c0,0.553,0.448,1.002,1,1.002h1v13.03c0,0.554,0.448,1.002,1,1.002h3.736c0.552,0,1-0.448,1-1.002s-0.448-1.002-1-1.002H5V7.014h14v0.992c0,0.553,0.447,1.002,1,1.002s1-0.449,1-1.002V7.014h1c0.553,0,1-0.449,1-1.002V2.002C23,1.449,22.553,1,22,1z M21,5.009h-1H4H3V3.004h18V5.009z" />
-      <path d="M17.057,10.765c-0.257-0.25-0.623-0.346-0.968-0.25l-3.332,0.92l-2.061-2.003C10.3,9.045,9.668,9.056,9.282,9.453C8.897,9.85,8.907,10.484,9.304,10.87l2.048,1.991l-0.912,3.312c-0.097,0.352,0.004,0.728,0.263,0.981l5.646,5.558C16.544,22.904,16.797,23,17.05,23c0.257,0,0.513-0.098,0.707-0.294l4.949-4.96c0.188-0.188,0.294-0.444,0.293-0.714c-0.001-0.268-0.108-0.521-0.299-0.711L17.057,10.765z M17.044,20.586l-4.521-4.447l0.466-1.687l1.336,1.299c0.194,0.189,0.446,0.284,0.696,0.284c0.261,0,0.521-0.103,0.718-0.306c0.385-0.396,0.375-1.031-0.021-1.417l-1.295-1.26l1.642-0.454l4.516,4.445L17.044,20.586z" />
-    </g>
-  );
-}
-function RecordIcon({ x, y, size, color }: { x: number; y: number; size: number; color: string }) {
-  const s = size / 24;
-  return (
-    <g transform={`translate(${x - size / 2},${y - size / 2}) scale(${s})`} fill={color}>
-      <polygon points="18,5.274 13.078,10.387 13.076,10.387 13.076,10.387 10,7.192 11.23,5.913 13.076,7.831 16.77,3.996" />
-      <polygon points="18,12.264 13.078,17.378 13.076,17.377 13.076,17.378 10,14.184 11.23,12.902 13.076,14.82 16.77,10.986" />
-      <path d="M21,21.973H7c-0.552,0-1-0.447-1-1V1c0-0.552,0.448-1,1-1h14c0.553,0,1,0.448,1,1v19.973C22,21.525,21.553,21.973,21,21.973z M8,19.973h12V2H8V19.973z" />
-      <path d="M4,22c-0.552,0-1-0.447-1-1V1c0-0.552,0.448-1,1-1s1,0.448,1,1v20C5,21.553,4.552,22,4,22z" />
-    </g>
-  );
-}
-function TypeIcon({ type, x, y, size, color }: { type: string; x: number; y: number; size: number; color: string }) {
-  if (type === "Party") return <PartyIcon x={x} y={y} size={size} color={color} />;
-  if (type === "Resource") return <ResourceIcon x={x} y={y} size={size} color={color} />;
-  return <RecordIcon x={x} y={y} size={size} color={color} />;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Text wrapping (syllable-aware)
-   ═══════════════════════════════════════════════════════════════ */
-const VOWELS = new Set("aeiouyAEIOUY".split(""));
-function syllableSplit(word: string): string[] {
-  if (word.length <= 8) return [word];
-  const bp: number[] = [];
-  for (let i = 2; i < word.length - 2; i++) {
-    if (VOWELS.has(word[i - 1]) && !VOWELS.has(word[i])) bp.push(i);
-  }
-  if (!bp.length) { const m = Math.ceil(word.length / 2); return [word.slice(0, m) + "-", word.slice(m)]; }
-  const mid = word.length / 2;
-  const best = bp.reduce((a, b) => Math.abs(a - mid) < Math.abs(b - mid) ? a : b);
-  return [word.slice(0, best) + "-", word.slice(best)];
-}
-function wrapText(text: string, maxChars: number): string[] {
-  const words = text.split(" ");
-  const lines: string[] = [];
-  let cur = "";
-  for (const w of words) {
-    if (w.length > maxChars) {
-      if (cur) { lines.push(cur.trim()); cur = ""; }
-      for (const p of syllableSplit(w)) {
-        if (cur && (cur + " " + p).length > maxChars) { lines.push(cur.trim()); cur = p; }
-        else cur = cur ? cur + " " + p : p;
-      }
-    } else if (cur && (cur + " " + w).length > maxChars) { lines.push(cur.trim()); cur = w; }
-    else cur = cur ? cur + " " + w : w;
-  }
-  if (cur) lines.push(cur.trim());
-  return lines.length ? lines : [text];
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Types
+   Type helpers
    ═══════════════════════════════════════════════════════════════ */
 interface ConceptNode {
-  id: string; name: string; type: string;
-  definition?: string; description?: string;
-  lifecycleStates?: string[]; relatedCapabilityIds?: string[];
-  x: number; y: number;
+  id: string;
+  name: string;
+  type: "Party" | "Record" | "Resource";
+  subtype?: string;
+  definition?: string;
+  lifecycleStates?: any[];
+  relationships?: Rel[];
+  properties?: Record<string, { name: string; dataType: string; description?: string; required?: boolean }>;
+  relatedCapabilityIds?: string[];
 }
-
-type RelationCategory = "interaction" | "structural";
-
-interface ConceptEdge {
-  from: string; to: string; label: string;
-  type: ConceptRelationship["type"];
-  category: RelationCategory;
-}
-
-interface ConceptAttribute { name: string; dataType: string; }
-
-interface EnrichedProperties {
-  relationships: ConceptEdge[];
-  attributes: Record<string, ConceptAttribute[]>;
+interface Rel {
+  targetId: string;
+  type: string;
+  label?: string;
+  cardinality?: string;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Node layout — Party | Record (centre) | Resource
+   Colour + ER styling
    ═══════════════════════════════════════════════════════════════ */
-const NODE_W = 130;
-const NODE_H = 44;
-const ICON_SIZE = 14;
-const COL_X = { Party: 100, Record: 350, Resource: 600 };
-
-function layoutConcepts(concepts: Record<string, any>): ConceptNode[] {
-  const all = Object.values(concepts) as any[];
-  const parties = all.filter(c => c.type === "Party");
-  const resources = all.filter(c => c.type === "Resource");
-  const records = all.filter(c => c.type === "Record");
-  const yStart = 60, yGap = 64;
-  const pos = (items: any[], type: string): ConceptNode[] =>
-    items.map((c, i) => ({
-      id: c.id, name: c.name, type: c.type ?? type,
-      definition: c.definition ?? c.description, description: c.description,
-      lifecycleStates: c.lifecycleStates, relatedCapabilityIds: c.relatedCapabilityIds,
-      x: COL_X[type as keyof typeof COL_X], y: yStart + i * yGap,
-    }));
-  return [...pos(parties, "Party"), ...pos(records, "Record"), ...pos(resources, "Resource")];
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Enrichment — Interaction + Structural relations
-   ═══════════════════════════════════════════════════════════════ */
-
-function suggestEnrichment(nodes: ConceptNode[]): EnrichedProperties {
-  const rels: ConceptEdge[] = [];
-  const attributes: Record<string, ConceptAttribute[]> = {};
-  const parties = nodes.filter(n => n.type === "Party");
-  const resources = nodes.filter(n => n.type === "Resource");
-  const records = nodes.filter(n => n.type === "Record");
-
-  // ── INTERACTION RELATIONS ──
-  // Each Record is an interaction: it has subject Parties and object Resources
-  for (const rec of records) {
-    const rn = rec.name.toLowerCase();
-    // Find subject parties (who creates/initiates this record?)
-    const subjectParties = findSubjectParties(rn, parties);
-    for (const { party, role } of subjectParties) {
-      rels.push({ from: party.id, to: rec.id, label: role, type: "produces", category: "interaction" });
-    }
-    // Find object resources (what is this record about?)
-    const objectResources = findObjectResources(rn, resources);
-    for (const { resource, role } of objectResources) {
-      rels.push({ from: rec.id, to: resource.id, label: role, type: "relates-to", category: "interaction" });
-    }
-  }
-
-  // ── STRUCTURAL RELATIONS ──
-  // Party ↔ Resource ownership, composition, assignment
-  for (const party of parties) {
-    const pn = party.name.toLowerCase();
-    for (const res of resources) {
-      const rn = res.name.toLowerCase();
-      const rel = inferStructuralRel(pn, rn, party, res);
-      if (rel) rels.push(rel);
-    }
-  }
-  // Resource ↔ Resource composition
-  for (let i = 0; i < resources.length; i++) {
-    for (let j = i + 1; j < resources.length; j++) {
-      const a = resources[i], b = resources[j];
-      const rel = inferResourceStructural(a, b);
-      if (rel) rels.push(rel);
-    }
-  }
-
-  // Ensure no orphans — every node gets at least one edge
-  const connected = new Set(rels.flatMap(r => [r.from, r.to]));
-  for (const n of nodes) {
-    if (connected.has(n.id)) continue;
-    // Connect to nearest record (if party/resource) or nearest party (if record)
-    const targets = n.type === "Record" ? parties : records;
-    if (targets.length) {
-      const target = targets[0];
-      const cat: RelationCategory = n.type === "Record" || target.type === "Record" ? "interaction" : "structural";
-      rels.push({ from: n.id, to: target.id, label: "associated with", type: "relates-to", category: cat });
-    }
-  }
-
-  // ── ATTRIBUTES ──
-  for (const node of nodes) {
-    attributes[node.id] = suggestAttributes(node);
-  }
-
-  // Deduplicate
-  const seen = new Set<string>();
-  const deduped = rels.filter(r => {
-    const key = `${r.from}→${r.to}:${r.label}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-
-  return { relationships: deduped, attributes };
-}
-
-function findSubjectParties(recordName: string, parties: ConceptNode[]): { party: ConceptNode; role: string }[] {
-  const results: { party: ConceptNode; role: string }[] = [];
-  const map: Record<string, { keywords: string[]; role: string }[]> = {
-    "booking": [{ keywords: ["guest"], role: "bookedBy" }, { keywords: ["owner"], role: "receivedBy" }],
-    "maintenance": [{ keywords: ["tenant", "guest"], role: "requestedBy" }, { keywords: ["contractor"], role: "assignedTo" }],
-    "review": [{ keywords: ["guest"], role: "writtenBy" }],
-    "financial": [{ keywords: ["owner"], role: "reportedTo" }],
-    "compliance": [{ keywords: ["owner"], role: "obligatedTo" }],
-    "yield": [{ keywords: ["owner"], role: "measuredFor" }],
-    "subscription": [{ keywords: ["tenant", "guest"], role: "paidBy" }, { keywords: ["owner"], role: "receivedBy" }],
-    "fee": [{ keywords: ["tenant", "guest"], role: "paidBy" }, { keywords: ["owner"], role: "receivedBy" }],
-    "tenancy": [{ keywords: ["tenant"], role: "heldBy" }],
-  };
-  for (const [trigger, mappings] of Object.entries(map)) {
-    if (!recordName.includes(trigger)) continue;
-    for (const { keywords, role } of mappings) {
-      for (const p of parties) {
-        if (keywords.some(k => p.name.toLowerCase().includes(k))) {
-          results.push({ party: p, role });
-        }
-      }
-    }
-  }
-  // Fallback: if no matches, connect to first party
-  if (!results.length && parties.length) {
-    results.push({ party: parties[0], role: "involves" });
-  }
-  return results;
-}
-
-function findObjectResources(recordName: string, resources: ConceptNode[]): { resource: ConceptNode; role: string }[] {
-  const results: { resource: ConceptNode; role: string }[] = [];
-  const map: Record<string, { keywords: string[]; role: string }[]> = {
-    "booking": [{ keywords: ["property"], role: "forProperty" }, { keywords: ["booking"], role: "forBooking" }],
-    "maintenance": [{ keywords: ["property"], role: "forProperty" }],
-    "review": [{ keywords: ["property", "booking"], role: "regarding" }],
-    "financial": [{ keywords: ["portfolio", "property"], role: "regarding" }],
-    "compliance": [{ keywords: ["property", "portfolio"], role: "regarding" }],
-    "yield": [{ keywords: ["portfolio", "property"], role: "regarding" }],
-    "subscription": [{ keywords: ["tenancy", "property"], role: "forTenancy" }],
-    "fee": [{ keywords: ["tenancy", "property"], role: "forTenancy" }],
-  };
-  for (const [trigger, mappings] of Object.entries(map)) {
-    if (!recordName.includes(trigger)) continue;
-    for (const { keywords, role } of mappings) {
-      for (const r of resources) {
-        if (keywords.some(k => r.name.toLowerCase().includes(k))) {
-          results.push({ resource: r, role });
-        }
-      }
-    }
-  }
-  if (!results.length && resources.length) {
-    results.push({ resource: resources[0], role: "regarding" });
-  }
-  return results;
-}
-
-function inferStructuralRel(partyName: string, resName: string, party: ConceptNode, res: ConceptNode): ConceptEdge | null {
-  if (partyName.includes("owner") && resName.includes("property"))
-    return { from: party.id, to: res.id, label: "owns", type: "has-a", category: "structural" };
-  if (partyName.includes("owner") && resName.includes("portfolio"))
-    return { from: party.id, to: res.id, label: "manages", type: "governs", category: "structural" };
-  if (partyName.includes("tenant") && resName.includes("tenancy"))
-    return { from: party.id, to: res.id, label: "holds", type: "has-a", category: "structural" };
-  if (partyName.includes("tenant") && resName.includes("property"))
-    return { from: party.id, to: res.id, label: "occupies", type: "consumes", category: "structural" };
-  if (partyName.includes("guest") && resName.includes("booking"))
-    return { from: party.id, to: res.id, label: "makes", type: "produces", category: "structural" };
-  if (partyName.includes("guest") && resName.includes("property"))
-    return { from: party.id, to: res.id, label: "stays at", type: "consumes", category: "structural" };
-  if (partyName.includes("contractor") && resName.includes("property"))
-    return { from: party.id, to: res.id, label: "maintains", type: "consumes", category: "structural" };
-  return null;
-}
-
-function inferResourceStructural(a: ConceptNode, b: ConceptNode): ConceptEdge | null {
-  const an = a.name.toLowerCase(), bn = b.name.toLowerCase();
-  if (an.includes("property") && bn.includes("portfolio"))
-    return { from: a.id, to: b.id, label: "partOf", type: "part-of", category: "structural" };
-  if (bn.includes("property") && an.includes("portfolio"))
-    return { from: b.id, to: a.id, label: "partOf", type: "part-of", category: "structural" };
-  if (an.includes("tenancy") && bn.includes("property"))
-    return { from: a.id, to: b.id, label: "onProperty", type: "relates-to", category: "structural" };
-  if (bn.includes("tenancy") && an.includes("property"))
-    return { from: b.id, to: a.id, label: "onProperty", type: "relates-to", category: "structural" };
-  if (an.includes("booking") && bn.includes("property"))
-    return { from: a.id, to: b.id, label: "forProperty", type: "relates-to", category: "structural" };
-  if (bn.includes("booking") && an.includes("property"))
-    return { from: b.id, to: a.id, label: "forProperty", type: "relates-to", category: "structural" };
-  return null;
-}
-
-function suggestAttributes(node: ConceptNode): ConceptAttribute[] {
-  const a: ConceptAttribute[] = [{ name: "id", dataType: "uuid" }, { name: "name", dataType: "string" }];
-  const n = node.name.toLowerCase();
-  if (node.type === "Party") {
-    a.push({ name: "type", dataType: "enum" }, { name: "status", dataType: "enum" }, { name: "contactEmail", dataType: "string" }, { name: "phone", dataType: "string" });
-    if (n.includes("guest") || n.includes("tenant")) a.push({ name: "checkInDate", dataType: "date" }, { name: "preferences", dataType: "json" });
-    if (n.includes("owner")) a.push({ name: "portfolioCount", dataType: "integer" });
-    if (n.includes("contractor")) a.push({ name: "specialty", dataType: "string" }, { name: "licenseNumber", dataType: "string" });
-  } else if (node.type === "Resource") {
-    a.push({ name: "status", dataType: "enum" }, { name: "description", dataType: "text" });
-    if (n.includes("property")) a.push({ name: "address", dataType: "string" }, { name: "propertyType", dataType: "enum" }, { name: "bedrooms", dataType: "integer" }, { name: "marketValue", dataType: "decimal" });
-    if (n.includes("portfolio")) a.push({ name: "propertyCount", dataType: "integer" }, { name: "totalValue", dataType: "decimal" });
-    if (n.includes("booking")) a.push({ name: "checkIn", dataType: "date" }, { name: "checkOut", dataType: "date" }, { name: "totalAmount", dataType: "decimal" });
-    if (n.includes("tenancy")) a.push({ name: "startDate", dataType: "date" }, { name: "endDate", dataType: "date" }, { name: "monthlyRent", dataType: "decimal" });
-  } else {
-    a.push({ name: "recordId", dataType: "string" }, { name: "createdDate", dataType: "datetime" }, { name: "status", dataType: "enum" }, { name: "createdBy", dataType: "reference" });
-    if (n.includes("financial") || n.includes("yield")) a.push({ name: "period", dataType: "string" }, { name: "amount", dataType: "decimal" }, { name: "currency", dataType: "string" });
-    if (n.includes("maintenance")) a.push({ name: "priority", dataType: "enum" }, { name: "assignedTo", dataType: "reference" }, { name: "resolvedDate", dataType: "datetime" });
-    if (n.includes("review")) a.push({ name: "rating", dataType: "integer" }, { name: "comment", dataType: "text" });
-    if (n.includes("compliance") || n.includes("obligation")) a.push({ name: "regulation", dataType: "string" }, { name: "dueDate", dataType: "date" }, { name: "complianceStatus", dataType: "enum" });
-    if (n.includes("subscription") || n.includes("fee")) a.push({ name: "amount", dataType: "decimal" }, { name: "frequency", dataType: "enum" }, { name: "nextDueDate", dataType: "date" });
-  }
-  return a;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Edge colours & path computation
-   ═══════════════════════════════════════════════════════════════ */
-const REL_COLORS: Record<string, string> = {
-  "has-a": "#4a9eda", "is-a": "#a78bfa", "part-of": "#f59e0b",
-  "consumes": "#2dd4bf", "produces": "#4ade80", "governs": "#e05b8a", "relates-to": "#94a3b8",
+const TYPE_COLORS: Record<string, { bg: string; border: string; accent: string; text: string; headerBg: string }> = {
+  Party:    { bg: "#f0fdfa", border: "#99f6e4", accent: "#0d9488", text: "#134e4a", headerBg: "#ccfbf1" },
+  Record:   { bg: "#fdf2f8", border: "#fbcfe8", accent: "#db2777", text: "#831843", headerBg: "#fce7f3" },
+  Resource: { bg: "#eff6ff", border: "#bfdbfe", accent: "#2563eb", text: "#1e3a5f", headerBg: "#dbeafe" },
 };
-const RELATIONSHIP_TYPES: ConceptRelationship["type"][] = ["has-a", "is-a", "part-of", "consumes", "produces", "governs", "relates-to"];
+function typeColor(type: string) { return TYPE_COLORS[type] ?? TYPE_COLORS.Record; }
 
-function computeEdgePath(a: ConceptNode, b: ConceptNode, edgeIndex: number, totalEdgesForPair: number) {
-  const dx = b.x - a.x, dy = b.y - a.y;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-  if (dist === 0) return null;
-  const hw = NODE_W / 2 + 2, hh = NODE_H / 2 + 2;
-  const angle = Math.atan2(dy, dx);
-  const clip = (cx: number, cy: number, ang: number) => {
-    const ac = Math.abs(Math.cos(ang)), as2 = Math.abs(Math.sin(ang));
-    const r = ac * hh > as2 * hw ? hw / ac : hh / as2;
-    return { x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang) };
-  };
-  const s = clip(a.x, a.y, angle), e = clip(b.x, b.y, angle + Math.PI);
-  const off = (edgeIndex - (totalEdgesForPair - 1) / 2) * 12;
-  const px = -(e.y - s.y) / dist, py = (e.x - s.x) / dist;
-  const mx = (s.x + e.x) / 2 + px * (15 + off), my = (s.y + e.y) / 2 + py * (15 + off);
-  return { d: `M ${s.x} ${s.y} Q ${mx} ${my} ${e.x} ${e.y}`, labelX: mx, labelY: my };
+/* ═══════════════════════════════════════════════════════════════
+   Auto-generate attributes for a concept based on type + name
+   ═══════════════════════════════════════════════════════════════ */
+function deriveAttributes(c: ConceptNode): { name: string; type: string }[] {
+  if (c.properties && Object.keys(c.properties).length > 0) {
+    return Object.values(c.properties).map(p => ({ name: p.name, type: p.dataType }));
+  }
+  const base = [{ name: "id", type: "UUID" }, { name: "name", type: "String" }];
+  if (c.type === "Party") {
+    base.push({ name: "role", type: "String" }, { name: "email", type: "String" }, { name: "status", type: "Enum" });
+  } else if (c.type === "Record") {
+    base.push({ name: "createdAt", type: "DateTime" }, { name: "status", type: "Enum" }, { name: "reference", type: "String" });
+    if (c.lifecycleStates?.length) base.push({ name: "state", type: "Lifecycle" });
+  } else {
+    base.push({ name: "type", type: "String" }, { name: "version", type: "String" }, { name: "status", type: "Enum" });
+  }
+  return base;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Editable Table View
+   Build class hierarchy tree: Party / Record / Resource as roots
    ═══════════════════════════════════════════════════════════════ */
-function ConceptTableView({
-  concepts, enriched, onUpdateConcept, onAddConcept, onDeleteConcept,
-}: {
-  concepts: Record<string, any>;
-  enriched: EnrichedProperties | null;
-  onUpdateConcept: (id: string, field: string, value: string) => void;
-  onAddConcept: (type: string) => void;
-  onDeleteConcept: (id: string) => void;
-}) {
-  const themeMode = useThemeStore((s) => s.mode);
-  const TC = getColors(themeMode);
-  const all = Object.values(concepts) as any[];
-  const sorted = [...all].sort((a, b) => {
-    const order = { Party: 0, Resource: 1, Record: 2 };
-    return (order[a.type] ?? 3) - (order[b.type] ?? 3) || a.name.localeCompare(b.name);
+interface TreeNode { id: string; label: string; type: string; subtype?: string; children?: TreeNode[] }
+
+function buildTree(concepts: Record<string, ConceptNode>): TreeNode[] {
+  const groups: Record<string, ConceptNode[]> = { Party: [], Record: [], Resource: [] };
+  for (const c of Object.values(concepts)) {
+    (groups[c.type] ?? (groups.Record ??= [])).push(c);
+  }
+  return [
+    { id: "__party", label: "Party", type: "Party", children: groups.Party.sort((a, b) => a.name.localeCompare(b.name)).map(c => ({ id: c.id, label: c.name, type: c.type, subtype: c.subtype })) },
+    { id: "__record", label: "Record", type: "Record", children: groups.Record.sort((a, b) => a.name.localeCompare(b.name)).map(c => ({ id: c.id, label: c.name, type: c.type, subtype: c.subtype })) },
+    { id: "__resource", label: "Resource", type: "Resource", children: groups.Resource.sort((a, b) => a.name.localeCompare(b.name)).map(c => ({ id: c.id, label: c.name, type: c.type, subtype: c.subtype })) },
+  ];
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ER Diagram layout — center node + ring of related nodes
+   ═══════════════════════════════════════════════════════════════ */
+interface ERNode {
+  concept: ConceptNode;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  expanded: boolean;
+}
+interface EREdge {
+  fromId: string;
+  toId: string;
+  label: string;
+  cardinality: string;
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+}
+
+function layoutER(
+  focusId: string,
+  concepts: Record<string, ConceptNode>,
+  expandedIds: Set<string>,
+): { nodes: ERNode[]; edges: EREdge[] } {
+  const focus = concepts[focusId];
+  if (!focus) return { nodes: [], edges: [] };
+
+  const CX = 500, CY = 340;
+  const NODE_W = 220, NODE_H_BASE = 44, ATTR_ROW = 18;
+
+  const focusAttrs = deriveAttributes(focus);
+  const focusH = NODE_H_BASE + focusAttrs.length * ATTR_ROW;
+  const nodes: ERNode[] = [{ concept: focus, x: CX - NODE_W / 2, y: CY - focusH / 2, w: NODE_W, h: focusH, expanded: true }];
+
+  // Collect 1st-order relations (outgoing + incoming)
+  const relatedIds = new Set<string>();
+  const edgeData: { fromId: string; toId: string; label: string; cardinality: string }[] = [];
+  for (const rel of focus.relationships ?? []) {
+    if (concepts[rel.targetId]) {
+      relatedIds.add(rel.targetId);
+      edgeData.push({ fromId: focusId, toId: rel.targetId, label: rel.label ?? rel.type, cardinality: rel.cardinality ?? "" });
+    }
+  }
+  // Incoming relations
+  for (const [cId, c] of Object.entries(concepts)) {
+    if (cId === focusId) continue;
+    for (const rel of c.relationships ?? []) {
+      if (rel.targetId === focusId && !relatedIds.has(cId)) {
+        relatedIds.add(cId);
+        edgeData.push({ fromId: cId, toId: focusId, label: rel.label ?? rel.type, cardinality: rel.cardinality ?? "" });
+      }
+    }
+  }
+
+  // Layout related nodes in a ring
+  const related = [...relatedIds];
+  const RADIUS = 280;
+  const startAngle = -Math.PI / 2;
+  const angleStep = related.length > 0 ? (2 * Math.PI) / related.length : 0;
+
+  for (let i = 0; i < related.length; i++) {
+    const rId = related[i];
+    const rc = concepts[rId];
+    const angle = startAngle + i * angleStep;
+    const isExpanded = expandedIds.has(rId);
+    const attrs = isExpanded ? deriveAttributes(rc) : [];
+    const h = isExpanded ? NODE_H_BASE + attrs.length * ATTR_ROW : NODE_H_BASE;
+    const rx = CX + RADIUS * Math.cos(angle) - NODE_W / 2;
+    const ry = CY + RADIUS * Math.sin(angle) - h / 2;
+    nodes.push({ concept: rc, x: rx, y: ry, w: NODE_W, h, expanded: isExpanded });
+  }
+
+  // Compute edge endpoints
+  const nodeMap = new Map(nodes.map(n => [n.concept.id, n]));
+  const edges: EREdge[] = edgeData.map(e => {
+    const from = nodeMap.get(e.fromId)!;
+    const to = nodeMap.get(e.toId)!;
+    const fromCx = from.x + from.w / 2, fromCy = from.y + from.h / 2;
+    const toCx = to.x + to.w / 2, toCy = to.y + to.h / 2;
+    return { ...e, fromX: fromCx, fromY: fromCy, toX: toCx, toY: toCy };
   });
 
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  return { nodes, edges };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SVG: curved edge with arrowhead and cardinality labels
+   ═══════════════════════════════════════════════════════════════ */
+function EREdgeSVG({ edge }: { edge: EREdge }) {
+  const { fromX, fromY, toX, toY, label, cardinality } = edge;
+  const dx = toX - fromX, dy = toY - fromY;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+  // Perpendicular offset for curve
+  const off = Math.min(dist * 0.2, 50);
+  const mx = (fromX + toX) / 2 - (dy / dist) * off;
+  const my = (fromY + toY) / 2 + (dx / dist) * off;
+
+  // Shorten endpoints to not overlap node borders
+  const SHORTEN = 14;
+  const ux = dx / dist, uy = dy / dist;
+  const sx = fromX + ux * SHORTEN, sy = fromY + uy * SHORTEN;
+  const ex = toX - ux * SHORTEN, ey = toY - uy * SHORTEN;
+
+  const d = `M${sx},${sy} Q${mx},${my} ${ex},${ey}`;
+  const markerId = `arrow-${edge.fromId}-${edge.toId}`;
+
+  // Cardinality parts
+  const [cardFrom, cardTo] = cardinality.includes(":")
+    ? cardinality.split(":")
+    : ["", ""];
 
   return (
-    <div>
-      <div className="overflow-x-auto rounded-lg" style={{ border: `1px solid ${tv.borderSubtle}` }}>
-        <table className="w-full text-left text-[11px]" style={{ borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ background: tv.bgSurface }}>
-              {["Type", "Name", "Definition", "Lifecycle States"].map(h => (
-                <th key={h} className="px-3 py-2 font-semibold" style={{ color: tv.textDim, borderBottom: `1px solid ${tv.borderSubtle}` }}>{h}</th>
-              ))}
-              {enriched && <th className="px-3 py-2 font-semibold" style={{ color: tv.textDim, borderBottom: `1px solid ${tv.borderSubtle}` }}>Attributes</th>}
-              <th className="px-3 py-2 font-semibold w-[60px]" style={{ color: tv.textDim, borderBottom: `1px solid ${tv.borderSubtle}` }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((c) => (
-              <tr key={c.id} style={{ borderBottom: `1px solid ${tv.borderSubtle}` }}>
-                <td className="px-3 py-2">
-                  <select
-                    defaultValue={c.type}
-                    onChange={(e) => onUpdateConcept(c.id, "type", e.target.value)}
-                    className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase"
-                    style={{ background: colFor(c.type, TC).fill, color: colFor(c.type, TC).accent, border: `1px solid ${colFor(c.type, TC).stroke}`, outline: "none", cursor: "pointer" }}
-                  >
-                    <option value="Party">Party</option>
-                    <option value="Resource">Resource</option>
-                    <option value="Record">Record</option>
-                  </select>
-                </td>
-                <td className="px-3 py-2">
-                  <input
-                    defaultValue={c.name}
-                    onBlur={(e) => onUpdateConcept(c.id, "name", e.target.value)}
-                    className="w-full rounded px-1.5 py-0.5 text-[11px] font-semibold"
-                    style={{ background: tv.bgInput, color: tv.textPrimary, border: "1px solid transparent", outline: "none" }}
-                    onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
-                    onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
-                  />
-                </td>
-                <td className="px-3 py-2">
-                  <input
-                    defaultValue={c.definition ?? c.description ?? ""}
-                    onBlur={(e) => onUpdateConcept(c.id, "definition", e.target.value)}
-                    className="w-full rounded px-1.5 py-0.5 text-[11px]"
-                    style={{ background: tv.bgInput, color: tv.textSecondary, border: "1px solid transparent", outline: "none" }}
-                    onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
-                    onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
-                  />
-                </td>
-                <td className="px-3 py-2">
-                  <input
-                    defaultValue={(c.lifecycleStates ?? []).join(", ")}
-                    onBlur={(e) => onUpdateConcept(c.id, "lifecycleStates", e.target.value)}
-                    className="w-full rounded px-1.5 py-0.5 text-[11px]"
-                    style={{ background: tv.bgInput, color: tv.accent, border: "1px solid transparent", outline: "none", fontFamily: "'DM Mono', monospace" }}
-                    onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4a9eda"; }}
-                    onBlurCapture={(e) => { (e.target as HTMLInputElement).style.borderColor = "transparent"; }}
-                    placeholder="state1, state2, ..."
-                  />
-                </td>
-                {enriched && enriched.attributes[c.id] && (
-                  <td className="px-3 py-2 text-[10px]" style={{ color: tv.textDim }}>
-                    {enriched.attributes[c.id].slice(0, 4).map(a => a.name).join(", ")}
-                    {enriched.attributes[c.id].length > 4 && ` +${enriched.attributes[c.id].length - 4}`}
-                  </td>
-                )}
-                <td className="px-3 py-2 text-center">
-                  {confirmDelete === c.id ? (
-                    <span className="flex items-center gap-1">
-                      <button
-                        onClick={() => { onDeleteConcept(c.id); setConfirmDelete(null); }}
-                        className="rounded px-1.5 py-0.5 text-[9px] font-bold"
-                        style={{ background: "rgba(239,68,68,0.15)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)" }}
-                      >
-                        Yes
-                      </button>
-                      <button
-                        onClick={() => setConfirmDelete(null)}
-                        className="rounded px-1.5 py-0.5 text-[9px]"
-                        style={{ color: tv.textDim, border: `1px solid ${tv.borderSubtle}` }}
-                      >
-                        No
-                      </button>
-                    </span>
-                  ) : (
-                    <button
-                      onClick={() => setConfirmDelete(c.id)}
-                      className="rounded px-1.5 py-0.5 text-[9px]"
-                      style={{ color: tv.textDim, border: "1px solid transparent" }}
-                      title="Delete concept"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <g>
+      <defs>
+        <marker id={markerId} viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+        </marker>
+      </defs>
+      <path d={d} fill="none" stroke="#94a3b8" strokeWidth={1.2} markerEnd={`url(#${markerId})`} />
+      {/* Label */}
+      <text x={mx} y={my - 6} textAnchor="middle" fontSize={9} fill="#64748b" fontStyle="italic">{label}</text>
+      {/* Cardinality near from */}
+      {cardFrom && <text x={sx + ux * 18 - uy * 10} y={sy + uy * 18 + ux * 10} textAnchor="middle" fontSize={8} fill="#94a3b8" fontWeight={600}>{cardFrom}</text>}
+      {/* Cardinality near to */}
+      {cardTo && <text x={ex - ux * 18 - uy * 10} y={ey - uy * 18 + ux * 10} textAnchor="middle" fontSize={8} fill="#94a3b8" fontWeight={600}>{cardTo}</text>}
+    </g>
+  );
+}
 
-      {/* Add concept buttons */}
-      <div className="mt-3 flex items-center gap-2">
-        <span className="text-[10px] font-medium" style={{ color: tv.textDim }}>Add:</span>
-        {(["Party", "Resource", "Record"] as const).map(type => (
-          <button
-            key={type}
-            onClick={() => onAddConcept(type)}
-            className="rounded px-2.5 py-1 text-[10px] font-semibold"
-            style={{
-              background: colFor(type, TC).fill,
-              color: colFor(type, TC).accent,
-              border: `1px solid ${colFor(type, TC).stroke}`,
-            }}
-          >
-            + {type}
-          </button>
-        ))}
+/* ═══════════════════════════════════════════════════════════════
+   SVG: ER Node — entity box with header + attribute rows
+   ═══════════════════════════════════════════════════════════════ */
+function ERNodeSVG({
+  node, isFocus, isSelected, onClick, onDoubleClick,
+}: {
+  node: ERNode;
+  isFocus: boolean;
+  isSelected: boolean;
+  onClick: () => void;
+  onDoubleClick: () => void;
+}) {
+  const { concept, x, y, w, h, expanded } = node;
+  const tc = typeColor(concept.type);
+  const attrs = expanded ? deriveAttributes(concept) : [];
+  const HEADER_H = 42;
+  const borderWidth = isFocus ? 2 : isSelected ? 1.5 : 0.75;
+
+  return (
+    <g onClick={onClick} onDoubleClick={onDoubleClick} style={{ cursor: "pointer" }}>
+      {/* Shadow */}
+      <rect x={x + 2} y={y + 2} width={w} height={h} rx={4} fill="rgba(0,0,0,0.06)" />
+      {/* Body */}
+      <rect x={x} y={y} width={w} height={h} rx={4} fill={tc.bg} stroke={tc.border} strokeWidth={borderWidth} />
+      {/* Header */}
+      <rect x={x} y={y} width={w} height={HEADER_H} rx={4} fill={tc.headerBg} />
+      <rect x={x} y={y + HEADER_H - 4} width={w} height={4} fill={tc.headerBg} />
+      <line x1={x} y1={y + HEADER_H} x2={x + w} y2={y + HEADER_H} stroke={tc.border} strokeWidth={0.5} />
+      {/* Type badge */}
+      <text x={x + 8} y={y + 13} fontSize={8} fill={tc.accent} fontWeight={700} letterSpacing="0.05em">
+        {concept.type.toUpperCase()}{concept.subtype ? ` · ${concept.subtype}` : ""}
+      </text>
+      {/* Name */}
+      <text x={x + 8} y={y + 30} fontSize={12} fill={tc.text} fontWeight={600}>
+        {concept.name.length > 24 ? concept.name.slice(0, 22) + "…" : concept.name}
+      </text>
+      {/* Attributes */}
+      {attrs.map((attr, i) => (
+        <g key={attr.name}>
+          {i % 2 === 0 && <rect x={x + 1} y={y + HEADER_H + i * 18} width={w - 2} height={18} fill="rgba(0,0,0,0.02)" />}
+          <text x={x + 10} y={y + HEADER_H + 13 + i * 18} fontSize={10} fill={tc.text}>
+            {attr.name}
+          </text>
+          <text x={x + w - 10} y={y + HEADER_H + 13 + i * 18} fontSize={9} fill="#94a3b8" textAnchor="end">
+            {attr.type}
+          </text>
+        </g>
+      ))}
+      {/* Expand hint for non-focus collapsed nodes */}
+      {!expanded && !isFocus && (
+        <text x={x + w / 2} y={y + h - 4} textAnchor="middle" fontSize={7} fill="#94a3b8">
+          click to expand · double-click to focus
+        </text>
+      )}
+    </g>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Architecture Grid Background
+   ═══════════════════════════════════════════════════════════════ */
+function GridBackground({ width, height }: { width: number; height: number }) {
+  return (
+    <g>
+      <defs>
+        <pattern id="smallGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" strokeWidth={0.3} />
+        </pattern>
+        <pattern id="bigGrid" width="100" height="100" patternUnits="userSpaceOnUse">
+          <rect width="100" height="100" fill="url(#smallGrid)" />
+          <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#cbd5e1" strokeWidth={0.5} />
+        </pattern>
+      </defs>
+      <rect width={width} height={height} fill="#f8fafc" />
+      <rect width={width} height={height} fill="url(#bigGrid)" />
+    </g>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Tree Sidebar
+   ═══════════════════════════════════════════════════════════════ */
+function TreeSidebar({
+  tree, selectedId, onSelect,
+}: {
+  tree: TreeNode[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const toggle = (id: string) => setCollapsed(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+
+  return (
+    <div className="h-full overflow-auto" style={{ width: 240, borderRight: `1px solid ${tv.borderSubtle}`, background: tv.bgCard }}>
+      <div className="px-3 py-2 text-[9px] font-bold uppercase tracking-wider" style={{ color: tv.textDim, borderBottom: `1px solid ${tv.borderSubtle}` }}>
+        Class Hierarchy
       </div>
+      {tree.map(root => {
+        const isOpen = !collapsed.has(root.id);
+        const tc = typeColor(root.type);
+        const count = root.children?.length ?? 0;
+        return (
+          <div key={root.id}>
+            <div
+              className="flex items-center gap-1 px-3 py-1.5 cursor-pointer"
+              style={{ borderBottom: `1px solid ${tv.borderSubtle}` }}
+              onClick={() => toggle(root.id)}
+            >
+              <span style={{ fontSize: 9, color: tv.textDim, width: 12 }}>{isOpen ? "▼" : "▶"}</span>
+              <span className="inline-block w-2 h-2 rounded-sm" style={{ background: tc.accent }} />
+              <span className="text-[11px] font-semibold" style={{ color: tc.accent }}>{root.label}</span>
+              <span className="text-[9px] ml-auto" style={{ color: tv.textDim }}>{count}</span>
+            </div>
+            {isOpen && root.children?.map(child => {
+              const isSel = selectedId === child.id;
+              return (
+                <div
+                  key={child.id}
+                  className="flex items-center gap-1.5 pl-7 pr-3 py-1 cursor-pointer transition-colors"
+                  style={{
+                    background: isSel ? tc.bg : "transparent",
+                    borderLeft: isSel ? `2px solid ${tc.accent}` : "2px solid transparent",
+                  }}
+                  onClick={() => onSelect(child.id)}
+                >
+                  <span className="text-[10px]" style={{ color: isSel ? tc.accent : tv.textSecondary }}>
+                    {child.label}
+                  </span>
+                  {child.subtype && (
+                    <span className="text-[8px] ml-auto" style={{ color: tv.textDim }}>{child.subtype}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -521,513 +352,135 @@ function ConceptTableView({
    ═══════════════════════════════════════════════════════════════ */
 export function ConceptGraphView() {
   const scaffoldData = useCanvasStore((s) => s.scaffoldData);
-  const themeMode = useThemeStore((s) => s.mode);
-  const TC = useMemo(() => getColors(themeMode), [themeMode]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [enriched, setEnriched] = useState<EnrichedProperties | null>(null);
-  const [showRelLabels, setShowRelLabels] = useState(true);
-  const [showInteraction, setShowInteraction] = useState(true);
-  const [showStructural, setShowStructural] = useState(true);
-  const [nodePositions, setNodePositions] = useState<Record<string, { x: number; y: number }>>({});
-  const [dragState, setDragState] = useState<{ nodeId: string; startX: number; startY: number; origX: number; origY: number } | null>(null);
-  const [viewTab, setViewTab] = useState<"graph" | "table">("graph");
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
-  // Pan & zoom state
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [isPanning, setIsPanning] = useState(false);
-  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
-  const [panOrigin, setPanOrigin] = useState({ x: 0, y: 0 });
-
-  const svgRef = useRef<SVGSVGElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const baseNodes = useMemo(() => {
-    if (!scaffoldData?.elements?.concepts) return [];
-    return layoutConcepts(scaffoldData.elements.concepts as Record<string, any>);
+  const concepts = useMemo<Record<string, ConceptNode>>(() => {
+    if (!scaffoldData?.elements?.concepts) return {};
+    const raw = scaffoldData.elements.concepts as Record<string, any>;
+    const result: Record<string, ConceptNode> = {};
+    for (const [id, c] of Object.entries(raw)) {
+      result[id] = { ...c, id: c.id ?? id } as ConceptNode;
+    }
+    return result;
   }, [scaffoldData]);
 
-  const nodes = useMemo(() => baseNodes.map(n => ({
-    ...n,
-    x: nodePositions[n.id]?.x ?? n.x,
-    y: nodePositions[n.id]?.y ?? n.y,
-  })), [baseNodes, nodePositions]);
+  const tree = useMemo(() => buildTree(concepts), [concepts]);
 
-  const selected = nodes.find(n => n.id === selectedId) ?? null;
+  // Auto-select first concept if none selected
+  const effectiveFocusId = focusId ?? Object.keys(concepts)[0] ?? null;
+
+  const { nodes, edges } = useMemo(() => {
+    if (!effectiveFocusId) return { nodes: [], edges: [] };
+    return layoutER(effectiveFocusId, concepts, expandedIds);
+  }, [effectiveFocusId, concepts, expandedIds]);
+
+  const handleTreeSelect = useCallback((id: string) => {
+    setFocusId(id);
+    setExpandedIds(new Set());
+  }, []);
+
+  const handleNodeClick = useCallback((id: string) => {
+    if (id === effectiveFocusId) return;
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, [effectiveFocusId]);
+
+  const handleNodeDoubleClick = useCallback((id: string) => {
+    if (id === effectiveFocusId) return;
+    setFocusId(id);
+    setExpandedIds(new Set());
+  }, [effectiveFocusId]);
+
   const stats = useMemo(() => {
-    const p = nodes.filter(n => n.type === "Party").length;
-    const r = nodes.filter(n => n.type === "Resource").length;
-    const rc = nodes.filter(n => n.type === "Record").length;
-    return { parties: p, resources: r, records: rc, total: nodes.length };
-  }, [nodes]);
-
-  const handleEnrich = useCallback(() => setEnriched(suggestEnrichment(nodes)), [nodes]);
-  const handleClearEnrichment = useCallback(() => setEnriched(null), []);
-  const handleResetLayout = useCallback(() => { setNodePositions({}); setPan({ x: 0, y: 0 }); setZoom(1); }, []);
-
-  const allEdges = enriched?.relationships ?? [];
-  const edges = useMemo(() =>
-    allEdges.filter(e => (e.category === "interaction" && showInteraction) || (e.category === "structural" && showStructural)),
-    [allEdges, showInteraction, showStructural],
-  );
-
-  const edgeWithIndex = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const e of edges) { const k = [e.from, e.to].sort().join("|"); counts.set(k, (counts.get(k) ?? 0) + 1); }
-    const tracker = new Map<string, number>();
-    return edges.map(e => {
-      const k = [e.from, e.to].sort().join("|");
-      const idx = tracker.get(k) ?? 0;
-      tracker.set(k, idx + 1);
-      return { ...e, edgeIndex: idx, totalForPair: counts.get(k) ?? 1 };
-    });
-  }, [edges]);
-
-  const maxY = Math.max(...nodes.map(n => n.y), 200) + NODE_H;
-  const vbW = 720, vbH = Math.max(maxY + 40, 300);
-
-  const nodeById = useMemo(() => { const m = new Map<string, ConceptNode>(); nodes.forEach(n => m.set(n.id, n)); return m; }, [nodes]);
-
-  // ── SVG coordinate helper ──
-  const getSVGPoint = useCallback((cx: number, cy: number) => {
-    const svg = svgRef.current;
-    if (!svg) return { x: 0, y: 0 };
-    const pt = svg.createSVGPoint();
-    pt.x = cx; pt.y = cy;
-    const p = pt.matrixTransform(svg.getScreenCTM()?.inverse());
-    return { x: p.x, y: p.y };
-  }, []);
-
-  // ── Node drag ──
-  const handleNodeMouseDown = useCallback((e: React.MouseEvent, nodeId: string) => {
-    e.preventDefault(); e.stopPropagation();
-    const p = getSVGPoint(e.clientX, e.clientY);
-    const n = nodes.find(nd => nd.id === nodeId);
-    if (!n) return;
-    setDragState({ nodeId, startX: p.x, startY: p.y, origX: n.x, origY: n.y });
-  }, [getSVGPoint, nodes]);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (dragState) {
-      const p = getSVGPoint(e.clientX, e.clientY);
-      setNodePositions(prev => ({
-        ...prev,
-        [dragState.nodeId]: { x: dragState.origX + (p.x - dragState.startX), y: dragState.origY + (p.y - dragState.startY) },
-      }));
-    } else if (isPanning) {
-      const dx = e.clientX - panStart.x, dy = e.clientY - panStart.y;
-      setPan({ x: panOrigin.x + dx, y: panOrigin.y + dy });
+    let parties = 0, records = 0, resources = 0;
+    for (const c of Object.values(concepts)) {
+      if (c.type === "Party") parties++;
+      else if (c.type === "Record") records++;
+      else resources++;
     }
-  }, [dragState, getSVGPoint, isPanning, panStart, panOrigin]);
-
-  const handleMouseUp = useCallback(() => {
-    if (dragState) {
-      const n = nodes.find(nd => nd.id === dragState.nodeId);
-      if (n && Math.abs(n.x - dragState.origX) < 3 && Math.abs(n.y - dragState.origY) < 3) {
-        setSelectedId(dragState.nodeId);
-      }
-      setDragState(null);
-    }
-    setIsPanning(false);
-  }, [dragState, nodes]);
-
-  // ── Pan (background drag) ──
-  const handleBgMouseDown = useCallback((e: React.MouseEvent) => {
-    // Only start pan if clicking on SVG background (not a node)
-    if ((e.target as SVGElement).tagName === "svg" || (e.target as SVGElement).tagName === "rect" && (e.target as SVGRectElement).getAttribute("data-bg") === "true") {
-      setIsPanning(true);
-      setPanStart({ x: e.clientX, y: e.clientY });
-      setPanOrigin({ ...pan });
-    }
-  }, [pan]);
-
-  // ── Zoom (wheel) ──
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.stopPropagation();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    setZoom(z => Math.min(3, Math.max(0.3, z * delta)));
-  }, []);
-
-  // ── Table handlers ──
-  const handleUpdateConcept = useCallback((id: string, field: string, value: string) => {
-    const state = useCanvasStore.getState();
-    if (!state.scaffoldData?.elements?.concepts) return;
-    const concepts = { ...state.scaffoldData.elements.concepts };
-    if (concepts[id]) {
-      const updated = { ...concepts[id] };
-      if (field === "lifecycleStates") {
-        updated.lifecycleStates = value.split(",").map(s => s.trim()).filter(Boolean);
-      } else {
-        updated[field] = value;
-      }
-      concepts[id] = updated;
-      useCanvasStore.setState({
-        scaffoldData: {
-          ...state.scaffoldData,
-          elements: { ...state.scaffoldData.elements, concepts },
-        },
-        scaffoldDirty: true,
-      });
-    }
-  }, []);
-
-  const handleAddConcept = useCallback((type: string) => {
-    const state = useCanvasStore.getState();
-    if (!state.scaffoldData?.elements) return;
-    const concepts = { ...(state.scaffoldData.elements.concepts ?? {}) };
-    const newId = `concept-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    concepts[newId] = {
-      id: newId,
-      name: `New ${type}`,
-      type,
-      definition: "",
-      lifecycleStates: [],
-    };
-    useCanvasStore.setState({
-      scaffoldData: {
-        ...state.scaffoldData,
-        elements: { ...state.scaffoldData.elements, concepts },
-      },
-      scaffoldDirty: true,
-    });
-  }, []);
-
-  const handleDeleteConcept = useCallback((id: string) => {
-    const state = useCanvasStore.getState();
-    if (!state.scaffoldData?.elements?.concepts) return;
-    const concepts = { ...state.scaffoldData.elements.concepts };
-    delete concepts[id];
-    useCanvasStore.setState({
-      scaffoldData: {
-        ...state.scaffoldData,
-        elements: { ...state.scaffoldData.elements, concepts },
-      },
-      scaffoldDirty: true,
-    });
-    // Clear selection if deleted node was selected
-    if (selectedId === id) setSelectedId(null);
-    // Clear enrichment since graph changed
-    if (enriched) setEnriched(null);
-  }, [selectedId, enriched]);
+    return { parties, records, resources, total: parties + records + resources };
+  }, [concepts]);
 
   if (!scaffoldData) return null;
 
-  const hasMovedNodes = Object.keys(nodePositions).length > 0;
-  const interactionCount = allEdges.filter(e => e.category === "interaction").length;
-  const structuralCount = allEdges.filter(e => e.category === "structural").length;
+  const SVG_W = 1000, SVG_H = 700;
+  const focusConcept = effectiveFocusId ? concepts[effectiveFocusId] : null;
 
   return (
-    <div style={{ background: tv.bgPrimary, fontFamily: "'DM Sans', system-ui, sans-serif", minHeight: "100%" }}>
-      <div className="mx-auto max-w-[1100px] p-5">
+    <div className="h-full flex" style={{ background: tv.bgPrimary, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      {/* Tree Sidebar */}
+      <TreeSidebar tree={tree} selectedId={effectiveFocusId} onSelect={handleTreeSelect} />
+
+      {/* Main area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="mb-4">
-          <div className="mb-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: tv.textDim }}>Concept Model</div>
-          <div className="mb-1 text-lg font-bold" style={{ color: tv.textPrimary }}>{scaffoldData.name} — Business Object Taxonomy</div>
-          <div className="text-[11px]" style={{ color: tv.textDim }}>
-            Capsicum Triad · {stats.parties} parties · {stats.resources} resources · {stats.records} records
-          </div>
-        </div>
-
-        {/* Tab bar: Graph | Table */}
-        <div className="mb-3 flex items-center gap-1" style={{ borderBottom: `1px solid ${tv.borderSubtle}` }}>
-          {(["graph", "table"] as const).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setViewTab(tab)}
-              className="rounded-t px-4 py-1.5 text-[11px] font-semibold capitalize"
-              style={{
-                background: viewTab === tab ? tv.bgCard : "transparent",
-                color: viewTab === tab ? tv.textPrimary : tv.textDim,
-                borderBottom: viewTab === tab ? `2px solid ${tv.accent}` : "2px solid transparent",
-              }}
-            >
-              {tab === "graph" ? "Graph" : "Table"}
-            </button>
-          ))}
-        </div>
-
-        {/* Legend + Controls */}
-        <div className="mb-3 flex flex-wrap items-center gap-4">
-          {([
-            { type: "Party", color: TC.party },
-            { type: "Record", color: TC.record },
-            { type: "Resource", color: TC.resource },
-          ] as const).map(({ type, color }) => (
-            <div key={type} className="flex items-center gap-1.5 text-[10px]" style={{ color: tv.textDim }}>
-              <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: color }} />
-              {type}
+        <div className="px-4 py-2 flex items-center gap-4" style={{ borderBottom: `1px solid ${tv.borderSubtle}` }}>
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: tv.textDim }}>
+              Concept Model
             </div>
-          ))}
-
-          <div className="ml-auto flex flex-wrap items-center gap-2">
-            {hasMovedNodes && (
-              <button onClick={handleResetLayout} className="rounded px-2 py-0.5 text-[10px] font-medium" style={{ color: tv.textDim, border: `1px solid ${tv.borderSubtle}` }}>
-                Reset
-              </button>
-            )}
-            {enriched && (
-              <>
-                {/* Relation category filters */}
-                <button
-                  onClick={() => setShowInteraction(!showInteraction)}
-                  className="rounded px-2 py-0.5 text-[10px] font-medium"
-                  style={{
-                    background: showInteraction ? "rgba(245,158,11,0.15)" : "transparent",
-                    color: showInteraction ? TC.interaction : tv.textDim,
-                    border: `1px solid ${showInteraction ? "rgba(245,158,11,0.3)" : tv.borderSubtle}`,
-                  }}
-                >
-                  Interaction ({interactionCount})
-                </button>
-                <button
-                  onClick={() => setShowStructural(!showStructural)}
-                  className="rounded px-2 py-0.5 text-[10px] font-medium"
-                  style={{
-                    background: showStructural ? "rgba(167,139,250,0.15)" : "transparent",
-                    color: showStructural ? TC.structural : tv.textDim,
-                    border: `1px solid ${showStructural ? "rgba(167,139,250,0.3)" : tv.borderSubtle}`,
-                  }}
-                >
-                  Structural ({structuralCount})
-                </button>
-                <button
-                  onClick={() => setShowRelLabels(!showRelLabels)}
-                  className="rounded px-2 py-0.5 text-[10px] font-medium"
-                  style={{ background: showRelLabels ? "rgba(74,158,218,0.15)" : "transparent", color: showRelLabels ? tv.accent : tv.textDim, border: `1px solid ${tv.borderSubtle}` }}
-                >
-                  Labels
-                </button>
-                <button onClick={handleClearEnrichment} className="rounded px-2 py-0.5 text-[10px] font-medium" style={{ color: tv.textDim, border: `1px solid ${tv.borderSubtle}` }}>
-                  Clear
-                </button>
-              </>
-            )}
-            <button
-              onClick={handleEnrich}
-              className="rounded px-3 py-1 text-[11px] font-semibold"
-              style={{
-                background: enriched ? "rgba(45,212,191,0.15)" : "rgba(74,158,218,0.15)",
-                color: enriched ? "#2dd4bf" : "#4a9eda",
-                border: `1px solid ${enriched ? "rgba(45,212,191,0.3)" : "rgba(74,158,218,0.3)"}`,
-              }}
-            >
-              {enriched ? "✓ Enriched" : "⚡ Enrich"}
-            </button>
+            <div className="text-sm font-semibold" style={{ color: tv.textPrimary }}>
+              {focusConcept?.name ?? "Select a concept"}
+              {focusConcept && (
+                <span className="ml-2 text-[9px] font-normal px-1.5 py-0.5 rounded" style={{
+                  background: typeColor(focusConcept.type).headerBg,
+                  color: typeColor(focusConcept.type).accent,
+                }}>
+                  {focusConcept.type}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="ml-auto flex items-center gap-3 text-[9px]" style={{ color: tv.textDim }}>
+            <span>{stats.parties} parties</span>
+            <span>{stats.records} records</span>
+            <span>{stats.resources} resources</span>
           </div>
         </div>
 
-        {/* ── GRAPH VIEW ── */}
-        {viewTab === "graph" && (
-          <>
-            <div
-              ref={containerRef}
-              className="overflow-hidden rounded-lg"
-              style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard, position: "relative" }}
-              onWheel={handleWheel}
-            >
-              <svg
-                ref={svgRef}
-                viewBox={`0 0 ${vbW} ${vbH}`}
-                className="w-full"
-                style={{
-                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                  transformOrigin: "center center",
-                  cursor: isPanning ? "grabbing" : dragState ? "grabbing" : "default",
-                  minHeight: 350,
-                }}
-                onMouseDown={handleBgMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-              >
-                {/* Background rect for pan detection */}
-                <rect x={0} y={0} width={vbW} height={vbH} fill="transparent" data-bg="true" />
+        {/* ER Diagram */}
+        <div className="flex-1 overflow-auto">
+          <svg width={SVG_W} height={SVG_H} viewBox={`0 0 ${SVG_W} ${SVG_H}`} style={{ display: "block", minWidth: SVG_W }}>
+            <GridBackground width={SVG_W} height={SVG_H} />
 
-                {/* Arrowhead defs */}
-                <defs>
-                  {RELATIONSHIP_TYPES.map(t => (
-                    <marker key={t} id={`arrow-${t}`} viewBox="0 0 10 7" refX={10} refY={3.5} markerWidth={8} markerHeight={6} orient="auto-start-reverse">
-                      <path d="M0 0 L10 3.5 L0 7 Z" fill={REL_COLORS[t] ?? "#94a3b8"} />
-                    </marker>
-                  ))}
-                </defs>
+            {/* Edges first (under nodes) */}
+            {edges.map((e, i) => <EREdgeSVG key={i} edge={e} />)}
 
-                {/* Column labels */}
-                {!hasMovedNodes && ([
-                  { type: "Party", x: COL_X.Party },
-                  { type: "Record", x: COL_X.Record },
-                  { type: "Resource", x: COL_X.Resource },
-                ] as const).map(({ type, x }) => (
-                  <text key={type} x={x} y={28} textAnchor="middle" fontSize={10} fontWeight={700} fill={colFor(type, TC).accent} fontFamily="DM Sans, sans-serif" letterSpacing={1}>
-                    {type.toUpperCase()}
-                  </text>
+            {/* Nodes */}
+            {nodes.map(n => (
+              <ERNodeSVG
+                key={n.concept.id}
+                node={n}
+                isFocus={n.concept.id === effectiveFocusId}
+                isSelected={expandedIds.has(n.concept.id)}
+                onClick={() => handleNodeClick(n.concept.id)}
+                onDoubleClick={() => handleNodeDoubleClick(n.concept.id)}
+              />
+            ))}
+          </svg>
+        </div>
+
+        {/* Definition panel */}
+        {focusConcept && (
+          <div className="px-4 py-2" style={{ borderTop: `1px solid ${tv.borderSubtle}`, background: tv.bgCard }}>
+            <div className="text-[11px] leading-relaxed" style={{ color: tv.textSecondary }}>
+              {focusConcept.definition ?? "No definition available."}
+            </div>
+            {focusConcept.lifecycleStates && focusConcept.lifecycleStates.length > 0 && (
+              <div className="mt-1 flex items-center gap-1">
+                <span className="text-[9px] font-bold uppercase" style={{ color: tv.textDim }}>Lifecycle:</span>
+                {focusConcept.lifecycleStates.map((s: any, i: number) => (
+                  <span key={i} className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: tv.bgSurface, color: tv.textSecondary }}>
+                    {typeof s === "string" ? s : s.name ?? s.label ?? "State"}
+                  </span>
                 ))}
-
-                {/* Edges */}
-                {edgeWithIndex.map((e, i) => {
-                  const a = nodeById.get(e.from), b = nodeById.get(e.to);
-                  if (!a || !b) return null;
-                  const path = computeEdgePath(a, b, e.edgeIndex, e.totalForPair);
-                  if (!path) return null;
-                  const catColor = e.category === "interaction" ? TC.interaction : TC.structural;
-                  return (
-                    <g key={i}>
-                      <path d={path.d} stroke={catColor} strokeWidth={1.2} fill="none" opacity={0.6}
-                        strokeDasharray={e.category === "structural" ? "4 2" : "none"}
-                        markerEnd={`url(#arrow-${e.type})`} />
-                      {showRelLabels && (
-                        <>
-                          <text x={path.labelX} y={path.labelY + 1} textAnchor="middle" dominantBaseline="middle"
-                            fontSize={7} fill={tv.bgCard} stroke={tv.bgCard} strokeWidth={3} fontFamily="DM Sans, sans-serif" paintOrder="stroke">
-                            {e.label}
-                          </text>
-                          <text x={path.labelX} y={path.labelY + 1} textAnchor="middle" dominantBaseline="middle"
-                            fontSize={7} fill={catColor} fontFamily="DM Sans, sans-serif">
-                            {e.label}
-                          </text>
-                        </>
-                      )}
-                    </g>
-                  );
-                })}
-
-                {/* Nodes */}
-                {nodes.map((node) => {
-                  const col = colFor(node.type, TC);
-                  const isSel = selectedId === node.id;
-                  const lines = wrapText(node.name, 14);
-                  const lc = lines.length;
-                  return (
-                    <g key={node.id} style={{ cursor: dragState?.nodeId === node.id ? "grabbing" : "grab" }}
-                      onMouseDown={(e) => handleNodeMouseDown(e, node.id)}>
-                      <rect x={node.x - NODE_W / 2} y={node.y - NODE_H / 2} width={NODE_W} height={NODE_H} rx={6}
-                        fill={col.fill} stroke={isSel ? col.accent : col.stroke} strokeWidth={isSel ? 2.5 : 1} />
-                      <TypeIcon type={node.type} x={node.x - NODE_W / 2 + 16} y={node.y} size={ICON_SIZE} color={col.accent} />
-                      {lines.map((line, li) => (
-                        <text key={li} x={node.x + 6} y={node.y + (li - (lc - 1) / 2) * 13 + 1}
-                          textAnchor="middle" dominantBaseline="middle" fontSize={10} fontWeight={600}
-                          fill={col.text} fontFamily="DM Sans, sans-serif" style={{ pointerEvents: "none" }}>
-                          {line}
-                        </text>
-                      ))}
-                    </g>
-                  );
-                })}
-              </svg>
-
-              {/* Zoom indicator */}
-              {zoom !== 1 && (
-                <div className="absolute bottom-2 right-2 rounded px-2 py-0.5 text-[9px] font-medium"
-                  style={{ background: tv.bgSurface, color: tv.textDim, border: `1px solid ${tv.borderSubtle}` }}>
-                  {Math.round(zoom * 100)}%
-                </div>
-              )}
-            </div>
-
-            {/* Inspector */}
-            <div className="mt-3 rounded-lg p-4" style={{
-              background: tv.bgCard,
-              border: `1.5px solid ${selected ? colFor(selected.type, TC).accent : tv.accent}`,
-              minHeight: 72,
-            }}>
-              {selected ? (
-                <div className="flex gap-6">
-                  <div className="flex-1 min-w-0">
-                    <div className="mb-1 flex items-center gap-2">
-                      <div className="text-[15px] font-bold" style={{ color: tv.textPrimary }}>{selected.name}</div>
-                      <span className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase"
-                        style={{ background: colFor(selected.type, TC).fill, color: colFor(selected.type, TC).accent, border: `1px solid ${colFor(selected.type, TC).stroke}` }}>
-                        {selected.type}
-                      </span>
-                    </div>
-                    {(selected.definition || selected.description) && (
-                      <div className="mb-2 text-[12px] leading-relaxed" style={{ color: tv.textSecondary }}>
-                        {selected.definition || selected.description}
-                      </div>
-                    )}
-                    {selected.lifecycleStates?.length > 0 && (
-                      <div className="mb-2">
-                        <div className="mb-1 text-[9px] font-bold uppercase tracking-wider" style={{ color: tv.textDim }}>Lifecycle</div>
-                        <div className="flex flex-wrap gap-1">
-                          {selected.lifecycleStates.map((s: string, i: number) => (
-                            <span key={i} className="flex items-center gap-1">
-                              <span className="rounded px-1.5 py-0.5 text-[10px] font-medium"
-                                style={{ background: "rgba(74,158,218,0.1)", color: tv.accent, border: "1px solid rgba(74,158,218,0.2)" }}>
-                                {s}
-                              </span>
-                              {i < selected.lifecycleStates!.length - 1 && <span className="text-[10px]" style={{ color: tv.borderSubtle }}>→</span>}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {enriched && (() => {
-                      const rels = edges.filter(e => e.from === selected.id || e.to === selected.id);
-                      if (!rels.length) return null;
-                      return (
-                        <div className="mb-2">
-                          <div className="mb-1 text-[9px] font-bold uppercase tracking-wider" style={{ color: tv.textDim }}>Relationships</div>
-                          <div className="space-y-0.5">
-                            {rels.map((r, i) => {
-                              const isSource = r.from === selected.id;
-                              const other = nodeById.get(isSource ? r.to : r.from);
-                              const catCol = r.category === "interaction" ? TC.interaction : TC.structural;
-                              return (
-                                <div key={i} className="flex items-center gap-1 text-[10px]">
-                                  <span className="rounded px-1 py-0.5 text-[8px] font-bold" style={{ color: catCol, background: tv.bgInput }}>
-                                    {r.label}
-                                  </span>
-                                  <span className="text-[8px] rounded px-1" style={{ color: tv.textDim, background: tv.bgSurface }}>
-                                    {r.category}
-                                  </span>
-                                  <span style={{ color: tv.textDim }}>{isSource ? "→" : "←"}</span>
-                                  <span style={{ color: other ? colFor(other.type, TC).accent : tv.textSecondary, cursor: "pointer" }}
-                                    onClick={() => { if (other) setSelectedId(other.id); }}>
-                                    {other?.name ?? (isSource ? r.to : r.from)}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                  {enriched?.attributes[selected.id] && (
-                    <div className="w-[240px] flex-shrink-0 rounded-md p-3" style={{ background: tv.bgSurface, border: `1px solid ${tv.borderSubtle}` }}>
-                      <div className="mb-2 text-[9px] font-bold uppercase tracking-wider" style={{ color: tv.textDim }}>Attributes</div>
-                      <div className="space-y-1">
-                        {enriched.attributes[selected.id].map((attr, i) => (
-                          <div key={i} className="flex items-center justify-between text-[10px]">
-                            <span style={{ color: tv.textSecondary }}>{attr.name}</span>
-                            <span className="rounded px-1.5 py-0.5 text-[9px]" style={{ background: "rgba(74,158,218,0.1)", color: tv.accent, fontFamily: "'DM Mono', monospace" }}>
-                              {attr.dataType}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="text-[12px]" style={{ color: tv.textDim }}>
-                  Select a concept to inspect. Drag nodes to rearrange. Scroll to zoom, drag background to pan.
-                  {!enriched && " Click \"Enrich\" to suggest relationships and attributes."}
-                </p>
-              )}
-            </div>
-          </>
-        )}
-
-        {/* ── TABLE VIEW ── */}
-        {viewTab === "table" && scaffoldData?.elements?.concepts && (
-          <ConceptTableView
-            concepts={scaffoldData.elements.concepts as Record<string, any>}
-            enriched={enriched}
-            onUpdateConcept={handleUpdateConcept}
-            onAddConcept={handleAddConcept}
-            onDeleteConcept={handleDeleteConcept}
-          />
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>

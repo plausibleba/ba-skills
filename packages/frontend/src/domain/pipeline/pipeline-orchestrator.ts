@@ -206,7 +206,10 @@ function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): void {
     }
   }
 
-  // Derive Resource concepts from DiscoveryIR tech (scaffold rarely has technologyApplications)
+  // Derive Resource concepts — TWO sources:
+  // 1. Technology systems (from DiscoveryIR.tech and scaffold technologyApplications)
+  // 2. Product/physical resources inferred from value objects, capability businessObjects,
+  //    and domain keywords (inventory, equipment, product, material, etc.)
   if (ir?.tech?.length) {
     for (const t of ir.tech) {
       if (!t.name) continue;
@@ -214,7 +217,7 @@ function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): void {
       const cId = `concept_resource_${tId}`;
       if (!concepts[cId]) {
         concepts[cId] = {
-          id: cId, name: t.name, type: "Resource",
+          id: cId, name: t.name, type: "Resource", subtype: "System",
           definition: `Technology: ${t.name} (${t.type ?? "System"})`,
           lifecycleStates: [], relatedCapabilityIds: [],
           elementType: "Concept", relationships: [],
@@ -222,7 +225,6 @@ function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): void {
       }
     }
   }
-  // Also check scaffold technologyApplications (in case they exist)
   for (const key of ["technologyApplications", "technologyApps"]) {
     const techApps = scaffold.elements[key] ?? {};
     for (const [id, app] of Object.entries(techApps)) {
@@ -230,7 +232,7 @@ function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): void {
       const cId = `concept_resource_${id}`;
       if (!concepts[cId]) {
         concepts[cId] = {
-          id: cId, name: a.name, type: "Resource",
+          id: cId, name: a.name, type: "Resource", subtype: "System",
           definition: a.description ?? `Technology: ${a.name}`,
           lifecycleStates: [], relatedCapabilityIds: [],
           elementType: "Concept", relationships: [],
@@ -238,34 +240,145 @@ function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): void {
       }
     }
   }
+  // Infer product/physical Resources from VS valueObjects and capability businessObjects
+  const PRODUCT_KW = /product|service|equipment|material|part|component|device|unit|asset|property|vehicle|cartridge|filter|system|machine|tool|supply|good|item/i;
+  const seenResourceNames = new Set(
+    Object.values(concepts).filter((c: any) => c.type === "Resource").map((c: any) => (c.name ?? "").toLowerCase())
+  );
+  // From VS valueObjects
+  if (ir?.valueStreams?.length) {
+    for (const vs of ir.valueStreams) {
+      const vo = vs.valueObject;
+      if (vo && PRODUCT_KW.test(vo) && !seenResourceNames.has(vo.toLowerCase())) {
+        const cId = `concept_resource_${makeId("prod", vo)}`;
+        if (!concepts[cId]) {
+          concepts[cId] = {
+            id: cId, name: vo, type: "Resource", subtype: "Product",
+            definition: `Product/service delivered through ${vs.name}`,
+            lifecycleStates: [], relatedCapabilityIds: [],
+            elementType: "Concept", relationships: [],
+          };
+          seenResourceNames.add(vo.toLowerCase());
+        }
+      }
+    }
+  }
+  // From capability businessObjects
+  const caps = scaffold.elements.capabilities ?? {};
+  for (const cap of Object.values(caps)) {
+    const bo = (cap as any).businessObject;
+    if (bo && PRODUCT_KW.test(bo) && !seenResourceNames.has(bo.toLowerCase())) {
+      const cId = `concept_resource_${makeId("prod", bo)}`;
+      if (!concepts[cId]) {
+        concepts[cId] = {
+          id: cId, name: bo, type: "Resource", subtype: "Product",
+          definition: `Business resource: ${bo}`,
+          lifecycleStates: [], relatedCapabilityIds: [],
+          elementType: "Concept", relationships: [],
+        };
+        seenResourceNames.add(bo.toLowerCase());
+      }
+    }
+  }
 
-  // Build relationships from PPIT: Party --creates/uses--> Record, Party --uses--> Resource
+  // ── Build relationships ──────────────────────────────────────────────────
+  // Rules:
+  //   - Each Record gets exactly ONE subject (Party) and ONE object (Resource/Party)
+  //   - Parties can relate to Parties, Resources, and Records
+  //   - Resources can relate to Resources, Parties, and Records
+  //   - Keep total relationship count low: prefer strongest single link per pair
+
+  // First pass: find which parties interact with which records/resources via PPIT
+  const partyToRecords: Record<string, Set<string>> = {};
+  const partyToResources: Record<string, Set<string>> = {};
   for (const act of Object.values(activities)) {
     const a = act as any;
     const ppit = a.capabilityPPIT;
-    if (!ppit) continue;
+    if (!ppit) {
+      // Fallback: use activity-level links
+      const roleIds = a.performedByRoleIds ?? [];
+      const infoIds = a.informationObjectIds ?? [];
+      const techIds = a.technologyAppIds ?? [];
+      for (const rId of roleIds) {
+        const pId = `concept_party_${rId}`;
+        if (!concepts[pId]) continue;
+        if (!partyToRecords[pId]) partyToRecords[pId] = new Set();
+        if (!partyToResources[pId]) partyToResources[pId] = new Set();
+        for (const iId of infoIds) {
+          const rCId = `concept_record_${iId}`;
+          if (concepts[rCId]) partyToRecords[pId].add(rCId);
+        }
+        for (const tId of techIds) {
+          const resCId = `concept_resource_${tId}`;
+          if (concepts[resCId]) partyToResources[pId].add(resCId);
+        }
+      }
+      continue;
+    }
     for (const decomp of Object.values(ppit) as any[]) {
       const roleIds = decomp?.roleIds ?? [];
       const infoIds = decomp?.informationObjectIds ?? [];
       const techIds = decomp?.technologyAppIds ?? [];
       for (const rId of roleIds) {
-        const partyCId = `concept_party_${rId}`;
-        if (!concepts[partyCId]) continue;
-        const rels = concepts[partyCId].relationships as any[];
-        // Party → Record relationships
+        const pId = `concept_party_${rId}`;
+        if (!concepts[pId]) continue;
+        if (!partyToRecords[pId]) partyToRecords[pId] = new Set();
+        if (!partyToResources[pId]) partyToResources[pId] = new Set();
         for (const iId of infoIds) {
-          const recordCId = `concept_record_${iId}`;
-          if (concepts[recordCId] && !rels.some((r: any) => r.targetId === recordCId)) {
-            rels.push({ targetId: recordCId, type: "produces", label: "produces" });
-          }
+          const rCId = `concept_record_${iId}`;
+          if (concepts[rCId]) partyToRecords[pId].add(rCId);
         }
-        // Party → Resource relationships
         for (const tId of techIds) {
           const resCId = `concept_resource_${tId}`;
-          if (concepts[resCId] && !rels.some((r: any) => r.targetId === resCId)) {
-            rels.push({ targetId: resCId, type: "uses", label: "uses" });
-          }
+          if (concepts[resCId]) partyToResources[pId].add(resCId);
         }
+      }
+    }
+  }
+
+  // Assign relationships: each Record gets 1 subject Party, 1 object Resource (if available)
+  const recordSubject: Record<string, string> = {};  // recordId → partyId
+  const recordObject: Record<string, string> = {};   // recordId → resourceId or partyId
+  for (const [partyId, recordSet] of Object.entries(partyToRecords)) {
+    for (const recId of recordSet) {
+      if (!recordSubject[recId]) recordSubject[recId] = partyId;
+    }
+  }
+  // Assign object: prefer a Resource; fall back to a second Party
+  const allResources = Object.keys(concepts).filter(id => (concepts[id] as any).type === "Resource");
+  for (const recId of Object.keys(concepts).filter(id => (concepts[id] as any).type === "Record")) {
+    if (!recordObject[recId] && allResources.length > 0) {
+      // Find a resource related to any party that touches this record
+      const subjectParty = recordSubject[recId];
+      const partyResources = subjectParty ? partyToResources[subjectParty] : undefined;
+      if (partyResources?.size) {
+        recordObject[recId] = [...partyResources][0];
+      }
+    }
+  }
+
+  // Now wire the relationships
+  for (const [recId, partyId] of Object.entries(recordSubject)) {
+    const rels = (concepts[partyId].relationships as any[]);
+    if (!rels.some((r: any) => r.targetId === recId)) {
+      rels.push({ targetId: recId, type: "produces", label: "creates", cardinality: "1:N" });
+    }
+  }
+  for (const [recId, objId] of Object.entries(recordObject)) {
+    const rels = (concepts[recId].relationships as any[]);
+    if (!rels.some((r: any) => r.targetId === objId)) {
+      rels.push({ targetId: objId, type: "regarding", label: "regarding", cardinality: "N:1" });
+    }
+  }
+  // Party → Resource (uses) — limit to max 2 per party
+  for (const [partyId, resSet] of Object.entries(partyToResources)) {
+    const rels = (concepts[partyId].relationships as any[]);
+    let count = 0;
+    for (const resId of resSet) {
+      if (count >= 2) break;
+      if (!rels.some((r: any) => r.targetId === resId)) {
+        rels.push({ targetId: resId, type: "uses", label: "uses", cardinality: "N:N" });
+        count++;
       }
     }
   }
