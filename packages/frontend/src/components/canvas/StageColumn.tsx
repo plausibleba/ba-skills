@@ -32,6 +32,7 @@ export function StageColumn({
   cardToggles,
   cardRegistry,
   structureOpen,
+  onToggleStructure,
   analyticsOpen,
   onFrictionClick,
   onCardClick,
@@ -51,6 +52,7 @@ export function StageColumn({
   cardToggles?: Record<CardToggleLayer, boolean>;
   cardRegistry?: CardRegistry | null;
   structureOpen: boolean;
+  onToggleStructure?: () => void;
   analyticsOpen: boolean;
   onFrictionClick: (activityId: string) => void;
   onCardClick?: (activityId: string) => void;
@@ -122,15 +124,32 @@ export function StageColumn({
           </div>
         </div>
         <div className="flex items-start justify-between gap-2 px-4 pb-2.5">
-          <h3 className="text-[15px] font-semibold leading-snug tracking-tight" style={{ color: hasBinding ? dk.textPrimary : tv.textPrimary }}>
-            <InlineEdit
-              value={stageName}
-              onSave={(name) => updateActivityName(primaryId, name)}
-              className="text-[15px] font-semibold leading-snug tracking-tight"
-              inputClassName="text-[15px] font-semibold text-gray-900 bg-white"
-              style={{ color: hasBinding ? dk.textPrimary : tv.textPrimary }}
-            />
-          </h3>
+          <div className="flex items-start gap-1.5">
+            {onToggleStructure && (
+              <button
+                onClick={onToggleStructure}
+                className="mt-1 flex-shrink-0 rounded p-0.5 transition-colors hover:bg-black/10"
+                style={{ color: hasBinding ? dk.textDim : tv.textDim }}
+                title={structureOpen ? "Collapse structure" : "Expand structure"}
+              >
+                <svg
+                  className={`h-3 w-3 transition-transform duration-150 ${structureOpen ? "rotate-90" : ""}`}
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
+            <h3 className="text-[15px] font-semibold leading-snug tracking-tight" style={{ color: hasBinding ? dk.textPrimary : tv.textPrimary }}>
+              <InlineEdit
+                value={stageName}
+                onSave={(name) => updateActivityName(primaryId, name)}
+                className="text-[15px] font-semibold leading-snug tracking-tight"
+                inputClassName="text-[15px] font-semibold text-gray-900 bg-white"
+                style={{ color: hasBinding ? dk.textPrimary : tv.textPrimary }}
+              />
+            </h3>
+          </div>
           {stageDescription && (
             <div className="group relative flex-shrink-0 pt-0.5">
               <svg className="h-3.5 w-3.5 cursor-help transition-colors" style={{ color: hasBinding ? dk.textDim : tv.textDim }} fill="none" stroke="currentColor" viewBox="0 0 24 24">

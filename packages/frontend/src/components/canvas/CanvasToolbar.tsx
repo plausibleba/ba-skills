@@ -56,26 +56,23 @@ const LAYER_COLORS_LIGHT: Record<PPITLayer, { bg: string; fg: string }> = {
 /* ── Canvas Toolbar ────────────────────────────────────────────────── */
 
 export function CanvasToolbar({
-  structureOpen,
   analyticsOpen,
   constraintDAGOpen,
   ppitToggles,
   cardToggles,
-  onToggleStructure,
   onToggleAnalytics,
   onToggleConstraintDAG,
   onTogglePPIT,
   onToggleCard,
   heatmapData,
-  // validationReport kept in interface for backward compat
   features,
 }: {
-  structureOpen: boolean;
+  structureOpen?: boolean;       // kept for backward compat
   analyticsOpen: boolean;
   constraintDAGOpen: boolean;
   ppitToggles: Record<PPITLayer, boolean>;
   cardToggles: Record<CardToggleLayer, boolean>;
-  onToggleStructure: () => void;
+  onToggleStructure?: () => void; // kept for backward compat
   onToggleAnalytics: () => void;
   onToggleConstraintDAG: () => void;
   onTogglePPIT: (layer: PPITLayer) => void;
@@ -90,11 +87,6 @@ export function CanvasToolbar({
     <div className="flex flex-shrink-0 items-center gap-3">
       {/* View controls */}
       <div className="flex items-center gap-1 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard }}>
-        <ToggleBtn
-          label="Structure"
-          isOpen={structureOpen}
-          onToggle={onToggleStructure}
-        />
         {features.userStories && (
           <ToggleBtn
             label="Transformation"
@@ -102,11 +94,22 @@ export function CanvasToolbar({
             onToggle={onToggleAnalytics}
           />
         )}
-        <ToggleBtn
-          label="Dependencies"
-          isOpen={constraintDAGOpen}
-          onToggle={onToggleConstraintDAG}
-        />
+        {/* Dependencies — compact graph icon */}
+        <button
+          onClick={onToggleConstraintDAG}
+          className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
+            constraintDAGOpen ? "shadow-sm" : ""
+          }`}
+          style={constraintDAGOpen ? { background: "rgba(74,158,218,0.15)", color: tv.accent } : { color: tv.textDim }}
+          title="Dependency Graph"
+        >
+          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+            <circle cx="5" cy="6" r="2" />
+            <circle cx="19" cy="6" r="2" />
+            <circle cx="12" cy="18" r="2" />
+            <path d="M7 7l3.5 9M17 7l-3.5 9" />
+          </svg>
+        </button>
       </div>
 
       {/* Layer toggles */}

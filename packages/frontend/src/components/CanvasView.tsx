@@ -224,6 +224,7 @@ export function CanvasView() {
                 cardToggles={cardToggles}
                 cardRegistry={cardRegistry}
                 structureOpen={structureOpen}
+                onToggleStructure={toggleStructure}
                 analyticsOpen={analyticsOpen}
                 onFrictionClick={setSelectedActivityId}
                 onCardClick={setSelectedCardActivityId}
