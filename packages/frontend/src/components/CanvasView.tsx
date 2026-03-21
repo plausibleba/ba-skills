@@ -16,6 +16,7 @@ import { FlowChevron } from "./canvas/FlowChevron.tsx";
 import { CanvasToolbar } from "./canvas/CanvasToolbar.tsx";
 import { ConstraintDAGOverlay } from "./canvas/ConstraintDAGOverlay.tsx";
 import { ConflictBanner } from "./ConflictBanner.tsx";
+import { InspectorPanel, type InspectorTarget } from "./canvas/InspectorPanel.tsx";
 import { useCanvasControls } from "./canvas/useCanvasControls.ts";
 import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
 
@@ -28,6 +29,7 @@ export function CanvasView() {
     null,
   );
   const [selectedCardActivityId, setSelectedCardActivityId] = useState<string | null>(null);
+  const [inspectorTarget, setInspectorTarget] = useState<InspectorTarget | null>(null);
   const {
     structureOpen,
     analyticsOpen,
@@ -206,7 +208,7 @@ export function CanvasView() {
         )}
 
         {/* ── Stage columns ── */}
-        <div className="flex flex-1 min-h-0 items-stretch overflow-x-auto pb-4">
+        <div className="flex flex-1 min-h-0 items-stretch overflow-auto pb-4">
           {canvasViewModel.columns.map((col, i) => (
             <div key={col.columnId} className="flex items-stretch">
               <StageColumn
@@ -225,6 +227,7 @@ export function CanvasView() {
                 analyticsOpen={analyticsOpen}
                 onFrictionClick={setSelectedActivityId}
                 onCardClick={setSelectedCardActivityId}
+                onInspect={setInspectorTarget}
                 maxMetricRows={maxMetricRows}
                 onRemoveActivity={canvasViewModel.columns.length > 1
                   ? () => removeActivity(canvasViewModel.valueStreamId, col.activityIds[0])
@@ -295,6 +298,18 @@ export function CanvasView() {
             registry={cardRegistry}
             scaffold={scaffoldData}
             onClose={() => setSelectedCardActivityId(null)}
+          />
+        </div>
+      )}
+
+      {/* ── Inspector panel ── */}
+      {inspectorTarget && (
+        <div className="w-[360px] flex-shrink-0">
+          <InspectorPanel
+            key={JSON.stringify(inspectorTarget)}
+            target={inspectorTarget}
+            scaffold={scaffoldData}
+            onClose={() => setInspectorTarget(null)}
           />
         </div>
       )}

@@ -2,6 +2,7 @@ import type { ScaffoldData, FrictionObservation } from "../../types.ts";
 import type { PPITLayer } from "./ppit.ts";
 import type { CardToggleLayer } from "./useCanvasControls.ts";
 import type { CardRegistry } from "../../types/cards.ts";
+import type { InspectorTarget } from "./InspectorPanel.tsx";
 import { getCardsForActivity } from "../../types/cards.ts";
 import { CapabilityBlock } from "./CapabilityBlock.tsx";
 import { TransformationPane } from "./TransformationPane.tsx";
@@ -24,6 +25,7 @@ export function StageCard({
   analyticsOpen,
   onFrictionClick,
   onCardClick,
+  onInspect,
 }: {
   activityId: string;
   scaffold: ScaffoldData;
@@ -37,6 +39,7 @@ export function StageCard({
   analyticsOpen: boolean;
   onFrictionClick: (activityId: string) => void;
   onCardClick?: (activityId: string) => void;
+  onInspect?: (target: InspectorTarget) => void;
 }) {
   const activity = scaffold.elements.activities[activityId];
   if (!activity) return null;
@@ -127,6 +130,7 @@ export function StageCard({
               activity={activity}
               ppitToggles={ppitToggles}
               isFirst={idx === 0}
+              onInspect={onInspect}
             />
             {/* Remove capability button */}
             <button

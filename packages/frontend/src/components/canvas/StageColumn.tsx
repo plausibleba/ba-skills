@@ -7,6 +7,7 @@ import type {
 import type { PPITLayer } from "./ppit.ts";
 import type { CardToggleLayer } from "./useCanvasControls.ts";
 import type { CardRegistry } from "../../types/cards.ts";
+import type { InspectorTarget } from "./InspectorPanel.tsx";
 import { StructurePane } from "./StructurePane.tsx";
 import { StageCard } from "./StageCard.tsx";
 import { InlineEdit } from "./InlineEdit.tsx";
@@ -34,6 +35,7 @@ export function StageColumn({
   analyticsOpen,
   onFrictionClick,
   onCardClick,
+  onInspect,
   maxMetricRows,
   onRemoveActivity,
 }: {
@@ -52,6 +54,7 @@ export function StageColumn({
   analyticsOpen: boolean;
   onFrictionClick: (activityId: string) => void;
   onCardClick?: (activityId: string) => void;
+  onInspect?: (target: InspectorTarget) => void;
   maxMetricRows: number;
   onRemoveActivity?: () => void;
 }) {
@@ -79,7 +82,11 @@ export function StageColumn({
         }`}
         style={hasBinding ? {} : { borderColor: tv.borderSubtle, background: tv.bgCard }}
       >
-        <div className="flex items-center justify-between px-4 py-2">
+        <div
+          className="flex items-center justify-between px-4 py-2 cursor-pointer"
+          onClick={() => onInspect?.({ kind: "stage", activityId: primaryId })}
+          title="Inspect this stage"
+        >
           <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: hasBinding ? dk.textDim : tv.textDim }}>
             Stage {index + 1} of {total}
           </span>
@@ -162,6 +169,7 @@ export function StageColumn({
             analyticsOpen={analyticsOpen}
             onFrictionClick={onFrictionClick}
             onCardClick={onCardClick}
+            onInspect={onInspect}
           />
         ))}
       </div>

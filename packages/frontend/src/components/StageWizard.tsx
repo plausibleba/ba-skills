@@ -172,12 +172,10 @@ export function StageWizard() {
     scaffoldData,
     canvasViewModel,
     heatmapsByVs,
-    scaffoldDirty,
 
     loading,
     loadHeatmap,
     selectVs,
-    saveFullBundle,
   } = useCanvasStore();
 
   // Step 2 state
@@ -453,26 +451,7 @@ export function StageWizard() {
           className="hidden" />
       </div>}
 
-      <Divider />
-
-      {/* ── Save Bundle ── */}
-      <div className="flex items-center gap-2 px-4 py-2.5">
-        <button
-          onClick={() => void saveFullBundle()}
-          disabled={!scaffoldData}
-          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-medium transition-colors ${
-            scaffoldDirty
-              ? "bg-vcc-600 text-white hover:bg-vcc-700"
-              : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
-          } disabled:opacity-40 disabled:cursor-not-allowed`}
-          title="Download scaffold, heatmaps, and user stories as a VCC bundle JSON file"
-        >
-          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-          </svg>
-          {scaffoldDirty ? "↓ Download Bundle*" : "↓ Download Bundle"}
-        </button>
-      </div>
+      {/* Download Bundle removed — available via Network View */}
 
       {loading && !assessing && !enriching && (
         <div className="ml-2 flex items-center gap-1.5 text-[10px] text-vcc-600">

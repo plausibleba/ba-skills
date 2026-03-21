@@ -6,8 +6,9 @@ import { PPIT_LAYERS } from "./ppit.ts";
 import { humanizeId } from "../../lib/humanize-id.ts";
 import { InlineEdit } from "./InlineEdit.tsx";
 import { useCanvasStore } from "../../store/canvas-store.ts";
+import type { InspectorTarget } from "./InspectorPanel.tsx";
 import { useThemeStore } from "../../store/theme-store.ts";
-import { tv } from "../../theme.ts";
+import { tv, getTheme } from "../../theme.ts";
 
 /* ── PPIT data shape from capabilityPPIT ───────────────────────────── */
 interface CapPPIT {
@@ -111,6 +112,22 @@ function CapabilityBadgeCounts({ ppit }: { ppit: CapPPIT | null }) {
 
 /* ── Capability Block ──────────────────────────────────────────────── */
 
+/* ── Theme-aware PPIT chip colours ─────────────────────────────────── */
+const CHIP_COLORS = {
+  dark: {
+    role:  { bg: "rgba(74,158,218,0.18)", fg: "#93c5fd" },
+    info:  { bg: "rgba(245,158,11,0.18)", fg: "#fcd34d" },
+    tech:  { bg: "rgba(34,197,94,0.18)",  fg: "#4ade80" },
+    activ: { bg: "rgba(139,92,246,0.15)", fg: "#c4b5fd" },
+  },
+  light: {
+    role:  { bg: "rgba(59,130,246,0.12)", fg: "#2563eb" },
+    info:  { bg: "rgba(217,119,6,0.12)",  fg: "#b45309" },
+    tech:  { bg: "rgba(5,150,105,0.12)",  fg: "#047857" },
+    activ: { bg: "rgba(139,92,246,0.12)", fg: "#7c3aed" },
+  },
+};
+
 export function CapabilityBlock({
   capabilityId,
   activityId,
@@ -118,6 +135,7 @@ export function CapabilityBlock({
   activity,
   ppitToggles,
   isFirst = false,
+  onInspect,
 }: {
   capabilityId: string;
   activityId: string;
@@ -125,8 +143,11 @@ export function CapabilityBlock({
   activity: ScaffoldActivity;
   ppitToggles: Record<PPITLayer, boolean>;
   isFirst?: boolean;
+  onInspect?: (target: InspectorTarget) => void;
 }) {
   const { updateCapabilityName, addInfoObjectToCapability, removeInfoObjectFromCapability, addTechAppToCapability, removeTechAppFromCapability, updatePpitActivity, addPpitActivity, removePpitActivity, addRoleToCapability, removeRoleFromCapability, addRole, scaffoldData } = useCanvasStore();
+  const isDark = useThemeStore((s) => s.mode) === "dark";
+  const chipPalette = isDark ? CHIP_COLORS.dark : CHIP_COLORS.light;
   const cap = scaffold.elements.capabilities[capabilityId];
   const anyToggle = PPIT_LAYERS.some((l) => ppitToggles[l]);
 
@@ -202,6 +223,18 @@ export function CapabilityBlock({
           />
         </p>
         <div className="flex flex-shrink-0 items-center gap-1">
+          {onInspect && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onInspect({ kind: "capability", capabilityId, activityId }); }}
+              className="rounded p-0.5 transition-colors hover:bg-black/10"
+              style={{ color: tv.textDim }}
+              title="Inspect capability"
+            >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+          )}
           {capDescription && (
             <div className="group/tip">
               <svg className="h-3 w-3 cursor-help transition-colors" style={{ color: tv.textDim }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,30 +261,32 @@ export function CapabilityBlock({
             <div className="space-y-0.5">
               {activities.map((a, i) => (
                 <div key={i} className="group/act flex items-start gap-1.5">
-                  <span className="mt-[3px] h-1 w-1 flex-shrink-0 rounded-full bg-violet-400" />
+                  <span className="mt-[3px] h-1 w-1 flex-shrink-0 rounded-full" style={{ background: chipPalette.activ.fg }} />
                   {activitiesEditable ? (
                     <>
                       <InlineEdit
                         value={a}
                         onSave={(text) => updatePpitActivity(activityId, capabilityId, i, text)}
-                        className="text-[10px] leading-tight text-violet-600"
+                        className="text-[10px] leading-tight"
                         inputClassName="text-[10px] text-violet-900"
+                        style={{ color: chipPalette.activ.fg }}
                       />
                       <button
                         onClick={(e) => { e.stopPropagation(); removePpitActivity(activityId, capabilityId, i); }}
-                        className="ml-auto hidden flex-shrink-0 text-[9px] text-violet-300 hover:text-red-500 group-hover/act:inline"
+                        className="ml-auto hidden flex-shrink-0 text-[9px] hover:text-red-500 group-hover/act:inline"
+                        style={{ color: chipPalette.activ.fg }}
                         title="Remove"
                       >×</button>
                     </>
                   ) : (
-                    <span className="text-[10px] leading-tight text-violet-300">{a}</span>
+                    <span className="text-[10px] leading-tight" style={{ color: chipPalette.activ.fg }}>{a}</span>
                   )}
                 </div>
               ))}
               {activitiesEditable && (
                 <MiniAddButton
                   placeholder="Activity…"
-                  chipClass="text-violet-300 border-violet-500/30"
+                  chipClass={isDark ? "text-violet-300 border-violet-500/30" : "text-violet-600 border-violet-400/40"}
                   onAdd={(text) => addPpitActivity(activityId, capabilityId, text)}
                 />
               )}
@@ -262,12 +297,13 @@ export function CapabilityBlock({
           {ppitToggles.roles && (
             <div className="flex flex-wrap gap-1">
               {roleIds.map((rid) => (
-                <span key={rid} className="group/role inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px]" style={{ background: "rgba(74,158,218,0.18)", color: "#4a9eda" }}>
+                <span key={rid} className="group/role inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] cursor-pointer" onClick={(e) => { e.stopPropagation(); onInspect?.({ kind: "role", roleId: rid }); }} style={{ background: chipPalette.role.bg, color: chipPalette.role.fg }}>
                   {resolveRoleName(rid)}
                   {rolesEditable && (
                     <button
                       onClick={(e) => { e.stopPropagation(); removeRoleFromCapability(activityId, capabilityId, rid); }}
-                      className="ml-0.5 hidden text-blue-300 hover:text-red-500 group-hover/role:inline"
+                      className="ml-0.5 hidden hover:text-red-500 group-hover/role:inline"
+                      style={{ color: chipPalette.role.fg }}
                       title="Remove"
                     >×</button>
                   )}
@@ -276,7 +312,7 @@ export function CapabilityBlock({
               {rolesEditable && (
                 <MiniAddButton
                   placeholder="Role…"
-                  chipClass="text-blue-300 border-blue-500/30"
+                  chipClass={isDark ? "text-blue-300 border-blue-500/30" : "text-blue-600 border-blue-400/40"}
                   onAdd={(name) => {
                     // Reuse existing role by name or create new
                     const existing = scaffoldData ? Object.entries(scaffoldData.elements.roles).find(([, r]) => (r as any).name?.toLowerCase() === name.toLowerCase()) : null;
@@ -292,18 +328,19 @@ export function CapabilityBlock({
           {ppitToggles.concepts && (
             <div className="flex flex-wrap gap-1">
               {infoObjIds.map((iid) => (
-                <span key={iid} className="group/io inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px]" style={{ background: "rgba(245,158,11,0.18)", color: "#fbbf24" }}>
+                <span key={iid} className="group/io inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] cursor-pointer" onClick={(e) => { e.stopPropagation(); onInspect?.({ kind: "infoObject", infoObjectId: iid }); }} style={{ background: chipPalette.info.bg, color: chipPalette.info.fg }}>
                   {resolveInfoName(iid)}
                   <button
                     onClick={(e) => { e.stopPropagation(); removeInfoObjectFromCapability(activityId, capabilityId, iid); }}
-                    className="ml-0.5 hidden text-amber-400 hover:text-red-500 group-hover/io:inline"
+                    className="ml-0.5 hidden hover:text-red-500 group-hover/io:inline"
+                    style={{ color: chipPalette.info.fg }}
                     title="Remove"
                   >×</button>
                 </span>
               ))}
               <MiniAddButton
                 placeholder="Info object…"
-                chipClass="text-amber-300 border-amber-500/30"
+                chipClass={isDark ? "text-amber-300 border-amber-500/30" : "text-amber-700 border-amber-400/40"}
                 onAdd={(name) => addInfoObjectToCapability(activityId, capabilityId, name)}
               />
             </div>
@@ -313,18 +350,19 @@ export function CapabilityBlock({
           {ppitToggles.applications && (
             <div className="flex flex-wrap gap-1">
               {techAppIds.map((tid) => (
-                <span key={tid} className="group/tech inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px]" style={{ background: "rgba(34,197,94,0.18)", color: "#4ade80" }}>
+                <span key={tid} className="group/tech inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] cursor-pointer" onClick={(e) => { e.stopPropagation(); onInspect?.({ kind: "techApp", techAppId: tid }); }} style={{ background: chipPalette.tech.bg, color: chipPalette.tech.fg }}>
                   {resolveTechName(tid)}
                   <button
                     onClick={(e) => { e.stopPropagation(); removeTechAppFromCapability(activityId, capabilityId, tid); }}
-                    className="ml-0.5 hidden text-emerald-400 hover:text-red-500 group-hover/tech:inline"
+                    className="ml-0.5 hidden hover:text-red-500 group-hover/tech:inline"
+                    style={{ color: chipPalette.tech.fg }}
                     title="Remove"
                   >×</button>
                 </span>
               ))}
               <MiniAddButton
                 placeholder="Tech app…"
-                chipClass="text-emerald-300 border-emerald-500/30"
+                chipClass={isDark ? "text-emerald-300 border-emerald-500/30" : "text-emerald-700 border-emerald-400/40"}
                 onAdd={(name) => addTechAppToCapability(activityId, capabilityId, name)}
               />
             </div>

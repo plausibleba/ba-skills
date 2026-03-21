@@ -15,7 +15,7 @@ import { getTheme } from "../../theme.ts";
 const dk = getTheme("dark");
 
 export function StructurePane({
-  activityId,
+  activityId: _activityId,
   activity,
   scaffold,
   isOpen,
@@ -27,7 +27,7 @@ export function StructurePane({
   isOpen: boolean;
   maxMetricRows: number;
 }) {
-  const { updateOutcomeName, scaffoldData } = useCanvasStore();
+  const { updateOutcomeName } = useCanvasStore();
 
   if (!isOpen) return null;
 
@@ -46,7 +46,7 @@ export function StructurePane({
   return (
     <div
       className="overflow-y-auto border-t px-4 pb-0.5 pt-2 scrollbar-thin"
-      style={{ borderColor: dk.borderSubtle, background: dk.bgSurface }}
+      style={{ borderColor: dk.borderSubtle, background: dk.bgSurface, maxHeight: 160 }}
     >
       {/* Row 1: Entry State → Exit State */}
       {(preOutcome || postOutcome) && (
@@ -102,44 +102,7 @@ export function StructurePane({
         </div>
       )}
 
-      {/* Participating Stakeholders — aggregated from all capabilities' PPIT roleIds */}
-      {(() => {
-        // Read from the store's scaffoldData directly for freshness after mutations
-        const storeAct = scaffoldData?.elements.activities[activityId] ?? activity;
-        const ppitMap = (storeAct as unknown as Record<string, unknown>).capabilityPPIT as Record<string, { roleIds?: string[] }> | undefined;
-        const capIds = (storeAct as any).requiresCapabilityIds ?? (storeAct as any).enabledByCapabilityIds ?? [];
-        const aggregatedRoleIds = new Set<string>();
-        if (ppitMap) {
-          for (const capId of capIds) {
-            const capPpit = ppitMap[capId];
-            if (capPpit?.roleIds) capPpit.roleIds.forEach((rid: string) => aggregatedRoleIds.add(rid));
-          }
-        }
-        // Fallback to activity-level performedByRoleIds if no PPIT roles found
-        if (aggregatedRoleIds.size === 0) {
-          ((storeAct as any).performedByRoleIds ?? []).forEach((rid: string) => aggregatedRoleIds.add(rid));
-        }
-        const roleArr = Array.from(aggregatedRoleIds);
-        if (roleArr.length === 0) return null;
-        const roles = scaffoldData?.elements.roles ?? scaffold.elements.roles;
-        return (
-          <>
-            <div className="my-2 border-t border-dashed" style={{ borderColor: dk.borderSubtle }} />
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-[9px] font-semibold uppercase tracking-widest" style={{ color: dk.textDim }}>
-                Participating Stakeholders
-              </span>
-              <div className="flex flex-wrap justify-center gap-1">
-                {roleArr.map((rid) => (
-                  <span key={rid} className="rounded-full px-2 py-0.5 text-[10px]" style={{ background: "rgba(74,158,218,0.18)", color: "#93c5fd" }}>
-                    {roles[rid]?.name ?? humanizeId(rid)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </>
-        );
-      })()}
+      {/* Participating Stakeholders removed — redundant with Roles on Capabilities (PPIT layer) */}
 
       {/* Metrics */}
       {metricsMinH > 0 && (

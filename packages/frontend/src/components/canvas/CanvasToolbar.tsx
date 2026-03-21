@@ -67,7 +67,7 @@ export function CanvasToolbar({
   onTogglePPIT,
   onToggleCard,
   heatmapData,
-  validationReport,
+  // validationReport kept in interface for backward compat
   features,
 }: {
   structureOpen: boolean;
@@ -81,7 +81,7 @@ export function CanvasToolbar({
   onTogglePPIT: (layer: PPITLayer) => void;
   onToggleCard: (layer: CardToggleLayer) => void;
   heatmapData: HeatmapData | null;
-  validationReport: ValidationReport | null;
+  validationReport?: ValidationReport | null;
   features: ModuleFeatures;
 }) {
   const isDark = useThemeStore((s) => s.mode) === "dark";
@@ -103,7 +103,7 @@ export function CanvasToolbar({
           />
         )}
         <ToggleBtn
-          label="Constraints"
+          label="Dependencies"
           isOpen={constraintDAGOpen}
           onToggle={onToggleConstraintDAG}
         />
@@ -167,20 +167,7 @@ export function CanvasToolbar({
             </span>
           </div>
         )}
-        {validationReport && (
-          <span
-            className="rounded-full px-2 py-0.5 text-[10px] font-medium"
-            style={
-              validationReport.status === "Valid"
-                ? { background: "rgba(34,197,94,0.15)", color: "#4ade80" }
-                : validationReport.status === "ValidWithWarnings"
-                  ? { background: "rgba(234,179,8,0.15)", color: "#facc15" }
-                  : { background: "rgba(239,68,68,0.15)", color: "#f87171" }
-            }
-          >
-            {validationReport.status}
-          </span>
-        )}
+        {/* Validation status removed — internal signal, not useful for end users */}
       </div>
     </div>
   );
