@@ -33,10 +33,10 @@ function getGuideContent(
 ): GuideContent {
   const moduleLabel = moduleName
     ? ({
-        "sales-discovery": "Sales Discovery",
+        "sales-discovery": "Solution Engineering",
         "board-diagnostic": "Board Diagnostic",
-        "transformation": "Transformation",
-        "mvc": "MVC Governance",
+        "transformation": "Transformation Planning",
+        "mvc": "Agentic Governance",
       }[moduleName] ?? moduleName)
     : null;
 

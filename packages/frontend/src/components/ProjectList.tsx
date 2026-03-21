@@ -15,7 +15,7 @@ import type { ProjectModule } from "../types/database.ts";
 
 const MODULE_INFO: Record<ProjectModule, { label: string; description: string; color: string }> = {
   "sales-discovery": {
-    label: "Sales Discovery",
+    label: "Solution Engineering",
     description: "Presales discovery — transcript to operating model with vendor solutions",
     color: "bg-blue-100 text-blue-700",
   },
@@ -25,12 +25,12 @@ const MODULE_INFO: Record<ProjectModule, { label: string; description: string; c
     color: "bg-purple-100 text-purple-700",
   },
   "transformation": {
-    label: "Transformation",
+    label: "Transformation Planning",
     description: "Transformation planning — friction to user stories, Jira export",
     color: "bg-amber-100 text-amber-700",
   },
   "mvc": {
-    label: "MVC Governance",
+    label: "Agentic Governance",
     description: "Agentic governance — friction assessment with Concept & Policy Cards",
     color: "bg-indigo-100 text-indigo-700",
   },
