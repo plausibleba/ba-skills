@@ -7,6 +7,8 @@
 
 export type ProjectModule = "sales-discovery" | "board-diagnostic" | "transformation" | "mvc";
 
+export type TierValue = "free" | "trial" | "starter" | "individual" | "team_5" | "team_10";
+
 export interface Database {
   public: {
     Tables: {
@@ -16,15 +18,28 @@ export interface Database {
           email: string;
           display_name: string | null;
           created_at: string;
+          // Tier columns — added by tier migration (004)
+          tier: TierValue | null;
+          trial_started_at: string | null;
+          trial_ends_at: string | null;
+          active_use_cases: string[] | null;
         };
         Insert: {
           id: string;
           email: string;
           display_name?: string | null;
           created_at?: string;
+          tier?: TierValue | null;
+          trial_started_at?: string | null;
+          trial_ends_at?: string | null;
+          active_use_cases?: string[] | null;
         };
         Update: {
           display_name?: string | null;
+          tier?: TierValue | null;
+          trial_started_at?: string | null;
+          trial_ends_at?: string | null;
+          active_use_cases?: string[] | null;
         };
         Relationships: [];
       };
@@ -62,6 +77,33 @@ export interface Database {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      usage_log: {
+        Row: {
+          id: string;
+          user_id: string;
+          project_id: string | null;
+          operation: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          project_id?: string | null;
+          operation: string;
+          created_at?: string;
+        };
+        Update: {
+          operation?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "usage_log_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       project_access: {
         Row: {

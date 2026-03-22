@@ -596,7 +596,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
         for (let i = 1; i <= doc.numPages; i++) {
           const page = await doc.getPage(i);
           const content = await page.getTextContent();
-          pages.push(content.items.map((item: { str: string }) => item.str).join(" "));
+          pages.push(content.items.map((item) => ("str" in item ? (item as { str: string }).str : "")).join(" "));
         }
         return pages.join("\n\n");
       } catch (e) {
