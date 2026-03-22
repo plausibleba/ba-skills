@@ -11,13 +11,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // In dev, Vite's configureServer provides the same endpoint locally.
 
 const VALID_PRICES: Record<string, { tier: string; interval: string }> = {
-  "price_1TDkUaRGscvIOp30bfc8dAiP": { tier: "starter", interval: "monthly" },
-  "price_1TDkWFRGscvIOp30gbDmJTos": { tier: "individual", interval: "monthly" },
-  "price_1TDkZ3RGscvIOp30sYzbWcsy": { tier: "individual", interval: "annual" },
-  "price_1TDkWwRGscvIOp30IwDzCtaY": { tier: "team_5", interval: "monthly" },
-  "price_1TDkd3RGscvIOp30TQ9pzTHt": { tier: "team_5", interval: "annual" },
-  "price_1TDkXURGscvIOp30fwfI7V2h": { tier: "team_10", interval: "monthly" },
-  "price_1TDkejRGscvIOp30iw9bl0Lt": { tier: "team_10", interval: "annual" },
+  "price_1TDnMEIU846dhWU8Dm8fiVAD": { tier: "starter", interval: "monthly" },
+  "price_1TDnMDIU846dhWU8QpfWlWUr": { tier: "individual", interval: "monthly" },
+  "price_1TDnMEIU846dhWU8S4zKG6io": { tier: "individual", interval: "annual" },
+  "price_1TDnMGIU846dhWU812XEZqHH": { tier: "team_5", interval: "monthly" },
+  "price_1TDnMDIU846dhWU8FG5rm9W9": { tier: "team_5", interval: "annual" },
+  "price_1TDnMEIU846dhWU8042hddzU": { tier: "team_10", interval: "monthly" },
+  "price_1TDnMDIU846dhWU8qznOqHc3": { tier: "team_10", interval: "annual" },
 };
 
 function stripeCheckoutPlugin(env: Record<string, string>) {

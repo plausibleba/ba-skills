@@ -310,7 +310,7 @@ const PRICING_TIERS: PricingTier[] = [
     description: "One use case, fully unlocked",
     monthlyPrice: 20,
     annualPrice: null,
-    monthlyPriceId: "price_1TDkUaRGscvIOp30bfc8dAiP",
+    monthlyPriceId: "price_1TDnMEIU846dhWU8Dm8fiVAD",
     annualPriceId: null,
     perSeat: null,
     features: [
@@ -328,8 +328,8 @@ const PRICING_TIERS: PricingTier[] = [
     description: "Every use case, every feature",
     monthlyPrice: 50,
     annualPrice: 500,
-    monthlyPriceId: "price_1TDkWFRGscvIOp30gbDmJTos",
-    annualPriceId: "price_1TDkZ3RGscvIOp30sYzbWcsy",
+    monthlyPriceId: "price_1TDnMDIU846dhWU8QpfWlWUr",
+    annualPriceId: "price_1TDnMEIU846dhWU8S4zKG6io",
     perSeat: null,
     features: [
       "All 4 use cases included",
@@ -346,8 +346,8 @@ const PRICING_TIERS: PricingTier[] = [
     description: "5 seats, full collaboration",
     monthlyPrice: 200,
     annualPrice: 2000,
-    monthlyPriceId: "price_1TDkWwRGscvIOp30IwDzCtaY",
-    annualPriceId: "price_1TDkd3RGscvIOp30TQ9pzTHt",
+    monthlyPriceId: "price_1TDnMGIU846dhWU812XEZqHH",
+    annualPriceId: "price_1TDnMDIU846dhWU8FG5rm9W9",
     perSeat: "$40/seat",
     features: [
       "Everything in Individual",
@@ -364,8 +364,8 @@ const PRICING_TIERS: PricingTier[] = [
     description: "10 seats, best per-seat value",
     monthlyPrice: 350,
     annualPrice: 3500,
-    monthlyPriceId: "price_1TDkXURGscvIOp30fwfI7V2h",
-    annualPriceId: "price_1TDkejRGscvIOp30iw9bl0Lt",
+    monthlyPriceId: "price_1TDnMEIU846dhWU8042hddzU",
+    annualPriceId: "price_1TDnMDIU846dhWU8qznOqHc3",
     perSeat: "$35/seat",
     features: [
       "Everything in Individual",
