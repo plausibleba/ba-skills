@@ -16,6 +16,8 @@ import { LoginPage } from "./components/LoginPage.tsx";
 import { ProjectList } from "./components/ProjectList.tsx";
 import { autoSaveToProject } from "./utils/auto-save.ts";
 import { VersionBadge } from "./components/ChangelogModal.tsx";
+import { UpsellModalProvider } from "./components/UpsellModal.tsx";
+import { DevTierSwitcher } from "./components/DevTierSwitcher.tsx";
 
 export default function App() {
   const { user, loading: authLoading, isLocalMode, initialize: initAuth } = useAuthStore();
@@ -143,6 +145,7 @@ export default function App() {
   };
 
   return (
+    <UpsellModalProvider>
     <div className="flex h-screen flex-col">
       {/* Header */}
       <header className="flex items-center justify-between border-b border-gray-200 bg-vcc-900 px-6 py-2.5">
@@ -305,7 +308,9 @@ export default function App() {
         {!isIntake && isLoaded && isFriction && <FrictionView />}
       </main>
       <UserGuidePanel />
+      <DevTierSwitcher />
     </div>
+    </UpsellModalProvider>
   );
 }
 
