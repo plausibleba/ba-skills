@@ -83,6 +83,7 @@ interface TierState {
 
   // Actions
   initialize: (userId: string) => Promise<void>;
+  activateTrial: (userId: string) => Promise<{ success: boolean; error?: string }>;
   refreshUsage: (userId: string) => Promise<void>;
   isTrialActive: () => boolean;
   canPerformAction: (action: GatedAction) => boolean;
@@ -181,6 +182,63 @@ export const useTierStore = create<TierState>((set, get) => ({
       await get().refreshUsage(userId);
     } catch (err) {
       console.warn("[tier-store] Failed to fetch usage counts.", err);
+    }
+  },
+
+  activateTrial: async (userId: string) => {
+    if (!isSupabaseConfigured) {
+      // Local mode — just flip to trial in memory
+      const now = new Date();
+      const ends = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000);
+      set({
+        tier: "trial",
+        trialStartedAt: now.toISOString(),
+        trialEndsAt: ends.toISOString(),
+        activeUseCases: [
+          "solution_engineering",
+          "board_diagnostic",
+          "transformation_planning",
+          "agentic_governance",
+        ],
+      });
+      return { success: true };
+    }
+
+    try {
+      const now = new Date().toISOString();
+      const endsAt = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString();
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          tier: "trial",
+          trial_started_at: now,
+          trial_ends_at: endsAt,
+        })
+        .eq("id", userId);
+
+      if (error) {
+        console.error("[tier-store] Failed to activate trial:", error.message);
+        return { success: false, error: error.message };
+      }
+
+      set({
+        tier: "trial",
+        trialStartedAt: now,
+        trialEndsAt: endsAt,
+        activeUseCases: [
+          "solution_engineering",
+          "board_diagnostic",
+          "transformation_planning",
+          "agentic_governance",
+        ],
+      });
+
+      console.log("[tier-store] Trial activated for user", userId);
+      return { success: true };
+    } catch (err) {
+      console.error("[tier-store] Trial activation error:", err);
+      return { success: false, error: String(err) };
     }
   },
 

@@ -1,19 +1,22 @@
-// @ts-nocheck
 /**
  * UpsellModal — contextual upgrade prompt.
  *
  * Shown when a free/expired-trial user attempts a gated action.
  * The modal names the specific feature they tried to use and provides
- * a clear path to start a trial or upgrade.
+ * a clear path to start a free trial or upgrade.
  *
  * Design principles:
  * - Feels like unlocking a door, not hitting a wall
  * - Contextual — message relates to what they were trying to do
  * - Clean, not aggressive
- * - Single CTA with secondary link
+ * - Single CTA: "Start free trial" auto-activates 15 days
+ *
+ * Phase 1: Auto-activate trial (updates profile tier in Supabase)
+ * Phase 2: Replace expired-trial/upgrade CTAs with Stripe checkout
  */
 import { useState, useCallback, createContext, useContext } from "react";
 import { useTierStore, type GatedAction, type UseCase } from "../store/tier-store.ts";
+import { useAuthStore } from "../store/auth-store.ts";
 
 // ─── Modal state context ──────────────────────────────────────────────────────
 
@@ -84,56 +87,69 @@ function UpsellModalOverlay({
 }) {
   const tier = useTierStore((s) => s.tier);
   const trialEndsAt = useTierStore((s) => s.trialEndsAt);
+  const activateTrial = useTierStore((s) => s.activateTrial);
+  const user = useAuthStore((s) => s.user);
+
+  const [activating, setActivating] = useState(false);
+  const [activated, setActivated] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const isExpiredTrial =
     tier === "trial" && trialEndsAt && new Date(trialEndsAt) < new Date();
   const isFree = tier === "free";
   const isStarter = tier === "starter";
 
-  // Determine CTA text and messaging
+  // Can we offer a trial? Only for free users (never had a trial) or local mode.
+  // Expired trials need to upgrade (they've already used their trial).
+  const canStartTrial = isFree && !isExpiredTrial;
+
+  // Determine messaging based on tier
   let headline = "";
   let body = "";
   let ctaText = "";
-  let ctaAction = "trial"; // 'trial' | 'upgrade' | 'add_use_case'
 
   if (isExpiredTrial) {
     headline = "Your free trial has ended";
     body = `Upgrade to keep using ${config.featureLabel} and continue building on your operating model.`;
-    ctaText = "Upgrade now";
-    ctaAction = "upgrade";
+    ctaText = "Contact us to upgrade";
   } else if (isStarter && config.requiredUseCase) {
     const ucLabel = USE_CASE_LABELS[config.requiredUseCase] || config.requiredUseCase;
     headline = `${ucLabel} use case required`;
-    body = `${config.featureLabel} is part of the ${ucLabel} plan. Add it to your subscription for $20/month, or upgrade to Individual ($50/month) for all use cases.`;
-    ctaText = `Add ${ucLabel} — $20/month`;
-    ctaAction = "add_use_case";
+    body = `${config.featureLabel} is part of the ${ucLabel} module. Contact us to add it to your subscription.`;
+    ctaText = "Contact us to upgrade";
   } else if (isFree) {
     headline = `Unlock ${config.featureLabel}`;
-    body =
-      config.reason ||
-      `Start your free 15-day trial to access ${config.featureLabel} and all VCC features. No credit card required.`;
+    body = `Start your free 15-day trial to access ${config.featureLabel} and all VCC features. No credit card required.`;
     ctaText = "Start free trial";
-    ctaAction = "trial";
   } else {
     headline = `Upgrade to access ${config.featureLabel}`;
     body = config.reason || `This feature requires a VCC subscription.`;
-    ctaText = "Upgrade now";
-    ctaAction = "upgrade";
+    ctaText = "Contact us to upgrade";
   }
 
-  const handleCTA = () => {
-    // TODO: wire to actual signup/upgrade flow
-    // For now, log the intent and close
-    console.log(`[VCC Upsell] CTA clicked: ${ctaAction}`, config);
-    if (ctaAction === "trial") {
-      // Redirect to signup or activate trial
-      window.location.href = "/signup?intent=trial";
-    } else if (ctaAction === "upgrade") {
-      window.location.href = "/pricing";
-    } else if (ctaAction === "add_use_case") {
-      window.location.href = `/pricing?add=${config.requiredUseCase}`;
+  const handleStartTrial = async () => {
+    const userId = user?.id;
+    if (!userId) {
+      setError("You need to be signed in to start a trial.");
+      return;
     }
+
+    setActivating(true);
+    setError(null);
+
+    const result = await activateTrial(userId);
+
+    if (result.success) {
+      setActivated(true);
+    } else {
+      setError(result.error || "Something went wrong. Please try again.");
+    }
+    setActivating(false);
+  };
+
+  const handleActivatedClose = () => {
     onClose();
+    // The tier store is already updated — the gate check will now pass
   };
 
   return (
@@ -172,8 +188,8 @@ function UpsellModalOverlay({
         <h3 className="text-lg font-bold text-gray-900">{headline}</h3>
         <p className="mt-2 text-sm text-gray-600 leading-relaxed">{body}</p>
 
-        {/* Tier badges (show what they'd get) */}
-        {(isFree || isExpiredTrial) && (
+        {/* Feature list (free/expired users, before activation) */}
+        {(isFree || isExpiredTrial) && !activated && (
           <div className="mt-5 rounded-lg bg-gray-50 p-4">
             <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
               What you'll unlock
@@ -201,35 +217,77 @@ function UpsellModalOverlay({
           </div>
         )}
 
-        {/* CTAs */}
-        <div className="mt-6 flex flex-col gap-3">
-          <button
-            onClick={handleCTA}
-            className="w-full rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
-          >
-            {ctaText}
-          </button>
+        {/* CTA area */}
+        <div className="mt-6">
+          {activated ? (
+            /* ── Trial activated success ── */
+            <div className="rounded-xl bg-emerald-50 p-5 text-center">
+              <svg className="mx-auto mb-2 h-8 w-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-sm font-semibold text-emerald-800">Trial activated</p>
+              <p className="mt-1 text-xs text-emerald-600">You have 15 days of full access. No credit card required.</p>
+              <button
+                onClick={handleActivatedClose}
+                className="mt-4 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-colors"
+              >
+                Continue
+              </button>
+            </div>
+          ) : canStartTrial ? (
+            /* ── Free user: start trial ── */
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleStartTrial}
+                disabled={activating}
+                className="w-full rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              >
+                {activating ? "Activating..." : ctaText}
+              </button>
 
-          <div className="flex items-center justify-center gap-4">
-            <button
-              onClick={onClose}
-              className="text-xs text-gray-500 hover:text-gray-700"
-            >
-              Maybe later
-            </button>
-            <span className="text-gray-300">·</span>
-            <a
-              href="/pricing"
-              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
-            >
-              See all plans
-            </a>
-          </div>
+              {error && (
+                <p className="text-center text-xs text-red-500">{error}</p>
+              )}
 
-          {(isFree || isExpiredTrial) && ctaAction === "trial" && (
-            <p className="text-center text-[10px] text-gray-400">
-              Free for 15 days · No credit card required
-            </p>
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  onClick={onClose}
+                  className="text-xs text-gray-500 hover:text-gray-700"
+                >
+                  Maybe later
+                </button>
+                <span className="text-gray-300">&middot;</span>
+                <a
+                  href="mailto:hello@plausibleba.com?subject=VCC%20Trial"
+                  className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                >
+                  Contact us
+                </a>
+              </div>
+
+              <p className="text-center text-[10px] text-gray-400">
+                Free for 15 days &middot; No credit card required
+              </p>
+            </div>
+          ) : (
+            /* ── Expired trial / starter / upgrade path ── */
+            <div className="flex flex-col gap-3">
+              <a
+                href="mailto:hello@plausibleba.com?subject=VCC%20Upgrade%20Request"
+                className="block w-full rounded-xl bg-indigo-600 py-3 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
+              >
+                {ctaText}
+              </a>
+
+              <div className="flex items-center justify-center">
+                <button
+                  onClick={onClose}
+                  className="text-xs text-gray-500 hover:text-gray-700"
+                >
+                  Maybe later
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

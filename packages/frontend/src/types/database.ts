@@ -19,27 +19,36 @@ export interface Database {
           display_name: string | null;
           created_at: string;
           // Tier columns — added by tier migration (004)
-          tier: TierValue | null;
+          tier: TierValue;            // NOT NULL DEFAULT 'free'
           trial_started_at: string | null;
           trial_ends_at: string | null;
-          active_use_cases: string[] | null;
+          active_use_cases: string[]; // NOT NULL DEFAULT '{}'
+          billing_interval: string | null;  // 'monthly' | 'annual'
+          stripe_customer_id: string | null;
+          stripe_subscription_id: string | null;
         };
         Insert: {
           id: string;
           email: string;
           display_name?: string | null;
           created_at?: string;
-          tier?: TierValue | null;
+          tier?: TierValue;
           trial_started_at?: string | null;
           trial_ends_at?: string | null;
-          active_use_cases?: string[] | null;
+          active_use_cases?: string[];
+          billing_interval?: string | null;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
         };
         Update: {
           display_name?: string | null;
-          tier?: TierValue | null;
+          tier?: TierValue;
           trial_started_at?: string | null;
           trial_ends_at?: string | null;
-          active_use_cases?: string[] | null;
+          active_use_cases?: string[];
+          billing_interval?: string | null;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
         };
         Relationships: [];
       };
@@ -84,6 +93,11 @@ export interface Database {
           user_id: string;
           project_id: string | null;
           operation: string;
+          run_id: string | null;
+          input_tokens: number | null;
+          output_tokens: number | null;
+          cost_usd: number | null;
+          metadata: Record<string, unknown>;
           created_at: string;
         };
         Insert: {
@@ -91,10 +105,20 @@ export interface Database {
           user_id: string;
           project_id?: string | null;
           operation: string;
+          run_id?: string | null;
+          input_tokens?: number | null;
+          output_tokens?: number | null;
+          cost_usd?: number | null;
+          metadata?: Record<string, unknown>;
           created_at?: string;
         };
         Update: {
           operation?: string;
+          run_id?: string | null;
+          input_tokens?: number | null;
+          output_tokens?: number | null;
+          cost_usd?: number | null;
+          metadata?: Record<string, unknown>;
         };
         Relationships: [
           {
