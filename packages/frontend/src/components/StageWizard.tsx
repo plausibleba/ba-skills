@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
+import { useGateCheck } from "../hooks/useGateCheck.ts";
 import { useDiscoverySessionStore } from "../store/discovery-session-store.ts";
 import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforce.json";
 import SAP_LIB from "../fixtures/vendor-libraries/sap-s4hana.json";
@@ -190,6 +191,7 @@ export function StageWizard() {
   const [showVendorPicker, setShowVendorPicker] = useState(false);
   const enrichedInputRef = useRef<HTMLInputElement>(null);
 
+  const { gate } = useGateCheck();
   const currentVsId = canvasViewModel?.valueStreamId ?? null;
   const hasAssessment = currentVsId ? heatmapsByVs.has(currentVsId) : heatmapsByVs.size > 0;
   // isEnriched: true only when at least one observation actually has solutions
@@ -349,7 +351,7 @@ export function StageWizard() {
                   title="Save assessment"
                 >↓ Save</button>
                 <button
-                  onClick={handleRunAssessment}
+                  onClick={() => gate("run_assessment", handleRunAssessment, "re-running friction assessment")}
                   disabled={assessing}
                   className="rounded px-1.5 py-0.5 text-[9px] font-medium text-vcc-500 hover:bg-vcc-50 hover:text-vcc-700 disabled:opacity-40"
                   title="Re-run assessment"
@@ -372,7 +374,7 @@ export function StageWizard() {
               </button>
               <span className="text-[9px] text-gray-300">or</span>
               <button
-                onClick={handleRunAssessment}
+                onClick={() => gate("run_assessment", handleRunAssessment, "running friction assessment")}
                 disabled={!step1Complete}
                 className="flex items-center gap-1 rounded bg-vcc-600 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-vcc-700 disabled:opacity-40"
               >
@@ -416,7 +418,7 @@ export function StageWizard() {
                   title="Save enriched assessment"
                 >↓ Save</button>
                 <button
-                  onClick={() => setShowVendorPicker(v => !v)}
+                  onClick={() => gate("enrich_solutions", () => setShowVendorPicker(v => !v), "enriching solutions")}
                   disabled={enriching}
                   className="rounded px-1.5 py-0.5 text-[9px] font-medium text-vcc-500 hover:bg-vcc-50 hover:text-vcc-700 disabled:opacity-40"
                 >↺ Re-run</button>
@@ -438,7 +440,7 @@ export function StageWizard() {
               </button>
               <span className="text-[9px] text-gray-300">or</span>
               <button
-                onClick={() => setShowVendorPicker(v => !v)}
+                onClick={() => gate("enrich_solutions", () => setShowVendorPicker(v => !v), "enriching solutions")}
                 disabled={!step2Complete}
                 className="flex items-center gap-1 rounded border border-dashed border-violet-300 px-2 py-0.5 text-[10px] font-medium text-violet-600 hover:border-violet-400 hover:bg-violet-50 disabled:opacity-40 disabled:cursor-not-allowed"
               >

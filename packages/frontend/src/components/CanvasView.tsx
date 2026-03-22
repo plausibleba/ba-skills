@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback, useRef } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
+import { useGateCheck } from "../hooks/useGateCheck.ts";
 import { tv } from "../theme.ts";
 import type { TransformationUserStory, ScaffoldElement, ScaffoldActivity } from "../types.ts";
 import { toJiraExport } from "../types.ts";
@@ -25,6 +26,7 @@ import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
 export function CanvasView() {
   const { canvasViewModel, scaffoldData, heatmapData, validationReport, getAllUserStories, updateVsName, updateVsDescription, addActivity, removeActivity, moveActivity, cardRegistry, topologyView, capabilityInstanceView } =
     useCanvasStore();
+  const { gate } = useGateCheck();
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
     null,
   );
@@ -281,11 +283,11 @@ export function CanvasView() {
           {/* Add Stage button */}
           <div className="flex w-[120px] flex-shrink-0 items-start justify-center pt-8">
             <button
-              onClick={() => {
+              onClick={() => gate("edit_field", () => {
                 const lastCol = canvasViewModel.columns[canvasViewModel.columns.length - 1];
                 const afterId = lastCol?.activityIds[0];
                 addActivity(canvasViewModel.valueStreamId, "New Stage", afterId);
-              }}
+              }, "adding a stage")}
               className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed px-4 py-6 transition-colors"
               style={{ borderColor: tv.borderSubtle, color: tv.textDim }}
               title="Add a new stage"
@@ -366,6 +368,7 @@ function ExportStoriesButton({
 }: {
   getAllUserStories: () => TransformationUserStory[];
 }) {
+  const { gate } = useGateCheck();
   const stories = getAllUserStories();
   if (stories.length === 0) return null;
 
@@ -394,7 +397,7 @@ function ExportStoriesButton({
 
   return (
     <button
-      onClick={handleExport}
+      onClick={() => gate("export_stories", handleExport, "exporting user stories")}
       title={`Export ${stories.length} user stor${stories.length !== 1 ? "ies" : "y"} to Jira CSV`}
       className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium transition-colors"
       style={{ border: `1px solid rgba(74,158,218,0.3)`, background: "rgba(74,158,218,0.15)", color: tv.accent }}

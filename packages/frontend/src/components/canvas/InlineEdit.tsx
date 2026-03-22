@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useGateCheck } from "../../hooks/useGateCheck.ts";
 
 /**
  * InlineEdit — double-click-to-edit text field (D-092: Editable Canvas).
@@ -8,6 +9,9 @@ import { useState, useRef, useEffect, useCallback } from "react";
  * - Enter to save, Escape to cancel
  * - Subtle pencil icon on hover as affordance
  * - Minimal styling — blends with existing Tailwind design language
+ *
+ * Tier gating: double-click triggers "edit_field" gate check.
+ * If the user's tier doesn't allow editing, the upsell modal appears instead.
  */
 
 interface InlineEditProps {
@@ -22,6 +26,8 @@ interface InlineEditProps {
   maxLength?: number;
   /** Inline styles applied to the display span */
   style?: React.CSSProperties;
+  /** Skip tier gate check (e.g. for fields that are always editable) */
+  ungated?: boolean;
 }
 
 export function InlineEdit({
@@ -33,10 +39,12 @@ export function InlineEdit({
   multiline = false,
   maxLength,
   style,
+  ungated = false,
 }: InlineEditProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const { gate } = useGateCheck();
 
   // Sync draft when value changes externally
   useEffect(() => {
@@ -51,10 +59,18 @@ export function InlineEdit({
     }
   }, [editing]);
 
-  const startEdit = useCallback(() => {
+  const doStartEdit = useCallback(() => {
     setDraft(value);
     setEditing(true);
   }, [value]);
+
+  const startEdit = useCallback(() => {
+    if (ungated) {
+      doStartEdit();
+    } else {
+      gate("edit_field", doStartEdit, "editing model fields");
+    }
+  }, [ungated, doStartEdit, gate]);
 
   const save = useCallback(() => {
     const trimmed = draft.trim();

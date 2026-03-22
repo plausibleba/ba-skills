@@ -19,10 +19,12 @@ import { VersionBadge } from "./components/ChangelogModal.tsx";
 import { UpsellModalProvider } from "./components/UpsellModal.tsx";
 import { DevTierSwitcher } from "./components/DevTierSwitcher.tsx";
 import { extractClaimFromURL, consumePendingClaim } from "./utils/bundle-claim.ts";
+import { useTierStore } from "./store/tier-store.ts";
 
 export default function App() {
   const { user, loading: authLoading, isLocalMode, initialize: initAuth } = useAuthStore();
   const { saving } = useProjectStore();
+  const initializeTier = useTierStore((s) => s.initialize);
   const {
     scaffoldData,
     canvasViewModel,
@@ -45,6 +47,13 @@ export default function App() {
   useEffect(() => {
     initAuth();
   }, [initAuth]);
+
+  // Initialize tier store when user is authenticated
+  useEffect(() => {
+    if (user?.id) {
+      initializeTier(user.id);
+    }
+  }, [user?.id, initializeTier]);
 
   // Extract claim token from URL on first load (before auth redirect clears it)
   useEffect(() => {

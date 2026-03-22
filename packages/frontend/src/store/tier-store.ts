@@ -33,8 +33,12 @@ export type GatedAction =
   | "run_discovery"
   | "load_bundle"
   | "export_pdf"
+  | "export_stories"
   | "edit_field"
   | "save_assessment"
+  | "run_assessment"
+  | "enrich_solutions"
+  | "create_vendor_library"
   | "card_generation"
   | "workshop_session"
   | "scenario_planning";

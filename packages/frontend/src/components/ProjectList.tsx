@@ -12,6 +12,7 @@ import { ChangelogLink } from "./ChangelogModal.tsx";
 import { autoSaveToProject } from "../utils/auto-save.ts";
 import { FileLoader } from "./FileLoader.tsx";
 import { ShareDialog } from "./ShareDialog.tsx";
+import { useGateCheck } from "../hooks/useGateCheck.ts";
 import type { ProjectModule } from "../types/database.ts";
 
 const MODULE_INFO: Record<ProjectModule, { label: string; description: string; color: string }> = {
@@ -49,6 +50,7 @@ export function ProjectList() {
   const [creating, setCreating] = useState(false);
   const [shareTarget, setShareTarget] = useState<{ id: string; name: string } | null>(null);
   const bundleInputRef = useRef<HTMLInputElement>(null);
+  const { gate } = useGateCheck();
 
   // Split projects into owned and shared-with-me
   const ownedProjects = projects.filter((p) => p.owner_id === user?.id);
@@ -99,19 +101,20 @@ export function ProjectList() {
   };
 
   // Create a new empty project and go to intake
-  const handleCreateProject = async () => {
+  const handleCreateProject = () => {
     if (!newName.trim()) return;
-    setCreating(true);
-
-    const id = await createProject(newName.trim(), newModule, {});
-    if (id) {
-      useProjectStore.getState().setCurrentProject(id, 1, newModule);
-      goToIntake();
-    }
-    setCreating(false);
-    setShowNewProject(false);
-    setNewName("");
-    setNewModule("sales-discovery");
+    gate("create_project", async () => {
+      setCreating(true);
+      const id = await createProject(newName.trim(), newModule, {});
+      if (id) {
+        useProjectStore.getState().setCurrentProject(id, 1, newModule);
+        goToIntake();
+      }
+      setCreating(false);
+      setShowNewProject(false);
+      setNewName("");
+      setNewModule("sales-discovery");
+    });
   };
 
   // Load a bundle file into the canvas store (shared helper)
@@ -173,7 +176,7 @@ export function ProjectList() {
   // Quick action: start a new discovery without creating a project first
   // (local mode or quick start — project created on first save)
   const handleQuickDiscovery = () => {
-    goToIntake();
+    gate("run_discovery", () => goToIntake());
   };
 
   return (
@@ -441,7 +444,7 @@ export function ProjectList() {
 
                 {/* Import Bundle */}
                 <button
-                  onClick={() => bundleInputRef.current?.click()}
+                  onClick={() => gate("load_bundle", () => bundleInputRef.current?.click())}
                   className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 p-4 text-center transition-all hover:border-emerald-300 hover:bg-emerald-50/50"
                 >
                   <svg className="mb-1 h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

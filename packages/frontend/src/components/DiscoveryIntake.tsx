@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useProjectStore } from "../store/project-store.ts";
+import { useGateCheck } from "../hooks/useGateCheck.ts";
 import { runPipeline, continuePipeline } from "../domain/pipeline/pipeline-orchestrator";
 import type { PipelineProgress } from "../domain/pipeline/pipeline-orchestrator";
 import { buildDiscoveryIR, makeId, type LayoutZone } from "../domain/pipeline/discovery-ir";
@@ -307,6 +308,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
   const dropRef = useRef<HTMLDivElement>(null);
 
   const readiness = calcReadiness(form);
+  const { gate } = useGateCheck();
 
   // ─── Active layer scheme ────────────────────────────────────────────────
   const activeScheme = LAYER_SCHEMES.find(s => s.id === form.layerSchemeId) ?? DEFAULT_SCHEME;
@@ -741,7 +743,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
           <div className="flex items-center gap-4">
             <ReadinessBar score={readiness} />
             <button
-              onClick={generateIR}
+              onClick={() => gate("run_discovery", generateIR, "generating scaffold")}
               disabled={readiness < 41 || generating}
               className="rounded-lg bg-slate-800 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
@@ -868,7 +870,7 @@ Example: 'We're launching a new customer onboarding programme. Currently takes 4
               />
               <div className="mt-4 flex justify-center">
                 <button
-                  onClick={runExtraction}
+                  onClick={() => gate("run_discovery", runExtraction, "extracting from transcript")}
                   disabled={!transcript.trim() || extracting}
                   className="rounded-lg bg-slate-800 px-6 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 >
@@ -1208,7 +1210,7 @@ Example: 'We're launching a new customer onboarding programme. Currently takes 4
                   )}
                 </div>
                 <button
-                  onClick={generateIR}
+                  onClick={() => gate("run_discovery", generateIR, "generating scaffold")}
                   disabled={readiness < 41 || generating}
                   className="rounded-lg bg-slate-800 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all whitespace-nowrap"
                 >

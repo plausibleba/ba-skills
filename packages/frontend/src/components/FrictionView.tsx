@@ -10,6 +10,7 @@ import type {
 import { classifyCategory, categoryLabel, buildActivityFrictionMap } from "./FrictionOverlay.tsx";
 import { useVendorLibraryStore, type CustomerStory, type CustomerStoryCatalogue } from "../store/vendor-library-store.ts";
 import type { VendorFeatureLibrary } from "../types.ts";
+import { useGateCheck } from "../hooks/useGateCheck.ts";
 import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforce.json";
 import SF_STORIES_RAW from "../../fixtures/vendor-libraries/agentforce-customer-stories.json";
 
@@ -183,6 +184,7 @@ function ObservationsTab({
   const [sortBy, setSortBy] = useState<"intensity" | "category" | "vs">("intensity");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const { gate } = useGateCheck();
 
   // Aggregate all observations across value streams
   const aggregated = useMemo(() => {
@@ -255,7 +257,7 @@ function ObservationsTab({
           <p className="mt-1 text-xs text-gray-500">Run "Assess Friction" from the Stream view, or add observations manually below.</p>
         </div>
         <button
-          onClick={() => setShowAddForm(true)}
+          onClick={() => gate("add_observation", () => setShowAddForm(true))}
           className="flex items-center gap-1.5 rounded-lg bg-vcc-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-vcc-700"
         >
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -323,7 +325,7 @@ function ObservationsTab({
         <div className="flex items-center gap-2">
           {/* Save assessment */}
           <button
-            onClick={() => {
+            onClick={() => gate("save_assessment", () => {
               const allHeatmaps: Record<string, any> = {};
               for (const [vsId, hm] of heatmapsByVs.entries()) {
                 allHeatmaps[vsId] = hm;
@@ -334,7 +336,7 @@ function ObservationsTab({
               const a = document.createElement("a"); a.href = url;
               a.download = `friction-assessment-${Date.now()}.json`; a.click();
               URL.revokeObjectURL(url);
-            }}
+            })}
             className="flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
             title="Save all friction observations as JSON"
           >
@@ -409,7 +411,7 @@ function ObservationsTab({
             item={item}
             scaffoldData={scaffoldData}
             isEditing={editingId === item.obs.observationId}
-            onEdit={() => setEditingId(editingId === item.obs.observationId ? null : item.obs.observationId)}
+            onEdit={() => gate("edit_observation", () => setEditingId(editingId === item.obs.observationId ? null : item.obs.observationId))}
             onDelete={() => handleDeleteObservation(item.vsId, item.obs.observationId)}
           />
         ))}
@@ -746,6 +748,7 @@ function SolutionsTab() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [expandedVendor, setExpandedVendor] = useState<string | null>(null);
   const [expandedStory, setExpandedStory] = useState<string | null>(null);
+  const { gate } = useGateCheck();
 
   // Merge built-in + custom
   const allLibraries = useMemo(() => [
@@ -875,7 +878,7 @@ function SolutionsTab() {
           </p>
         </div>
         <button
-          onClick={handleExportPdf}
+          onClick={() => gate("export_pdf", handleExportPdf, "exporting PDF")}
           className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50"
         >
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -905,7 +908,10 @@ function SolutionsTab() {
         <div>
           {/* Action bar */}
           <div className="mb-4 flex items-center gap-2">
-            <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-violet-300 bg-white px-3 py-2 text-xs font-medium text-violet-600 hover:border-violet-400 hover:bg-violet-50/40">
+            <label
+              className="flex cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-violet-300 bg-white px-3 py-2 text-xs font-medium text-violet-600 hover:border-violet-400 hover:bg-violet-50/40"
+              onClick={(e) => { e.preventDefault(); gate("upload_vendor_library", () => { (e.currentTarget.querySelector("input") as HTMLInputElement)?.click(); }, "uploading vendor library"); }}
+            >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
@@ -913,7 +919,7 @@ function SolutionsTab() {
               <input type="file" accept=".json" className="hidden" onChange={handleLibUpload} />
             </label>
             <button
-              onClick={() => setShowAddForm(!showAddForm)}
+              onClick={() => gate("create_vendor_library", () => setShowAddForm(!showAddForm), "creating vendor library")}
               className="flex items-center gap-1.5 rounded-md border border-dashed border-emerald-300 bg-white px-3 py-2 text-xs font-medium text-emerald-600 hover:border-emerald-400 hover:bg-emerald-50/40"
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1014,7 +1020,10 @@ function SolutionsTab() {
       {activeSection === "stories" && (
         <div>
           <div className="mb-4 flex items-center gap-2">
-            <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-violet-300 bg-white px-3 py-2 text-xs font-medium text-violet-600 hover:border-violet-400 hover:bg-violet-50/40">
+            <label
+              className="flex cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-violet-300 bg-white px-3 py-2 text-xs font-medium text-violet-600 hover:border-violet-400 hover:bg-violet-50/40"
+              onClick={(e) => { e.preventDefault(); gate("upload_stories", () => { (e.currentTarget.querySelector("input") as HTMLInputElement)?.click(); }, "uploading customer stories"); }}
+            >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
@@ -1408,6 +1417,7 @@ function SurveyTab({ scaffoldData }: { scaffoldData: ScaffoldData }) {
   const [answers, setAnswers] = useState<Record<string, string | number>>({});
   const [selectedVs, setSelectedVs] = useState(Object.keys(scaffoldData.elements.valueStreams)[0] || "");
   const [submitted, setSubmitted] = useState(false);
+  const { gate } = useGateCheck();
 
   const updateAnswer = (id: string, value: string | number) => {
     setAnswers((prev) => ({ ...prev, [id]: value }));
@@ -1540,7 +1550,7 @@ function SurveyTab({ scaffoldData }: { scaffoldData: ScaffoldData }) {
       </div>
 
       <button
-        onClick={handleSubmit}
+        onClick={() => gate("save_survey", handleSubmit, "saving survey responses")}
         className="w-full rounded-lg bg-vcc-600 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-vcc-700"
       >
         Save Survey Responses
@@ -1557,6 +1567,7 @@ function SettingsTab() {
   const [signals, setSignals] = useState<StructuralSignal[]>(DEFAULT_STRUCTURAL_SIGNALS);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const { gate } = useGateCheck();
 
   const toggleSignal = (id: string) => {
     setSignals((prev) =>
@@ -1619,7 +1630,7 @@ function SettingsTab() {
                 >
                   <div className="flex items-start gap-3">
                     <button
-                      onClick={() => toggleSignal(sig.id)}
+                      onClick={() => gate("edit_signals", () => toggleSignal(sig.id), "toggling signal")}
                       className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
                         sig.enabled
                           ? "border-vcc-500 bg-vcc-500 text-white"
@@ -1656,12 +1667,12 @@ function SettingsTab() {
                     )}
 
                     <div className="flex items-center gap-1">
-                      <button onClick={() => setEditingId(editingId === sig.id ? null : sig.id)} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                      <button onClick={() => gate("edit_signals", () => setEditingId(editingId === sig.id ? null : sig.id), "editing signal")} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                       </button>
-                      <button onClick={() => deleteSignal(sig.id)} className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500">
+                      <button onClick={() => gate("edit_signals", () => deleteSignal(sig.id), "deleting signal")} className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500">
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -1680,7 +1691,7 @@ function SettingsTab() {
         <AddSignalForm onAdd={addSignal} onCancel={() => setShowAddForm(false)} />
       ) : (
         <button
-          onClick={() => setShowAddForm(true)}
+          onClick={() => gate("edit_signals", () => setShowAddForm(true), "adding custom signal")}
           className="flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-4 py-2.5 text-xs font-medium text-gray-500 hover:border-vcc-300 hover:text-vcc-600 w-full justify-center"
         >
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

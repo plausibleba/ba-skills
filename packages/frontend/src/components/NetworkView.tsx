@@ -2,6 +2,7 @@
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { useThemeStore } from "../store/theme-store.ts";
+import { useGateCheck } from "../hooks/useGateCheck.ts";
 import { tv } from "../theme.ts";
 import type { NetworkNode, NetworkEdge } from "../types.ts";
 import { LAYER_SCHEMES, detectSchemeId } from "../lib/layer-schemes.ts";
@@ -25,6 +26,7 @@ function VSEditorModal({
 
   const layoutZones = (scaffoldData.layoutZones as Array<{ id: string; label: string }>) ?? [];
   const roles = Object.entries(scaffoldData.elements.roles ?? {}) as [string, { name: string }][];
+  const { gate } = useGateCheck();
 
   const handleSave = () => {
     const updatedVS = { ...vs, name, description, layoutZone, accountableStakeholder: stakeholder };
@@ -105,7 +107,7 @@ function VSEditorModal({
         </div>
         <div className="flex justify-end gap-2 border-t border-slate-100 px-5 py-3">
           <button onClick={onClose} className="rounded-md px-3 py-1.5 text-xs text-slate-500 hover:bg-slate-50">Cancel</button>
-          <button onClick={handleSave} className="rounded-md bg-slate-800 px-4 py-1.5 text-xs font-medium text-white hover:bg-slate-700">Save</button>
+          <button onClick={() => gate("edit_field", handleSave, "saving value stream edits")} className="rounded-md bg-slate-800 px-4 py-1.5 text-xs font-medium text-white hover:bg-slate-700">Save</button>
         </div>
       </div>
     </div>
@@ -556,6 +558,7 @@ export function NetworkView() {
   } = useCanvasStore();
 
   const isDark = useThemeStore((s) => s.mode) === "dark";
+  const { gate } = useGateCheck();
   const [hoveredVsId, setHoveredVsId] = useState<string | null>(null);
   const [editingVsId, setEditingVsId] = useState<string | null>(null);
   const [viewTab, setViewTab] = useState<"cards" | "graph">("cards");
@@ -862,7 +865,7 @@ export function NetworkView() {
                 <NetworkNodeCard key={node.vsId} node={node} position={pos}
                   isHovered={hoveredVsId === node.vsId}
                   onHover={() => setHoveredVsId(node.vsId)} onLeave={() => setHoveredVsId(null)}
-                  onClick={() => selectVs(node.vsId)} onEdit={() => setEditingVsId(node.vsId)}
+                  onClick={() => selectVs(node.vsId)} onEdit={() => gate("edit_field", () => setEditingVsId(node.vsId), "editing value stream")}
                   couplingCount={couplingByVs.get(node.vsId) ?? 0} />
               );
             })}
@@ -886,7 +889,7 @@ export function NetworkView() {
           topologyView={topologyView}
           scaffoldData={scaffoldData}
           onSelectVs={selectVs}
-          onEditVs={setEditingVsId}
+          onEditVs={(vsId: string) => gate("edit_field", () => setEditingVsId(vsId), "editing value stream")}
         />
       )}
     </div>
