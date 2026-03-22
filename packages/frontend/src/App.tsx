@@ -42,6 +42,8 @@ export default function App() {
 
   const [claimImporting, setClaimImporting] = useState(false);
   const claimProcessed = useRef(false);
+  const checkoutHandled = useRef(false);
+  const [checkoutBanner, setCheckoutBanner] = useState<"success" | "cancelled" | null>(null);
 
   // Initialize auth on mount
   useEffect(() => {
@@ -53,6 +55,35 @@ export default function App() {
     if (user?.id) {
       initializeTier(user.id);
     }
+  }, [user?.id, initializeTier]);
+
+  // Handle Stripe checkout redirect (?checkout=success or ?checkout=cancelled)
+  useEffect(() => {
+    if (checkoutHandled.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get("checkout");
+    if (!status) return;
+
+    checkoutHandled.current = true;
+
+    if (status === "success") {
+      setCheckoutBanner("success");
+      // Re-fetch tier from Supabase — webhook should have updated it
+      if (user?.id) {
+        setTimeout(() => initializeTier(user.id), 1500);
+      }
+      // Auto-dismiss after 8 seconds
+      setTimeout(() => setCheckoutBanner(null), 8000);
+    } else if (status === "cancelled") {
+      setCheckoutBanner("cancelled");
+      setTimeout(() => setCheckoutBanner(null), 5000);
+    }
+
+    // Clean URL params
+    params.delete("checkout");
+    params.delete("session_id");
+    const clean = params.toString();
+    window.history.replaceState({}, "", clean ? `?${clean}` : window.location.pathname);
   }, [user?.id, initializeTier]);
 
   // Extract claim token from URL on first load (before auth redirect clears it)
@@ -293,6 +324,42 @@ export default function App() {
 
       {/* Content selectors (stage view only) */}
       {isStage && <StageWizard />}
+
+      {/* Checkout banner */}
+      {checkoutBanner === "success" && (
+        <div className="flex items-center justify-between bg-emerald-600 px-6 py-2.5">
+          <div className="flex items-center gap-2.5">
+            <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-sm font-medium text-white">
+              You're all set! Your subscription is now active. Welcome to VCC.
+            </span>
+          </div>
+          <button onClick={() => setCheckoutBanner(null)} className="text-white/70 hover:text-white">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+      {checkoutBanner === "cancelled" && (
+        <div className="flex items-center justify-between bg-amber-500 px-6 py-2.5">
+          <div className="flex items-center gap-2.5">
+            <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-sm font-medium text-white">
+              Checkout cancelled. No worries — you can upgrade anytime.
+            </span>
+          </div>
+          <button onClick={() => setCheckoutBanner(null)} className="text-white/70 hover:text-white">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {/* Main content */}
       <main className="flex-1 overflow-auto">
