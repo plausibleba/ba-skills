@@ -2,15 +2,27 @@
  * Login page (D-108: Backend Architecture)
  *
  * Simple auth page with Google OAuth and magic link email.
+ * Supports pre-fill from PlausibleBA Canvas claim redirect.
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/auth-store.ts";
+import { getClaimPrefill, getPendingClaim } from "../utils/bundle-claim.ts";
 
 export function LoginPage() {
   const { signInWithGoogle, signInWithEmail, loading } = useAuthStore();
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Check for claim pre-fill data (from "Open in VCC" redirect)
+  const hasPendingClaim = !!getPendingClaim();
+
+  useEffect(() => {
+    const prefill = getClaimPrefill();
+    if (prefill?.email) {
+      setEmail(prefill.email);
+    }
+  }, []);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,13 +54,31 @@ export function LoginPage() {
             </svg>
           </div>
           <h1 className="text-xl font-semibold text-vcc-900">Value Cognition Canvas</h1>
-          <p className="mt-1 text-sm text-gray-500">Sign in to access your projects</p>
+          {hasPendingClaim ? (
+            <p className="mt-1 text-sm text-gray-500">
+              Sign in to open your operating model
+            </p>
+          ) : (
+            <p className="mt-1 text-sm text-gray-500">Sign in to access your projects</p>
+          )}
         </div>
+
+        {/* Canvas handoff banner */}
+        {hasPendingClaim && (
+          <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-center">
+            <p className="text-xs font-medium text-emerald-800">
+              Your operating model is ready to import
+            </p>
+            <p className="mt-0.5 text-[11px] text-emerald-600">
+              Sign in or create an account to continue
+            </p>
+          </div>
+        )}
 
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           {emailSent ? (
             <div className="text-center">
-              <div className="mb-2 text-2xl">📧</div>
+              <div className="mb-2 text-2xl">&#128231;</div>
               <h2 className="mb-1 text-sm font-semibold text-gray-900">Check your email</h2>
               <p className="text-xs text-gray-500">
                 We sent a magic link to <strong>{email}</strong>. Click it to sign in.
@@ -99,7 +129,7 @@ export function LoginPage() {
                   type="submit"
                   className="w-full rounded-lg bg-vcc-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-vcc-700"
                 >
-                  Send magic link
+                  {hasPendingClaim ? "Sign in & import model" : "Send magic link"}
                 </button>
               </form>
 

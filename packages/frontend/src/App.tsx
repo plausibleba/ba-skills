@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import { useCanvasStore } from "./store/canvas-store.ts";
 import { useAuthStore } from "./store/auth-store.ts";
 import { useProjectStore } from "./store/project-store.ts";
@@ -18,6 +18,7 @@ import { autoSaveToProject } from "./utils/auto-save.ts";
 import { VersionBadge } from "./components/ChangelogModal.tsx";
 import { UpsellModalProvider } from "./components/UpsellModal.tsx";
 import { DevTierSwitcher } from "./components/DevTierSwitcher.tsx";
+import { extractClaimFromURL, consumePendingClaim } from "./utils/bundle-claim.ts";
 
 export default function App() {
   const { user, loading: authLoading, isLocalMode, initialize: initAuth } = useAuthStore();
@@ -37,10 +38,71 @@ export default function App() {
     loadHeatmap,
   } = useCanvasStore();
 
+  const [claimImporting, setClaimImporting] = useState(false);
+  const claimProcessed = useRef(false);
+
   // Initialize auth on mount
   useEffect(() => {
     initAuth();
   }, [initAuth]);
+
+  // Extract claim token from URL on first load (before auth redirect clears it)
+  useEffect(() => {
+    extractClaimFromURL();
+  }, []);
+
+  // After auth completes, check for a pending claim and auto-import
+  useEffect(() => {
+    if (authLoading || isLocalMode || !user || claimProcessed.current) return;
+    claimProcessed.current = true;
+
+    void (async () => {
+      const payload = await consumePendingClaim();
+      if (!payload) return;
+
+      setClaimImporting(true);
+      try {
+        const bundle = payload.bundle as Record<string, any>;
+        const { isPlausibleBABundle, normaliseBundle } = await import("./utils/bundle-import.ts");
+        const store = useCanvasStore.getState();
+
+        // Import the bundle — same logic as drag-drop / file import
+        if (bundle.bundleVersion && bundle.scaffold) {
+          // VCC-native bundle format
+          await store.loadScaffold(bundle.scaffold);
+          if (bundle.heatmaps) {
+            for (const hm of bundle.heatmaps as any[]) await store.loadHeatmap(hm);
+          }
+          if (bundle.userStoriesByActivity) {
+            for (const [actId, stories] of Object.entries(bundle.userStoriesByActivity)) {
+              store.setActivityStories(actId, stories as any[]);
+            }
+          }
+          if (bundle.cardRegistry) store.loadCards(bundle.cardRegistry);
+        } else if (isPlausibleBABundle(bundle)) {
+          // PlausibleBA ba-skills-bundle format
+          const scaffold = normaliseBundle(bundle);
+          await store.loadScaffold(scaffold);
+        } else if (bundle.scaffoldId && bundle.elements) {
+          // Raw scaffold
+          await store.loadScaffold(bundle as any);
+        } else {
+          console.warn("[VCC Claim] Unrecognized bundle format");
+          setClaimImporting(false);
+          return;
+        }
+
+        store.backToNetwork();
+        // Create project and save to Supabase
+        await autoSaveToProject({ cardRegistry: bundle.cardRegistry });
+        console.log("[VCC Claim] Bundle imported successfully from Canvas handoff");
+      } catch (err) {
+        console.error("[VCC Claim] Auto-import failed:", err);
+      } finally {
+        setClaimImporting(false);
+      }
+    })();
+  }, [authLoading, isLocalMode, user]);
 
   // Global drag-drop interceptor: prevent browser from opening dropped files
   // and route .json files to the bundle import logic
@@ -128,6 +190,17 @@ export default function App() {
 
   if (!isLocalMode && !user) {
     return <LoginPage />;
+  }
+
+  // Show loading state while importing a claimed bundle from Canvas
+  if (claimImporting) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-gray-50">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-vcc-600" />
+        <p className="text-sm font-medium text-gray-600">Importing your operating model...</p>
+        <p className="text-xs text-gray-400">This will only take a moment</p>
+      </div>
+    );
   }
 
   // Project list: show when authenticated but no project/scaffold loaded
