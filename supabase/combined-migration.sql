@@ -35,23 +35,29 @@ CREATE INDEX IF NOT EXISTS idx_project_access_project ON project_access(project_
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_access ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "owners_select_projects" ON projects;
 CREATE POLICY "owners_select_projects" ON projects
   FOR SELECT USING (owner_id = auth.uid());
 
+DROP POLICY IF EXISTS "owners_insert_projects" ON projects;
 CREATE POLICY "owners_insert_projects" ON projects
   FOR INSERT WITH CHECK (owner_id = auth.uid());
 
+DROP POLICY IF EXISTS "owners_update_projects" ON projects;
 CREATE POLICY "owners_update_projects" ON projects
   FOR UPDATE USING (owner_id = auth.uid());
 
+DROP POLICY IF EXISTS "owners_delete_projects" ON projects;
 CREATE POLICY "owners_delete_projects" ON projects
   FOR DELETE USING (owner_id = auth.uid());
 
+DROP POLICY IF EXISTS "shared_select_projects" ON projects;
 CREATE POLICY "shared_select_projects" ON projects
   FOR SELECT USING (
     id IN (SELECT project_id FROM project_access WHERE user_id = auth.uid())
   );
 
+DROP POLICY IF EXISTS "shared_update_projects" ON projects;
 CREATE POLICY "shared_update_projects" ON projects
   FOR UPDATE USING (
     id IN (
@@ -60,11 +66,13 @@ CREATE POLICY "shared_update_projects" ON projects
     )
   );
 
+DROP POLICY IF EXISTS "owners_manage_access" ON project_access;
 CREATE POLICY "owners_manage_access" ON project_access
   FOR ALL USING (
     project_id IN (SELECT id FROM projects WHERE owner_id = auth.uid())
   );
 
+DROP POLICY IF EXISTS "users_see_own_access" ON project_access;
 CREATE POLICY "users_see_own_access" ON project_access
   FOR SELECT USING (user_id = auth.uid());
 
@@ -76,6 +84,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS projects_updated_at ON projects;
 CREATE TRIGGER projects_updated_at
   BEFORE UPDATE ON projects
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
@@ -88,6 +97,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS projects_increment_revision ON projects;
 CREATE TRIGGER projects_increment_revision
   BEFORE UPDATE ON projects
   FOR EACH ROW EXECUTE FUNCTION increment_revision();
@@ -108,11 +118,13 @@ AS $$
   SELECT project_id FROM project_access WHERE user_id = uid;
 $$;
 
+DROP POLICY IF EXISTS "shared_select_projects" ON projects;
 CREATE POLICY "shared_select_projects" ON projects
   FOR SELECT USING (
     id IN (SELECT get_shared_project_ids(auth.uid()))
   );
 
+DROP POLICY IF EXISTS "shared_update_projects" ON projects;
 CREATE POLICY "shared_update_projects" ON projects
   FOR UPDATE USING (
     id IN (
@@ -132,6 +144,7 @@ AS $$
   SELECT EXISTS (SELECT 1 FROM projects WHERE id = pid AND owner_id = uid);
 $$;
 
+DROP POLICY IF EXISTS "owners_manage_access" ON project_access;
 CREATE POLICY "owners_manage_access" ON project_access
   FOR ALL USING (
     is_project_owner(project_id, auth.uid())
@@ -152,9 +165,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_email ON profiles (email);
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "profiles_public_read" ON profiles;
 CREATE POLICY "profiles_public_read" ON profiles
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "profiles_self_update" ON profiles;
 CREATE POLICY "profiles_self_update" ON profiles
   FOR UPDATE USING (id = auth.uid());
 
@@ -225,9 +240,11 @@ CREATE INDEX IF NOT EXISTS idx_usage_log_created
 
 ALTER TABLE usage_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "usage_log_self_read" ON usage_log;
 CREATE POLICY "usage_log_self_read" ON usage_log
   FOR SELECT USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "usage_log_self_insert" ON usage_log;
 CREATE POLICY "usage_log_self_insert" ON usage_log
   FOR INSERT WITH CHECK (user_id = auth.uid());
 
