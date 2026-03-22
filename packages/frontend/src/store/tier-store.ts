@@ -91,10 +91,14 @@ interface TierState {
 }
 
 export const useTierStore = create<TierState>((set, get) => ({
-  tier: isSupabaseConfigured ? "free" : "individual", // local mode = full access
+  // Default to "individual" (full access) until initialize() explicitly sets the tier.
+  // This ensures nobody is accidentally gated before the tier system is ready —
+  // whether Supabase isn't configured, the migration hasn't run, or the query fails.
+  // The gate only activates when a profile has an explicit tier value in the database.
+  tier: "individual",
   trialStartedAt: null,
   trialEndsAt: null,
-  activeUseCases: isSupabaseConfigured ? [] : [
+  activeUseCases: [
     "solution_engineering",
     "board_diagnostic",
     "transformation_planning",
@@ -109,14 +113,35 @@ export const useTierStore = create<TierState>((set, get) => ({
       return;
     }
 
-    // Fetch profile
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("tier, trial_started_at, trial_ends_at, active_use_cases")
-      .eq("id", userId)
-      .single();
+    // Fetch profile — tier columns may not exist yet if migration hasn't run.
+    // If the query fails or returns no tier data, default to "individual"
+    // (full access) so existing users are never accidentally locked out.
+    // The gate system only activates once the tier migration is in place
+    // and profiles have explicit tier values.
+    try {
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("tier, trial_started_at, trial_ends_at, active_use_cases")
+        .eq("id", userId)
+        .single();
 
-    if (profile) {
+      if (error || !profile || !profile.tier) {
+        // Migration not yet run, or profile missing tier column —
+        // grant full access until tier system is deliberately activated.
+        console.warn("[tier-store] Tier columns not available — defaulting to full access.", error?.message);
+        set({
+          tier: "individual",
+          activeUseCases: [
+            "solution_engineering",
+            "board_diagnostic",
+            "transformation_planning",
+            "agentic_governance",
+          ],
+          loaded: true,
+        });
+        return;
+      }
+
       // Check if trial has expired
       let effectiveTier = profile.tier as Tier;
       if (effectiveTier === "trial" && profile.trial_ends_at) {
@@ -135,12 +160,28 @@ export const useTierStore = create<TierState>((set, get) => ({
         activeUseCases: (profile.active_use_cases || []) as UseCase[],
         loaded: true,
       });
-    } else {
-      set({ loaded: true });
+    } catch (err) {
+      // Network error or unexpected failure — safe fallback to full access
+      console.warn("[tier-store] Failed to fetch tier — defaulting to full access.", err);
+      set({
+        tier: "individual",
+        activeUseCases: [
+          "solution_engineering",
+          "board_diagnostic",
+          "transformation_planning",
+          "agentic_governance",
+        ],
+        loaded: true,
+      });
+      return;
     }
 
-    // Fetch usage counts
-    await get().refreshUsage(userId);
+    // Fetch usage counts (also safe to fail — just means no allowance tracking)
+    try {
+      await get().refreshUsage(userId);
+    } catch (err) {
+      console.warn("[tier-store] Failed to fetch usage counts.", err);
+    }
   },
 
   refreshUsage: async (userId: string) => {
