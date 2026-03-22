@@ -1,6 +1,6 @@
 # VCC Architecture
 
-Last updated: 2026-03-10 (Session 21)
+Last updated: 2026-03-22 (Session 24) — v0.5.0 DRAFT
 
 ---
 
@@ -18,14 +18,14 @@ VCC is the first working instantiation of the CAPSICUM ontology (3×3 matrix: Do
 │  (paste/form)     │       │  (3-pass + gates) │
 └──────────────────┘       └────────┬─────────┘
                                      │
-┌──────────────┐            ┌────────▼─────────┐
-│  XLSX Input   │───────────▶│  Scaffold JSON   │
-│ (BA Model)    │  (legacy)  │  (canonical)     │
-└──────────────┘            └────────┬─────────┘
+┌──────────────┐            ┌────────▼─────────┐      ┌──────────────────┐
+│  XLSX Input   │───────────▶│  Scaffold JSON   │◀─────│  Canvas Handoff  │
+│ (BA Model)    │  (legacy)  │  (canonical)     │      │  (claim token)   │
+└──────────────┘            └────────┬─────────┘      └──────────────────┘
                                      │
                            ┌─────────▼─────────┐
                            │   Frontend App     │
-                           │                    │
+                           │   (tier-gated)     │
                            │  ┌──────────────┐  │
                            │  │ Network View  │  │
                            │  │ (enterprise)  │  │
@@ -38,13 +38,30 @@ VCC is the first working instantiation of the CAPSICUM ontology (3×3 matrix: Do
                            └───────────────────┘
 ```
 
-## Two Entry Paths
+## Three Entry Paths
 
-### 1. Discovery Intake (primary — presales/consulting)
+### 1. Canvas → VCC Handoff (primary — website conversion)
+
+User generates a model on plausibleba.com/canvas → clicks "Open in VCC →" → bundle posted to edge function → one-time claim token → redirect to VCC → survives auth → auto-import.
+
+```
+plausibleba.com/canvas
+  │ POST /api/claim-bundle (bundle JSON)
+  ▼
+Vercel KV (bndl_xxx, 24hr TTL)
+  │ redirect → app.plausibleba.com?claim=token&email=...
+  ▼
+VCC LoginPage (pre-filled email, contextual banner)
+  │ sessionStorage bridge (survives OAuth/magic link)
+  ▼
+App.tsx useEffect → fetchClaimedBundle → import → create project
+```
+
+### 2. Discovery Intake (presales/consulting)
 
 Paste transcript or fill structured form → LLM extraction → confirm → generate scaffold.
 
-### 2. File Loader (secondary — existing bundles)
+### 3. File Loader (existing bundles)
 
 Load a saved VCC bundle (scaffold + heatmaps) from JSON file.
 
@@ -185,6 +202,26 @@ App.tsx
 - DFS cycle detection, longest-path DAG layer assignment
 - Two-layer zone layout (Ecosystem/Knowledge)
 - `deriveCapabilityInstances()`, `deriveTopologyView()` — pure functions
+
+### Commercial Tier System
+
+Action-level gating enforced at the UI interaction layer:
+
+```
+tier-store.ts (Zustand + Supabase)
+  │ canPerform(action) → allowed | blocked | upsell
+  ▼
+useGateCheck hook
+  │ gate(action, callback, description)
+  ▼
+UpsellModal (contextual "upgrade to unlock X")
+```
+
+- **Tiers**: free → trial (15 days, full access) → starter → individual → team
+- **Pattern**: `gate("action_name", () => fn())` wraps every write/execute onClick handler
+- **InlineEdit gating**: Single change to shared component gates ALL edit pencils app-wide
+- **Usage tracking**: `usage_log` table in Supabase records every gated action attempt
+- **Allowances**: Free tier gets limited allowances (e.g. 1 friction run, 3 bundle uploads) before hard gate
 
 ### Utility Library
 

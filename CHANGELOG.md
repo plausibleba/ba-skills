@@ -4,7 +4,37 @@ All notable changes to VCC (Value Cognition Canvas) are documented here. Each re
 
 ---
 
-## [v0.4.0] — 2026-03-21 — DRAFT
+## [v0.5.0] — 2026-03-22 — DRAFT
+
+**Theme: Canvas → VCC Handoff & Commercial Tier System**
+
+The first version where VCC operates as a product with a signup flow, tier enforcement, and cross-domain bundle handoff from the PlausibleBA website.
+
+### New Features
+
+- **Canvas → VCC Bundle Handoff** — clicking "Open in VCC →" on plausibleba.com/canvas posts the generated bundle to a Vercel KV-backed edge function, generates a one-time claim token, and redirects to VCC. The token survives Supabase auth redirects (magic link, OAuth) via sessionStorage. After login, VCC auto-imports the bundle and creates a project. Includes login pre-fill (email, name) and contextual UI ("Your operating model is ready to import").
+
+- **Commercial Tier System** — action-level gating across the entire app. Free users can browse everything; writes and executions are blocked with contextual upsell modals. Tiers: free → trial (15 days, everything unlocked) → starter ($20/mo per use case) → individual ($50/mo) → team. Supabase migration adds tier columns to profiles and a usage_log table.
+
+- **Tier Gate Wiring** — every write/execute action across 8 components wrapped with `gate()` calls: InlineEdit (all edit pencils app-wide), ProjectList (create, discover, import), FrictionView (all 5 tabs: observations, solutions, survey, settings), DiscoveryIntake (generate, extract), NetworkView (VS editor), CanvasView (add stage, export stories), StageWizard (run assessment, enrich solutions). 23 gated action types with human-readable labels.
+
+- **Dev Tier Switcher** — development-only floating widget (bottom-right) for instantly switching between tiers to test gate behaviour.
+
+- **Test Handoff Page** — hidden page (`website/test-handoff.html`) with full UX flow documentation, edge cases table, and three-mode test harness for verifying the handoff pipeline.
+
+### Technical
+
+- **Claim Token Edge Function** (`website/api/claim-bundle.ts`) — Vercel Edge Runtime, POST stores bundle in Vercel KV with 24hr TTL, GET retrieves and deletes (one-time claim). In-memory Map fallback for local dev.
+
+- **Bundle Claim Client** (`utils/bundle-claim.ts`) — client-side claim lifecycle: `extractClaimFromURL()`, `getPendingClaim()`, `getClaimPrefill()`, `consumePendingClaim()`. SessionStorage bridge for auth redirect survival.
+
+- **Tier Store** (`store/tier-store.ts`) — Zustand store with Supabase sync, `canPerform()` gate logic with per-action allowance tracking, `initializeTier()` called on auth.
+
+- **Gate Check Hook** (`hooks/useGateCheck.ts`) — `gate(action, callback, description)` pattern with `ACTION_LABELS` map and action-to-use-case mapping.
+
+---
+
+## [v0.4.0] — 2026-03-21
 
 **Theme: First-Time User Experience & Network View Overhaul**
 

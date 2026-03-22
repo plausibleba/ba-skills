@@ -1,6 +1,6 @@
 # Current State — VCC Frontend
 
-_Last updated: 2026-03-21 — Session 23 (UX polish & Network View overhaul) — v0.4.0 DRAFT_
+_Last updated: 2026-03-22 — Session 24 (Canvas→VCC handoff & commercial tier system) — v0.5.0 DRAFT_
 
 ---
 
@@ -109,6 +109,30 @@ The canvas is now a **living document**, not a read-only output:
 - Heading line breaks, generic placeholder text, improved advice text prominence
 - Scope toggle syncs to project store
 
+### Canvas → VCC Bundle Handoff ✅ (NEW — Session 24)
+
+Cross-domain handoff from PlausibleBA Canvas to VCC app:
+
+- **Claim token flow**: Canvas POSTs bundle to `/api/claim-bundle` edge function → Vercel KV stores with `bndl_` prefix (24hr TTL) → redirects to VCC with `?claim=token&email=...`
+- **sessionStorage bridge**: Claim token stashed in sessionStorage, survives Supabase auth redirects (OAuth, magic link) because sessionStorage is tab-scoped
+- **One-time claim**: GET retrieves AND deletes from KV (consumed on first use)
+- **Login pre-fill**: Email/name from Canvas email gate passed through URL params → sessionStorage → LoginPage useEffect. Contextual UI: green banner "Your operating model is ready to import", button "Sign in & import model"
+- **Auto-import**: After auth completes, App.tsx useEffect consumes pending claim → fetches bundle → imports into project. Handles three formats: VCC-native, PlausibleBA, raw scaffold
+- **Loading screen**: Spinner with "Importing your operating model..." shown during claim consumption
+- **Test page**: `website/test-handoff.html` with full UX flow docs, edge cases table, and three-mode test harness
+
+### Commercial Tier System ✅ (NEW — Session 24)
+
+Action-level gating with upsell prompts:
+
+- **Tier hierarchy**: free → trial (15 days, everything unlocked) → starter ($20/mo) → individual ($50/mo) → team
+- **Architecture**: `tier-store.ts` (Zustand + Supabase sync) → `useGateCheck` hook → `UpsellModal` (contextual upgrade prompts)
+- **Free tier rules**: READs free, WRITEs/EXECUTEs gated. Allowances: 1 friction analysis run, 3 bundle uploads
+- **Gate wiring**: All write/execute actions across the app wrapped with `gate()` calls — InlineEdit (all edit pencils), ProjectList, FrictionView (all 5 tabs), DiscoveryIntake, NetworkView, CanvasView, StageWizard
+- **23 gated action types**: edit_field, create_project, run_discovery, run_assessment, enrich_solutions, export_pdf, export_stories, upload_vendor_library, upload_stories, save_survey, edit_signals, etc.
+- **DevTierSwitcher**: Development-only component for testing tier behaviour (bottom-right corner)
+- **Supabase migration**: `profiles` table extended with tier, trial_ends_at, trial_started_at, active_use_cases columns; `usage_log` table for metered action tracking
+
 ---
 
 ## Architecture
@@ -198,28 +222,30 @@ _Last updated: 2026-03-19_
 |----------|--------|---------|
 | `/api/generate` | POST | LLM proxy — rate-limited, streams SSE from Anthropic |
 | `/api/leads` | GET | Lead list — protected by LEADS_API_KEY query param |
+| `/api/claim-bundle` | POST/GET | Bundle handoff — POST stores bundle in KV (returns token), GET retrieves+deletes by token |
 
 ---
 
 ## Known Gaps / Next Steps
 
-### Immediate (v0.4.0 completion)
-1. Review VS Canvas (Stage View) with Eric/John testing in mind
-2. Wire "What's New" modal + version bump to v0.4.0 in app header
-3. Docker Compose stack for local deployment
+### Immediate (v0.5.0 completion)
+1. **Verify tier gating end-to-end** — test with DevTierSwitcher that switching to free tier blocks actions and shows upsell modal in deployed app
+2. **Fix tier-store.ts type errors** — Supabase database types don't match the migration columns (tier, trial_ends_at, etc.). Regenerate types from migration or add manual type overrides
+3. **Stripe integration** — wire the upsell modal's "Upgrade" button to Stripe checkout for starter/individual tiers
+4. Wire "What's New" modal + version bump to v0.5.0 in app header
 
 ### Near Term
-4. **Record-lifecycle coupling** — make Record → Outcome Lifecycle mapping explicit in scaffold (R-013, foundation for agentic orchestration)
-5. **Capability selector** — pick from existing capabilities before "create new" (D-097 Step 1 lite)
-6. **Client-side graph index** — in-memory adjacency map on bundle load (D-097 Step 1)
-7. **TypeScript type drift cleanup** — align types with runtime data (D-096)
-8. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
-9. Refactoring sprint using debt register (R-001 through R-015)
+5. **Record-lifecycle coupling** — make Record → Outcome Lifecycle mapping explicit in scaffold (R-013, foundation for agentic orchestration)
+6. **Capability selector** — pick from existing capabilities before "create new" (D-097 Step 1 lite)
+7. **Client-side graph index** — in-memory adjacency map on bundle load (D-097 Step 1)
+8. **TypeScript type drift cleanup** — align types with runtime data (D-096)
+9. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
+10. Refactoring sprint using debt register (R-001 through R-015)
 
 ### Future
-10. **Agentic orchestration** — executable state machine driven by record lifecycle (R-013)
-11. **Ontology-as-schema validation** — formal metamodel definitions (D-097 Step 2)
-12. F-001 phase 2: delete observations, reassign binding constraint
-13. Multi-vendor support beyond Salesforce
-14. Eric Broda MVC demo — Governance Kernel overlay on StageCard
-15. Multi-user modelling backend (D-097 upgrade trigger)
+11. **Agentic orchestration** — executable state machine driven by record lifecycle (R-013)
+12. **Ontology-as-schema validation** — formal metamodel definitions (D-097 Step 2)
+13. F-001 phase 2: delete observations, reassign binding constraint
+14. Multi-vendor support beyond Salesforce
+15. Eric Broda MVC demo — Governance Kernel overlay on StageCard
+16. Multi-user modelling backend (D-097 upgrade trigger)

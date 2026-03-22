@@ -99,9 +99,13 @@ These are absolute. A blue chip always means a role. No exceptions.
 
 | Component | Purpose |
 |-----------|---------|
-| `App.tsx` | Root — mode switch, breadcrumb (scaffold name → VS name) |
+| `App.tsx` | Root — mode switch, breadcrumb, claim token consumption, tier init |
 | `canvas-store.ts` | All state: scaffold, network topology, VS selection, heatmaps |
-| `NetworkView.tsx` | Enterprise DAG with two-layer zones, scaffold selector |
+| `tier-store.ts` | Tier state (Zustand + Supabase sync), gate check logic, usage tracking |
+| `useGateCheck.ts` | Hook wrapping actions with tier gate — returns `gate(action, callback)` |
+| `UpsellModal.tsx` | Contextual upgrade prompt shown when free-tier user hits a gated action |
+| `LoginPage.tsx` | Auth page with claim-aware UI (pre-fill email, contextual banner) |
+| `NetworkView.tsx` | Enterprise DAG with layer schemes, graph view, VS editor modal |
 | `CanvasView.tsx` | Stage view orchestrator: VS header, toolbar, stage columns |
 | `StageColumn.tsx` | Per-stage column: header with info tooltip, structure pane, capabilities |
 | `CapabilityBlock.tsx` | Per-capability: name, info tooltip, PPIT badge counts, expandable layers |
@@ -109,6 +113,39 @@ These are absolute. A blue chip always means a role. No exceptions.
 | `TransformationPane.tsx` | Friction observations (future: painpoints, ideas, requirements) |
 | `CanvasToolbar.tsx` | Structure/Transformation toggles + PPIT layer toggles |
 | `ContentSelectors.tsx` | VS dropdown + heatmap assessment loader |
+| `InlineEdit.tsx` | Double-click-to-edit component — tier-gated (all edit pencils in app) |
+| `bundle-claim.ts` | Client-side claim token lifecycle (extract, stash, fetch, consume) |
+
+## Commercial / Tier System
+
+Action-level gating, not page-level. Free users can browse everything; writes and executions are gated.
+
+```
+tier-store.ts (state + Supabase sync)
+    ↓
+useGateCheck hook — gate(action, callback, description)
+    ↓ blocked?
+UpsellModal — contextual "upgrade to unlock X" prompt
+```
+
+**Tiers**: free → trial (15 days) → starter ($20/mo) → individual ($50/mo) → team
+**Free allowances**: 1 friction analysis, 3 bundle uploads. READs free, WRITEs gated.
+**23 gated actions**: edit_field, create_project, run_discovery, run_assessment, export_pdf, etc.
+**Pattern**: `gate("action_name", () => originalCallback())` wraps existing onClick handlers.
+
+## Canvas → VCC Handoff
+
+Cross-domain bundle transfer from plausibleba.com/canvas to app.plausibleba.com:
+
+```
+Canvas → POST /api/claim-bundle → Vercel KV (bndl_xxx, 24hr TTL)
+                                       ↓
+VCC ← ?claim=token&email=... → sessionStorage (survives auth redirect)
+                                       ↓ after login
+App.tsx useEffect → fetchClaimedBundle → import → create project
+```
+
+Key files: `website/api/claim-bundle.ts` (edge function), `utils/bundle-claim.ts` (client lifecycle).
 
 ## Validation Rules
 
@@ -130,9 +167,9 @@ These are absolute. A blue chip always means a role. No exceptions.
 
 ## Scope Boundaries
 
-**In scope**: Scaffold validation, canvas rendering (Network + Stage), PPIT layers, friction overlay, binding constraint, heatmap loading, multi-VS navigation, progressive disclosure.
+**In scope**: Scaffold validation, canvas rendering (Network + Stage), PPIT layers, friction overlay, binding constraint, heatmap loading, multi-VS navigation, progressive disclosure, commercial tier gating, Canvas→VCC bundle handoff, Supabase auth (magic link + OAuth).
 
-**In progress**: IIBA discovery questionnaire, heatmap generation, friction signal agent.
+**In progress**: Stripe integration for paid tiers, end-to-end tier testing, Supabase type regeneration.
 
 **Explicitly deferred**: Runtime workflow execution, telemetry ingestion, automated metric calculation, simulation engine, multi-tenant SaaS, Throughput Impact Panel (see `POSTURE_non_prescriptive.md`), activity-level PPIT anchoring (currently capability-level).
 
