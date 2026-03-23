@@ -38,7 +38,6 @@ export default function App() {
     goToCapabilityMap,
     goToConceptGraph,
     goToFriction,
-    goToWorkbench,
     loading,
     loadScaffold,
     loadHeatmap,
@@ -224,7 +223,6 @@ export default function App() {
   const isConceptGraph = viewMode === "conceptGraph";
   const isFriction = viewMode === "friction";
   const isWorkbench = viewMode === "workbench";
-  const enterWorkbench = useWorkbenchStore((s) => s.enterWorkbench);
   const workbenchActive = useWorkbenchStore((s) => s.isActive);
 
   // Auth gate: show login page if not authenticated and not local mode
@@ -308,12 +306,6 @@ export default function App() {
                 { id: "capabilities", label: "Capabilities", onClick: goToCapabilityMap, active: isCapabilityMap },
                 { id: "concepts", label: "Concepts", onClick: goToConceptGraph, active: isConceptGraph },
                 { id: "friction", label: "Friction", onClick: goToFriction, active: isFriction },
-                { id: "workbench", label: "⚙ Workbench", onClick: () => {
-                  if (scaffoldData) {
-                    enterWorkbench(scaffoldData);
-                    goToWorkbench();
-                  }
-                }, active: isWorkbench },
               ]}
             />
           )}
