@@ -323,7 +323,7 @@ function SectionCards({
   const maxLabelLen = compact ? 22 : 34;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: compact ? 8 : 16, padding: compact ? 8 : 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: compact ? 8 : 16, padding: compact ? 8 : 16, maxWidth: compact ? undefined : 520 }}>
       {sections.map(sec => (
         <div key={sec.id} style={{
           border: `1px dashed ${theme.zoneBorder}`,

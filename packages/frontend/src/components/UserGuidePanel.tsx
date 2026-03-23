@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
 import { useProjectStore } from "../store/project-store.ts";
+import { useThemeStore } from "../store/theme-store.ts";
 
 type GuideState = "empty" | "network" | "workbench" | "stage-no-assessment" | "stage-assessed" | "stage-enriched";
 
@@ -227,12 +228,13 @@ export function UserGuidePanel() {
         ? INTAKE_PROVIDE_CONTENT
         : getGuideContent(state, features, currentModule);
   const progressSteps = getProgressSteps(features);
+  const isDark = useThemeStore((s) => s.mode) === "dark";
 
   return (
-    <div className="fixed bottom-4 left-4 z-40 w-64 rounded-xl border border-gray-200 bg-white shadow-lg">
+    <div className={`fixed bottom-4 left-4 z-40 w-64 rounded-xl border shadow-lg ${isDark ? "border-slate-700 bg-slate-800" : "border-gray-200 bg-white"}`}>
       {/* Header */}
       <div
-        className="flex cursor-pointer items-center justify-between rounded-t-xl border-b border-gray-100 bg-gray-50/80 px-3 py-2"
+        className={`flex cursor-pointer items-center justify-between rounded-t-xl border-b px-3 py-2 ${isDark ? "border-slate-700 bg-slate-700/80" : "border-gray-100 bg-gray-50/80"}`}
         onClick={() => setCollapsed(c => !c)}
       >
         <div className="flex items-center gap-1.5">
@@ -240,10 +242,10 @@ export function UserGuidePanel() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Guide</span>
+          <span className={`text-[10px] font-semibold uppercase tracking-wider ${isDark ? "text-slate-400" : "text-gray-500"}`}>Guide</span>
         </div>
         <svg
-          className={`h-3 w-3 text-gray-400 transition-transform ${collapsed ? "" : "rotate-180"}`}
+          className={`h-3 w-3 ${isDark ? "text-slate-500" : "text-gray-400"} transition-transform ${collapsed ? "" : "rotate-180"}`}
           fill="none" stroke="currentColor" viewBox="0 0 24 24"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -257,28 +259,28 @@ export function UserGuidePanel() {
             <p className="text-[9px] font-semibold uppercase tracking-wider text-vcc-500 mb-1">
               Where you are
             </p>
-            <p className="text-[11px] font-semibold text-vcc-800">{content.where}</p>
+            <p className={`text-[11px] font-semibold ${isDark ? "text-slate-200" : "text-vcc-800"}`}>{content.where}</p>
           </div>
 
           {/* What you're looking at */}
           <div>
-            <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+            <p className={`text-[9px] font-semibold uppercase tracking-wider ${isDark ? "text-slate-500" : "text-gray-400"} mb-1`}>
               What you see
             </p>
-            <p className="text-[11px] leading-relaxed text-gray-600">{content.what}</p>
+            <p className={`text-[11px] leading-relaxed ${isDark ? "text-slate-400" : "text-gray-600"}`}>{content.what}</p>
           </div>
 
           {/* Next steps */}
           {content.next.length > 0 && (
             <div>
-              <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+              <p className={`text-[9px] font-semibold uppercase tracking-wider ${isDark ? "text-slate-500" : "text-gray-400"} mb-1.5`}>
                 Next steps
               </p>
               <ul className="space-y-1.5">
                 {content.next.map((step, i) => (
                   <li key={i} className="flex items-start gap-1.5">
                     <span className="mt-0.5 flex-shrink-0 text-[9px] font-bold text-vcc-400">{"\u2192"}</span>
-                    <span className="text-[11px] leading-relaxed text-gray-600">{step}</span>
+                    <span className={`text-[11px] leading-relaxed ${isDark ? "text-slate-400" : "text-gray-600"}`}>{step}</span>
                   </li>
                 ))}
               </ul>
@@ -286,7 +288,7 @@ export function UserGuidePanel() {
           )}
 
           {/* Step progress dots */}
-          <div className="flex items-center justify-center gap-1.5 pt-1 border-t border-gray-100">
+          <div className={`flex items-center justify-center gap-1.5 pt-1 border-t ${isDark ? "border-slate-700" : "border-gray-100"}`}>
             {progressSteps.map(({ label, state: stepState }, i) => {
               const allStates: GuideState[] = progressSteps.map(s => s.state);
               const currentIdx = allStates.indexOf(state) !== -1 ? allStates.indexOf(state) : -1;
@@ -296,8 +298,8 @@ export function UserGuidePanel() {
               return (
                 <div key={label} className="flex flex-col items-center gap-0.5">
                   <div className={`h-1.5 w-1.5 rounded-full transition-colors
-                    ${isPast ? "bg-emerald-400" : isActive ? "bg-vcc-500" : "bg-gray-200"}`} />
-                  <span className={`text-[8px] ${isActive ? "text-vcc-500 font-semibold" : isPast ? "text-emerald-500" : "text-gray-300"}`}>
+                    ${isPast ? "bg-emerald-400" : isActive ? "bg-vcc-500" : isDark ? "bg-slate-600" : "bg-gray-200"}`} />
+                  <span className={`text-[8px] ${isActive ? "text-vcc-500 font-semibold" : isPast ? "text-emerald-500" : isDark ? "text-slate-500" : "text-gray-300"}`}>
                     {label}
                   </span>
                 </div>
