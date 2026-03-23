@@ -16,7 +16,7 @@ import { LoginPage } from "./components/LoginPage.tsx";
 import { ProjectList } from "./components/ProjectList.tsx";
 import { autoSaveToProject } from "./utils/auto-save.ts";
 import { VersionBadge } from "./components/ChangelogModal.tsx";
-import { UpsellModalProvider } from "./components/UpsellModal.tsx";
+import { UpsellModalProvider, useUpsellModal } from "./components/UpsellModal.tsx";
 import { DevTierSwitcher } from "./components/DevTierSwitcher.tsx";
 import { extractClaimFromURL, consumePendingClaim } from "./utils/bundle-claim.ts";
 import { useTierStore } from "./store/tier-store.ts";
@@ -259,6 +259,7 @@ export default function App() {
 
   return (
     <UpsellModalProvider>
+    <UpgradeURLTrigger />
     <div className="flex h-screen flex-col">
       {/* Header */}
       <header className="flex items-center justify-between border-b border-gray-200 bg-vcc-900 px-6 py-2.5">
@@ -461,6 +462,37 @@ export default function App() {
     </div>
     </UpsellModalProvider>
   );
+}
+
+/* ── URL-triggered upgrade modal ──────────────────────────── */
+// Detects ?upgrade=true from marketing site CTAs and auto-opens pricing modal
+function UpgradeURLTrigger() {
+  const { show } = useUpsellModal();
+  const triggered = useRef(false);
+
+  useEffect(() => {
+    if (triggered.current) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgrade") !== "true") return;
+
+    triggered.current = true;
+
+    // Clean URL
+    params.delete("upgrade");
+    const clean = params.toString();
+    window.history.replaceState({}, "", clean ? `?${clean}` : window.location.pathname);
+
+    // Show pricing modal after a brief delay for the page to render
+    setTimeout(() => {
+      show({
+        action: "upgrade" as any,
+        reason: "Choose a plan to get started with VCC.",
+        featureLabel: "VCC",
+      });
+    }, 500);
+  }, [show]);
+
+  return null;
 }
 
 /* ── Subway Navigation ────────────────────────────────────── */
