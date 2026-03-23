@@ -25,6 +25,7 @@ interface UpsellConfig {
   reason: string;
   featureLabel: string;
   requiredUseCase?: UseCase;
+  forcePricing?: boolean; // Skip trial offer, go straight to pricing tiers
 }
 
 interface UpsellModalContextValue {
@@ -155,7 +156,7 @@ function UpsellModalOverlay({
   };
 
   // Show pricing tiers view (no icon/headline/feature-list — PricingTiers handles it)
-  const showPricing = !canStartTrial && !activated;
+  const showPricing = (config.forcePricing || !canStartTrial) && !activated;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">

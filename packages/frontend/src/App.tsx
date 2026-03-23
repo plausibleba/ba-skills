@@ -488,6 +488,7 @@ function UpgradeURLTrigger() {
         action: "upgrade" as any,
         reason: "Choose a plan to get started with VCC.",
         featureLabel: "VCC",
+        forcePricing: true,
       });
     }, 500);
   }, [show]);
