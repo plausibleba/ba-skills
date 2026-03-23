@@ -583,6 +583,7 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
                 display: "flex", flexShrink: isContext ? 0 : undefined,
                 flex: col.isCurrent ? 1 : undefined,
                 animation: col.isCurrent ? "sge-slide-in 0.25s ease-out" : isContext ? "sge-fade-in 0.2s ease" : undefined,
+                justifyContent: col.isCurrent ? "center" : undefined,
               }}>
                 {showDivider && (
                   <div style={{
@@ -594,9 +595,8 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
                 <div
                   className={isContext ? "sge-context-col" : undefined}
                   style={{
-                    width: isContext ? 200 : undefined,
-                    maxWidth: col.isCurrent ? 520 : undefined,
-                    flex: col.isCurrent ? 1 : undefined,
+                    width: isContext ? 200 : 520,
+                    flexShrink: 0,
                     overflowY: "auto",
                     overflowX: "hidden",
                     opacity: isContext ? 0.5 : 1,
