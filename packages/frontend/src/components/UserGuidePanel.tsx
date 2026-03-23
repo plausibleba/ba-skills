@@ -73,7 +73,7 @@ function getGuideContent(
         where: "Op Model Workbench — Refinement Engine",
         what: "The Workbench is where Business Architects review and refine the structural foundations of the operating model. It provides editable catalogs for capabilities, value streams, activities, concepts, roles, and metrics — plus an AI refinement agent that proposes structural changes in response to natural language feedback.",
         next: [
-          "Use the Catalog view to browse and directly edit elements in each catalog",
+          "Use the Catalog or Graph Explorer view to browse and directly edit elements in each catalog",
           "Switch catalogs with the dropdown — they're sorted alphabetically",
           "Open the Refinement Agent sidebar to describe changes in plain English",
           "The agent proposes structured diffs (add, modify, delete, merge, split, move) you can accept or reject",

@@ -88,10 +88,6 @@ function getZone(vs: any): string {
   return vs.layoutZone ?? vs.zone ?? "default";
 }
 
-function trunc(s: string, n: number): string {
-  return s.length > n ? s.slice(0, n - 1) + "…" : s;
-}
-
 function typeColor(type: string): string {
   return (theme as any)[type] || theme.textDim;
 }
@@ -276,7 +272,7 @@ function FlowArrow({ compact, label }: { compact: boolean; label?: string }) {
           fontSize: 9, color: theme.textDim, lineHeight: 1,
           maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           textAlign: "center", marginBottom: 2,
-        }}>
+        }} title={label}>
           {label}
         </div>
       )}
@@ -316,7 +312,6 @@ function SectionCards({
   const itemH = compact ? 28 : 40;
   const labelSize = compact ? 9 : 12;
   const sectionLabelSize = compact ? 8 : 10;
-  const maxLabelLen = compact ? 20 : 40;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: compact ? 6 : 14, padding: compact ? 6 : 14 }}>
@@ -368,16 +363,17 @@ function SectionCards({
                       color, fontSize: compact ? 10 : 13, flexShrink: 0,
                       width: compact ? 14 : 18, textAlign: "center",
                     }}>{typeIcon(item.type)}</span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ flex: 1, minWidth: 0 }} title={item.label}>
                       <div style={{
                         color: isHighlight ? "#fff" : theme.text, fontSize: labelSize,
                         fontWeight: isHighlight ? 600 : 500,
                         whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                       }}>
-                        {trunc(item.label, maxLabelLen)}
+                        {item.label}
                       </div>
                       {item.subtitle && !compact && (
-                        <div style={{ color: theme.textFaint, fontSize: 10, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <div style={{ color: theme.textFaint, fontSize: 10, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                          title={item.subtitle}>
                           {item.subtitle}
                         </div>
                       )}
@@ -586,7 +582,6 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
               <div key={i} style={{
                 display: "flex", flexShrink: isContext ? 0 : undefined,
                 flex: col.isCurrent ? 1 : undefined,
-                maxWidth: col.isCurrent ? 480 : undefined,
                 animation: col.isCurrent ? "sge-slide-in 0.25s ease-out" : isContext ? "sge-fade-in 0.2s ease" : undefined,
               }}>
                 {showDivider && (
@@ -599,7 +594,8 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
                 <div
                   className={isContext ? "sge-context-col" : undefined}
                   style={{
-                    width: isContext ? 170 : undefined,
+                    width: isContext ? 200 : undefined,
+                    maxWidth: col.isCurrent ? 520 : undefined,
                     flex: col.isCurrent ? 1 : undefined,
                     overflowY: "auto",
                     overflowX: "hidden",

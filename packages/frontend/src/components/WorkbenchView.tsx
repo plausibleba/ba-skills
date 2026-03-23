@@ -1562,7 +1562,7 @@ export function WorkbenchView() {
                   Welcome to the Op Model Workbench
                 </div>
                 <p style={{ fontSize: 12, color: theme.textMuted, lineHeight: 1.6, margin: 0 }}>
-                  This is where you refine your operating model's structural foundations. Use the <strong style={{ color: theme.text }}>Catalog</strong> view to browse and directly edit elements.
+                  This is where you refine your operating model's structural foundations. Use the <strong style={{ color: theme.text }}>Catalog</strong> or <strong style={{ color: theme.text }}>Graph Explorer</strong> view to browse and directly edit elements.
                   Open the <strong style={{ color: theme.text }}>Refinement Agent</strong> to describe changes in plain English — it will propose structured diffs you can accept or reject.
                   When you're done editing, <strong style={{ color: theme.text }}>Reconcile</strong> runs cross-catalog validation to catch orphaned references and structural gaps,
                   then <strong style={{ color: theme.text }}>Apply</strong> commits your changes back to the project model.
