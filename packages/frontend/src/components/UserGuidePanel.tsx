@@ -3,7 +3,7 @@ import { useCanvasStore } from "../store/canvas-store.ts";
 import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
 import { useProjectStore } from "../store/project-store.ts";
 
-type GuideState = "empty" | "network" | "stage-no-assessment" | "stage-assessed" | "stage-enriched";
+type GuideState = "empty" | "network" | "workbench" | "stage-no-assessment" | "stage-assessed" | "stage-enriched";
 
 function deriveGuideState(
   viewMode: string,
@@ -12,6 +12,7 @@ function deriveGuideState(
   isEnriched: boolean,
 ): GuideState {
   if (!isLoaded) return "empty";
+  if (viewMode === "workbench") return "workbench";
   if (viewMode === "network") return "network";
   if (viewMode === "stage" && !hasAssessment) return "stage-no-assessment";
   if (viewMode === "stage" && hasAssessment && !isEnriched) return "stage-assessed";
@@ -59,9 +60,25 @@ function getGuideContent(
         next: [
           "Click any value stream node to drill into its stage-by-stage detail",
           "Nodes with a red border have friction observations from a previous assessment",
+          "Open the Op Model Workbench to review and refine your operating model catalogs",
           ...(features.mvcCards
             ? ["Look for Concept and Policy Card indicators on each value stream"]
             : []),
+        ],
+      };
+
+    case "workbench":
+      return {
+        where: "Op Model Workbench — Refinement Engine",
+        what: "The Workbench is where Business Architects review and refine the structural foundations of the operating model. It provides editable catalogs for capabilities, value streams, activities, concepts, roles, and metrics — plus an AI refinement agent that proposes structural changes in response to natural language feedback.",
+        next: [
+          "Use the Catalog view to browse and directly edit elements in each catalog",
+          "Switch catalogs with the dropdown — they're sorted alphabetically",
+          "Open the Refinement Agent sidebar to describe changes in plain English",
+          "The agent proposes structured diffs (add, modify, delete, merge, split, move) you can accept or reject",
+          "Use Graph Explorer to visualise cross-catalog relationships",
+          "When done editing, click Reconcile to run cross-catalog validation checks",
+          "Finally, Apply commits your changes back to the project model",
         ],
       };
 

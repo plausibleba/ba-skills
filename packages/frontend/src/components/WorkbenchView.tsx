@@ -868,18 +868,15 @@ function RegenerateStep() {
 
 // ── Main Workbench View ──
 
-// ── Refinement Agent Step ──
+// ── Agent Sidebar (floats alongside catalog grid) ──
 
-function RefinementAgentStep() {
+function AgentSidebar({ onClose }: { onClose: () => void }) {
   const {
     activeCatalog,
-    setActiveCatalog,
     workingScaffold,
     agentMessages,
     addAgentMessage,
     applyEdits,
-    selectedCatalogs,
-    setStep,
   } = useWorkbenchStore();
 
   const [input, setInput] = useState("");
@@ -894,12 +891,10 @@ function RefinementAgentStep() {
     ? (workingScaffold.elements as any)[scaffoldKey] || {}
     : {};
 
-  // Auto-scroll to bottom on new messages
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  // Focus input on mount and catalog change
   useEffect(() => {
     inputRef.current?.focus();
   }, [activeCatalog]);
@@ -908,7 +903,6 @@ function RefinementAgentStep() {
     const trimmed = input.trim();
     if (!trimmed || isLoading) return;
 
-    // Add user message
     const userMsg: ChatMessage = {
       id: `user_${Date.now()}`,
       role: "user",
@@ -921,7 +915,6 @@ function RefinementAgentStep() {
     setIsLoading(true);
 
     try {
-      // Build conversation history for the LLM (exclude system messages)
       const history = messages.map((m) => ({
         role: m.role === "agent" ? "assistant" : "user",
         content: m.diffs
@@ -945,14 +938,13 @@ function RefinementAgentStep() {
 
       const { explanation, diffs } = parseAgentResponse(response.text);
 
-      const agentMsg: ChatMessage = {
+      addAgentMessage(activeCatalog, {
         id: `agent_${Date.now()}`,
         role: "agent",
         content: explanation,
         diffs: diffs.length > 0 ? diffs : undefined,
         timestamp: Date.now(),
-      };
-      addAgentMessage(activeCatalog, agentMsg);
+      });
     } catch (e: any) {
       setError(e.message || "Failed to get agent response");
     } finally {
@@ -969,120 +961,65 @@ function RefinementAgentStep() {
 
   const acceptDiffs = (diffs: DiffOperation[]) => {
     applyEdits(diffs);
-    // Add a confirmation message
     addAgentMessage(activeCatalog, {
       id: `system_${Date.now()}`,
       role: "agent",
-      content: `✅ Applied ${diffs.length} change${diffs.length !== 1 ? "s" : ""} to ${CATALOG_CONFIGS[activeCatalog].label}.`,
+      content: `Applied ${diffs.length} change${diffs.length !== 1 ? "s" : ""} to ${CATALOG_CONFIGS[activeCatalog].label}. The grid has been updated.`,
       timestamp: Date.now(),
     });
   };
 
-  // Sorted catalogs for dropdown
-  const sortedCatalogs = useMemo(
-    () => [...selectedCatalogs].sort((a, b) => CATALOG_CONFIGS[a].label.localeCompare(CATALOG_CONFIGS[b].label)),
-    [selectedCatalogs],
-  );
-
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      {/* Agent toolbar */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "8px 24px",
-          background: "rgba(15, 23, 42, 0.6)",
-          borderBottom: `1px solid ${theme.accentBorderSubtle}`,
-        }}
-      >
-        <span style={{ fontSize: 11, color: theme.textDim, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-          Refining
-        </span>
-        <select
-          value={activeCatalog}
-          onChange={(e) => setActiveCatalog(e.target.value as CatalogType)}
-          style={{
-            padding: "5px 28px 5px 10px",
-            borderRadius: 6,
-            fontSize: 12,
-            color: theme.text,
-            background: "rgba(30, 41, 59, 0.8)",
-            border: `1px solid ${theme.accentBorder}`,
-            cursor: "pointer",
-            appearance: "none",
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "right 8px center",
-          }}
-        >
-          {sortedCatalogs.map((cat) => (
-            <option key={cat} value={cat}>
-              {CATALOG_CONFIGS[cat].icon} {CATALOG_CONFIGS[cat].label}
-            </option>
-          ))}
-        </select>
-        <span style={{ fontSize: 11, color: theme.textDim }}>
-          {Object.keys(catalogElements).length} elements
-        </span>
-        <div style={{ flex: 1 }} />
-        <button
-          onClick={() => setStep(2)}
-          style={{
-            padding: "5px 12px",
-            borderRadius: 4,
-            fontSize: 11,
-            color: theme.textMuted,
-            background: "transparent",
-            border: `1px solid ${theme.border}`,
-            cursor: "pointer",
-          }}
-        >
-          ← Back to Catalogs
-        </button>
-        <button
-          onClick={() => setStep(4)}
-          style={{
-            padding: "5px 12px",
-            borderRadius: 4,
-            fontSize: 11,
-            color: theme.textMuted,
-            background: "transparent",
-            border: `1px solid ${theme.border}`,
-            cursor: "pointer",
-          }}
-        >
-          Reconcile →
-        </button>
+    <div
+      style={{
+        width: 380,
+        minWidth: 380,
+        display: "flex",
+        flexDirection: "column",
+        borderLeft: `1px solid ${theme.accentBorder}`,
+        background: "rgba(15, 23, 42, 0.97)",
+      }}
+    >
+      {/* Sidebar header */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "10px 14px",
+        borderBottom: `1px solid ${theme.accentBorderSubtle}`,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 14 }}>🤖</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: theme.accent }}>Refinement Agent</span>
+          <span style={{ fontSize: 10, color: theme.textDim }}>
+            — {CATALOG_CONFIGS[activeCatalog].label}
+          </span>
+        </div>
+        <button onClick={onClose} style={{ background: "none", border: "none", color: theme.textDim, cursor: "pointer", fontSize: 16, padding: "2px 6px" }}>×</button>
       </div>
 
-      {/* Chat area */}
-      <div style={{ flex: 1, overflow: "auto", padding: "16px 24px" }}>
-        {/* Welcome message if no history */}
+      {/* Chat messages */}
+      <div style={{ flex: 1, overflow: "auto", padding: "10px 12px" }}>
+        {/* Welcome */}
         {messages.length === 0 && (
-          <div style={{ maxWidth: 560, margin: "40px auto", textAlign: "center" }}>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>🤖</div>
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: theme.accent, marginBottom: 8 }}>
-              Refinement Agent
-            </h3>
-            <p style={{ fontSize: 13, color: theme.textMuted, lineHeight: 1.6, marginBottom: 20 }}>
-              Describe what you want to change in the <strong style={{ color: theme.text }}>{CATALOG_CONFIGS[activeCatalog].label}</strong> catalog.
-              I'll propose structured changes you can accept or reject.
+          <div style={{ padding: "16px 8px", textAlign: "center" }}>
+            <p style={{ fontSize: 12, color: theme.textMuted, lineHeight: 1.6, marginBottom: 12 }}>
+              Describe changes to the <strong style={{ color: theme.text }}>{CATALOG_CONFIGS[activeCatalog].label}</strong> catalog. I'll propose structured diffs you can accept or reject.
             </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
-              {getExamplePrompts(activeCatalog).map((prompt, i) => (
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              {getExamplePrompts(activeCatalog).slice(0, 3).map((prompt, i) => (
                 <button
                   key={i}
                   onClick={() => { setInput(prompt); inputRef.current?.focus(); }}
                   style={{
-                    padding: "6px 12px",
-                    borderRadius: 16,
+                    padding: "6px 10px",
+                    borderRadius: 6,
                     fontSize: 11,
                     color: theme.textMuted,
                     background: "rgba(30, 41, 59, 0.5)",
                     border: `1px solid ${theme.borderSubtle}`,
                     cursor: "pointer",
+                    textAlign: "left",
                   }}
                 >
                   {prompt}
@@ -1092,158 +1029,102 @@ function RefinementAgentStep() {
           </div>
         )}
 
-        {/* Message list */}
+        {/* Messages */}
         {messages.map((msg) => (
-          <div
-            key={msg.id}
-            style={{
-              maxWidth: 720,
-              margin: "0 auto 16px",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            {/* Message bubble */}
+          <div key={msg.id} style={{ marginBottom: 10 }}>
             <div
               style={{
-                padding: "12px 16px",
-                borderRadius: 10,
+                padding: "8px 10px",
+                borderRadius: 8,
                 background: msg.role === "user"
                   ? "rgba(245, 158, 11, 0.08)"
-                  : "rgba(30, 41, 59, 0.5)",
+                  : "rgba(30, 41, 59, 0.6)",
                 border: `1px solid ${msg.role === "user" ? theme.accentBorder : theme.borderSubtle}`,
-                alignSelf: msg.role === "user" ? "flex-end" : "flex-start",
-                maxWidth: "85%",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                <span style={{ fontSize: 10, fontWeight: 600, color: msg.role === "user" ? theme.accent : theme.textDim, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
+                <span style={{ fontSize: 9, fontWeight: 600, color: msg.role === "user" ? theme.accent : theme.textDim, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   {msg.role === "user" ? "You" : "Agent"}
                 </span>
-                <span style={{ fontSize: 10, color: theme.textDim }}>
+                <span style={{ fontSize: 9, color: theme.textDim }}>
                   {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </span>
               </div>
-              <div style={{ fontSize: 13, color: theme.text, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+              <div style={{ fontSize: 12, color: theme.text, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
                 {msg.content}
               </div>
             </div>
 
-            {/* Diff proposal card */}
+            {/* Diff card — compact */}
             {msg.diffs && msg.diffs.length > 0 && (
-              <div
-                style={{
-                  marginTop: 8,
-                  maxWidth: "85%",
-                  borderRadius: 10,
-                  overflow: "hidden",
-                  border: `1px solid ${theme.accentBorder}`,
-                  background: "rgba(15, 23, 42, 0.8)",
-                }}
-              >
-                <div style={{ padding: "10px 16px", borderBottom: `1px solid ${theme.accentBorderSubtle}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: theme.accent }}>
-                    Proposed Changes ({msg.diffs.length})
+              <div style={{
+                marginTop: 6,
+                borderRadius: 8,
+                overflow: "hidden",
+                border: `1px solid ${theme.accentBorder}`,
+                background: "rgba(15, 23, 42, 0.9)",
+              }}>
+                <div style={{ padding: "6px 10px", borderBottom: `1px solid ${theme.accentBorderSubtle}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: theme.accent }}>
+                    {msg.diffs.length} change{msg.diffs.length !== 1 ? "s" : ""}
                   </span>
-                  <div style={{ display: "flex", gap: 6 }}>
+                  <div style={{ display: "flex", gap: 4 }}>
                     <button
                       onClick={() => acceptDiffs(msg.diffs!)}
-                      style={{
-                        padding: "4px 12px",
-                        borderRadius: 4,
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: theme.bg,
-                        background: theme.green,
-                        border: "none",
-                        cursor: "pointer",
-                      }}
+                      style={{ padding: "3px 8px", borderRadius: 3, fontSize: 10, fontWeight: 600, color: theme.bg, background: theme.green, border: "none", cursor: "pointer" }}
                     >
-                      Accept All
+                      Accept
                     </button>
                     <button
                       onClick={() => {
                         addAgentMessage(activeCatalog, {
                           id: `system_${Date.now()}`,
                           role: "agent",
-                          content: "Changes rejected. Let me know what you'd like instead.",
+                          content: "Rejected. What would you prefer?",
                           timestamp: Date.now(),
                         });
                       }}
-                      style={{
-                        padding: "4px 12px",
-                        borderRadius: 4,
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: theme.red,
-                        background: "rgba(239, 68, 68, 0.1)",
-                        border: `1px solid rgba(239, 68, 68, 0.3)`,
-                        cursor: "pointer",
-                      }}
+                      style={{ padding: "3px 8px", borderRadius: 3, fontSize: 10, fontWeight: 600, color: theme.red, background: "rgba(239,68,68,0.1)", border: `1px solid rgba(239,68,68,0.3)`, cursor: "pointer" }}
                     >
                       Reject
                     </button>
                   </div>
                 </div>
-
-                {/* Diff table */}
-                <div style={{ overflow: "auto", maxHeight: 300 }}>
-                  <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
-                    <thead>
-                      <tr style={{ borderBottom: `1px solid ${theme.borderSubtle}` }}>
-                        <th style={{ padding: "6px 12px", textAlign: "left", color: theme.textDim, fontWeight: 600, fontSize: 10, textTransform: "uppercase" }}>Action</th>
-                        <th style={{ padding: "6px 12px", textAlign: "left", color: theme.textDim, fontWeight: 600, fontSize: 10, textTransform: "uppercase" }}>Element</th>
-                        <th style={{ padding: "6px 12px", textAlign: "left", color: theme.textDim, fontWeight: 600, fontSize: 10, textTransform: "uppercase" }}>Detail</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {msg.diffs.map((diff: any, i: number) => (
-                        <tr key={i} style={{ borderBottom: `1px solid ${theme.borderSubtle}` }}>
-                          <td style={{ padding: "6px 12px" }}>
-                            <span style={{
-                              fontSize: 10,
-                              fontWeight: 700,
-                              padding: "2px 6px",
-                              borderRadius: 3,
-                              background: actionColors[diff.action]?.bg || "rgba(100,100,100,0.15)",
-                              color: actionColors[diff.action]?.text || theme.textMuted,
-                            }}>
-                              {diff.action.toUpperCase()}
-                            </span>
-                          </td>
-                          <td style={{ padding: "6px 12px", color: theme.text, fontFamily: "'SF Mono', monospace", fontSize: 11 }}>
-                            {diff.elementId || diff.sourceIds?.join(", ") || diff.sourceId || "—"}
-                          </td>
-                          <td style={{ padding: "6px 12px", color: theme.textMuted, fontSize: 11 }}>
-                            {renderDiffDetail(diff)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div style={{ maxHeight: 180, overflow: "auto" }}>
+                  {msg.diffs.map((diff: any, i: number) => (
+                    <div key={i} style={{ padding: "5px 10px", borderBottom: `1px solid ${theme.borderSubtle}`, display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
+                      <span style={{
+                        fontSize: 9,
+                        fontWeight: 700,
+                        padding: "1px 4px",
+                        borderRadius: 2,
+                        background: actionColors[diff.action]?.bg || "rgba(100,100,100,0.15)",
+                        color: actionColors[diff.action]?.text || theme.textMuted,
+                        flexShrink: 0,
+                      }}>
+                        {diff.action.toUpperCase()}
+                      </span>
+                      <span style={{ color: theme.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {renderDiffDetail(diff)}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
           </div>
         ))}
 
-        {/* Loading indicator */}
         {isLoading && (
-          <div style={{ maxWidth: 720, margin: "0 auto 16px" }}>
-            <div style={{ padding: "12px 16px", borderRadius: 10, background: "rgba(30, 41, 59, 0.5)", border: `1px solid ${theme.borderSubtle}`, display: "inline-block" }}>
-              <span style={{ fontSize: 13, color: theme.textMuted }}>
-                <span style={{ display: "inline-block", animation: "pulse 1.5s ease-in-out infinite" }}>Thinking</span>
-                <span style={{ animation: "pulse 1.5s ease-in-out infinite 0.2s", display: "inline-block" }}>.</span>
-                <span style={{ animation: "pulse 1.5s ease-in-out infinite 0.4s", display: "inline-block" }}>.</span>
-                <span style={{ animation: "pulse 1.5s ease-in-out infinite 0.6s", display: "inline-block" }}>.</span>
-              </span>
-            </div>
+          <div style={{ padding: "8px 10px", borderRadius: 8, background: "rgba(30, 41, 59, 0.6)", border: `1px solid ${theme.borderSubtle}`, display: "inline-block", marginBottom: 10 }}>
+            <span style={{ fontSize: 12, color: theme.textMuted }}>
+              <span style={{ animation: "pulse 1.5s ease-in-out infinite" }}>Thinking...</span>
+            </span>
           </div>
         )}
 
-        {/* Error */}
         {error && (
-          <div style={{ maxWidth: 720, margin: "0 auto 16px", padding: "10px 16px", borderRadius: 8, background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", fontSize: 12, color: theme.red }}>
+          <div style={{ padding: "6px 10px", borderRadius: 6, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: 11, color: theme.red, marginBottom: 10 }}>
             {error}
           </div>
         )}
@@ -1251,36 +1132,36 @@ function RefinementAgentStep() {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Input area */}
-      <div style={{ padding: "12px 24px", borderTop: `1px solid ${theme.accentBorderSubtle}`, background: "rgba(15, 23, 42, 0.8)" }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", gap: 8 }}>
+      {/* Input */}
+      <div style={{ padding: "8px 12px", borderTop: `1px solid ${theme.accentBorderSubtle}` }}>
+        <div style={{ display: "flex", gap: 6 }}>
           <textarea
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={`Describe changes for ${CATALOG_CONFIGS[activeCatalog].label}...`}
+            placeholder="Describe changes..."
             rows={2}
             style={{
               flex: 1,
               resize: "none",
-              padding: "10px 14px",
-              borderRadius: 8,
-              fontSize: 13,
+              padding: "8px 10px",
+              borderRadius: 6,
+              fontSize: 12,
               color: theme.text,
               background: "rgba(30, 41, 59, 0.6)",
               border: `1px solid ${theme.border}`,
               outline: "none",
-              lineHeight: 1.5,
+              lineHeight: 1.4,
             }}
           />
           <button
             onClick={sendMessage}
             disabled={isLoading || !input.trim()}
             style={{
-              padding: "10px 20px",
-              borderRadius: 8,
-              fontSize: 13,
+              padding: "8px 14px",
+              borderRadius: 6,
+              fontSize: 12,
               fontWeight: 600,
               color: theme.bg,
               background: isLoading || !input.trim() ? theme.textDim : theme.accent,
@@ -1294,6 +1175,50 @@ function RefinementAgentStep() {
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Tooltip Component ──
+
+function Tooltip({ text, children }: { text: string; children: React.ReactNode }) {
+  const [visible, setVisible] = useState(false);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const ref = useRef<HTMLDivElement>(null);
+
+  return (
+    <div
+      ref={ref}
+      style={{ position: "relative", display: "inline-flex" }}
+      onMouseEnter={(e) => {
+        const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+        setPos({ x: rect.left + rect.width / 2, y: rect.bottom + 8 });
+        setVisible(true);
+      }}
+      onMouseLeave={() => setVisible(false)}
+    >
+      {children}
+      {visible && (
+        <div style={{
+          position: "fixed",
+          left: pos.x,
+          top: pos.y,
+          transform: "translateX(-50%)",
+          maxWidth: 260,
+          padding: "8px 12px",
+          borderRadius: 6,
+          background: "rgba(15, 23, 42, 0.95)",
+          border: `1px solid ${theme.accentBorder}`,
+          color: theme.textMuted,
+          fontSize: 11,
+          lineHeight: 1.5,
+          zIndex: 100,
+          pointerEvents: "none",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+        }}>
+          {text}
+        </div>
+      )}
     </div>
   );
 }
@@ -1816,6 +1741,8 @@ export function WorkbenchView() {
 
   const backToNetwork = useCanvasStore((s) => s.backToNetwork);
   const [workbenchTab, setWorkbenchTab] = useState<"catalog" | "graph">("catalog");
+  const [agentPanelOpen, setAgentPanelOpen] = useState(false);
+  const [introVisible, setIntroVisible] = useState(true);
 
   const handleExit = () => {
     if (editHistory.length > 0) {
@@ -1827,7 +1754,6 @@ export function WorkbenchView() {
 
   const steps = [
     { num: 2 as const, label: "Catalog Review" },
-    { num: 3 as const, label: "Agent" },
     { num: 4 as const, label: "Reconcile" },
     { num: 5 as const, label: "Apply" },
   ];
@@ -2004,6 +1930,37 @@ export function WorkbenchView() {
       {/* Step 2: Catalog Review */}
       {currentStep === 2 && (
         <>
+          {/* Intro panel — dismissible orientation */}
+          {introVisible && (
+            <div style={{
+              padding: "12px 24px",
+              background: "rgba(245, 158, 11, 0.04)",
+              borderBottom: `1px solid ${theme.accentBorderSubtle}`,
+              display: "flex",
+              gap: 16,
+              alignItems: "flex-start",
+            }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: theme.accent, marginBottom: 4 }}>
+                  Welcome to the Op Model Workbench
+                </div>
+                <p style={{ fontSize: 12, color: theme.textMuted, lineHeight: 1.6, margin: 0 }}>
+                  This is where you refine your operating model's structural foundations. Use the <strong style={{ color: theme.text }}>Catalog</strong> view to browse and directly edit elements.
+                  Open the <strong style={{ color: theme.text }}>Refinement Agent</strong> to describe changes in plain English — it will propose structured diffs you can accept or reject.
+                  When you're done editing, <strong style={{ color: theme.text }}>Reconcile</strong> runs cross-catalog validation to catch orphaned references and structural gaps,
+                  then <strong style={{ color: theme.text }}>Apply</strong> commits your changes back to the project model.
+                </p>
+              </div>
+              <button
+                onClick={() => setIntroVisible(false)}
+                style={{ background: "none", border: "none", color: theme.textDim, cursor: "pointer", fontSize: 14, padding: "2px 6px", flexShrink: 0 }}
+                title="Dismiss"
+              >
+                ×
+              </button>
+            </div>
+          )}
+
           {/* Toolbar: View toggle + Catalog dropdown + Reconcile */}
           <div
             style={{
@@ -2016,6 +1973,7 @@ export function WorkbenchView() {
             }}
           >
             {/* View mode toggle */}
+            <Tooltip text="Switch between the tabular catalog editor and the force-directed graph explorer showing cross-catalog relationships.">
             <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", border: `1px solid ${theme.border}` }}>
               <button
                 onClick={() => setWorkbenchTab("catalog")}
@@ -2047,9 +2005,11 @@ export function WorkbenchView() {
                 Graph Explorer
               </button>
             </div>
+            </Tooltip>
 
             {/* Catalog dropdown (visible when in catalog mode) */}
             {workbenchTab === "catalog" && (
+              <Tooltip text="Select which catalog to review. Each catalog represents a different facet of your operating model — capabilities, value streams, roles, etc.">
               <select
                 value={activeCatalog}
                 onChange={(e) => setActiveCatalog(e.target.value as any)}
@@ -2077,6 +2037,7 @@ export function WorkbenchView() {
                   );
                 })}
               </select>
+              </Tooltip>
             )}
 
             {/* Dirty indicator for current catalog */}
@@ -2095,55 +2056,64 @@ export function WorkbenchView() {
             )}
 
             <div style={{ flex: 1 }} />
-            <button
-              onClick={() => setStep(3)}
-              style={{
-                padding: "6px 14px",
-                borderRadius: 4,
-                fontSize: 12,
-                color: theme.accent,
-                background: theme.accentMuted,
-                border: `1px solid ${theme.accentBorder}`,
-                cursor: "pointer",
-              }}
-            >
-              🤖 Refine with Agent
-            </button>
-            <button
-              onClick={() => setStep(4)}
-              style={{
-                padding: "6px 14px",
-                borderRadius: 4,
-                fontSize: 12,
-                color: theme.textMuted,
-                background: "transparent",
-                border: `1px solid ${theme.border}`,
-                cursor: "pointer",
-              }}
-            >
-              Reconcile →
-            </button>
+            <Tooltip text="Chat with the AI refinement agent to propose structural changes to the active catalog. The agent sees only this catalog's data and proposes diffs you can accept or reject.">
+              <button
+                onClick={() => setAgentPanelOpen(!agentPanelOpen)}
+                style={{
+                  padding: "6px 14px",
+                  borderRadius: 4,
+                  fontSize: 12,
+                  color: agentPanelOpen ? theme.bg : theme.accent,
+                  background: agentPanelOpen ? theme.accent : theme.accentMuted,
+                  border: `1px solid ${theme.accentBorder}`,
+                  cursor: "pointer",
+                  fontWeight: agentPanelOpen ? 600 : 400,
+                }}
+              >
+                🤖 {agentPanelOpen ? "Close Agent" : "Refine with Agent"}
+              </button>
+            </Tooltip>
+            <Tooltip text="Run cross-catalog validation checks to find structural issues — orphaned capabilities, missing role references, broken chains.">
+              <button
+                onClick={() => setStep(4)}
+                style={{
+                  padding: "6px 14px",
+                  borderRadius: 4,
+                  fontSize: 12,
+                  color: theme.textMuted,
+                  background: "transparent",
+                  border: `1px solid ${theme.border}`,
+                  cursor: "pointer",
+                }}
+              >
+                Reconcile →
+              </button>
+            </Tooltip>
           </div>
 
-          {/* Content area */}
-          {workbenchTab === "catalog" && (
-            <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-              <CatalogGrid
-                config={activeConfig}
-                elements={activeElements}
-                scaffoldData={workingScaffold}
-              />
+          {/* Content area: grid/graph + optional agent sidebar */}
+          <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+            {/* Main content */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              {workbenchTab === "catalog" && (
+                <CatalogGrid
+                  config={activeConfig}
+                  elements={activeElements}
+                  scaffoldData={workingScaffold}
+                />
+              )}
+              {workbenchTab === "graph" && workingScaffold && (
+                <GraphExplorer scaffoldData={workingScaffold} />
+              )}
             </div>
-          )}
 
-          {workbenchTab === "graph" && workingScaffold && (
-            <GraphExplorer scaffoldData={workingScaffold} />
-          )}
+            {/* Agent sidebar */}
+            {agentPanelOpen && (
+              <AgentSidebar onClose={() => setAgentPanelOpen(false)} />
+            )}
+          </div>
         </>
       )}
-
-      {/* Step 3: Refinement Agent */}
-      {currentStep === 3 && <RefinementAgentStep />}
 
       {/* Step 4: Reconciliation */}
       {currentStep === 4 && <ReconciliationStep />}
