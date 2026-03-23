@@ -20,7 +20,7 @@ import {
   deriveTopologyView,
 } from "./network-derivation.ts";
 
-type ViewMode = "network" | "stage" | "intake" | "capabilityMap" | "conceptGraph" | "friction";
+type ViewMode = "network" | "stage" | "intake" | "capabilityMap" | "conceptGraph" | "friction" | "workbench";
 
 interface CanvasState {
   // View navigation
@@ -67,6 +67,7 @@ interface CanvasState {
   goToCapabilityMap: () => void;
   goToConceptGraph: () => void;
   goToFriction: () => void;
+  goToWorkbench: () => void;
   reset: () => void;
   saveUserStory: (activityId: string, story: TransformationUserStory) => void;
   setActivityStories: (activityId: string, stories: TransformationUserStory[]) => void;
@@ -475,6 +476,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   goToFriction: () => {
     set({ viewMode: "friction" });
+  },
+
+  goToWorkbench: () => {
+    set({ viewMode: "workbench" });
   },
 
   reset: () => {

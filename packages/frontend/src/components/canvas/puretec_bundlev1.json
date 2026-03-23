@@ -1,0 +1,1452 @@
+{
+  "bundleVersion": "1.0",
+  "createdAt": "2026-03-08T11:35:15.598141Z",
+  "scaffold": {
+    "scaffoldId": "puretec-presales-discovery-v1",
+    "name": "Water Filtration Manufacturer \u2014 Presales Discovery",
+    "description": "VCC scaffold derived from presales discovery call. Models the operating model of a premium water filtration manufacturer distributing through trade partners (plumbers and distributors). Key friction: Salesforce-NetSuite integration failure, distributor passivity, 3 days/week admin burden on field reps, recurring maintenance revenue at risk.",
+    "elements": {
+      "valueStreams": {
+        "vs-channel-sales": {
+          "id": "vs-channel-sales",
+          "name": "Channel Sales",
+          "description": "Manage and enable trade partner channels \u2014 plumbers and distributors \u2014 to proactively sell and grow territory revenue. Covers territory planning, account intelligence, partner engagement, and commission management.",
+          "activityIds": [
+            "act-territory-planning",
+            "act-pre-visit-intelligence",
+            "act-partner-engagement",
+            "act-opportunity-management",
+            "act-order-conversion"
+          ],
+          "elementType": "ValueStream",
+          "tags": [],
+          "capabilityIds": [],
+          "metricIds": [],
+          "layoutZone": "ecosystem"
+        },
+        "vs-customer-maintenance": {
+          "id": "vs-customer-maintenance",
+          "name": "Customer Maintenance",
+          "description": "Manage the recurring cartridge replacement lifecycle to protect maintenance revenue. Covers replacement scheduling, outbound contact, order processing, and installation confirmation.",
+          "activityIds": [
+            "act-replacement-scheduling",
+            "act-outbound-contact",
+            "act-replacement-order",
+            "act-installation-confirmation"
+          ],
+          "elementType": "ValueStream",
+          "tags": [],
+          "capabilityIds": [],
+          "metricIds": [],
+          "layoutZone": "knowledge"
+        },
+        "vs-order-fulfilment": {
+          "id": "vs-order-fulfilment",
+          "name": "Order Fulfilment",
+          "description": "Process and fulfil product orders from trade partners through to delivery. Stub \u2014 detailed analysis pending.",
+          "activityIds": [
+            "act-order-receipt",
+            "act-order-dispatch"
+          ],
+          "elementType": "ValueStream",
+          "tags": [],
+          "capabilityIds": [],
+          "metricIds": [],
+          "layoutZone": "ecosystem"
+        },
+        "vs-installation-support": {
+          "id": "vs-installation-support",
+          "name": "Installation & Support",
+          "description": "Support plumbers and end customers through product installation and post-sale technical support. Stub \u2014 detailed analysis pending.",
+          "activityIds": [
+            "act-install-support",
+            "act-product-support"
+          ],
+          "elementType": "ValueStream",
+          "tags": [],
+          "capabilityIds": [],
+          "metricIds": [],
+          "layoutZone": "knowledge"
+        }
+      },
+      "activities": {
+        "act-territory-planning": {
+          "id": "act-territory-planning",
+          "name": "Territory Planning",
+          "description": "Define state-based territory assignments, visit schedules, and account prioritisation for field sales teams.",
+          "preOutcomeId": "out-territory-unplanned",
+          "postOutcomeId": "out-territory-planned",
+          "requiresCapabilityIds": [
+            "cap-territory-planning",
+            "cap-route-optimisation"
+          ],
+          "performedByRoleIds": [
+            "role-sales-manager",
+            "role-field-sales-rep"
+          ],
+          "metricIds": [
+            "metric-admin-days-lost",
+            "metric-crm-adoption"
+          ],
+          "controlIds": [
+            "ctrl-territory-assignment"
+          ],
+          "elementType": "Activity",
+          "entryConditionIds": [],
+          "exitConditionIds": [],
+          "constraintIds": [],
+          "tags": [],
+          "nextActivityId": null,
+          "involvesRoleIds": [],
+          "capabilityPPIT": {
+            "cap-territory-planning": {
+              "roleIds": [
+                "role-field-sales-rep",
+                "role-sales-manager"
+              ],
+              "activities": [
+                "Review account list by geographic cluster",
+                "Assign visit priority by revenue potential",
+                "Schedule weekly route using Salesforce Maps",
+                "Log planned visits against territory targets",
+                "Reconcile actual vs planned visit coverage"
+              ],
+              "informationObjectIds": [
+                "info-territory-plan",
+                "info-account-brief"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-sf-maps"
+              ]
+            },
+            "cap-route-optimisation": {
+              "roleIds": [
+                "role-field-sales-rep"
+              ],
+              "activities": [
+                "Generate optimised daily route from visit list",
+                "Adjust route for urgent customer requests",
+                "Record mileage and travel time against plan",
+                "Flag accounts missed due to routing conflicts"
+              ],
+              "informationObjectIds": [
+                "info-territory-plan"
+              ],
+              "technologyAppIds": [
+                "tech-sf-maps",
+                "tech-salesforce"
+              ]
+            }
+          }
+        },
+        "act-pre-visit-intelligence": {
+          "id": "act-pre-visit-intelligence",
+          "name": "Pre-Visit Intelligence",
+          "description": "Aggregate account history, delivery issues, and open opportunities into a pre-meeting brief for the field rep.",
+          "preOutcomeId": "out-visit-uninformed",
+          "postOutcomeId": "out-visit-briefed",
+          "requiresCapabilityIds": [
+            "cap-account-intelligence",
+            "cap-pre-meeting-briefing"
+          ],
+          "performedByRoleIds": [
+            "role-field-sales-rep",
+            "role-customer-care"
+          ],
+          "metricIds": [
+            "metric-visit-brief-coverage",
+            "metric-admin-days-lost"
+          ],
+          "controlIds": [
+            "ctrl-crm-logging-mandate"
+          ],
+          "elementType": "Activity",
+          "entryConditionIds": [],
+          "exitConditionIds": [],
+          "constraintIds": [],
+          "tags": [],
+          "nextActivityId": null,
+          "involvesRoleIds": [],
+          "capabilityPPIT": {
+            "cap-account-intelligence": {
+              "roleIds": [
+                "role-field-sales-rep",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Retrieve last order date and value from NetSuite",
+                "Review open delivery issues from customer care log",
+                "Check outstanding opportunities in Salesforce pipeline",
+                "Identify upsell candidates from order history patterns",
+                "Flag accounts with overdue cartridge replacements"
+              ],
+              "informationObjectIds": [
+                "info-account-brief",
+                "info-order-history",
+                "info-replacement-schedule"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            },
+            "cap-pre-meeting-briefing": {
+              "roleIds": [
+                "role-field-sales-rep"
+              ],
+              "activities": [
+                "Generate account brief from consolidated data sources",
+                "Review brief on mobile before arrival",
+                "Note key talking points for visit",
+                "Record pre-visit intent in Salesforce activity log"
+              ],
+              "informationObjectIds": [
+                "info-account-brief"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-sf-ai"
+              ]
+            }
+          }
+        },
+        "act-partner-engagement": {
+          "id": "act-partner-engagement",
+          "name": "Partner Engagement",
+          "description": "Identify and activate passive distributors; equip trade partners with tools and knowledge to sell proactively.",
+          "preOutcomeId": "out-partner-unengaged",
+          "postOutcomeId": "out-partner-activated",
+          "requiresCapabilityIds": [
+            "cap-partner-activation",
+            "cap-partner-enablement"
+          ],
+          "performedByRoleIds": [
+            "role-field-sales-rep",
+            "role-sales-manager",
+            "role-marketing"
+          ],
+          "metricIds": [
+            "metric-distributor-activation"
+          ],
+          "controlIds": [
+            "ctrl-partner-tier-policy"
+          ],
+          "elementType": "Activity",
+          "entryConditionIds": [],
+          "exitConditionIds": [],
+          "constraintIds": [],
+          "tags": [],
+          "nextActivityId": null,
+          "involvesRoleIds": [],
+          "capabilityPPIT": {
+            "cap-partner-activation": {
+              "roleIds": [
+                "role-field-sales-rep",
+                "role-distributor"
+              ],
+              "activities": [
+                "Identify passive distributors from order frequency data",
+                "Schedule activation conversation with distributor contact",
+                "Present product range and promotional incentives",
+                "Set proactive selling targets with distributor",
+                "Log distributor engagement outcome in Salesforce"
+              ],
+              "informationObjectIds": [
+                "info-account-brief",
+                "info-order-history"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-whatsapp"
+              ]
+            },
+            "cap-partner-enablement": {
+              "roleIds": [
+                "role-field-sales-rep",
+                "role-distributor"
+              ],
+              "activities": [
+                "Share product catalogue and pricing updates",
+                "Deliver product knowledge training to distributor staff",
+                "Provide co-branded sales collateral for distributor use",
+                "Record enablement activity against partner record"
+              ],
+              "informationObjectIds": [
+                "info-netsuite-product-data"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-google-workspace"
+              ]
+            }
+          }
+        },
+        "act-opportunity-management": {
+          "id": "act-opportunity-management",
+          "name": "Opportunity Management",
+          "description": "Qualify sales opportunities by customer segment and advance them through the pipeline with activity logging.",
+          "preOutcomeId": "out-opportunity-unqualified",
+          "postOutcomeId": "out-opportunity-qualified",
+          "requiresCapabilityIds": [
+            "cap-opportunity-qualification",
+            "cap-pipeline-management"
+          ],
+          "performedByRoleIds": [
+            "role-field-sales-rep",
+            "role-distributor",
+            "role-plumber"
+          ],
+          "metricIds": [
+            "metric-pipeline-conversion",
+            "metric-crm-adoption"
+          ],
+          "controlIds": [
+            "ctrl-crm-logging-mandate"
+          ],
+          "elementType": "Activity",
+          "entryConditionIds": [],
+          "exitConditionIds": [],
+          "constraintIds": [],
+          "tags": [],
+          "nextActivityId": null,
+          "involvesRoleIds": [],
+          "capabilityPPIT": {
+            "cap-opportunity-qualification": {
+              "roleIds": [
+                "role-field-sales-rep",
+                "role-sales-manager"
+              ],
+              "activities": [
+                "Create opportunity record in Salesforce after discovery",
+                "Qualify opportunity against BANT criteria",
+                "Assign opportunity stage and expected close date",
+                "Link opportunity to account and contact records",
+                "Escalate high-value opportunities to sales manager"
+              ],
+              "informationObjectIds": [
+                "info-account-brief"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce"
+              ]
+            },
+            "cap-pipeline-management": {
+              "roleIds": [
+                "role-sales-manager",
+                "role-field-sales-rep"
+              ],
+              "activities": [
+                "Review pipeline by stage in Salesforce dashboard",
+                "Update opportunity probability and close date weekly",
+                "Identify stalled opportunities for follow-up action",
+                "Generate pipeline forecast report for management",
+                "Log all sales activity against opportunity record"
+              ],
+              "informationObjectIds": [
+                "info-account-brief"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-sf-ai"
+              ]
+            }
+          }
+        },
+        "act-order-conversion": {
+          "id": "act-order-conversion",
+          "name": "Order Conversion",
+          "description": "Convert qualified opportunities to confirmed orders via preferred partner channel and record commission entitlement.",
+          "preOutcomeId": "out-order-pending",
+          "postOutcomeId": "out-order-converted",
+          "requiresCapabilityIds": [
+            "cap-order-capture",
+            "cap-commission-tracking"
+          ],
+          "performedByRoleIds": [
+            "role-field-sales-rep",
+            "role-distributor",
+            "role-plumber"
+          ],
+          "metricIds": [
+            "metric-order-channel-mix",
+            "metric-pipeline-conversion"
+          ],
+          "controlIds": [
+            "ctrl-commission-policy"
+          ],
+          "elementType": "Activity",
+          "entryConditionIds": [],
+          "exitConditionIds": [],
+          "constraintIds": [],
+          "tags": [],
+          "nextActivityId": null,
+          "involvesRoleIds": [],
+          "capabilityPPIT": {
+            "cap-order-capture": {
+              "roleIds": [
+                "role-field-sales-rep",
+                "role-plumber-partner"
+              ],
+              "activities": [
+                "Receive order request via WhatsApp or SMS",
+                "Confirm product SKU and quantity with customer",
+                "Create order record in Salesforce",
+                "Push confirmed order to NetSuite for fulfilment",
+                "Send order confirmation to customer via preferred channel"
+              ],
+              "informationObjectIds": [
+                "info-netsuite-product-data",
+                "info-whatsapp-conversation"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite",
+                "tech-whatsapp"
+              ]
+            },
+            "cap-commission-tracking": {
+              "roleIds": [
+                "role-sales-manager",
+                "role-field-sales-rep"
+              ],
+              "activities": [
+                "Calculate commission on converted orders monthly",
+                "Reconcile commission against closed opportunity records",
+                "Distribute commission statements to sales reps",
+                "Flag disputed commission calculations for review"
+              ],
+              "informationObjectIds": [
+                "info-order-history"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-replacement-scheduling": {
+          "id": "act-replacement-scheduling",
+          "name": "Replacement Scheduling",
+          "description": "Identify customers approaching 12-month replacement due dates and generate prioritised outreach schedules.",
+          "preOutcomeId": "out-replacement-unscheduled",
+          "postOutcomeId": "out-replacement-scheduled",
+          "requiresCapabilityIds": [
+            "cap-replacement-scheduling",
+            "cap-due-date-tracking"
+          ],
+          "performedByRoleIds": [
+            "role-customer-care",
+            "role-head-of-tech"
+          ],
+          "metricIds": [
+            "metric-cartridge-replacement-rate",
+            "metric-netsuite-sync-lag"
+          ],
+          "controlIds": [
+            "ctrl-replacement-interval",
+            "ctrl-netsuite-integration-sla"
+          ],
+          "elementType": "Activity",
+          "entryConditionIds": [],
+          "exitConditionIds": [],
+          "constraintIds": [],
+          "tags": [],
+          "nextActivityId": null,
+          "involvesRoleIds": [],
+          "capabilityPPIT": {
+            "cap-due-date-tracking": {
+              "roleIds": [
+                "role-customer-care"
+              ],
+              "activities": [
+                "Sync cartridge installation dates from NetSuite to Salesforce",
+                "Validate installation date records for accuracy",
+                "Flag customers with missing or inconsistent install data",
+                "Maintain replacement due date field on customer record",
+                "Generate overdue replacement exception report"
+              ],
+              "informationObjectIds": [
+                "info-replacement-schedule",
+                "info-order-history"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite",
+                "tech-meldoc"
+              ]
+            },
+            "cap-replacement-scheduling": {
+              "roleIds": [
+                "role-customer-care",
+                "role-field-sales-rep"
+              ],
+              "activities": [
+                "Query customers with cartridge installations approaching 12 months",
+                "Generate outreach schedule from due date list",
+                "Prioritise by revenue value and geographic cluster",
+                "Assign outreach tasks to customer care team",
+                "Track schedule completion rate against target"
+              ],
+              "informationObjectIds": [
+                "info-replacement-schedule"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce"
+              ]
+            }
+          }
+        },
+        "act-outbound-contact": {
+          "id": "act-outbound-contact",
+          "name": "Outbound Contact",
+          "description": "Contact customers via preferred channel to prompt replacement action and confirm appointment.",
+          "preOutcomeId": "out-customer-uncontacted",
+          "postOutcomeId": "out-customer-confirmed",
+          "requiresCapabilityIds": [
+            "cap-outbound-contact",
+            "cap-channel-preference"
+          ],
+          "performedByRoleIds": [
+            "role-customer-care",
+            "role-field-sales-rep"
+          ],
+          "metricIds": [
+            "metric-outreach-contact-rate"
+          ],
+          "controlIds": [
+            "ctrl-data-privacy"
+          ],
+          "elementType": "Activity",
+          "entryConditionIds": [],
+          "exitConditionIds": [],
+          "constraintIds": [],
+          "tags": [],
+          "nextActivityId": null,
+          "involvesRoleIds": [],
+          "capabilityPPIT": {
+            "cap-outbound-contact": {
+              "roleIds": [
+                "role-customer-care",
+                "role-plumber-partner"
+              ],
+              "activities": [
+                "Send replacement reminder via customer preferred channel",
+                "Confirm customer availability for replacement appointment",
+                "Record contact outcome against customer record",
+                "Escalate unresponsive customers to field rep",
+                "Log all outbound contact attempts in Salesforce"
+              ],
+              "informationObjectIds": [
+                "info-whatsapp-conversation",
+                "info-replacement-schedule"
+              ],
+              "technologyAppIds": [
+                "tech-whatsapp",
+                "tech-salesforce"
+              ]
+            },
+            "cap-channel-preference-management": {
+              "roleIds": [
+                "role-customer-care"
+              ],
+              "activities": [
+                "Record customer channel preference on customer record",
+                "Update preference on opt-out or channel change request",
+                "Apply channel preference to outbound contact routing",
+                "Report on channel effectiveness by segment"
+              ],
+              "informationObjectIds": [
+                "info-account-brief"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce"
+              ]
+            }
+          }
+        },
+        "act-replacement-order": {
+          "id": "act-replacement-order",
+          "name": "Replacement Order",
+          "description": "Process confirmed cartridge replacement orders through Salesforce to NetSuite fulfilment.",
+          "preOutcomeId": "out-replacement-unordered",
+          "postOutcomeId": "out-replacement-ordered",
+          "requiresCapabilityIds": [
+            "cap-replacement-order-processing",
+            "cap-netsuite-sync"
+          ],
+          "performedByRoleIds": [
+            "role-customer-care",
+            "role-head-of-tech"
+          ],
+          "metricIds": [
+            "metric-netsuite-sync-lag",
+            "metric-replacement-cycle-time"
+          ],
+          "controlIds": [
+            "ctrl-netsuite-integration-sla"
+          ],
+          "elementType": "Activity",
+          "entryConditionIds": [],
+          "exitConditionIds": [],
+          "constraintIds": [],
+          "tags": [],
+          "nextActivityId": null,
+          "involvesRoleIds": [],
+          "capabilityPPIT": {
+            "cap-replacement-order-processing": {
+              "roleIds": [
+                "role-customer-care",
+                "role-plumber-partner"
+              ],
+              "activities": [
+                "Confirm correct cartridge SKU from product catalogue",
+                "Create replacement order in Salesforce",
+                "Push confirmed order to NetSuite for fulfilment",
+                "Send order confirmation to customer and plumber",
+                "Track replacement order delivery status"
+              ],
+              "informationObjectIds": [
+                "info-netsuite-product-data",
+                "info-order-history"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite",
+                "tech-whatsapp"
+              ]
+            },
+            "cap-netsuite-sync": {
+              "roleIds": [
+                "role-head-of-tech"
+              ],
+              "activities": [
+                "Monitor Salesforce-NetSuite integration health status",
+                "Reconcile order records between Salesforce and NetSuite",
+                "Resolve sync errors and data mismatches manually",
+                "Escalate persistent integration failures to implementation partner",
+                "Log integration incidents against NetSuite SLA control"
+              ],
+              "informationObjectIds": [
+                "info-netsuite-product-data"
+              ],
+              "technologyAppIds": [
+                "tech-netsuite",
+                "tech-meldoc",
+                "tech-salesforce"
+              ]
+            }
+          }
+        },
+        "act-installation-confirmation": {
+          "id": "act-installation-confirmation",
+          "name": "Installation Confirmation",
+          "description": "Confirm installation with plumber, update customer record, and register replacement to initiate next cycle.",
+          "preOutcomeId": "out-installation-unconfirmed",
+          "postOutcomeId": "out-installation-confirmed",
+          "requiresCapabilityIds": [
+            "cap-installation-confirmation",
+            "cap-warranty-registration"
+          ],
+          "performedByRoleIds": [
+            "role-plumber",
+            "role-customer-care"
+          ],
+          "metricIds": [
+            "metric-cartridge-replacement-rate",
+            "metric-replacement-cycle-time"
+          ],
+          "controlIds": [
+            "ctrl-replacement-interval"
+          ],
+          "elementType": "Activity",
+          "entryConditionIds": [],
+          "exitConditionIds": [],
+          "constraintIds": [],
+          "tags": [],
+          "nextActivityId": null,
+          "involvesRoleIds": [],
+          "capabilityPPIT": {
+            "cap-installation-confirmation": {
+              "roleIds": [
+                "role-plumber-partner",
+                "role-customer-care"
+              ],
+              "activities": [
+                "Confirm cartridge installation completion with plumber",
+                "Record installation date on customer record",
+                "Notify customer of successful replacement",
+                "Close replacement task in Salesforce"
+              ],
+              "informationObjectIds": [
+                "info-replacement-schedule"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-whatsapp"
+              ]
+            },
+            "cap-warranty-registration": {
+              "roleIds": [
+                "role-customer-care"
+              ],
+              "activities": [
+                "Register replacement cartridge against customer record",
+                "Set next replacement due date to 12 months forward",
+                "Send warranty confirmation to customer",
+                "Update NetSuite product registration record"
+              ],
+              "informationObjectIds": [
+                "info-replacement-schedule"
+              ],
+              "technologyAppIds": [
+                "tech-salesforce",
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-order-receipt": {
+          "id": "act-order-receipt",
+          "name": "Order Receipt",
+          "description": "Receive and validate incoming orders from trade partners.",
+          "preOutcomeId": "out-order-received",
+          "postOutcomeId": "out-order-processing",
+          "requiresCapabilityIds": [],
+          "performedByRoleIds": [
+            "role-customer-care"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity",
+          "entryConditionIds": [],
+          "exitConditionIds": [],
+          "constraintIds": [],
+          "tags": [],
+          "nextActivityId": null,
+          "involvesRoleIds": [],
+          "capabilityPPIT": {
+            "cap-order-intake": {
+              "roleIds": [
+                "role-customer-care"
+              ],
+              "activities": [
+                "Receive order from trade partner channel",
+                "Validate order completeness"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce"
+              ]
+            }
+          }
+        },
+        "act-order-dispatch": {
+          "id": "act-order-dispatch",
+          "name": "Order Dispatch",
+          "description": "Pick, pack and dispatch orders to trade partners and end customers.",
+          "preOutcomeId": "out-order-processing",
+          "postOutcomeId": "out-order-dispatched",
+          "requiresCapabilityIds": [],
+          "performedByRoleIds": [],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity",
+          "entryConditionIds": [],
+          "exitConditionIds": [],
+          "constraintIds": [],
+          "tags": [],
+          "nextActivityId": null,
+          "involvesRoleIds": [],
+          "capabilityPPIT": {
+            "cap-dispatch-coordination": {
+              "roleIds": [
+                "role-customer-care"
+              ],
+              "activities": [
+                "Schedule dispatch from warehouse",
+                "Confirm delivery with trade partner"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-netsuite"
+              ]
+            }
+          }
+        },
+        "act-install-support": {
+          "id": "act-install-support",
+          "name": "Installation Support",
+          "description": "Provide technical support to plumbers during product installation.",
+          "preOutcomeId": "out-support-requested",
+          "postOutcomeId": "out-install-in-progress",
+          "requiresCapabilityIds": [],
+          "performedByRoleIds": [
+            "role-customer-care"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity",
+          "entryConditionIds": [],
+          "exitConditionIds": [],
+          "constraintIds": [],
+          "tags": [],
+          "nextActivityId": null,
+          "involvesRoleIds": [],
+          "capabilityPPIT": {
+            "cap-installation-guidance": {
+              "roleIds": [
+                "role-plumber-partner"
+              ],
+              "activities": [
+                "Provide installation guidance to plumber",
+                "Confirm installation requirements"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-whatsapp"
+              ]
+            }
+          }
+        },
+        "act-product-support": {
+          "id": "act-product-support",
+          "name": "Product Support",
+          "description": "Resolve post-installation technical issues and warranty claims.",
+          "preOutcomeId": "out-install-in-progress",
+          "postOutcomeId": "out-support-resolved",
+          "requiresCapabilityIds": [],
+          "performedByRoleIds": [
+            "role-customer-care"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity",
+          "entryConditionIds": [],
+          "exitConditionIds": [],
+          "constraintIds": [],
+          "tags": [],
+          "nextActivityId": null,
+          "involvesRoleIds": [],
+          "capabilityPPIT": {
+            "cap-technical-support": {
+              "roleIds": [
+                "role-customer-care"
+              ],
+              "activities": [
+                "Receive product support request",
+                "Resolve or escalate technical issue"
+              ],
+              "informationObjectIds": [],
+              "technologyAppIds": [
+                "tech-salesforce"
+              ]
+            }
+          }
+        }
+      },
+      "capabilities": {
+        "cap-territory-planning": {
+          "id": "cap-territory-planning",
+          "name": "Territory Planning",
+          "description": "Define and maintain state-based, postcode-driven territory assignments and visit schedules for field sales teams.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-route-optimisation": {
+          "id": "cap-route-optimisation",
+          "name": "Route Optimisation",
+          "description": "Plan efficient visit routes combining geographic proximity with account priority signals.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-account-intelligence": {
+          "id": "cap-account-intelligence",
+          "name": "Account Intelligence",
+          "description": "Aggregate historical order data, delivery issues, and opportunity signals into pre-visit account briefs.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-pre-meeting-briefing": {
+          "id": "cap-pre-meeting-briefing",
+          "name": "Pre-Meeting Briefing",
+          "description": "Deliver consolidated account context to field reps in an accessible, conversational format before customer visits.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-partner-activation": {
+          "id": "cap-partner-activation",
+          "name": "Partner Activation",
+          "description": "Identify and activate passive distributors, converting order-takers into proactive sellers through enablement and tooling.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-partner-enablement": {
+          "id": "cap-partner-enablement",
+          "name": "Partner Enablement",
+          "description": "Equip trade partners with product knowledge, pricing tools, and sales collateral to support proactive customer outreach.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-opportunity-qualification": {
+          "id": "cap-opportunity-qualification",
+          "name": "Opportunity Qualification",
+          "description": "Assess and qualify sales opportunities by customer segment \u2014 price-focused, health-conscious, or premium aesthetic.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-pipeline-management": {
+          "id": "cap-pipeline-management",
+          "name": "Pipeline Management",
+          "description": "Track and advance qualified opportunities through the sales pipeline with activity logging and stage progression.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-order-capture": {
+          "id": "cap-order-capture",
+          "name": "Order Capture",
+          "description": "Convert qualified opportunities into confirmed orders via preferred channel (WhatsApp, SMS, or Salesforce).",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-commission-tracking": {
+          "id": "cap-commission-tracking",
+          "name": "Commission Tracking",
+          "description": "Record sales activity and calculate commission entitlements against territory performance targets.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-replacement-scheduling": {
+          "id": "cap-replacement-scheduling",
+          "name": "Replacement Scheduling",
+          "description": "Identify customers approaching 12-month cartridge replacement due dates and generate outreach schedules.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-due-date-tracking": {
+          "id": "cap-due-date-tracking",
+          "name": "Due Date Tracking",
+          "description": "Maintain accurate cartridge installation records and expiry dates as the basis for replacement scheduling.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-outbound-contact": {
+          "id": "cap-outbound-contact",
+          "name": "Outbound Contact",
+          "description": "Execute outbound contact to customers via preferred channel to prompt cartridge replacement action.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-channel-preference": {
+          "id": "cap-channel-preference",
+          "name": "Channel Preference Management",
+          "description": "Manage customer communication channel preferences (WhatsApp, SMS, email) for outreach effectiveness.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-replacement-order-processing": {
+          "id": "cap-replacement-order-processing",
+          "name": "Replacement Order Processing",
+          "description": "Process confirmed cartridge replacement orders through to NetSuite fulfilment.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-netsuite-sync": {
+          "id": "cap-netsuite-sync",
+          "name": "NetSuite Synchronisation",
+          "description": "Maintain reliable bi-directional data synchronisation between Salesforce and NetSuite for order and product data.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-installation-confirmation": {
+          "id": "cap-installation-confirmation",
+          "name": "Installation Confirmation",
+          "description": "Confirm successful cartridge installation with plumber or customer to close the replacement lifecycle.",
+          "elementType": "Capability",
+          "tags": []
+        },
+        "cap-warranty-registration": {
+          "id": "cap-warranty-registration",
+          "name": "Warranty Registration",
+          "description": "Register replacement cartridge installation to initiate the next 12-month replacement cycle.",
+          "elementType": "Capability",
+          "tags": []
+        }
+      },
+      "roles": {
+        "role-field-sales-rep": {
+          "id": "role-field-sales-rep",
+          "name": "Field Sales Representative",
+          "elementType": "Role",
+          "tags": [],
+          "description": ""
+        },
+        "role-sales-manager": {
+          "id": "role-sales-manager",
+          "name": "Sales Manager",
+          "elementType": "Role",
+          "tags": [],
+          "description": ""
+        },
+        "role-customer-care": {
+          "id": "role-customer-care",
+          "name": "Customer Care Agent",
+          "elementType": "Role",
+          "tags": [],
+          "description": ""
+        },
+        "role-distributor": {
+          "id": "role-distributor",
+          "name": "Distributor Partner",
+          "elementType": "Role",
+          "tags": [],
+          "description": ""
+        },
+        "role-plumber": {
+          "id": "role-plumber",
+          "name": "Plumber Partner",
+          "elementType": "Role",
+          "tags": [],
+          "description": ""
+        },
+        "role-head-of-tech": {
+          "id": "role-head-of-tech",
+          "name": "Head of Technology",
+          "elementType": "Role",
+          "tags": [],
+          "description": ""
+        },
+        "role-marketing": {
+          "id": "role-marketing",
+          "name": "Marketing Team",
+          "elementType": "Role",
+          "tags": [],
+          "description": ""
+        },
+        "role-end-customer": {
+          "id": "role-end-customer",
+          "name": "End Customer",
+          "elementType": "Role",
+          "tags": [],
+          "description": ""
+        }
+      },
+      "outcomes": {
+        "out-territory-unplanned": {
+          "id": "out-territory-unplanned",
+          "name": "Territory Unplanned",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-territory-planned": {
+          "id": "out-territory-planned",
+          "name": "Territory Planned",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-visit-uninformed": {
+          "id": "out-visit-uninformed",
+          "name": "Visit Uninformed",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-visit-briefed": {
+          "id": "out-visit-briefed",
+          "name": "Visit Briefed",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-partner-unengaged": {
+          "id": "out-partner-unengaged",
+          "name": "Partner Unengaged",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-partner-activated": {
+          "id": "out-partner-activated",
+          "name": "Partner Activated",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-opportunity-unqualified": {
+          "id": "out-opportunity-unqualified",
+          "name": "Opportunity Unqualified",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-opportunity-qualified": {
+          "id": "out-opportunity-qualified",
+          "name": "Opportunity Qualified",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-order-pending": {
+          "id": "out-order-pending",
+          "name": "Order Pending",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-order-converted": {
+          "id": "out-order-converted",
+          "name": "Order Converted",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-replacement-unscheduled": {
+          "id": "out-replacement-unscheduled",
+          "name": "Replacement Unscheduled",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-replacement-scheduled": {
+          "id": "out-replacement-scheduled",
+          "name": "Replacement Scheduled",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-customer-uncontacted": {
+          "id": "out-customer-uncontacted",
+          "name": "Customer Uncontacted",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-customer-confirmed": {
+          "id": "out-customer-confirmed",
+          "name": "Customer Confirmed",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-replacement-unordered": {
+          "id": "out-replacement-unordered",
+          "name": "Replacement Unordered",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-replacement-ordered": {
+          "id": "out-replacement-ordered",
+          "name": "Replacement Ordered",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-installation-unconfirmed": {
+          "id": "out-installation-unconfirmed",
+          "name": "Installation Unconfirmed",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-installation-confirmed": {
+          "id": "out-installation-confirmed",
+          "name": "Installation Confirmed",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-order-received": {
+          "id": "out-order-received",
+          "name": "Order Received",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-order-dispatched": {
+          "id": "out-order-dispatched",
+          "name": "Order Dispatched",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-support-requested": {
+          "id": "out-support-requested",
+          "name": "Support Requested",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-support-resolved": {
+          "id": "out-support-resolved",
+          "name": "Support Resolved",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-order-processing": {
+          "id": "out-order-processing",
+          "name": "Order Processing",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        },
+        "out-install-in-progress": {
+          "id": "out-install-in-progress",
+          "name": "Installation In Progress",
+          "elementType": "Outcome",
+          "tags": [],
+          "description": ""
+        }
+      },
+      "metrics": {
+        "metric-admin-days-lost": {
+          "id": "metric-admin-days-lost",
+          "name": "Admin Days Lost per Rep per Week (target: <1)",
+          "elementType": "Metric",
+          "tags": [],
+          "description": "",
+          "measures": {
+            "baselineMeasureId": "ms_metric-admin-days-lost_baseline",
+            "currentMeasureId": "ms_metric-admin-days-lost_current",
+            "targetMeasureId": "ms_metric-admin-days-lost_target",
+            "targets": []
+          },
+          "metricDirection": "Decrease",
+          "metricPeriod": "Weekly",
+          "metricType": "Lagging"
+        },
+        "metric-crm-adoption": {
+          "id": "metric-crm-adoption",
+          "name": "CRM Activity Logging Rate (target: >80%)",
+          "elementType": "Metric",
+          "tags": [],
+          "description": "",
+          "measures": {
+            "baselineMeasureId": "ms_metric-crm-adoption_baseline",
+            "currentMeasureId": "ms_metric-crm-adoption_current",
+            "targetMeasureId": "ms_metric-crm-adoption_target",
+            "targets": []
+          },
+          "metricDirection": "Increase",
+          "metricPeriod": "Monthly",
+          "metricType": "Lagging"
+        },
+        "metric-visit-brief-coverage": {
+          "id": "metric-visit-brief-coverage",
+          "name": "Visits with Pre-Brief (target: 100%)",
+          "elementType": "Metric",
+          "tags": [],
+          "description": "",
+          "measures": {
+            "baselineMeasureId": "ms_metric-visit-brief-coverage_baseline",
+            "currentMeasureId": "ms_metric-visit-brief-coverage_current",
+            "targetMeasureId": "ms_metric-visit-brief-coverage_target",
+            "targets": []
+          },
+          "metricDirection": "Increase",
+          "metricPeriod": "Weekly",
+          "metricType": "Leading"
+        },
+        "metric-distributor-activation": {
+          "id": "metric-distributor-activation",
+          "name": "Active Distributor Rate (target: >70%)",
+          "elementType": "Metric",
+          "tags": [],
+          "description": "",
+          "measures": {
+            "baselineMeasureId": "ms_metric-distributor-activation_baseline",
+            "currentMeasureId": "ms_metric-distributor-activation_current",
+            "targetMeasureId": "ms_metric-distributor-activation_target",
+            "targets": []
+          },
+          "metricDirection": "Increase",
+          "metricPeriod": "Monthly",
+          "metricType": "Leading"
+        },
+        "metric-pipeline-conversion": {
+          "id": "metric-pipeline-conversion",
+          "name": "Opportunity Conversion Rate",
+          "elementType": "Metric",
+          "tags": [],
+          "description": "",
+          "measures": {
+            "baselineMeasureId": "ms_metric-pipeline-conversion_baseline",
+            "currentMeasureId": "ms_metric-pipeline-conversion_current",
+            "targetMeasureId": "ms_metric-pipeline-conversion_target",
+            "targets": []
+          },
+          "metricDirection": "Increase",
+          "metricPeriod": "Monthly",
+          "metricType": "Lagging"
+        },
+        "metric-order-channel-mix": {
+          "id": "metric-order-channel-mix",
+          "name": "Digital Order Capture Rate",
+          "elementType": "Metric",
+          "tags": [],
+          "description": "",
+          "measures": {
+            "baselineMeasureId": "ms_metric-order-channel-mix_baseline",
+            "currentMeasureId": "ms_metric-order-channel-mix_current",
+            "targetMeasureId": "ms_metric-order-channel-mix_target",
+            "targets": []
+          },
+          "metricDirection": "Attain",
+          "metricPeriod": "Monthly",
+          "metricType": "Lagging"
+        },
+        "metric-cartridge-replacement-rate": {
+          "id": "metric-cartridge-replacement-rate",
+          "name": "Annual Cartridge Replacement Rate (target: >85%)",
+          "elementType": "Metric",
+          "tags": [],
+          "description": "",
+          "measures": {
+            "baselineMeasureId": "ms_metric-cartridge-replacement-rate_baseline",
+            "currentMeasureId": "ms_metric-cartridge-replacement-rate_current",
+            "targetMeasureId": "ms_metric-cartridge-replacement-rate_target",
+            "targets": []
+          },
+          "metricDirection": "Increase",
+          "metricPeriod": "Monthly",
+          "metricType": "Lagging"
+        },
+        "metric-outreach-contact-rate": {
+          "id": "metric-outreach-contact-rate",
+          "name": "Outbound Contact Success Rate",
+          "elementType": "Metric",
+          "tags": [],
+          "description": "",
+          "measures": {
+            "baselineMeasureId": "ms_metric-outreach-contact-rate_baseline",
+            "currentMeasureId": "ms_metric-outreach-contact-rate_current",
+            "targetMeasureId": "ms_metric-outreach-contact-rate_target",
+            "targets": []
+          },
+          "metricDirection": "Increase",
+          "metricPeriod": "Monthly",
+          "metricType": "Leading"
+        },
+        "metric-netsuite-sync-lag": {
+          "id": "metric-netsuite-sync-lag",
+          "name": "NetSuite Sync Lag (target: <1hr)",
+          "elementType": "Metric",
+          "tags": [],
+          "description": "",
+          "measures": {
+            "baselineMeasureId": "ms_metric-netsuite-sync-lag_baseline",
+            "currentMeasureId": "ms_metric-netsuite-sync-lag_current",
+            "targetMeasureId": "ms_metric-netsuite-sync-lag_target",
+            "targets": []
+          },
+          "metricDirection": "Decrease",
+          "metricPeriod": "Daily",
+          "metricType": "Lagging"
+        },
+        "metric-replacement-cycle-time": {
+          "id": "metric-replacement-cycle-time",
+          "name": "Replacement Cycle Time (target: <7 days)",
+          "elementType": "Metric",
+          "tags": [],
+          "description": "",
+          "measures": {
+            "baselineMeasureId": "ms_metric-replacement-cycle-time_baseline",
+            "currentMeasureId": "ms_metric-replacement-cycle-time_current",
+            "targetMeasureId": "ms_metric-replacement-cycle-time_target",
+            "targets": []
+          },
+          "metricDirection": "Decrease",
+          "metricPeriod": "Monthly",
+          "metricType": "Lagging"
+        }
+      },
+      "controls": {
+        "ctrl-territory-assignment": {
+          "id": "ctrl-territory-assignment",
+          "name": "State-based postcode territory assignment policy",
+          "elementType": "Control",
+          "tags": [],
+          "description": ""
+        },
+        "ctrl-commission-policy": {
+          "id": "ctrl-commission-policy",
+          "name": "Commission calculation and payment policy",
+          "elementType": "Control",
+          "tags": [],
+          "description": ""
+        },
+        "ctrl-crm-logging-mandate": {
+          "id": "ctrl-crm-logging-mandate",
+          "name": "CRM activity logging requirement (not yet enforced)",
+          "elementType": "Control",
+          "tags": [],
+          "description": ""
+        },
+        "ctrl-replacement-interval": {
+          "id": "ctrl-replacement-interval",
+          "name": "12-month cartridge replacement interval standard",
+          "elementType": "Control",
+          "tags": [],
+          "description": ""
+        },
+        "ctrl-netsuite-integration-sla": {
+          "id": "ctrl-netsuite-integration-sla",
+          "name": "NetSuite-Salesforce integration SLA",
+          "elementType": "Control",
+          "tags": [],
+          "description": ""
+        },
+        "ctrl-partner-tier-policy": {
+          "id": "ctrl-partner-tier-policy",
+          "name": "Distributor and plumber partner tier classification",
+          "elementType": "Control",
+          "tags": [],
+          "description": ""
+        },
+        "ctrl-data-privacy": {
+          "id": "ctrl-data-privacy",
+          "name": "Customer data privacy and consent policy",
+          "elementType": "Control",
+          "tags": [],
+          "description": ""
+        }
+      },
+      "concepts": {},
+      "conditions": {},
+      "constraints": {},
+      "deonticLogic": {},
+      "directives": {},
+      "flowLogic": {},
+      "measures": {},
+      "properties": {}
+    },
+    "scaffoldIntegrityHash": "aa62192b76cf8007b2d673e9ef5cde01868fe3aa04d3fb248d33e8ea7c003738",
+    "schemaVersion": "1.0.0",
+    "createdAt": "2026-02-28T10:00:00Z",
+    "crossStreamOutcomes": [
+      {
+        "fromVsId": "vs-channel-sales",
+        "toVsId": "vs-order-fulfilment",
+        "outcomeId": "out-order-converted",
+        "direction": "forward"
+      },
+      {
+        "fromVsId": "vs-order-fulfilment",
+        "toVsId": "vs-customer-maintenance",
+        "outcomeId": "out-order-dispatched",
+        "direction": "forward"
+      },
+      {
+        "fromVsId": "vs-customer-maintenance",
+        "toVsId": "vs-installation-support",
+        "outcomeId": "out-installation-confirmed",
+        "direction": "forward"
+      }
+    ]
+  },
+  "heatmaps": []
+}

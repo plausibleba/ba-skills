@@ -18,6 +18,8 @@ import { autoSaveToProject } from "./utils/auto-save.ts";
 import { VersionBadge } from "./components/ChangelogModal.tsx";
 import { UpsellModalProvider, useUpsellModal } from "./components/UpsellModal.tsx";
 import { RefinementExportModal } from "./components/RefinementExport.tsx";
+import { WorkbenchView } from "./components/WorkbenchView.tsx";
+import { useWorkbenchStore } from "./store/workbench-store.ts";
 import { DevTierSwitcher } from "./components/DevTierSwitcher.tsx";
 import { extractClaimFromURL, consumePendingClaim } from "./utils/bundle-claim.ts";
 import { useTierStore } from "./store/tier-store.ts";
@@ -36,6 +38,7 @@ export default function App() {
     goToCapabilityMap,
     goToConceptGraph,
     goToFriction,
+    goToWorkbench,
     loading,
     loadScaffold,
     loadHeatmap,
@@ -220,6 +223,9 @@ export default function App() {
   const isCapabilityMap = viewMode === "capabilityMap";
   const isConceptGraph = viewMode === "conceptGraph";
   const isFriction = viewMode === "friction";
+  const isWorkbench = viewMode === "workbench";
+  const enterWorkbench = useWorkbenchStore((s) => s.enterWorkbench);
+  const workbenchActive = useWorkbenchStore((s) => s.isActive);
 
   // Auth gate: show login page if not authenticated and not local mode
   if (authLoading) {
@@ -302,6 +308,12 @@ export default function App() {
                 { id: "capabilities", label: "Capabilities", onClick: goToCapabilityMap, active: isCapabilityMap },
                 { id: "concepts", label: "Concepts", onClick: goToConceptGraph, active: isConceptGraph },
                 { id: "friction", label: "Friction", onClick: goToFriction, active: isFriction },
+                { id: "workbench", label: "⚙ Workbench", onClick: () => {
+                  if (scaffoldData) {
+                    enterWorkbench(scaffoldData);
+                    goToWorkbench();
+                  }
+                }, active: isWorkbench },
               ]}
             />
           )}
@@ -469,11 +481,12 @@ export default function App() {
           </div>
         )}
 
-        {!isIntake && isLoaded && isNetwork && <NetworkView />}
-        {!isIntake && isStageReady && <CanvasView />}
-        {!isIntake && isLoaded && isCapabilityMap && <CapabilityMapView />}
-        {!isIntake && isLoaded && isConceptGraph && <ConceptGraphView />}
-        {!isIntake && isLoaded && isFriction && <FrictionView />}
+        {!isIntake && isLoaded && isNetwork && !isWorkbench && <NetworkView />}
+        {!isIntake && isStageReady && !isWorkbench && <CanvasView />}
+        {!isIntake && isLoaded && isCapabilityMap && !isWorkbench && <CapabilityMapView />}
+        {!isIntake && isLoaded && isConceptGraph && !isWorkbench && <ConceptGraphView />}
+        {!isIntake && isLoaded && isFriction && !isWorkbench && <FrictionView />}
+        {isWorkbench && workbenchActive && <WorkbenchView />}
       </main>
       <UserGuidePanel />
       <DevTierSwitcher />
