@@ -17,6 +17,7 @@ import { ProjectList } from "./components/ProjectList.tsx";
 import { autoSaveToProject } from "./utils/auto-save.ts";
 import { VersionBadge } from "./components/ChangelogModal.tsx";
 import { UpsellModalProvider, useUpsellModal } from "./components/UpsellModal.tsx";
+import { RefinementExportModal } from "./components/RefinementExport.tsx";
 import { DevTierSwitcher } from "./components/DevTierSwitcher.tsx";
 import { extractClaimFromURL, consumePendingClaim } from "./utils/bundle-claim.ts";
 import { useTierStore } from "./store/tier-store.ts";
@@ -40,6 +41,7 @@ export default function App() {
     loadHeatmap,
   } = useCanvasStore();
 
+  const [showRefinementExport, setShowRefinementExport] = useState(false);
   const [claimImporting, setClaimImporting] = useState(false);
   const claimProcessed = useRef(false);
   const checkoutHandled = useRef(false);
@@ -316,6 +318,22 @@ export default function App() {
             <span className="text-[10px] text-white/35">{user.email}</span>
           )}
 
+          {/* Refine & Regenerate (only when a model is loaded) */}
+          {scaffoldData && (
+            <button
+              onClick={() => setShowRefinementExport(true)}
+              className="rounded-md px-2.5 py-1 text-[10px] font-medium transition-colors"
+              style={{
+                background: "rgba(255,255,255,0.08)",
+                color: "rgba(255,255,255,0.6)",
+                border: "1px solid rgba(255,255,255,0.12)",
+              }}
+              title="Export refined model for regeneration"
+            >
+              ↻ Refine
+            </button>
+          )}
+
           {/* Theme toggle */}
           <ThemeToggle />
 
@@ -459,6 +477,9 @@ export default function App() {
       </main>
       <UserGuidePanel />
       <DevTierSwitcher />
+      {showRefinementExport && (
+        <RefinementExportModal onClose={() => setShowRefinementExport(false)} />
+      )}
     </div>
     </UpsellModalProvider>
   );
