@@ -601,6 +601,22 @@ export function normaliseBundle(bundle: Record<string, unknown>): ScaffoldData {
     elements.valueStreams = streams;
   }
 
+  // 2b. Pattern 3: resolve activityIds from activities that reference VS via valueStreamId
+  // When a value stream has no activityIds/stageIds/stages, collect activities that
+  // point back to it via valueStreamId, sorted by their stage number.
+  if (elements.valueStreams && elements.activities) {
+    for (const [vsId, vs] of Object.entries(elements.valueStreams as Record<string, any>)) {
+      if (!vs.activityIds || vs.activityIds.length === 0) {
+        const matching = Object.values(elements.activities as Record<string, any>)
+          .filter((a: any) => a.valueStreamId === vsId || a.valueStreamId === vs.id)
+          .sort((a: any, b: any) => (a.number ?? 0) - (b.number ?? 0));
+        if (matching.length > 0) {
+          vs.activityIds = matching.map((a: any) => a.id);
+        }
+      }
+    }
+  }
+
   // 3. Normalise concepts if present (BusinessObject → Concept)
   if (elements.concepts) {
     const normalised: Record<string, any> = {};
@@ -664,7 +680,7 @@ export function normaliseBundle(bundle: Record<string, unknown>): ScaffoldData {
   const scaffold: ScaffoldData = {
     schemaVersion: `ba-bundle-${meta?.bundleVersion ?? "1.0.0"}`,
     scaffoldId: (bundle.scaffoldId as string) ?? (meta?.scaffoldId as string) ?? "imported",
-    name: (bundle.name as string) ?? "Imported Bundle",
+    name: (bundle.name as string) ?? (meta?.name as string) ?? "Imported Bundle",
     description: bundle.description as string | undefined,
     elements: elements as unknown as ScaffoldData["elements"],
   };

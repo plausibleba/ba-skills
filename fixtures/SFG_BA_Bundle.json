@@ -1,0 +1,1152 @@
+{
+  "meta": {
+    "bundleVersion": "1.0.0",
+    "scaffoldId": "30f15f51-c958-4f4f-9ae1-3b1e2910daca",
+    "name": "SFG Financial Services \u2014 Data Protection Business Architecture (DRUVA)",
+    "generatedAt": "2026-03-23T00:00:00Z",
+    "generatedBy": "PlausibleBA Skills Library v1.5.0",
+    "description": "Full business architecture for SFG's DRUVA data protection deployment covering VMware on-premises, Azure IaaS, and Microsoft 365 workloads."
+  },
+  "elements": {
+    "capabilities": {
+      "cap_manage_backup_policy_framework": {
+        "id": "cap_manage_backup_policy_framework",
+        "elementType": "Capability",
+        "name": "Manage Backup Policy Framework",
+        "number": "1.1.1",
+        "level": "L3",
+        "parentId": "cap_policy_standards_management",
+        "parentNumber": "1.1",
+        "businessObject": "Backup Policy",
+        "description": "Ability to define, maintain and enforce backup policies across all workload types.",
+        "type": "Governance"
+      },
+      "cap_manage_retention_standards": {
+        "id": "cap_manage_retention_standards",
+        "elementType": "Capability",
+        "name": "Manage Retention Standards",
+        "number": "1.1.2",
+        "level": "L3",
+        "parentId": "cap_policy_standards_management",
+        "parentNumber": "1.1",
+        "businessObject": "Retention Schedule",
+        "description": "Ability to govern data retention rules meeting FCA and GDPR obligations.",
+        "type": "Governance"
+      },
+      "cap_manage_sla_obligations": {
+        "id": "cap_manage_sla_obligations",
+        "elementType": "Capability",
+        "name": "Manage SLA Obligations",
+        "number": "1.1.3",
+        "level": "L3",
+        "parentId": "cap_policy_standards_management",
+        "parentNumber": "1.1",
+        "businessObject": "Service Level Agreement",
+        "description": "Ability to define and maintain backup SLA commitments including RTO and RPO targets.",
+        "type": "Governance"
+      },
+      "cap_manage_regulatory_compliance": {
+        "id": "cap_manage_regulatory_compliance",
+        "elementType": "Capability",
+        "name": "Manage Regulatory Compliance",
+        "number": "1.2.1",
+        "level": "L3",
+        "parentId": "cap_compliance_audit_management",
+        "parentNumber": "1.2",
+        "businessObject": "Compliance Obligation",
+        "description": "Ability to ensure backup activities conform to FCA, GDPR, and financial services requirements.",
+        "type": "Governance"
+      },
+      "cap_manage_audit_trail": {
+        "id": "cap_manage_audit_trail",
+        "elementType": "Capability",
+        "name": "Manage Audit Trail",
+        "number": "1.2.2",
+        "level": "L3",
+        "parentId": "cap_compliance_audit_management",
+        "parentNumber": "1.2",
+        "businessObject": "Audit Record",
+        "description": "Ability to generate, retain and provide evidence of backup activity for audit purposes.",
+        "type": "Governance"
+      },
+      "cap_manage_data_sovereignty_controls": {
+        "id": "cap_manage_data_sovereignty_controls",
+        "elementType": "Capability",
+        "name": "Manage Data Sovereignty Controls",
+        "number": "1.2.3",
+        "level": "L3",
+        "parentId": "cap_compliance_audit_management",
+        "parentNumber": "1.2",
+        "businessObject": "Data Residency Policy",
+        "description": "Ability to enforce rules governing where backup data is stored and processed.",
+        "type": "Governance"
+      },
+      "cap_govern_business_continuity_plans": {
+        "id": "cap_govern_business_continuity_plans",
+        "elementType": "Capability",
+        "name": "Govern Business Continuity Plans",
+        "number": "1.3.1",
+        "level": "L3",
+        "parentId": "cap_business_continuity_governance",
+        "parentNumber": "1.3",
+        "businessObject": "Continuity Plan",
+        "description": "Ability to maintain and validate business continuity plans relying on DRUVA.",
+        "type": "Governance"
+      },
+      "cap_manage_disaster_recovery_readiness": {
+        "id": "cap_manage_disaster_recovery_readiness",
+        "elementType": "Capability",
+        "name": "Manage Disaster Recovery Readiness",
+        "number": "1.3.2",
+        "level": "L3",
+        "parentId": "cap_business_continuity_governance",
+        "parentNumber": "1.3",
+        "businessObject": "DR Test Record",
+        "description": "Ability to schedule, execute and document DR tests across all workload environments.",
+        "type": "Governance"
+      },
+      "cap_govern_rto_rpo_commitments": {
+        "id": "cap_govern_rto_rpo_commitments",
+        "elementType": "Capability",
+        "name": "Govern RTO/RPO Commitments",
+        "number": "1.3.3",
+        "level": "L3",
+        "parentId": "cap_business_continuity_governance",
+        "parentNumber": "1.3",
+        "businessObject": "Recovery Objective",
+        "description": "Ability to define, measure and report against RTO and RPO targets per workload.",
+        "type": "Governance"
+      },
+      "cap_manage_vmware_vm_protection": {
+        "id": "cap_manage_vmware_vm_protection",
+        "elementType": "Capability",
+        "name": "Manage VMware VM Protection",
+        "number": "2.1.1",
+        "level": "L3",
+        "parentId": "cap_on_premises_workload_protection",
+        "parentNumber": "2.1",
+        "businessObject": "Virtual Machine",
+        "description": "Ability to protect VMware VMs using DRUVA agentless integration with application-consistent backups.",
+        "type": "Execution"
+      },
+      "cap_manage_sql_database_backup": {
+        "id": "cap_manage_sql_database_backup",
+        "elementType": "Capability",
+        "name": "Manage SQL Database Backup",
+        "number": "2.1.2",
+        "level": "L3",
+        "parentId": "cap_on_premises_workload_protection",
+        "parentNumber": "2.1",
+        "businessObject": "Database",
+        "description": "Ability to protect SQL Server databases with transaction-log aware granular backup.",
+        "type": "Execution"
+      },
+      "cap_manage_datacentre_asset_inventory": {
+        "id": "cap_manage_datacentre_asset_inventory",
+        "elementType": "Capability",
+        "name": "Manage Datacentre Asset Inventory",
+        "number": "2.1.3",
+        "level": "L3",
+        "parentId": "cap_on_premises_workload_protection",
+        "parentNumber": "2.1",
+        "businessObject": "Protected Asset",
+        "description": "Ability to discover, register and maintain a current inventory of on-premises assets requiring backup.",
+        "type": "Execution"
+      },
+      "cap_manage_azure_vm_backup": {
+        "id": "cap_manage_azure_vm_backup",
+        "elementType": "Capability",
+        "name": "Manage Azure VM Backup",
+        "number": "2.2.1",
+        "level": "L3",
+        "parentId": "cap_cloud_infrastructure_protection",
+        "parentNumber": "2.2",
+        "businessObject": "Cloud Virtual Machine",
+        "description": "Ability to protect Azure IaaS VMs using DRUVA cloud-native backup capabilities.",
+        "type": "Execution"
+      },
+      "cap_manage_cloud_snapshot_management": {
+        "id": "cap_manage_cloud_snapshot_management",
+        "elementType": "Capability",
+        "name": "Manage Cloud Snapshot Management",
+        "number": "2.2.2",
+        "level": "L3",
+        "parentId": "cap_cloud_infrastructure_protection",
+        "parentNumber": "2.2",
+        "businessObject": "Cloud Snapshot",
+        "description": "Ability to create, retain and manage Azure VM cloud snapshots with policy-driven lifecycle.",
+        "type": "Execution"
+      },
+      "cap_manage_cross_region_data_replication": {
+        "id": "cap_manage_cross_region_data_replication",
+        "elementType": "Capability",
+        "name": "Manage Cross-Region Data Replication",
+        "number": "2.2.3",
+        "level": "L3",
+        "parentId": "cap_cloud_infrastructure_protection",
+        "parentNumber": "2.2",
+        "businessObject": "Replication Job",
+        "description": "Ability to replicate backup data across Azure regions for geographic redundancy.",
+        "type": "Execution"
+      },
+      "cap_manage_m365_email_protection": {
+        "id": "cap_manage_m365_email_protection",
+        "elementType": "Capability",
+        "name": "Manage M365 Email Protection",
+        "number": "2.3.1",
+        "level": "L3",
+        "parentId": "cap_saas_productivity_protection",
+        "parentNumber": "2.3",
+        "businessObject": "Mailbox",
+        "description": "Ability to protect Exchange Online mailboxes with granular item-level recovery.",
+        "type": "Execution"
+      },
+      "cap_manage_m365_collaboration_data_backup": {
+        "id": "cap_manage_m365_collaboration_data_backup",
+        "elementType": "Capability",
+        "name": "Manage M365 Collaboration Data Backup",
+        "number": "2.3.2",
+        "level": "L3",
+        "parentId": "cap_saas_productivity_protection",
+        "parentNumber": "2.3",
+        "businessObject": "Collaboration Dataset",
+        "description": "Ability to protect SharePoint Online, OneDrive, and Teams data with full fidelity backup.",
+        "type": "Execution"
+      },
+      "cap_manage_saas_application_coverage": {
+        "id": "cap_manage_saas_application_coverage",
+        "elementType": "Capability",
+        "name": "Manage SaaS Application Coverage",
+        "number": "2.3.3",
+        "level": "L3",
+        "parentId": "cap_saas_productivity_protection",
+        "parentNumber": "2.3",
+        "businessObject": "SaaS Application",
+        "description": "Ability to manage backup coverage scope across all M365 services without gaps.",
+        "type": "Execution"
+      },
+      "cap_manage_backup_job_scheduling": {
+        "id": "cap_manage_backup_job_scheduling",
+        "elementType": "Capability",
+        "name": "Manage Backup Job Scheduling",
+        "number": "3.1.1",
+        "level": "L3",
+        "parentId": "cap_backup_execution",
+        "parentNumber": "3.1",
+        "businessObject": "Backup Job",
+        "description": "Ability to schedule and automate backup jobs across VMware, Azure, and M365 from a single console.",
+        "type": "Execution"
+      },
+      "cap_manage_incremental_and_full_backup_cycles": {
+        "id": "cap_manage_incremental_and_full_backup_cycles",
+        "elementType": "Capability",
+        "name": "Manage Incremental & Full Backup Cycles",
+        "number": "3.1.2",
+        "level": "L3",
+        "parentId": "cap_backup_execution",
+        "parentNumber": "3.1",
+        "businessObject": "Backup Cycle",
+        "description": "Ability to manage full and incremental backup schedules optimised per workload type.",
+        "type": "Execution"
+      },
+      "cap_manage_backup_storage_optimisation": {
+        "id": "cap_manage_backup_storage_optimisation",
+        "elementType": "Capability",
+        "name": "Manage Backup Storage Optimisation",
+        "number": "3.1.3",
+        "level": "L3",
+        "parentId": "cap_backup_execution",
+        "parentNumber": "3.1",
+        "businessObject": "Storage Resource",
+        "description": "Ability to apply deduplication and compression to minimise cloud storage consumption.",
+        "type": "Execution"
+      },
+      "cap_manage_granular_file_recovery": {
+        "id": "cap_manage_granular_file_recovery",
+        "elementType": "Capability",
+        "name": "Manage Granular File Recovery",
+        "number": "3.2.1",
+        "level": "L3",
+        "parentId": "cap_recovery_execution",
+        "parentNumber": "3.2",
+        "businessObject": "Recovery Request",
+        "description": "Ability to restore individual files, emails, or database records from any recovery point.",
+        "type": "Execution"
+      },
+      "cap_manage_full_system_restore": {
+        "id": "cap_manage_full_system_restore",
+        "elementType": "Capability",
+        "name": "Manage Full System Restore",
+        "number": "3.2.2",
+        "level": "L3",
+        "parentId": "cap_recovery_execution",
+        "parentNumber": "3.2",
+        "businessObject": "Restore Job",
+        "description": "Ability to execute full VM, database, or M365 tenant restores from any recovery point.",
+        "type": "Execution"
+      },
+      "cap_manage_point_in_time_recovery": {
+        "id": "cap_manage_point_in_time_recovery",
+        "elementType": "Capability",
+        "name": "Manage Point-in-Time Recovery",
+        "number": "3.2.3",
+        "level": "L3",
+        "parentId": "cap_recovery_execution",
+        "parentNumber": "3.2",
+        "businessObject": "Recovery Point",
+        "description": "Ability to restore workloads to a specific point in time, critical for ransomware recovery.",
+        "type": "Execution"
+      },
+      "cap_manage_backup_job_monitoring": {
+        "id": "cap_manage_backup_job_monitoring",
+        "elementType": "Capability",
+        "name": "Manage Backup Job Monitoring",
+        "number": "3.3.1",
+        "level": "L3",
+        "parentId": "cap_operational_monitoring",
+        "parentNumber": "3.3",
+        "businessObject": "Job Status Report",
+        "description": "Ability to monitor all backup and recovery job outcomes in real time from a unified dashboard.",
+        "type": "Execution"
+      },
+      "cap_manage_alert_and_incident_notification": {
+        "id": "cap_manage_alert_and_incident_notification",
+        "elementType": "Capability",
+        "name": "Manage Alert & Incident Notification",
+        "number": "3.3.2",
+        "level": "L3",
+        "parentId": "cap_operational_monitoring",
+        "parentNumber": "3.3",
+        "businessObject": "Backup Alert",
+        "description": "Ability to generate and route alerts for backup failures, missed jobs, or capacity warnings.",
+        "type": "Execution"
+      },
+      "cap_manage_backup_performance_reporting": {
+        "id": "cap_manage_backup_performance_reporting",
+        "elementType": "Capability",
+        "name": "Manage Backup Performance Reporting",
+        "number": "3.3.3",
+        "level": "L3",
+        "parentId": "cap_operational_monitoring",
+        "parentNumber": "3.3",
+        "businessObject": "Performance Report",
+        "description": "Ability to produce operational performance reports showing backup success rates and storage trends.",
+        "type": "Execution"
+      },
+      "cap_manage_ransomware_detection": {
+        "id": "cap_manage_ransomware_detection",
+        "elementType": "Capability",
+        "name": "Manage Ransomware Detection",
+        "number": "4.1.1",
+        "level": "L3",
+        "parentId": "cap_ransomware_malware_defence",
+        "parentNumber": "4.1",
+        "businessObject": "Threat Alert",
+        "description": "Ability to detect ransomware through DRUVA anomaly detection by identifying unusual backup patterns.",
+        "type": "Governance"
+      },
+      "cap_manage_immutable_backup_storage": {
+        "id": "cap_manage_immutable_backup_storage",
+        "elementType": "Capability",
+        "name": "Manage Immutable Backup Storage",
+        "number": "4.1.2",
+        "level": "L3",
+        "parentId": "cap_ransomware_malware_defence",
+        "parentNumber": "4.1",
+        "businessObject": "Immutable Snapshot",
+        "description": "Ability to store backup data in WORM-compliant immutable storage that cannot be deleted by ransomware.",
+        "type": "Execution"
+      },
+      "cap_manage_anomaly_and_threat_alerting": {
+        "id": "cap_manage_anomaly_and_threat_alerting",
+        "elementType": "Capability",
+        "name": "Manage Anomaly & Threat Alerting",
+        "number": "4.1.3",
+        "level": "L3",
+        "parentId": "cap_ransomware_malware_defence",
+        "parentNumber": "4.1",
+        "businessObject": "Security Event",
+        "description": "Ability to alert IT security teams when data anomalies or unusual access are detected.",
+        "type": "Governance"
+      },
+      "cap_manage_air_gapped_backup_vault": {
+        "id": "cap_manage_air_gapped_backup_vault",
+        "elementType": "Capability",
+        "name": "Manage Air-Gapped Backup Vault",
+        "number": "4.2.1",
+        "level": "L3",
+        "parentId": "cap_data_isolation_air_gap_management",
+        "parentNumber": "4.2",
+        "businessObject": "Isolated Vault",
+        "description": "Ability to maintain logically air-gapped backup copies isolated from production networks.",
+        "type": "Execution"
+      },
+      "cap_manage_data_isolation_policies": {
+        "id": "cap_manage_data_isolation_policies",
+        "elementType": "Capability",
+        "name": "Manage Data Isolation Policies",
+        "number": "4.2.2",
+        "level": "L3",
+        "parentId": "cap_data_isolation_air_gap_management",
+        "parentNumber": "4.2",
+        "businessObject": "Isolation Policy",
+        "description": "Ability to enforce policies isolating backup data from primary infrastructure networks.",
+        "type": "Governance"
+      },
+      "cap_manage_encrypted_data_transmission": {
+        "id": "cap_manage_encrypted_data_transmission",
+        "elementType": "Capability",
+        "name": "Manage Encrypted Data Transmission",
+        "number": "4.2.3",
+        "level": "L3",
+        "parentId": "cap_data_isolation_air_gap_management",
+        "parentNumber": "4.2",
+        "businessObject": "Encryption Certificate",
+        "description": "Ability to ensure all backup data is encrypted in transit and at rest using AES-256.",
+        "type": "Execution"
+      },
+      "cap_manage_role_based_access_control": {
+        "id": "cap_manage_role_based_access_control",
+        "elementType": "Capability",
+        "name": "Manage Role-Based Access Control",
+        "number": "4.3.1",
+        "level": "L3",
+        "parentId": "cap_access_and_identity_controls",
+        "parentNumber": "4.3",
+        "businessObject": "Access Role",
+        "description": "Ability to assign granular RBAC permissions to DRUVA platform users by role.",
+        "type": "Governance"
+      },
+      "cap_manage_multi_factor_authentication": {
+        "id": "cap_manage_multi_factor_authentication",
+        "elementType": "Capability",
+        "name": "Manage Multi-Factor Authentication",
+        "number": "4.3.2",
+        "level": "L3",
+        "parentId": "cap_access_and_identity_controls",
+        "parentNumber": "4.3",
+        "businessObject": "Authentication Record",
+        "description": "Ability to enforce MFA for all DRUVA console access preventing unauthorised access.",
+        "type": "Governance"
+      },
+      "cap_manage_privileged_access_governance": {
+        "id": "cap_manage_privileged_access_governance",
+        "elementType": "Capability",
+        "name": "Manage Privileged Access Governance",
+        "number": "4.3.3",
+        "level": "L3",
+        "parentId": "cap_access_and_identity_controls",
+        "parentNumber": "4.3",
+        "businessObject": "Privileged Account",
+        "description": "Ability to govern and audit privileged access to DRUVA administrative functions.",
+        "type": "Governance"
+      },
+      "cap_manage_backup_console_administration": {
+        "id": "cap_manage_backup_console_administration",
+        "elementType": "Capability",
+        "name": "Manage Backup Console Administration",
+        "number": "5.1.1",
+        "level": "L3",
+        "parentId": "cap_platform_administration",
+        "parentNumber": "5.1",
+        "businessObject": "Administration Record",
+        "description": "Ability to administer the DRUVA unified management console managing configuration and users.",
+        "type": "Execution"
+      },
+      "cap_manage_agent_deployment_and_updates": {
+        "id": "cap_manage_agent_deployment_and_updates",
+        "elementType": "Capability",
+        "name": "Manage Agent Deployment & Updates",
+        "number": "5.1.2",
+        "level": "L3",
+        "parentId": "cap_platform_administration",
+        "parentNumber": "5.1",
+        "businessObject": "Agent Instance",
+        "description": "Ability to deploy, update, and maintain DRUVA backup agents across VMware and Azure environments.",
+        "type": "Execution"
+      },
+      "cap_manage_licence_and_capacity_planning": {
+        "id": "cap_manage_licence_and_capacity_planning",
+        "elementType": "Capability",
+        "name": "Manage Licence & Capacity Planning",
+        "number": "5.1.3",
+        "level": "L3",
+        "parentId": "cap_platform_administration",
+        "parentNumber": "5.1",
+        "businessObject": "Licence Entitlement",
+        "description": "Ability to manage DRUVA licence entitlements and forecast backup storage capacity requirements.",
+        "type": "Execution"
+      },
+      "cap_manage_api_and_connector_integration": {
+        "id": "cap_manage_api_and_connector_integration",
+        "elementType": "Capability",
+        "name": "Manage API & Connector Integration",
+        "number": "5.2.1",
+        "level": "L3",
+        "parentId": "cap_integration_and_connectivity_management",
+        "parentNumber": "5.2",
+        "businessObject": "Integration Endpoint",
+        "description": "Ability to integrate DRUVA with SFG IT management tools and monitoring platforms via REST API.",
+        "type": "Execution"
+      },
+      "cap_manage_cloud_storage_tier_management": {
+        "id": "cap_manage_cloud_storage_tier_management",
+        "elementType": "Capability",
+        "name": "Manage Cloud Storage Tier Management",
+        "number": "5.2.2",
+        "level": "L3",
+        "parentId": "cap_integration_and_connectivity_management",
+        "parentNumber": "5.2",
+        "businessObject": "Storage Tier",
+        "description": "Ability to manage backup data lifecycle across DRUVA cloud storage tiers for cost optimisation.",
+        "type": "Execution"
+      },
+      "cap_manage_siem_and_security_tool_integration": {
+        "id": "cap_manage_siem_and_security_tool_integration",
+        "elementType": "Capability",
+        "name": "Manage SIEM & Security Tool Integration",
+        "number": "5.2.3",
+        "level": "L3",
+        "parentId": "cap_integration_and_connectivity_management",
+        "parentNumber": "5.2",
+        "businessObject": "Security Integration",
+        "description": "Ability to stream DRUVA security events and audit logs into SFG SIEM for centralised monitoring.",
+        "type": "Execution"
+      },
+      "cap_manage_sla_performance_reporting": {
+        "id": "cap_manage_sla_performance_reporting",
+        "elementType": "Capability",
+        "name": "Manage SLA Performance Reporting",
+        "number": "5.3.1",
+        "level": "L3",
+        "parentId": "cap_service_performance_management",
+        "parentNumber": "5.3",
+        "businessObject": "SLA Performance Report",
+        "description": "Ability to produce executive reports demonstrating backup success rate and RTO/RPO achievement.",
+        "type": "Execution"
+      },
+      "cap_manage_cost_optimisation": {
+        "id": "cap_manage_cost_optimisation",
+        "elementType": "Capability",
+        "name": "Manage Cost Optimisation",
+        "number": "5.3.2",
+        "level": "L3",
+        "parentId": "cap_service_performance_management",
+        "parentNumber": "5.3",
+        "businessObject": "Cost Report",
+        "description": "Ability to monitor and optimise total cost of DRUVA data protection versus previous fragmented approach.",
+        "type": "Execution"
+      },
+      "cap_manage_vendor_support_engagement": {
+        "id": "cap_manage_vendor_support_engagement",
+        "elementType": "Capability",
+        "name": "Manage Vendor Support Engagement",
+        "number": "5.3.3",
+        "level": "L3",
+        "parentId": "cap_service_performance_management",
+        "parentNumber": "5.3",
+        "businessObject": "Support Request",
+        "description": "Ability to engage DRUVA 24/7 support for incident resolution and product guidance.",
+        "type": "Execution"
+      }
+    },
+    "concepts": {
+      "obj_sfg": {
+        "id": "obj_sfg",
+        "elementType": "BusinessObject",
+        "name": "SFG",
+        "number": "1",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Party",
+        "definition": "A Party that owns and controls all organisational data and holds regulatory obligations for data protection under FCA and GDPR.",
+        "lifecycleStates": [
+          "Active",
+          "Under Review",
+          "Compliant",
+          "Non-Compliant"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_regulatory_compliance",
+          "cap_govern_business_continuity_plans",
+          "cap_manage_licence_and_capacity_planning"
+        ]
+      },
+      "obj_it_admin": {
+        "id": "obj_it_admin",
+        "elementType": "BusinessObject",
+        "name": "IT Administrator",
+        "number": "2",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Party",
+        "definition": "A Party that manages the DRUVA backup platform on behalf of SFG holding responsibility for backup configuration, monitoring, and recovery execution.",
+        "lifecycleStates": [
+          "Active",
+          "Suspended"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_backup_job_scheduling",
+          "cap_manage_backup_console_administration",
+          "cap_manage_granular_file_recovery"
+        ]
+      },
+      "obj_business_user": {
+        "id": "obj_business_user",
+        "elementType": "BusinessObject",
+        "name": "Business User",
+        "number": "3",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Party",
+        "definition": "A Party employed by SFG whose M365 mailbox, Teams, and OneDrive data is protected by DRUVA.",
+        "lifecycleStates": [
+          "Active",
+          "Offboarded"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_m365_email_protection",
+          "cap_manage_m365_collaboration_data_backup"
+        ]
+      },
+      "obj_regulator": {
+        "id": "obj_regulator",
+        "elementType": "BusinessObject",
+        "name": "Regulator",
+        "number": "4",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Party",
+        "definition": "A Party (FCA, ICO) that holds SFG accountable for data protection obligations and has authority to audit compliance evidence.",
+        "lifecycleStates": [
+          "Active"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_regulatory_compliance",
+          "cap_manage_audit_trail",
+          "cap_manage_data_sovereignty_controls"
+        ]
+      },
+      "obj_protected_workload": {
+        "id": "obj_protected_workload",
+        "elementType": "BusinessObject",
+        "name": "Protected Workload",
+        "number": "5",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Resource",
+        "definition": "A Resource of value representing a VMware VM, Azure IaaS VM, or M365 service dataset that is the subject of DRUVA backup protection.",
+        "lifecycleStates": [
+          "Unprotected",
+          "Registered",
+          "Actively Protected",
+          "Decommissioned"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_vmware_vm_protection",
+          "cap_manage_azure_vm_backup",
+          "cap_manage_m365_email_protection",
+          "cap_manage_saas_application_coverage"
+        ]
+      },
+      "obj_recovery_point": {
+        "id": "obj_recovery_point",
+        "elementType": "BusinessObject",
+        "name": "Recovery Point",
+        "number": "6",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Resource",
+        "definition": "A Resource representing a recoverable backup copy of a Protected Workload stored in DRUVA's cloud vault at a specific point in time.",
+        "lifecycleStates": [
+          "Creating",
+          "Available",
+          "Expiring",
+          "Deleted"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_point_in_time_recovery",
+          "cap_manage_full_system_restore",
+          "cap_manage_immutable_backup_storage"
+        ]
+      },
+      "obj_licence_entitlement": {
+        "id": "obj_licence_entitlement",
+        "elementType": "BusinessObject",
+        "name": "Licence Entitlement",
+        "number": "7",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Resource",
+        "definition": "A Resource representing SFG's subscription rights to DRUVA services, defining the number and types of workloads that can be protected.",
+        "lifecycleStates": [
+          "Pending",
+          "Active",
+          "Renewal Due",
+          "Expired"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_licence_and_capacity_planning"
+        ]
+      },
+      "obj_storage_capacity": {
+        "id": "obj_storage_capacity",
+        "elementType": "BusinessObject",
+        "name": "Storage Capacity",
+        "number": "8",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Resource",
+        "definition": "A Resource representing the cloud backup storage allocated to SFG within DRUVA's platform for retaining Recovery Points.",
+        "lifecycleStates": [
+          "Available",
+          "In Use",
+          "Near Threshold",
+          "Exceeded"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_backup_storage_optimisation",
+          "cap_manage_cloud_storage_tier_management"
+        ]
+      },
+      "obj_backup_policy": {
+        "id": "obj_backup_policy",
+        "elementType": "BusinessObject",
+        "name": "Backup Policy",
+        "number": "9",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Record",
+        "definition": "A Record that documents the protection rules, schedules, and retention settings applied to each Protected Workload type.",
+        "lifecycleStates": [
+          "Draft",
+          "Active",
+          "Under Review",
+          "Archived"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_backup_policy_framework",
+          "cap_manage_retention_standards",
+          "cap_manage_sla_obligations"
+        ]
+      },
+      "obj_backup_job": {
+        "id": "obj_backup_job",
+        "elementType": "BusinessObject",
+        "name": "Backup Job",
+        "number": "10",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Record",
+        "definition": "A Record that documents the execution of a backup event, including workload, timestamp, status, duration, and data transferred.",
+        "lifecycleStates": [
+          "Scheduled",
+          "Running",
+          "Completed",
+          "Failed",
+          "Retrying"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_backup_job_scheduling",
+          "cap_manage_backup_job_monitoring",
+          "cap_manage_incremental_and_full_backup_cycles"
+        ]
+      },
+      "obj_recovery_request": {
+        "id": "obj_recovery_request",
+        "elementType": "BusinessObject",
+        "name": "Recovery Request",
+        "number": "11",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Record",
+        "definition": "A Record that documents a request to restore data, including the workload, recovery point selected, requester, and outcome.",
+        "lifecycleStates": [
+          "Raised",
+          "In Progress",
+          "Completed",
+          "Failed"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_granular_file_recovery",
+          "cap_manage_full_system_restore",
+          "cap_manage_point_in_time_recovery"
+        ]
+      },
+      "obj_threat_alert": {
+        "id": "obj_threat_alert",
+        "elementType": "BusinessObject",
+        "name": "Threat Alert",
+        "number": "12",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Record",
+        "definition": "A Record that documents a detected ransomware anomaly, deletion spike, or security event identified by DRUVA's threat intelligence.",
+        "lifecycleStates": [
+          "Detected",
+          "Investigating",
+          "Contained",
+          "Resolved",
+          "Escalated"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_ransomware_detection",
+          "cap_manage_anomaly_and_threat_alerting"
+        ]
+      },
+      "obj_compliance_obligation": {
+        "id": "obj_compliance_obligation",
+        "elementType": "BusinessObject",
+        "name": "Compliance Obligation",
+        "number": "13",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Record",
+        "definition": "A Record that documents a regulatory requirement (FCA, GDPR) that SFG's backup and data protection practices must satisfy.",
+        "lifecycleStates": [
+          "Identified",
+          "In Scope",
+          "Evidenced",
+          "Closed"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_regulatory_compliance",
+          "cap_manage_data_sovereignty_controls"
+        ]
+      },
+      "obj_audit_record": {
+        "id": "obj_audit_record",
+        "elementType": "BusinessObject",
+        "name": "Audit Record",
+        "number": "14",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Record",
+        "definition": "A Record that documents backup activity, access events, and recovery actions as tamper-proof compliance evidence.",
+        "lifecycleStates": [
+          "Generated",
+          "Retained",
+          "Submitted",
+          "Archived"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_audit_trail",
+          "cap_manage_role_based_access_control"
+        ]
+      },
+      "obj_sla_report": {
+        "id": "obj_sla_report",
+        "elementType": "BusinessObject",
+        "name": "SLA Performance Report",
+        "number": "15",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Record",
+        "definition": "A Record that documents DRUVA platform availability, backup success rates, and RTO/RPO performance against SFG's SLA commitments.",
+        "lifecycleStates": [
+          "Draft",
+          "Published",
+          "Acknowledged"
+        ],
+        "relatedCapabilities": [
+          "cap_manage_sla_performance_reporting",
+          "cap_manage_backup_performance_reporting"
+        ]
+      },
+      "obj_continuity_plan": {
+        "id": "obj_continuity_plan",
+        "elementType": "BusinessObject",
+        "name": "Continuity Plan",
+        "number": "16",
+        "classificationHierarchy": "CapsicumTriad",
+        "type": "Record",
+        "definition": "A Record that documents SFG's disaster recovery procedures, tested recovery scenarios, and approved RTO/RPO commitments per workload.",
+        "lifecycleStates": [
+          "Draft",
+          "Approved",
+          "Under Test",
+          "Updated",
+          "Retired"
+        ],
+        "relatedCapabilities": [
+          "cap_govern_business_continuity_plans",
+          "cap_manage_disaster_recovery_readiness",
+          "cap_govern_rto_rpo_commitments"
+        ]
+      }
+    },
+    "valueStreams": {
+      "vs_data_recovery_assured": {
+        "id": "vs_data_recovery_assured",
+        "elementType": "ValueStream",
+        "name": "Data Recovery Assured",
+        "valueObject": "obj_protected_workload",
+        "recipient": "obj_sfg",
+        "trigger": "Workload (VMware VM, Azure VM, or M365 service) identified as requiring backup protection",
+        "outcome": "Workload continuously protected, threats contained, data recoverable with full compliance evidence",
+        "stageCount": 6
+      }
+    },
+    "valueStreamStages": {
+      "stg_workload_onboarded": {
+        "id": "stg_workload_onboarded",
+        "elementType": "ValueStreamStage",
+        "number": 1,
+        "name": "Workload Onboarded",
+        "valueStreamId": "vs_data_recovery_assured",
+        "entryCriteria": "Workload identified for backup protection and included in scope",
+        "exitCriteria": "Workload registered in DRUVA with backup connector or agent deployed, capacity allocated, access controls active",
+        "valueObjectState": "Registered",
+        "capabilities": [
+          "cap_manage_datacentre_asset_inventory",
+          "cap_manage_azure_vm_backup",
+          "cap_manage_saas_application_coverage",
+          "cap_manage_multi_factor_authentication",
+          "cap_manage_privileged_access_governance",
+          "cap_manage_backup_console_administration",
+          "cap_manage_agent_deployment_and_updates",
+          "cap_manage_licence_and_capacity_planning",
+          "cap_manage_api_and_connector_integration"
+        ],
+        "objects": [
+          "obj_protected_workload",
+          "obj_licence_entitlement",
+          "obj_it_admin",
+          "obj_sfg"
+        ],
+        "systems": [
+          "DRUVA Management Console",
+          "DRUVA Backup Agent",
+          "Azure Connector",
+          "M365 Connector"
+        ]
+      },
+      "stg_protection_policy_applied": {
+        "id": "stg_protection_policy_applied",
+        "elementType": "ValueStreamStage",
+        "number": 2,
+        "name": "Protection Policy Applied",
+        "valueStreamId": "vs_data_recovery_assured",
+        "entryCriteria": "Workload registered in DRUVA with connector active",
+        "exitCriteria": "Backup policy live; first full backup completed; RTO/RPO targets defined; SLA obligations documented",
+        "valueObjectState": "Actively Protected",
+        "capabilities": [
+          "cap_manage_backup_policy_framework",
+          "cap_manage_retention_standards",
+          "cap_manage_sla_obligations",
+          "cap_manage_vmware_vm_protection",
+          "cap_manage_sql_database_backup",
+          "cap_manage_m365_email_protection",
+          "cap_manage_m365_collaboration_data_backup",
+          "cap_manage_backup_job_scheduling",
+          "cap_manage_incremental_and_full_backup_cycles"
+        ],
+        "objects": [
+          "obj_protected_workload",
+          "obj_backup_policy",
+          "obj_backup_job",
+          "obj_recovery_point"
+        ],
+        "systems": [
+          "DRUVA Phoenix",
+          "DRUVA Cloud Backup",
+          "DRUVA InSync"
+        ]
+      },
+      "stg_data_continuously_protected": {
+        "id": "stg_data_continuously_protected",
+        "elementType": "ValueStreamStage",
+        "number": 3,
+        "name": "Data Continuously Protected",
+        "valueStreamId": "vs_data_recovery_assured",
+        "entryCriteria": "First backup complete; policy configured and active",
+        "exitCriteria": "Automated incremental backup running on schedule; monitoring active; storage optimised; cross-region replication enabled",
+        "valueObjectState": "Continuously Backed Up",
+        "capabilities": [
+          "cap_manage_cloud_snapshot_management",
+          "cap_manage_cross_region_data_replication",
+          "cap_manage_backup_storage_optimisation",
+          "cap_manage_backup_job_monitoring",
+          "cap_manage_alert_and_incident_notification",
+          "cap_manage_backup_performance_reporting",
+          "cap_manage_encrypted_data_transmission",
+          "cap_manage_cloud_storage_tier_management"
+        ],
+        "objects": [
+          "obj_backup_job",
+          "obj_recovery_point",
+          "obj_storage_capacity"
+        ],
+        "systems": [
+          "DRUVA Dashboard",
+          "Azure Storage",
+          "DRUVA Dedup Engine"
+        ]
+      },
+      "stg_security_threat_identified": {
+        "id": "stg_security_threat_identified",
+        "elementType": "ValueStreamStage",
+        "number": 4,
+        "name": "Security Threat Identified",
+        "valueStreamId": "vs_data_recovery_assured",
+        "entryCriteria": "DRUVA anomaly detection flags ransomware activity, unusual deletion, or data exfiltration pattern",
+        "exitCriteria": "Threat contained; clean pre-attack recovery point identified and isolated in air-gapped vault",
+        "valueObjectState": "Threat Contained",
+        "capabilities": [
+          "cap_manage_ransomware_detection",
+          "cap_manage_immutable_backup_storage",
+          "cap_manage_anomaly_and_threat_alerting",
+          "cap_manage_air_gapped_backup_vault",
+          "cap_manage_data_isolation_policies",
+          "cap_manage_role_based_access_control"
+        ],
+        "objects": [
+          "obj_threat_alert",
+          "obj_recovery_point",
+          "obj_it_admin"
+        ],
+        "systems": [
+          "DRUVA Threat Intelligence",
+          "DRUVA Isolated Recovery",
+          "SIEM"
+        ]
+      },
+      "stg_data_recovery_executed": {
+        "id": "stg_data_recovery_executed",
+        "elementType": "ValueStreamStage",
+        "number": 5,
+        "name": "Data Recovery Executed",
+        "valueStreamId": "vs_data_recovery_assured",
+        "entryCriteria": "Restore request raised \u2014 either post-incident recovery or planned DR test",
+        "exitCriteria": "Data restored to operational state; production systems back online; RTO/RPO commitments met",
+        "valueObjectState": "Recovered",
+        "capabilities": [
+          "cap_manage_disaster_recovery_readiness",
+          "cap_govern_rto_rpo_commitments",
+          "cap_manage_granular_file_recovery",
+          "cap_manage_full_system_restore",
+          "cap_manage_point_in_time_recovery",
+          "cap_manage_vendor_support_engagement"
+        ],
+        "objects": [
+          "obj_recovery_request",
+          "obj_recovery_point",
+          "obj_protected_workload"
+        ],
+        "systems": [
+          "DRUVA Recovery Portal",
+          "DRUVA Sandbox Recovery",
+          "DRUVA 24/7 Support"
+        ]
+      },
+      "stg_compliance_evidence_produced": {
+        "id": "stg_compliance_evidence_produced",
+        "elementType": "ValueStreamStage",
+        "number": 6,
+        "name": "Compliance Evidence Produced",
+        "valueStreamId": "vs_data_recovery_assured",
+        "entryCriteria": "Recovery complete \u2014 or scheduled reporting/audit period reached",
+        "exitCriteria": "Full audit trail available; compliance obligations evidenced; SLA report published; continuity plan updated",
+        "valueObjectState": "Compliance Assured",
+        "capabilities": [
+          "cap_manage_regulatory_compliance",
+          "cap_manage_audit_trail",
+          "cap_manage_data_sovereignty_controls",
+          "cap_govern_business_continuity_plans",
+          "cap_manage_siem_and_security_tool_integration",
+          "cap_manage_sla_performance_reporting",
+          "cap_manage_cost_optimisation"
+        ],
+        "objects": [
+          "obj_audit_record",
+          "obj_compliance_obligation",
+          "obj_sla_report",
+          "obj_continuity_plan",
+          "obj_regulator"
+        ],
+        "systems": [
+          "DRUVA Compliance Reporting",
+          "DRUVA Audit Logs",
+          "SIEM"
+        ]
+      }
+    },
+    "outcomes": {
+      "outcome_continuous_protection": {
+        "id": "outcome_continuous_protection",
+        "elementType": "Outcome",
+        "name": "Continuous Automated Protection",
+        "description": "All three SFG workload environments (VMware, Azure, M365) are backed up automatically on DRUVA-managed schedules with zero manual intervention."
+      },
+      "outcome_ransomware_resilience": {
+        "id": "outcome_ransomware_resilience",
+        "elementType": "Outcome",
+        "name": "Ransomware Resilience",
+        "description": "SFG maintains clean, immutable, air-gapped recovery points that cannot be encrypted or deleted by ransomware, ensuring recovery from any attack."
+      },
+      "outcome_regulatory_compliance": {
+        "id": "outcome_regulatory_compliance",
+        "elementType": "Outcome",
+        "name": "Regulatory Compliance Assured",
+        "description": "SFG can produce comprehensive audit trails and compliance evidence for FCA and ICO requirements from a single DRUVA platform."
+      },
+      "outcome_cost_reduction": {
+        "id": "outcome_cost_reduction",
+        "elementType": "Outcome",
+        "name": "Infrastructure Cost Reduction",
+        "description": "SFG eliminates expensive, fragmented on-premises backup infrastructure, replacing it with DRUVA's cloud-based SaaS model."
+      }
+    },
+    "roles": {
+      "role_it_admin": {
+        "id": "role_it_admin",
+        "elementType": "Role",
+        "name": "IT Administrator",
+        "description": "Manages DRUVA platform configuration, backup monitoring, recovery execution, and vendor engagement on behalf of SFG."
+      },
+      "role_security_team": {
+        "id": "role_security_team",
+        "elementType": "Role",
+        "name": "Security Team",
+        "description": "Monitors DRUVA threat alerts, manages SIEM integration, and governs incident response for ransomware events."
+      },
+      "role_compliance_officer": {
+        "id": "role_compliance_officer",
+        "elementType": "Role",
+        "name": "Compliance Officer",
+        "description": "Reviews audit records, manages regulatory obligations, and validates compliance evidence for FCA/ICO reporting."
+      }
+    },
+    "metrics": {
+      "metric_rto": {
+        "id": "metric_rto",
+        "elementType": "Metric",
+        "name": "Recovery Time Objective (RTO)",
+        "description": "Maximum acceptable time to restore a workload after data loss. DRUVA target: <4 hours for VMware VMs, <2 hours for Azure VMs, <1 hour for M365."
+      },
+      "metric_rpo": {
+        "id": "metric_rpo",
+        "elementType": "Metric",
+        "name": "Recovery Point Objective (RPO)",
+        "description": "Maximum acceptable data loss period. DRUVA target: <1 hour for VMware and Azure, <24 hours for M365."
+      },
+      "metric_backup_success_rate": {
+        "id": "metric_backup_success_rate",
+        "elementType": "Metric",
+        "name": "Backup Success Rate",
+        "description": "Percentage of scheduled backup jobs completing successfully. DRUVA SLA target: >99.5%."
+      },
+      "metric_cost_per_tb": {
+        "id": "metric_cost_per_tb",
+        "elementType": "Metric",
+        "name": "Cost per TB Protected",
+        "description": "Total monthly DRUVA cost divided by total protected data volume, used to demonstrate cost improvement versus legacy approach."
+      }
+    },
+    "informationObjects": {
+      "info_druva_dashboard": {
+        "id": "info_druva_dashboard",
+        "elementType": "InformationObject",
+        "name": "DRUVA Unified Dashboard",
+        "description": "Single-pane-of-glass view of all backup jobs, alerts, recovery points, and platform health across all three SFG workload environments."
+      },
+      "info_audit_log": {
+        "id": "info_audit_log",
+        "elementType": "InformationObject",
+        "name": "DRUVA Audit Log",
+        "description": "Tamper-proof log of all platform activity including backup events, user access, policy changes, and recovery actions exported to SIEM."
+      },
+      "info_compliance_report": {
+        "id": "info_compliance_report",
+        "elementType": "InformationObject",
+        "name": "Compliance Evidence Pack",
+        "description": "Packaged collection of audit logs, backup success reports, and recovery test results suitable for FCA/ICO regulatory submission."
+      }
+    }
+  }
+}
