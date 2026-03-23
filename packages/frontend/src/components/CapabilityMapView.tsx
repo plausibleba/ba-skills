@@ -54,6 +54,9 @@ function buildHierarchy(caps: Record<string, any>): L1Block[] {
     const l3s = all.filter((c) => c.level === 3);
     const l4s = all.filter((c) => c.level === 4);
 
+    // When there are no L4 caps, L3s ARE the leaf capabilities — treat them as caps, not groups
+    const l3sAreLeaves = l4s.length === 0 && l3s.length > 0;
+
     return l1s.map((l1) => ({
       id: l1.id,
       name: l1.name,
@@ -61,14 +64,19 @@ function buildHierarchy(caps: Record<string, any>): L1Block[] {
       l2s: l2s
         .filter((l2) => l2.parentId === l1.id)
         .map((l2) => {
-          const l3Groups = l3s.filter((l3) => l3.parentId === l2.id);
+          const l3Children = l3s.filter((l3) => l3.parentId === l2.id);
           const directCaps = l4s.filter((l4) => l4.parentId === l2.id);
 
-          if (l3Groups.length > 0) {
+          if (l3sAreLeaves) {
+            // L3s are leaf capabilities — put them in caps array directly
+            return { id: l2.id, name: l2.name, l3s: [], caps: [...l3Children, ...directCaps] };
+          }
+
+          if (l3Children.length > 0) {
             return {
               id: l2.id,
               name: l2.name,
-              l3s: l3Groups.map((l3) => ({
+              l3s: l3Children.map((l3) => ({
                 id: l3.id,
                 name: l3.name,
                 caps: l4s.filter((l4) => l4.parentId === l3.id),
@@ -201,6 +209,10 @@ export function CapabilityMapView() {
     if (!scaffoldData?.elements?.capabilities) return [];
     return buildHierarchy(scaffoldData.elements.capabilities as Record<string, any>);
   }, [scaffoldData]);
+
+  // Separate execution and governance blocks for layout purposes
+  const execBlocks = useMemo(() => hierarchy.filter((l1) => !l1.gov), [hierarchy]);
+  const govBlocks = useMemo(() => hierarchy.filter((l1) => l1.gov), [hierarchy]);
 
   // Build enriched capability lookup — merges data from two sources:
   //   1. Activity→capability links (always present from Pass B): enabledByCapabilityIds,
@@ -346,7 +358,7 @@ export function CapabilityMapView() {
 
         {viewMode === "treemap" ? (
           <>
-            {/* Treemap grid — top level uses grid with configurable columns */}
+            {/* Treemap grid — execution blocks in configurable grid */}
             <div
               style={
                 topLayout === "wrap" && topCols > 0
@@ -358,7 +370,7 @@ export function CapabilityMapView() {
                       : { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 6 }
               }
             >
-              {hierarchy.map((l1) => (
+              {execBlocks.map((l1) => (
                 <L1Card
                   key={l1.id}
                   block={l1}
@@ -377,6 +389,30 @@ export function CapabilityMapView() {
                 />
               ))}
             </div>
+
+            {/* Governance blocks — full width below execution grid */}
+            {govBlocks.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 6 }}>
+                {govBlocks.map((l1) => (
+                  <L1Card
+                    key={l1.id}
+                    block={l1}
+                    selectedL3={selectedL3}
+                    editingId={editingId}
+                    editText={editText}
+                    onSelectL3={setSelectedL3}
+                    onStartEdit={startEdit}
+                    onEditTextChange={setEditText}
+                    onCommitEdit={commitEdit}
+                    getLayout={getLayout}
+                    toggleLayout={toggleLayout}
+                    getCols={getCols}
+                    incCols={incCols}
+                    decCols={decCols}
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Enriched Inspector panel */}
             <CapabilityInspectorPanel cap={selectedL3} ppit={selectedL3 ? ppitByCapId.get(selectedL3.id) : undefined} />
