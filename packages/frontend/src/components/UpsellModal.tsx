@@ -14,7 +14,7 @@
  * Phase 1: Auto-activate trial (updates profile tier in Supabase)
  * Phase 2: Replace expired-trial/upgrade CTAs with Stripe checkout
  */
-import { useState, useCallback, createContext, useContext } from "react";
+import { useState, useCallback, useEffect, useRef, createContext, useContext } from "react";
 import { useTierStore, type GatedAction, type UseCase } from "../store/tier-store.ts";
 import { useAuthStore } from "../store/auth-store.ts";
 
@@ -26,6 +26,7 @@ interface UpsellConfig {
   featureLabel: string;
   requiredUseCase?: UseCase;
   forcePricing?: boolean; // Skip trial offer, go straight to pricing tiers
+  autoCheckoutTier?: string; // Auto-trigger checkout for this tier (e.g. "starter", "individual")
 }
 
 interface UpsellModalContextValue {
@@ -281,7 +282,7 @@ function UpsellModalOverlay({
             </div>
           ) : (
             /* ── Expired trial / upgrade: show pricing tiers ── */
-            <PricingTiers onClose={onClose} isExpiredTrial={!!isExpiredTrial} />
+            <PricingTiers onClose={onClose} isExpiredTrial={!!isExpiredTrial} autoCheckoutTier={config.autoCheckoutTier} />
           )}
         </div>
       </div>
@@ -379,11 +380,12 @@ const PRICING_TIERS: PricingTier[] = [
   },
 ];
 
-function PricingTiers({ onClose, isExpiredTrial }: { onClose: () => void; isExpiredTrial: boolean }) {
+function PricingTiers({ onClose, isExpiredTrial, autoCheckoutTier }: { onClose: () => void; isExpiredTrial: boolean; autoCheckoutTier?: string }) {
   const [annual, setAnnual] = useState(false);
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const user = useAuthStore((s) => s.user);
+  const autoFired = useRef(false);
 
   const handleCheckout = async (tier: PricingTier) => {
     const priceId = annual && tier.annualPriceId ? tier.annualPriceId : tier.monthlyPriceId;
@@ -418,6 +420,16 @@ function PricingTiers({ onClose, isExpiredTrial }: { onClose: () => void; isExpi
       setLoadingTier(null);
     }
   };
+
+  // Auto-fire checkout if a tier was specified via URL parameter
+  useEffect(() => {
+    if (!autoCheckoutTier || autoFired.current) return;
+    const matchedTier = PRICING_TIERS.find((t) => t.id === autoCheckoutTier);
+    if (matchedTier && user) {
+      autoFired.current = true;
+      handleCheckout(matchedTier);
+    }
+  }, [autoCheckoutTier, user]);
 
   return (
     <div>

@@ -473,9 +473,13 @@ function UpgradeURLTrigger() {
   useEffect(() => {
     if (triggered.current) return;
     const params = new URLSearchParams(window.location.search);
-    if (params.get("upgrade") !== "true") return;
+    const upgradeParam = params.get("upgrade");
+    if (!upgradeParam) return;
 
     triggered.current = true;
+
+    // Extract tier hint (e.g. "starter", "individual", "team_5", "team_10", or "true" for just showing pricing)
+    const autoTier = upgradeParam !== "true" ? upgradeParam : undefined;
 
     // Clean URL
     params.delete("upgrade");
@@ -489,6 +493,7 @@ function UpgradeURLTrigger() {
         reason: "Choose a plan to get started with VCC.",
         featureLabel: "VCC",
         forcePricing: true,
+        autoCheckoutTier: autoTier,
       });
     }, 500);
   }, [show]);
