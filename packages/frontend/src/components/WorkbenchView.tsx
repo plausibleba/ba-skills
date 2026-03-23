@@ -1,8 +1,7 @@
-// @ts-nocheck
 // Op Model Workbench — Phase 1+2: Catalog grids + Refinement Agent
 // Session 26
 
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -10,20 +9,17 @@ import {
   getFilteredRowModel,
   flexRender,
   type SortingState,
-  type ColumnFiltersState,
-  type ColumnOrderState,
 } from "@tanstack/react-table";
 import { useCanvasStore } from "../store/canvas-store";
 import { useWorkbenchStore, type CatalogType, type DiffOperation, type ChatMessage } from "../store/workbench-store";
 import {
   CATALOG_CONFIGS,
-  ALL_CATALOGS,
   resolveAccessor,
   type CatalogConfig,
-  type CatalogColumnDef,
 } from "../lib/catalog-configs";
 import { callLLM } from "../domain/pipeline/llm-client";
 import { buildRefinementAgentPrompt, parseAgentResponse } from "../domain/pipeline/prompts/refinement-agent";
+import { StructuredGraphExplorer } from "./StructuredGraphExplorer";
 
 // ── Engine Room Theme Styles ──
 
@@ -49,12 +45,6 @@ const theme = {
 // Builds a depth-first sorted list from parent-child hierarchy.
 // Works for capabilities (level + parentId) and any future hierarchical catalog.
 
-interface TreeNode {
-  element: any;
-  children: TreeNode[];
-  depth: number;
-  sortKey: string; // e.g. "1.2.3" for hierarchical numbering
-}
 
 function buildTreeSorted(elements: Record<string, any>): { sorted: any[]; depthMap: Map<string, number>; sortKeyMap: Map<string, string> } {
   const entries = Object.values(elements || {});
@@ -128,7 +118,7 @@ function CatalogGrid({
   elements: Record<string, any>;
   scaffoldData: any;
 }) {
-  const { updateElement, deleteElement, addElement } = useWorkbenchStore();
+  const { updateElement, deleteElement, addElement, undo, redo, undoStack, redoStack } = useWorkbenchStore();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [editingCell, setEditingCell] = useState<{
@@ -373,6 +363,42 @@ function CatalogGrid({
         >
           + Add Row
         </button>
+        <div style={{ display: "flex", gap: 2 }}>
+          <button
+            onClick={undo}
+            disabled={undoStack.length === 0}
+            title="Undo (Ctrl+Z)"
+            style={{
+              padding: "5px 8px",
+              borderRadius: 4,
+              fontSize: 13,
+              cursor: undoStack.length === 0 ? "default" : "pointer",
+              border: `1px solid ${theme.border}`,
+              background: "rgba(30, 41, 59, 0.6)",
+              color: undoStack.length === 0 ? theme.textDim : theme.textMuted,
+              opacity: undoStack.length === 0 ? 0.4 : 1,
+            }}
+          >
+            ↩
+          </button>
+          <button
+            onClick={redo}
+            disabled={redoStack.length === 0}
+            title="Redo (Ctrl+Shift+Z)"
+            style={{
+              padding: "5px 8px",
+              borderRadius: 4,
+              fontSize: 13,
+              cursor: redoStack.length === 0 ? "default" : "pointer",
+              border: `1px solid ${theme.border}`,
+              background: "rgba(30, 41, 59, 0.6)",
+              color: redoStack.length === 0 ? theme.textDim : theme.textMuted,
+              opacity: redoStack.length === 0 ? 0.4 : 1,
+            }}
+          >
+            ↪
+          </button>
+        </div>
         <div style={{ flex: 1 }} />
         <span style={{ fontSize: 12, color: theme.textDim }}>
           {data.length} items
@@ -533,7 +559,7 @@ function CatalogGrid({
 // ── Reconciliation Step ──
 
 function ReconciliationStep() {
-  const { validationIssues, runValidation, dismissIssue, applyFix, setStep } =
+  const { validationIssues, runValidation, dismissIssue, setStep } =
     useWorkbenchStore();
 
   useEffect(() => {
@@ -1290,442 +1316,11 @@ function getExamplePrompts(catalog: CatalogType): string[] {
   return examples[catalog] || [];
 }
 
-// ── Force-Directed Graph Explorer ──
+// ── Graph Explorer (moved to StructuredGraphExplorer.tsx) ──
 
-interface GNode {
-  id: string;
-  label: string;
-  type: string; // catalog type
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-}
-
-interface GEdge {
-  source: string;
-  target: string;
-  label?: string;
-}
-
-function GraphExplorer({ scaffoldData }: { scaffoldData: any }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [nodes, setNodes] = useState<GNode[]>([]);
-  const [edges, setEdges] = useState<GEdge[]>([]);
-  const [hoveredNode, setHoveredNode] = useState<GNode | null>(null);
-  const [selectedNode, setSelectedNode] = useState<GNode | null>(null);
-  const [dragging, setDragging] = useState<GNode | null>(null);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [filterType, setFilterType] = useState<string>("all");
-  const animRef = useRef<number>(0);
-
-  const typeColors: Record<string, string> = {
-    capabilities: "#f59e0b",
-    valueStreams: "#3b82f6",
-    activities: "#22c55e",
-    concepts: "#a855f7",
-    roles: "#ef4444",
-    metrics: "#06b6d4",
-  };
-
-  const typeLabels: Record<string, string> = {
-    capabilities: "Capabilities",
-    valueStreams: "Value Streams",
-    activities: "Activities",
-    concepts: "Concepts",
-    roles: "Roles",
-    metrics: "Metrics",
-  };
-
-  // Build graph from scaffold
-  useEffect(() => {
-    if (!scaffoldData?.elements) return;
-    const el = scaffoldData.elements;
-    const graphNodes: GNode[] = [];
-    const graphEdges: GEdge[] = [];
-    const idSet = new Set<string>();
-
-    const addNodes = (collection: Record<string, any>, type: string) => {
-      Object.values(collection || {}).forEach((item: any) => {
-        if (!item.id) return;
-        idSet.add(item.id);
-        graphNodes.push({
-          id: item.id,
-          label: item.name || item.id,
-          type,
-          x: Math.random() * 800 - 400,
-          y: Math.random() * 600 - 300,
-          vx: 0,
-          vy: 0,
-        });
-      });
-    };
-
-    addNodes(el.capabilities, "capabilities");
-    addNodes(el.valueStreams, "valueStreams");
-    addNodes(el.activities, "activities");
-    addNodes(el.informationObjects, "concepts");
-    addNodes(el.roles, "roles");
-    addNodes(el.metrics, "metrics");
-
-    // Build edges from cross-references
-    // Capabilities → parent
-    Object.values(el.capabilities || {}).forEach((cap: any) => {
-      if (cap.parentId && idSet.has(cap.parentId)) {
-        graphEdges.push({ source: cap.parentId, target: cap.id, label: "parent" });
-      }
-    });
-
-    // Activities → capabilities via capabilityRef
-    Object.values(el.activities || {}).forEach((act: any) => {
-      (act.capabilityRefs || []).forEach((ref: string) => {
-        if (idSet.has(ref)) graphEdges.push({ source: act.id, target: ref, label: "supports" });
-      });
-      // Activity → role via performedBy
-      if (act.performedBy && idSet.has(act.performedBy)) {
-        graphEdges.push({ source: act.id, target: act.performedBy, label: "performedBy" });
-      }
-    });
-
-    // Value streams → stages → capabilities
-    Object.values(el.valueStreams || {}).forEach((vs: any) => {
-      (vs.stages || []).forEach((stage: any) => {
-        (stage.capabilityRefs || []).forEach((ref: string) => {
-          if (idSet.has(ref)) graphEdges.push({ source: vs.id, target: ref, label: "stage→cap" });
-        });
-      });
-    });
-
-    // Metrics → capability / role refs
-    Object.values(el.metrics || {}).forEach((m: any) => {
-      if (m.capabilityRef && idSet.has(m.capabilityRef)) {
-        graphEdges.push({ source: m.id, target: m.capabilityRef, label: "measures" });
-      }
-    });
-
-    setNodes(graphNodes);
-    setEdges(graphEdges);
-  }, [scaffoldData]);
-
-  // Force simulation
-  useEffect(() => {
-    if (nodes.length === 0) return;
-
-    const nodeMap = new Map(nodes.map((n) => [n.id, n]));
-
-    const tick = () => {
-      const alpha = 0.3;
-      const repulsion = 1200;
-      const attraction = 0.005;
-      const damping = 0.85;
-      const centerForce = 0.01;
-
-      // Repulsion between all nodes
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const a = nodes[i], b = nodes[j];
-          let dx = b.x - a.x, dy = b.y - a.y;
-          let dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          let force = repulsion / (dist * dist);
-          let fx = (dx / dist) * force;
-          let fy = (dy / dist) * force;
-          a.vx -= fx * alpha;
-          a.vy -= fy * alpha;
-          b.vx += fx * alpha;
-          b.vy += fy * alpha;
-        }
-      }
-
-      // Attraction along edges
-      for (const edge of edges) {
-        const a = nodeMap.get(edge.source);
-        const b = nodeMap.get(edge.target);
-        if (!a || !b) continue;
-        let dx = b.x - a.x, dy = b.y - a.y;
-        let dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        let force = dist * attraction;
-        let fx = (dx / dist) * force;
-        let fy = (dy / dist) * force;
-        a.vx += fx * alpha;
-        a.vy += fy * alpha;
-        b.vx -= fx * alpha;
-        b.vy -= fy * alpha;
-      }
-
-      // Center gravity + damping
-      for (const n of nodes) {
-        if (dragging && n.id === dragging.id) continue;
-        n.vx -= n.x * centerForce;
-        n.vy -= n.y * centerForce;
-        n.vx *= damping;
-        n.vy *= damping;
-        n.x += n.vx;
-        n.y += n.vy;
-      }
-
-      setNodes([...nodes]);
-      animRef.current = requestAnimationFrame(tick);
-    };
-
-    animRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animRef.current);
-  }, [nodes.length, edges.length, dragging?.id]);
-
-  // Canvas rendering
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * 2;
-    canvas.height = rect.height * 2;
-    ctx.scale(2, 2);
-
-    const cx = rect.width / 2 + pan.x;
-    const cy = rect.height / 2 + pan.y;
-
-    ctx.clearRect(0, 0, rect.width, rect.height);
-    ctx.fillStyle = theme.bg;
-    ctx.fillRect(0, 0, rect.width, rect.height);
-
-    const filteredNodes = filterType === "all" ? nodes : nodes.filter((n) => n.type === filterType);
-    const filteredIds = new Set(filteredNodes.map((n) => n.id));
-    const filteredEdges = edges.filter((e) => filteredIds.has(e.source) && filteredIds.has(e.target));
-
-    // Draw edges
-    ctx.lineWidth = 0.5;
-    for (const edge of filteredEdges) {
-      const a = nodes.find((n) => n.id === edge.source);
-      const b = nodes.find((n) => n.id === edge.target);
-      if (!a || !b) continue;
-      ctx.strokeStyle = "rgba(100, 116, 139, 0.2)";
-      ctx.beginPath();
-      ctx.moveTo(cx + a.x * zoom, cy + a.y * zoom);
-      ctx.lineTo(cx + b.x * zoom, cy + b.y * zoom);
-      ctx.stroke();
-    }
-
-    // Draw nodes
-    for (const node of filteredNodes) {
-      const nx = cx + node.x * zoom;
-      const ny = cy + node.y * zoom;
-      const r = hoveredNode?.id === node.id || selectedNode?.id === node.id ? 7 : 5;
-      const color = typeColors[node.type] || theme.textDim;
-
-      ctx.beginPath();
-      ctx.arc(nx, ny, r, 0, Math.PI * 2);
-      ctx.fillStyle = selectedNode?.id === node.id ? "#fff" : color;
-      ctx.globalAlpha = hoveredNode?.id === node.id ? 1 : 0.8;
-      ctx.fill();
-      ctx.globalAlpha = 1;
-
-      // Label on hover
-      if (hoveredNode?.id === node.id || selectedNode?.id === node.id) {
-        ctx.font = "11px 'DM Sans', system-ui, sans-serif";
-        ctx.fillStyle = theme.text;
-        ctx.fillText(node.label, nx + r + 4, ny + 4);
-      }
-    }
-  }, [nodes, edges, pan, zoom, hoveredNode, selectedNode, filterType]);
-
-  const handleCanvasMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
-      const mx = e.clientX - rect.left;
-      const my = e.clientY - rect.top;
-      const cx = rect.width / 2 + pan.x;
-      const cy = rect.height / 2 + pan.y;
-
-      if (dragging) {
-        dragging.x = (mx - cx) / zoom;
-        dragging.y = (my - cy) / zoom;
-        dragging.vx = 0;
-        dragging.vy = 0;
-        return;
-      }
-
-      const filteredNodes = filterType === "all" ? nodes : nodes.filter((n) => n.type === filterType);
-      let found: GNode | null = null;
-      for (const node of filteredNodes) {
-        const nx = cx + node.x * zoom;
-        const ny = cy + node.y * zoom;
-        if (Math.abs(mx - nx) < 10 && Math.abs(my - ny) < 10) {
-          found = node;
-          break;
-        }
-      }
-      setHoveredNode(found);
-    },
-    [nodes, pan, zoom, dragging, filterType],
-  );
-
-  const handleCanvasMouseDown = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (hoveredNode) {
-        setDragging(hoveredNode);
-        setSelectedNode(hoveredNode);
-      }
-    },
-    [hoveredNode],
-  );
-
-  const handleCanvasMouseUp = useCallback(() => {
-    setDragging(null);
-  }, []);
-
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    setZoom((z) => Math.max(0.2, Math.min(3, z - e.deltaY * 0.001)));
-  }, []);
-
-  // Find connected elements for selected node
-  const connectedInfo = useMemo(() => {
-    if (!selectedNode) return null;
-    const connected = edges
-      .filter((e) => e.source === selectedNode.id || e.target === selectedNode.id)
-      .map((e) => {
-        const otherId = e.source === selectedNode.id ? e.target : e.source;
-        const other = nodes.find((n) => n.id === otherId);
-        return other ? { node: other, relationship: e.label || "linked" } : null;
-      })
-      .filter(Boolean) as { node: GNode; relationship: string }[];
-    return connected;
-  }, [selectedNode, edges, nodes]);
-
-  return (
-    <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-      {/* Graph canvas */}
-      <div style={{ flex: 1, position: "relative" }}>
-        <canvas
-          ref={canvasRef}
-          style={{ width: "100%", height: "100%", cursor: dragging ? "grabbing" : hoveredNode ? "pointer" : "default" }}
-          onMouseMove={handleCanvasMouseMove}
-          onMouseDown={handleCanvasMouseDown}
-          onMouseUp={handleCanvasMouseUp}
-          onMouseLeave={() => { setDragging(null); setHoveredNode(null); }}
-          onWheel={handleWheel}
-        />
-        {/* Legend + filter */}
-        <div
-          style={{
-            position: "absolute",
-            top: 12,
-            left: 12,
-            background: "rgba(15, 23, 42, 0.9)",
-            border: `1px solid ${theme.border}`,
-            borderRadius: 8,
-            padding: "10px 14px",
-            fontSize: 11,
-          }}
-        >
-          <div style={{ marginBottom: 8, fontWeight: 600, color: theme.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Filter by type
-          </div>
-          <div
-            onClick={() => setFilterType("all")}
-            style={{ cursor: "pointer", padding: "3px 0", color: filterType === "all" ? theme.accent : theme.textMuted, fontWeight: filterType === "all" ? 600 : 400 }}
-          >
-            All ({nodes.length})
-          </div>
-          {Object.entries(typeLabels).map(([key, label]) => {
-            const count = nodes.filter((n) => n.type === key).length;
-            if (count === 0) return null;
-            return (
-              <div
-                key={key}
-                onClick={() => setFilterType(key)}
-                style={{
-                  cursor: "pointer",
-                  padding: "3px 0",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  color: filterType === key ? typeColors[key] : theme.textMuted,
-                  fontWeight: filterType === key ? 600 : 400,
-                }}
-              >
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: typeColors[key], display: "inline-block" }} />
-                {label} ({count})
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Zoom controls */}
-        <div style={{ position: "absolute", bottom: 12, right: 12, display: "flex", gap: 4 }}>
-          <button onClick={() => setZoom((z) => Math.min(3, z + 0.2))} style={{ width: 28, height: 28, borderRadius: 4, border: `1px solid ${theme.border}`, background: "rgba(15,23,42,0.9)", color: theme.textMuted, cursor: "pointer", fontSize: 14 }}>+</button>
-          <button onClick={() => setZoom((z) => Math.max(0.2, z - 0.2))} style={{ width: 28, height: 28, borderRadius: 4, border: `1px solid ${theme.border}`, background: "rgba(15,23,42,0.9)", color: theme.textMuted, cursor: "pointer", fontSize: 14 }}>−</button>
-          <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} style={{ height: 28, borderRadius: 4, border: `1px solid ${theme.border}`, background: "rgba(15,23,42,0.9)", color: theme.textMuted, cursor: "pointer", fontSize: 10, padding: "0 8px" }}>Reset</button>
-        </div>
-      </div>
-
-      {/* Detail panel */}
-      {selectedNode && (
-        <div
-          style={{
-            width: 280,
-            borderLeft: `1px solid ${theme.border}`,
-            background: "rgba(15, 23, 42, 0.95)",
-            padding: 16,
-            overflow: "auto",
-            fontSize: 12,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ width: 10, height: 10, borderRadius: "50%", background: typeColors[selectedNode.type] }} />
-              <span style={{ fontWeight: 600, color: theme.text, fontSize: 13 }}>{selectedNode.label}</span>
-            </div>
-            <button onClick={() => setSelectedNode(null)} style={{ background: "none", border: "none", color: theme.textDim, cursor: "pointer", fontSize: 16 }}>×</button>
-          </div>
-          <div style={{ padding: "4px 8px", borderRadius: 4, background: typeColors[selectedNode.type] + "20", color: typeColors[selectedNode.type], fontSize: 10, fontWeight: 600, display: "inline-block", marginBottom: 16 }}>
-            {typeLabels[selectedNode.type] || selectedNode.type}
-          </div>
-
-          {connectedInfo && connectedInfo.length > 0 && (
-            <>
-              <div style={{ fontSize: 10, fontWeight: 600, color: theme.textMuted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
-                Connections ({connectedInfo.length})
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                {connectedInfo.map((c, i) => (
-                  <div
-                    key={i}
-                    onClick={() => setSelectedNode(c.node)}
-                    style={{
-                      padding: "6px 8px",
-                      borderRadius: 4,
-                      background: "rgba(30, 41, 59, 0.5)",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                    }}
-                  >
-                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: typeColors[c.node.type] }} />
-                    <span style={{ color: theme.text, flex: 1 }}>{c.node.label}</span>
-                    <span style={{ color: theme.textDim, fontSize: 10 }}>{c.relationship}</span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-          {connectedInfo && connectedInfo.length === 0 && (
-            <div style={{ color: theme.textDim, fontStyle: "italic" }}>No connections</div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
+/* Old force-directed GraphExplorer removed — replaced by StructuredGraphExplorer */
 
 // ── Main Workbench View ──
-
 export function WorkbenchView() {
   const {
     currentStep,
@@ -1743,6 +1338,28 @@ export function WorkbenchView() {
   const [workbenchTab, setWorkbenchTab] = useState<"catalog" | "graph">("catalog");
   const [agentPanelOpen, setAgentPanelOpen] = useState(false);
   const [introVisible, setIntroVisible] = useState(true);
+
+  // Global undo/redo keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const isMod = e.metaKey || e.ctrlKey;
+      if (isMod && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        useWorkbenchStore.getState().undo();
+      }
+      if (isMod && e.key === "z" && e.shiftKey) {
+        e.preventDefault();
+        useWorkbenchStore.getState().redo();
+      }
+      // Ctrl+Y alternative for redo
+      if (isMod && e.key === "y") {
+        e.preventDefault();
+        useWorkbenchStore.getState().redo();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   const handleExit = () => {
     if (editHistory.length > 0) {
@@ -2103,7 +1720,7 @@ export function WorkbenchView() {
                 />
               )}
               {workbenchTab === "graph" && workingScaffold && (
-                <GraphExplorer scaffoldData={workingScaffold} />
+                <StructuredGraphExplorer scaffoldData={workingScaffold} />
               )}
             </div>
 

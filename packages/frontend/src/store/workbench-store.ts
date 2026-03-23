@@ -514,6 +514,93 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
       }
     }
 
+    // Check: duplicate names within same catalog
+    const catalogs: { key: string; catalog: CatalogType; label: string }[] = [
+      { key: "capabilities", catalog: "capabilities", label: "Capabilities" },
+      { key: "valueStreams", catalog: "valueStreams", label: "Value Streams" },
+      { key: "activities", catalog: "activities", label: "Activities" },
+      { key: "informationObjects", catalog: "concepts", label: "Concepts" },
+      { key: "roles", catalog: "roles", label: "Roles" },
+      { key: "metrics", catalog: "metrics", label: "Metrics" },
+    ];
+    for (const { key, catalog, label } of catalogs) {
+      const entries = Object.entries((els as any)[key] || {});
+      const nameMap = new Map<string, string[]>();
+      for (const [id, el] of entries) {
+        const name = ((el as any).name || "").toLowerCase().trim();
+        if (!name) continue;
+        if (!nameMap.has(name)) nameMap.set(name, []);
+        nameMap.get(name)!.push(id);
+      }
+      for (const [name, ids] of nameMap) {
+        if (ids.length > 1) {
+          issues.push({
+            id: `dup-name-${catalog}-${ids[0]}`,
+            severity: "warning",
+            message: `Duplicate name "${name}" found ${ids.length} times in ${label}`,
+            elementIds: ids,
+            catalog,
+          });
+        }
+      }
+    }
+
+    // Check: business objects (concepts) not grounding any capability
+    const capabilityInfoObjRefs = new Set<string>();
+    for (const [, act] of Object.entries(els.activities || {})) {
+      for (const ref of (act as any).informationObjectIds || []) {
+        capabilityInfoObjRefs.add(ref);
+      }
+    }
+    for (const [ioId, io] of Object.entries(els.informationObjects || {})) {
+      if (!capabilityInfoObjRefs.has(ioId)) {
+        issues.push({
+          id: `ungrounded-io-${ioId}`,
+          severity: "warning",
+          message: `Concept "${(io as any).name || ioId}" is not referenced by any activity`,
+          elementIds: [ioId],
+          catalog: "concepts",
+        });
+      }
+    }
+
+    // Check: metric targeting non-existent element
+    const allElementIds = new Set<string>();
+    for (const [key] of Object.entries(els)) {
+      if (typeof (els as any)[key] === "object" && (els as any)[key] !== null) {
+        for (const id of Object.keys((els as any)[key])) {
+          allElementIds.add(id);
+        }
+      }
+    }
+    for (const [metId, met] of Object.entries(els.metrics || {})) {
+      const m = met as any;
+      if (m.capabilityRef && !allElementIds.has(m.capabilityRef)) {
+        issues.push({
+          id: `broken-metric-${metId}`,
+          severity: "error",
+          message: `Metric "${m.name || metId}" targets non-existent element "${m.capabilityRef}"`,
+          elementIds: [metId],
+          catalog: "metrics",
+        });
+      }
+    }
+
+    // Check: capability references non-existent parent
+    const capIds = new Set(Object.keys(els.capabilities || {}));
+    for (const [capId, cap] of Object.entries(els.capabilities || {})) {
+      const c = cap as any;
+      if (c.parentId && !capIds.has(c.parentId)) {
+        issues.push({
+          id: `broken-parent-${capId}`,
+          severity: "error",
+          message: `Capability "${c.name || capId}" references non-existent parent "${c.parentId}"`,
+          elementIds: [capId],
+          catalog: "capabilities",
+        });
+      }
+    }
+
     set({ validationIssues: issues });
   },
 
