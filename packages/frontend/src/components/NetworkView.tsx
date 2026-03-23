@@ -492,12 +492,12 @@ function NodeTooltip({
   // Center horizontally on node
   const x = position.x + (NODE_WIDTH - tooltipWidth) / 2;
 
-  // If node is in the top half, show tooltip below; otherwise above
-  const midCanvas = canvasHeight / 2;
-  const nodeCenter = position.y + NODE_HEIGHT / 2;
+  // Show tooltip below node unless there's plenty of room above (> 200px).
+  // This prevents the tooltip from being clipped at the top of the canvas.
   const gap = 14;
+  const minAboveSpace = 200;
 
-  const showBelow = nodeCenter >= midCanvas;
+  const showBelow = position.y < minAboveSpace;
   const y = showBelow
     ? position.y + NODE_HEIGHT + gap
     : position.y - gap;
