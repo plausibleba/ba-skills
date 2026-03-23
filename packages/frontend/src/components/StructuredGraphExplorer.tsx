@@ -3,15 +3,15 @@
 //
 // Context model: when drilling in, the parent level stays visible as a compact
 // column on the left, connected to the detail area by a dotted line divider.
-// This gives spatial memory of "where did I come from" at every level.
 //
 // Drill hierarchy:
 //   L1  Operating Model — VS boxes in zone swim-lanes
-//   L2  Value Stream — stage chain (vertical)
+//   L2  Value Stream — stage chain (vertical) with transition labels
 //   L3  Stage Detail — entry/exit, stakeholders, metrics, capabilities (vertical)
 //   L4  Capability PPIT — roles, sub-activities, info objects, technology
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { InspectorPanel, type InspectorTarget } from "./canvas/InspectorPanel";
 
 // ── Theme (aligned with WorkbenchView dulled palette) ──
 
@@ -56,6 +56,8 @@ interface SimpleNode {
   label: string;
   type: string;
   subtitle?: string;
+  /** Transition label to show ABOVE this item (outcome name between stages) */
+  transitionLabel?: string;
   data?: any;
 }
 
@@ -103,13 +105,12 @@ function typeIcon(type: string): string {
   return m[type] || "•";
 }
 
-// ── Data builders (no ELK needed — we use simple vertical card layouts) ──
+// ── Data builders ──
 
-function buildL1Data(scaffold: any): { sections: SectionData[]; edges: { from: string; to: string; label: string; dashed: boolean }[] } {
+function buildL1Data(scaffold: any): SectionData[] {
   const el = scaffold.elements;
   const vsEntries = Object.entries(el.valueStreams || {}) as [string, any][];
   const acts = el.activities || {};
-  const outcomes = el.outcomes || {};
 
   // Group by zone
   const zoneMap = new Map<string, any[]>();
@@ -143,50 +144,7 @@ function buildL1Data(scaffold: any): { sections: SectionData[]; edges: { from: s
     });
   }
 
-  // Edges
-  const entryMap = new Map<string, string[]>();
-  const terminalMap = new Map<string, string>();
-  for (const [, vs] of vsEntries) {
-    const actIds = resolveActivityIds(vs, acts);
-    if (actIds.length === 0) continue;
-    const first = acts[actIds[0]];
-    const last = acts[actIds[actIds.length - 1]];
-    if (first?.preOutcomeId) {
-      const arr = entryMap.get(first.preOutcomeId) ?? [];
-      arr.push(vs.id);
-      entryMap.set(first.preOutcomeId, arr);
-    }
-    if (last?.postOutcomeId) terminalMap.set(vs.id, last.postOutcomeId);
-    // Secondary triggers
-    for (const trigId of vs.secondaryTriggerOutcomeIds || []) {
-      const arr = entryMap.get(trigId) ?? [];
-      arr.push(vs.id);
-      entryMap.set(trigId, arr);
-    }
-  }
-
-  const edges: { from: string; to: string; label: string; dashed: boolean }[] = [];
-  // Check ALL activities' postOutcomes against entry map (not just terminal)
-  for (const [, vs] of vsEntries) {
-    const actIds = resolveActivityIds(vs, acts);
-    for (const aId of actIds) {
-      const act = acts[aId];
-      if (!act?.postOutcomeId) continue;
-      const targets = entryMap.get(act.postOutcomeId) ?? [];
-      for (const tgtVsId of targets) {
-        if (tgtVsId === vs.id) continue;
-        // Is this a secondary trigger (feedback)?
-        const tgtVs = el.valueStreams[tgtVsId];
-        const isFeedback = (tgtVs?.secondaryTriggerOutcomeIds || []).includes(act.postOutcomeId);
-        const oName = outcomes[act.postOutcomeId]?.name || "";
-        if (!edges.some(e => e.from === vs.id && e.to === tgtVsId && e.label === oName)) {
-          edges.push({ from: vs.id, to: tgtVsId, label: oName, dashed: isFeedback });
-        }
-      }
-    }
-  }
-
-  return { sections, edges };
+  return sections;
 }
 
 function buildL2Data(scaffold: any, vsId: string): SectionData[] {
@@ -194,20 +152,29 @@ function buildL2Data(scaffold: any, vsId: string): SectionData[] {
   const vs = el.valueStreams?.[vsId];
   if (!vs) return [];
   const acts = el.activities || {};
+  const outcomes = el.outcomes || {};
   const actIds = resolveActivityIds(vs, acts);
 
   return [{
     id: "stages",
     label: vs.name || vsId,
-    items: actIds.map(aId => {
+    items: actIds.map((aId, idx) => {
       const act = acts[aId];
       const capCount = (act?.requiresCapabilityIds || act?.enabledByCapabilityIds || []).length;
       const roleCount = (act?.performedByRoleIds || []).length;
+
+      // Transition label: the post-outcome of the PREVIOUS stage (= pre-outcome of this stage)
+      let transitionLabel: string | undefined;
+      if (idx > 0 && act?.preOutcomeId && outcomes[act.preOutcomeId]) {
+        transitionLabel = outcomes[act.preOutcomeId].name;
+      }
+
       return {
         id: aId,
         label: act?.name || aId,
         type: "activity",
         subtitle: `${roleCount} roles · ${capCount} capabilities`,
+        transitionLabel,
         data: act,
       };
     }),
@@ -297,41 +264,31 @@ function buildL4Data(scaffold: any, capabilityId: string, activityId?: string): 
   return sections;
 }
 
-// ── Flow arrow connector (between activity cards in a chain) ──
+// ── Flow arrow connector with optional transition label ──
 
-function FlowArrow({ compact }: { compact: boolean }) {
-  const h = compact ? 12 : 20;
+function FlowArrow({ compact, label }: { compact: boolean; label?: string }) {
+  const h = compact ? 12 : (label ? 32 : 20);
   const color = theme.activity;
   return (
-    <div style={{ display: "flex", justifyContent: "center", height: h, flexShrink: 0, opacity: 0.5 }}>
-      <svg width="12" height={h} viewBox={`0 0 12 ${h}`}>
-        <line x1="6" y1="0" x2="6" y2={h - 4} stroke={color} strokeWidth="1.5" strokeDasharray="3 2" />
-        <polygon points={`3,${h - 5} 9,${h - 5} 6,${h}`} fill={color} />
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", height: h, flexShrink: 0, opacity: 0.6 }}>
+      {label && !compact && (
+        <div style={{
+          fontSize: 9, color: theme.textDim, lineHeight: 1,
+          maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          textAlign: "center", marginBottom: 2,
+        }}>
+          {label}
+        </div>
+      )}
+      <svg width="12" height={compact ? 12 : 16} viewBox={`0 0 12 ${compact ? 12 : 16}`} style={{ flexShrink: 0 }}>
+        <line x1="6" y1="0" x2="6" y2={compact ? 8 : 12} stroke={color} strokeWidth="1.5" strokeDasharray="3 2" />
+        <polygon points={compact ? "3,7 9,7 6,12" : "3,11 9,11 6,16"} fill={color} />
       </svg>
     </div>
   );
 }
 
-// ── Edge badge (shows VS-to-VS relationships at L1) ──
-
-function EdgeBadge({ label, dashed }: { label: string; dashed: boolean }) {
-  return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 3,
-      padding: "1px 6px", borderRadius: 10,
-      background: dashed ? "rgba(168,85,247,0.12)" : "rgba(59,130,246,0.12)",
-      border: `1px ${dashed ? "dashed" : "solid"} ${dashed ? "rgba(168,85,247,0.3)" : "rgba(59,130,246,0.25)"}`,
-      color: dashed ? "#c084fc" : "#93c5fd",
-      fontSize: 9, fontWeight: 500, lineHeight: 1,
-      maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-    }}>
-      <span style={{ fontSize: 8 }}>{dashed ? "↩" : "→"}</span>
-      {label || "linked"}
-    </span>
-  );
-}
-
-// ── Card renderer (used for detail panel and context panel) ──
+// ── Card renderer ──
 
 function SectionCards({
   sections,
@@ -344,7 +301,6 @@ function SectionCards({
   compact = false,
   highlightId,
   showFlowArrows = false,
-  edges,
 }: {
   sections: SectionData[];
   selectedId: string | null;
@@ -356,27 +312,14 @@ function SectionCards({
   compact?: boolean;
   highlightId?: string;
   showFlowArrows?: boolean;
-  edges?: { from: string; to: string; label: string; dashed: boolean }[];
 }) {
   const itemH = compact ? 28 : 40;
   const labelSize = compact ? 9 : 12;
   const sectionLabelSize = compact ? 8 : 10;
   const maxLabelLen = compact ? 20 : 40;
 
-  // Build per-item edge lookup (for L1 VS edge badges)
-  const edgesByItem = useMemo(() => {
-    if (!edges) return new Map<string, { label: string; dashed: boolean }[]>();
-    const m = new Map<string, { label: string; dashed: boolean }[]>();
-    for (const e of edges) {
-      const arr = m.get(e.from) ?? [];
-      arr.push({ label: e.label, dashed: e.dashed });
-      m.set(e.from, arr);
-    }
-    return m;
-  }, [edges]);
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: compact ? 6 : 14, padding: compact ? 6 : 14, maxWidth: compact ? undefined : 400 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: compact ? 6 : 14, padding: compact ? 6 : 14 }}>
       {sections.map(sec => (
         <div key={sec.id} style={{
           border: `1px solid ${theme.zoneBorder}`,
@@ -401,12 +344,11 @@ function SectionCards({
               const isHighlight = highlightId === item.id;
               const color = typeColor(item.type);
               const canDrill = drillableTypes.has(item.type);
-              const itemEdges = edgesByItem.get(item.id);
               const showArrow = showFlowArrows && idx > 0;
 
               return (
                 <div key={item.id}>
-                  {showArrow && <FlowArrow compact={compact} />}
+                  {showArrow && <FlowArrow compact={compact} label={item.transitionLabel} />}
                   <div
                     onClick={() => onSelect(item.id, item.type)}
                     onDoubleClick={() => onDoubleClick(item.id, item.type)}
@@ -439,12 +381,6 @@ function SectionCards({
                           {item.subtitle}
                         </div>
                       )}
-                      {/* Edge badges for L1 VS relationships */}
-                      {itemEdges && !compact && (
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 3 }}>
-                          {itemEdges.map((e, i) => <EdgeBadge key={i} label={e.label} dashed={e.dashed} />)}
-                        </div>
-                      )}
                     </div>
                     {canDrill && (
                       <span style={{ color: `${color}55`, fontSize: compact ? 11 : 15, flexShrink: 0, transition: "color 0.15s" }}>›</span>
@@ -458,45 +394,6 @@ function SectionCards({
       ))}
     </div>
   );
-}
-
-// ── Inspector ──
-
-function buildInspector(id: string, type: string, scaffold: any): { name: string; typeName: string; fields: { label: string; value: string }[]; connections: { label: string; id: string; name: string; type: string }[] } | null {
-  const el = scaffold.elements;
-  if (type === "valueStream") {
-    const vs = el.valueStreams?.[id];
-    if (!vs) return null;
-    return { name: vs.name || id, typeName: "Value Stream", fields: [
-      { label: "Description", value: vs.description || "—" },
-      { label: "Zone", value: getZone(vs) },
-      { label: "Stages", value: String(resolveActivityIds(vs, el.activities || {}).length) },
-    ], connections: [] };
-  }
-  if (type === "activity") {
-    const act = el.activities?.[id];
-    if (!act) return null;
-    const outcomes = el.outcomes || {};
-    return { name: act.name || id, typeName: "Activity / Stage", fields: [
-      { label: "Entry State", value: outcomes[act.preOutcomeId]?.name || "—" },
-      { label: "Exit State", value: outcomes[act.postOutcomeId]?.name || "—" },
-      ...(act.performedByRoleIds?.length ? [{ label: "Roles", value: act.performedByRoleIds.map((r: string) => el.roles?.[r]?.name || r).join(", ") }] : []),
-    ], connections: [] };
-  }
-  if (type === "capability") {
-    const cap = el.capabilities?.[id];
-    if (!cap) return null;
-    return { name: cap.name || id, typeName: `Capability (L${cap.level || "?"})`, fields: [
-      ...(cap.description ? [{ label: "Description", value: cap.description }] : []),
-      ...(cap.parentId ? [{ label: "Parent", value: el.capabilities?.[cap.parentId]?.name || cap.parentId }] : []),
-    ], connections: [] };
-  }
-  if (type === "role") {
-    const role = el.roles?.[id];
-    if (!role) return null;
-    return { name: role.name || id, typeName: "Role", fields: [], connections: [] };
-  }
-  return null;
 }
 
 // ── Main Component ──
@@ -559,17 +456,25 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
     return new Set<string>();
   }, [current.level]);
 
-  // Inspector
-  const inspector = useMemo(() => {
-    if (!selectedId || !selectedType || !scaffoldData) return null;
-    return buildInspector(selectedId, selectedType, scaffoldData);
-  }, [selectedId, selectedType, scaffoldData]);
+  // Build InspectorTarget from selection (maps to the real InspectorPanel)
+  const inspectorTarget: InspectorTarget | null = useMemo(() => {
+    if (!selectedId || !selectedType) return null;
+    if (selectedType === "activity") return { kind: "stage", activityId: selectedId };
+    if (selectedType === "capability") {
+      // Find the activityId context for this capability
+      const actId = current.activityId || drillStack.find(d => d.activityId)?.activityId || "";
+      return { kind: "capability", capabilityId: selectedId, activityId: actId };
+    }
+    if (selectedType === "role") return { kind: "role", roleId: selectedId };
+    if (selectedType === "infoObject") return { kind: "infoObject", infoObjectId: selectedId };
+    if (selectedType === "appFunction") return { kind: "techApp", techAppId: selectedId };
+    return null;
+  }, [selectedId, selectedType, current, drillStack]);
 
   // Build the columns to render: context columns (compact) + detail column (full)
   const columns: { level: DrillLevel; sections: SectionData[]; isCurrent: boolean; highlightId?: string }[] = useMemo(() => {
     const cols: typeof columns = [];
 
-    // All ancestors are context columns
     for (let i = 0; i < drillStack.length; i++) {
       const dl = drillStack[i];
       const isCurrent = i === drillStack.length - 1;
@@ -584,7 +489,7 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
       }
 
       let sections: SectionData[] = [];
-      if (dl.level === 1 && l1Data) sections = l1Data.sections;
+      if (dl.level === 1 && l1Data) sections = l1Data;
       else if (dl.level === 2 && l2Data) sections = l2Data;
       else if (dl.level === 3 && l3Data) sections = l3Data;
       else if (dl.level === 4 && l4Data) sections = l4Data;
@@ -600,7 +505,7 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
     : current.level === 2 ? "Double-click a stage to see detail"
     : current.level === 3 ? "Double-click a capability to see PPIT" : "";
 
-  // Track drill transitions for animation (key forces re-mount for CSS animation)
+  // Track drill transitions for animation
   const [drillAnimKey, setDrillAnimKey] = useState(0);
   const prevLevelRef = useRef(current.level);
   useEffect(() => {
@@ -662,13 +567,12 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
           </span>
         </div>
 
-        {/* Columns area: context panels (compact) | dotted divider | detail panel (full) */}
+        {/* Columns area */}
         <div key={drillAnimKey} style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}>
           {columns.map((col, i) => {
             const isContext = !col.isCurrent;
             const showDivider = i > 0;
 
-            // Which types are drillable in this column?
             const colDrillable = col.isCurrent ? drillableTypes : (
               col.level.level === 1 ? new Set(["valueStream"]) :
               col.level.level === 2 ? new Set(["activity"]) :
@@ -676,15 +580,15 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
               new Set<string>()
             );
 
-            // Should this section show flow arrows? (L2 activity chains)
             const isActivityChain = col.level.level === 2;
 
             return (
               <div key={i} style={{
-                display: "flex", flexShrink: isContext ? 0 : undefined, flex: col.isCurrent ? 1 : undefined,
+                display: "flex", flexShrink: isContext ? 0 : undefined,
+                flex: col.isCurrent ? 1 : undefined,
+                maxWidth: col.isCurrent ? 480 : undefined,
                 animation: col.isCurrent ? "sge-slide-in 0.25s ease-out" : isContext ? "sge-fade-in 0.2s ease" : undefined,
               }}>
-                {/* Dotted divider */}
                 {showDivider && (
                   <div style={{
                     width: 0, flexShrink: 0,
@@ -692,7 +596,6 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
                     margin: "12px 0",
                   }} />
                 )}
-                {/* Column content */}
                 <div
                   className={isContext ? "sge-context-col" : undefined}
                   style={{
@@ -708,7 +611,6 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
                   onClick={isContext ? () => drillOut(i) : undefined}
                   title={isContext ? `Back to ${col.level.label}` : undefined}
                 >
-                  {/* Level label */}
                   <div style={{
                     padding: isContext ? "5px 6px" : "7px 14px",
                     fontSize: isContext ? 8 : 10,
@@ -737,7 +639,6 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
                     compact={isContext}
                     highlightId={col.highlightId}
                     showFlowArrows={isActivityChain}
-                    edges={col.level.level === 1 && col.isCurrent ? l1Data?.edges : undefined}
                   />
                 </div>
               </div>
@@ -756,39 +657,17 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
         </div>
       </div>
 
-      {/* Inspector panel */}
-      {inspector && (
+      {/* Inspector panel — uses the real InspectorPanel from the Canvas view */}
+      {inspectorTarget && scaffoldData && (
         <div style={{
-          width: 260, borderLeft: `1px solid ${theme.border}`, background: theme.bgSurface,
-          overflowY: "auto", flexShrink: 0, padding: 14,
+          width: 340, flexShrink: 0,
           animation: "sge-fade-in 0.2s ease",
         }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-            <span style={{ color: typeColor(selectedType || ""), fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-              {inspector.typeName}
-            </span>
-            <button onClick={() => { setSelectedId(null); setSelectedType(null); }}
-              style={{ background: "transparent", border: "none", color: theme.textFaint, cursor: "pointer", fontSize: 14, padding: 4, lineHeight: 1 }}>✕</button>
-          </div>
-          <h3 style={{ color: theme.text, fontSize: 15, fontWeight: 600, margin: "0 0 14px 0", lineHeight: 1.3 }}>{inspector.name}</h3>
-          {inspector.fields.map((f, i) => (
-            <div key={i} style={{ marginBottom: 10 }}>
-              <div style={{ color: theme.textFaint, fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 }}>{f.label}</div>
-              <div style={{ color: theme.text, fontSize: 12, lineHeight: 1.4 }}>{f.value}</div>
-            </div>
-          ))}
-          {selectedType && drillableTypes.has(selectedType) && (
-            <button onClick={() => drillIn(selectedId!, selectedType!)}
-              style={{
-                width: "100%", marginTop: 14, padding: "8px 14px",
-                background: `${typeColor(selectedType)}1a`, border: `1px solid ${typeColor(selectedType)}33`,
-                borderRadius: 6, color: typeColor(selectedType), cursor: "pointer",
-                fontSize: 12, fontWeight: 600, fontFamily: "inherit",
-                transition: "all 0.15s",
-              }}>
-              {current.level === 1 ? "View Stages" : current.level === 2 ? "View Stage Detail" : "View PPIT"} ›
-            </button>
-          )}
+          <InspectorPanel
+            target={inspectorTarget}
+            scaffold={scaffoldData}
+            onClose={() => { setSelectedId(null); setSelectedType(null); }}
+          />
         </div>
       )}
     </div>
