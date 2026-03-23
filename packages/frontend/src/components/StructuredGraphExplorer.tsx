@@ -1,4 +1,4 @@
-// Structured Graph Explorer — ELK.js + SVG C4-style drill-in/out diagrams
+// Structured Graph Explorer — card-based C4-style drill-in/out diagrams
 // Session 27 — Phase 3a: L1→L2→L3→L4 with context preservation
 //
 // Context model: when drilling in, the parent level stays visible as a compact
@@ -11,21 +11,24 @@
 //   L3  Stage Detail — entry/exit, stakeholders, metrics, capabilities (vertical)
 //   L4  Capability PPIT — roles, sub-activities, info objects, technology
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 
-// ── Theme ──
+// ── Theme (aligned with WorkbenchView dulled palette) ──
 
 const theme = {
   bg: "#0f172a",
   bgSurface: "rgba(15, 23, 42, 0.95)",
-  accent: "#f59e0b",
-  accentDim: "rgba(245, 158, 11, 0.15)",
+  bgCard: "rgba(15, 23, 42, 0.6)",
+  accent: "#d4a053",
+  accentDim: "rgba(212, 160, 83, 0.12)",
   text: "#f8fafc",
   textDim: "#94a3b8",
-  border: "rgba(245, 158, 11, 0.2)",
+  textFaint: "#64748b",
+  border: "rgba(212, 160, 83, 0.18)",
+  borderSubtle: "rgba(51, 65, 85, 0.4)",
   valueStream: "#3b82f6",
   activity: "#22c55e",
-  capability: "#f59e0b",
+  capability: "#d4a053",
   role: "#ef4444",
   concept: "#a855f7",
   metric: "#06b6d4",
@@ -34,8 +37,8 @@ const theme = {
   infoObject: "#a855f7",
   appFunction: "#6366f1",
   subActivity: "#22c55e",
-  zone: "rgba(245, 158, 11, 0.06)",
-  zoneBorder: "rgba(245, 158, 11, 0.25)",
+  zone: "rgba(212, 160, 83, 0.04)",
+  zoneBorder: "rgba(212, 160, 83, 0.2)",
 };
 
 // ── Types ──
@@ -294,6 +297,40 @@ function buildL4Data(scaffold: any, capabilityId: string, activityId?: string): 
   return sections;
 }
 
+// ── Flow arrow connector (between activity cards in a chain) ──
+
+function FlowArrow({ compact }: { compact: boolean }) {
+  const h = compact ? 12 : 20;
+  const color = theme.activity;
+  return (
+    <div style={{ display: "flex", justifyContent: "center", height: h, flexShrink: 0, opacity: 0.5 }}>
+      <svg width="12" height={h} viewBox={`0 0 12 ${h}`}>
+        <line x1="6" y1="0" x2="6" y2={h - 4} stroke={color} strokeWidth="1.5" strokeDasharray="3 2" />
+        <polygon points={`3,${h - 5} 9,${h - 5} 6,${h}`} fill={color} />
+      </svg>
+    </div>
+  );
+}
+
+// ── Edge badge (shows VS-to-VS relationships at L1) ──
+
+function EdgeBadge({ label, dashed }: { label: string; dashed: boolean }) {
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 3,
+      padding: "1px 6px", borderRadius: 10,
+      background: dashed ? "rgba(168,85,247,0.12)" : "rgba(59,130,246,0.12)",
+      border: `1px ${dashed ? "dashed" : "solid"} ${dashed ? "rgba(168,85,247,0.3)" : "rgba(59,130,246,0.25)"}`,
+      color: dashed ? "#c084fc" : "#93c5fd",
+      fontSize: 9, fontWeight: 500, lineHeight: 1,
+      maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+    }}>
+      <span style={{ fontSize: 8 }}>{dashed ? "↩" : "→"}</span>
+      {label || "linked"}
+    </span>
+  );
+}
+
 // ── Card renderer (used for detail panel and context panel) ──
 
 function SectionCards({
@@ -306,6 +343,8 @@ function SectionCards({
   drillableTypes,
   compact = false,
   highlightId,
+  showFlowArrows = false,
+  edges,
 }: {
   sections: SectionData[];
   selectedId: string | null;
@@ -316,66 +355,101 @@ function SectionCards({
   drillableTypes: Set<string>;
   compact?: boolean;
   highlightId?: string;
+  showFlowArrows?: boolean;
+  edges?: { from: string; to: string; label: string; dashed: boolean }[];
 }) {
-  const itemH = compact ? 32 : 44;
-  const labelSize = compact ? 10 : 12;
-  const sectionLabelSize = compact ? 9 : 11;
-  const maxLabelLen = compact ? 22 : 34;
+  const itemH = compact ? 28 : 40;
+  const labelSize = compact ? 9 : 12;
+  const sectionLabelSize = compact ? 8 : 10;
+  const maxLabelLen = compact ? 20 : 40;
+
+  // Build per-item edge lookup (for L1 VS edge badges)
+  const edgesByItem = useMemo(() => {
+    if (!edges) return new Map<string, { label: string; dashed: boolean }[]>();
+    const m = new Map<string, { label: string; dashed: boolean }[]>();
+    for (const e of edges) {
+      const arr = m.get(e.from) ?? [];
+      arr.push({ label: e.label, dashed: e.dashed });
+      m.set(e.from, arr);
+    }
+    return m;
+  }, [edges]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: compact ? 8 : 16, padding: compact ? 8 : 16, maxWidth: compact ? undefined : 520 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: compact ? 6 : 14, padding: compact ? 6 : 14, maxWidth: compact ? undefined : 400 }}>
       {sections.map(sec => (
         <div key={sec.id} style={{
-          border: `1px dashed ${theme.zoneBorder}`,
+          border: `1px solid ${theme.zoneBorder}`,
           borderRadius: 8,
-          padding: compact ? "6px 8px" : "12px 14px",
+          padding: compact ? "5px 6px" : "10px 12px",
           background: theme.zone,
+          boxShadow: compact ? "none" : "0 1px 4px rgba(0,0,0,0.2)",
         }}>
           <div style={{
-            color: theme.textDim, fontSize: sectionLabelSize, fontWeight: 600,
-            textTransform: "uppercase", letterSpacing: "0.05em",
-            marginBottom: compact ? 4 : 8,
+            color: theme.textFaint, fontSize: sectionLabelSize, fontWeight: 700,
+            textTransform: "uppercase", letterSpacing: "0.08em",
+            marginBottom: compact ? 3 : 6,
+            paddingBottom: compact ? 2 : 4,
+            borderBottom: `1px solid ${theme.borderSubtle}`,
           }}>
             {sec.label}
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: compact ? 3 : 6 }}>
-            {sec.items.map(item => {
+          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            {sec.items.map((item, idx) => {
               const isSelected = selectedId === item.id;
               const isHovered = hoveredId === item.id;
               const isHighlight = highlightId === item.id;
               const color = typeColor(item.type);
               const canDrill = drillableTypes.has(item.type);
+              const itemEdges = edgesByItem.get(item.id);
+              const showArrow = showFlowArrows && idx > 0;
 
               return (
-                <div
-                  key={item.id}
-                  onClick={() => onSelect(item.id, item.type)}
-                  onDoubleClick={() => onDoubleClick(item.id, item.type)}
-                  onMouseEnter={() => onHover(item.id)}
-                  onMouseLeave={() => onHover(null)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 6,
-                    height: itemH, padding: "0 10px", borderRadius: 6,
-                    cursor: canDrill ? "pointer" : "default",
-                    background: isHighlight ? `${color}30` : isSelected ? `${color}22` : isHovered ? `${color}0c` : `${color}08`,
-                    border: `1px solid ${isHighlight ? color : isSelected ? color : isHovered ? `${color}66` : `${color}33`}`,
-                    transition: "all 0.15s",
-                  }}
-                >
-                  <span style={{ color, fontSize: compact ? 11 : 13, flexShrink: 0 }}>{typeIcon(item.type)}</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: theme.text, fontSize: labelSize, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {trunc(item.label, maxLabelLen)}
-                    </div>
-                    {item.subtitle && !compact && (
-                      <div style={{ color: theme.textDim, fontSize: 10, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        {item.subtitle}
+                <div key={item.id}>
+                  {showArrow && <FlowArrow compact={compact} />}
+                  <div
+                    onClick={() => onSelect(item.id, item.type)}
+                    onDoubleClick={() => onDoubleClick(item.id, item.type)}
+                    onMouseEnter={() => onHover(item.id)}
+                    onMouseLeave={() => onHover(null)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      minHeight: itemH, padding: compact ? "3px 8px" : "6px 10px", borderRadius: 6,
+                      cursor: canDrill ? "pointer" : "default",
+                      background: isHighlight ? `${color}28` : isSelected ? `${color}1a` : isHovered ? `${color}0a` : theme.bgCard,
+                      border: `1px solid ${isHighlight ? `${color}88` : isSelected ? `${color}66` : isHovered ? `${color}44` : `${color}22`}`,
+                      transition: "all 0.15s ease",
+                      boxShadow: isSelected ? `0 0 0 1px ${color}44` : "none",
+                    }}
+                  >
+                    <span style={{
+                      color, fontSize: compact ? 10 : 13, flexShrink: 0,
+                      width: compact ? 14 : 18, textAlign: "center",
+                    }}>{typeIcon(item.type)}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        color: isHighlight ? "#fff" : theme.text, fontSize: labelSize,
+                        fontWeight: isHighlight ? 600 : 500,
+                        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                      }}>
+                        {trunc(item.label, maxLabelLen)}
                       </div>
+                      {item.subtitle && !compact && (
+                        <div style={{ color: theme.textFaint, fontSize: 10, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {item.subtitle}
+                        </div>
+                      )}
+                      {/* Edge badges for L1 VS relationships */}
+                      {itemEdges && !compact && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 3 }}>
+                          {itemEdges.map((e, i) => <EdgeBadge key={i} label={e.label} dashed={e.dashed} />)}
+                        </div>
+                      )}
+                    </div>
+                    {canDrill && (
+                      <span style={{ color: `${color}55`, fontSize: compact ? 11 : 15, flexShrink: 0, transition: "color 0.15s" }}>›</span>
                     )}
                   </div>
-                  {canDrill && (
-                    <span style={{ color: `${color}66`, fontSize: compact ? 12 : 16, flexShrink: 0 }}>›</span>
-                  )}
                 </div>
               );
             })}
@@ -526,29 +600,53 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
     : current.level === 2 ? "Double-click a stage to see detail"
     : current.level === 3 ? "Double-click a capability to see PPIT" : "";
 
+  // Track drill transitions for animation (key forces re-mount for CSS animation)
+  const [drillAnimKey, setDrillAnimKey] = useState(0);
+  const prevLevelRef = useRef(current.level);
+  useEffect(() => {
+    if (prevLevelRef.current !== current.level) {
+      setDrillAnimKey(k => k + 1);
+      prevLevelRef.current = current.level;
+    }
+  }, [current.level]);
+
   // ── Render ──
 
   return (
     <div style={{ display: "flex", height: "100%", background: theme.bg, borderRadius: 8, overflow: "hidden" }}>
+      {/* Inject keyframe animation */}
+      <style>{`
+        @keyframes sge-slide-in {
+          from { opacity: 0; transform: translateX(30px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes sge-fade-in {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        .sge-context-col:hover { opacity: 0.85 !important; }
+      `}</style>
+
       {/* Main area */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         {/* Breadcrumb */}
         <div style={{
-          display: "flex", alignItems: "center", gap: 6, padding: "8px 16px",
+          display: "flex", alignItems: "center", gap: 4, padding: "6px 14px",
           borderBottom: `1px solid ${theme.border}`, background: theme.bgSurface, flexShrink: 0,
         }}>
           {drillStack.map((lvl, i) => (
-            <span key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              {i > 0 && <span style={{ color: theme.textDim, margin: "0 2px" }}>›</span>}
+            <span key={i} style={{ display: "flex", alignItems: "center", gap: 3 }}>
+              {i > 0 && <span style={{ color: theme.textFaint, margin: "0 1px", fontSize: 11 }}>›</span>}
               <button
                 onClick={() => drillOut(i)}
                 style={{
                   background: i === drillStack.length - 1 ? theme.accentDim : "transparent",
-                  border: "none",
+                  border: i === drillStack.length - 1 ? `1px solid ${theme.border}` : "1px solid transparent",
                   color: i === drillStack.length - 1 ? theme.accent : theme.textDim,
                   cursor: i === drillStack.length - 1 ? "default" : "pointer",
-                  padding: "4px 10px", borderRadius: 4, fontSize: 13,
+                  padding: "3px 8px", borderRadius: 4, fontSize: 12,
                   fontWeight: i === drillStack.length - 1 ? 600 : 400, fontFamily: "inherit",
+                  transition: "all 0.15s",
                 }}
               >
                 {lvl.label}
@@ -557,15 +655,15 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
           ))}
           <div style={{ flex: 1 }} />
           <span style={{
-            color: theme.textDim, fontSize: 11, padding: "3px 8px",
-            border: `1px solid ${theme.border}`, borderRadius: 4,
+            color: theme.textFaint, fontSize: 10, padding: "2px 8px",
+            border: `1px solid ${theme.borderSubtle}`, borderRadius: 4,
           }}>
             L{current.level} — {levelLabels[current.level]}
           </span>
         </div>
 
         {/* Columns area: context panels (compact) | dotted divider | detail panel (full) */}
-        <div style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}>
+        <div key={drillAnimKey} style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}>
           {columns.map((col, i) => {
             const isContext = !col.isCurrent;
             const showDivider = i > 0;
@@ -578,51 +676,68 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
               new Set<string>()
             );
 
+            // Should this section show flow arrows? (L2 activity chains)
+            const isActivityChain = col.level.level === 2;
+
             return (
-              <div key={i} style={{ display: "flex", flexShrink: isContext ? 0 : undefined, flex: col.isCurrent ? 1 : undefined }}>
+              <div key={i} style={{
+                display: "flex", flexShrink: isContext ? 0 : undefined, flex: col.isCurrent ? 1 : undefined,
+                animation: col.isCurrent ? "sge-slide-in 0.25s ease-out" : isContext ? "sge-fade-in 0.2s ease" : undefined,
+              }}>
                 {/* Dotted divider */}
                 {showDivider && (
                   <div style={{
-                    width: 1, background: "transparent",
-                    borderLeft: `2px dashed ${theme.zoneBorder}`,
-                    margin: "16px 0",
-                    flexShrink: 0,
+                    width: 0, flexShrink: 0,
+                    borderLeft: `1.5px dashed ${theme.zoneBorder}`,
+                    margin: "12px 0",
                   }} />
                 )}
                 {/* Column content */}
-                <div style={{
-                  width: isContext ? 200 : undefined,
-                  flex: col.isCurrent ? 1 : undefined,
-                  overflowY: "auto",
-                  overflowX: "hidden",
-                  opacity: isContext ? 0.6 : 1,
-                  transition: "opacity 0.2s",
-                  position: "relative",
-                }}>
+                <div
+                  className={isContext ? "sge-context-col" : undefined}
+                  style={{
+                    width: isContext ? 170 : undefined,
+                    flex: col.isCurrent ? 1 : undefined,
+                    overflowY: "auto",
+                    overflowX: "hidden",
+                    opacity: isContext ? 0.5 : 1,
+                    transition: "opacity 0.2s",
+                    position: "relative",
+                    cursor: isContext ? "pointer" : undefined,
+                  }}
+                  onClick={isContext ? () => drillOut(i) : undefined}
+                  title={isContext ? `Back to ${col.level.label}` : undefined}
+                >
                   {/* Level label */}
                   <div style={{
-                    padding: isContext ? "6px 8px" : "8px 16px",
-                    fontSize: isContext ? 9 : 11,
-                    fontWeight: 600, textTransform: "uppercase",
-                    letterSpacing: "0.05em", color: theme.accent,
+                    padding: isContext ? "5px 6px" : "7px 14px",
+                    fontSize: isContext ? 8 : 10,
+                    fontWeight: 700, textTransform: "uppercase",
+                    letterSpacing: "0.08em", color: theme.accent,
                     borderBottom: `1px solid ${theme.border}`,
                     position: "sticky", top: 0, background: theme.bg, zIndex: 2,
+                    display: "flex", alignItems: "center", gap: 6,
                   }}>
-                    L{col.level.level} · {col.level.label}
+                    <span>L{col.level.level} · {col.level.label}</span>
+                    {isContext && (
+                      <span style={{ fontSize: 9, color: theme.textFaint, fontWeight: 400, textTransform: "none", letterSpacing: "normal" }}>← click to return</span>
+                    )}
                   </div>
                   <SectionCards
                     sections={col.sections}
                     selectedId={col.isCurrent ? selectedId : null}
                     hoveredId={col.isCurrent ? hoveredId : null}
-                    onSelect={(id, type) => { if (col.isCurrent) { setSelectedId(id); setSelectedType(type); } else { /* click on context item navigates back */ drillOut(i); } }}
+                    onSelect={(id, type) => { if (col.isCurrent) { setSelectedId(id); setSelectedType(type); } else { drillOut(i); } }}
                     onHover={(id) => { if (col.isCurrent) setHoveredId(id); }}
                     onDoubleClick={(id, type) => {
                       if (col.isCurrent) drillIn(id, type);
-                      else drillOut(i); // double-click on context goes back to that level
+                      else drillOut(i);
                     }}
                     drillableTypes={colDrillable}
                     compact={isContext}
                     highlightId={col.highlightId}
+                    showFlowArrows={isActivityChain}
+                    edges={col.level.level === 1 && col.isCurrent ? l1Data?.edges : undefined}
                   />
                 </div>
               </div>
@@ -632,42 +747,44 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
 
         {/* Hint bar */}
         <div style={{
-          padding: "6px 16px 6px 290px", borderTop: `1px solid ${theme.border}`, background: theme.bgSurface,
-          display: "flex", gap: 16, fontSize: 11, color: theme.textDim, flexShrink: 0, position: "relative", zIndex: 10,
+          padding: "5px 16px", borderTop: `1px solid ${theme.border}`, background: theme.bgSurface,
+          display: "flex", gap: 16, fontSize: 10, color: theme.textFaint, flexShrink: 0, position: "relative", zIndex: 10,
         }}>
           <span>Click to inspect</span>
-          {drillHint && <span>{drillHint}</span>}
-          <span>Click context column to navigate back</span>
+          {drillHint && <span style={{ color: theme.textDim }}>{drillHint}</span>}
+          {drillStack.length > 1 && <span>Click context column to navigate back</span>}
         </div>
       </div>
 
       {/* Inspector panel */}
       {inspector && (
         <div style={{
-          width: 280, borderLeft: `1px solid ${theme.border}`, background: theme.bgSurface,
-          overflowY: "auto", flexShrink: 0, padding: 16,
+          width: 260, borderLeft: `1px solid ${theme.border}`, background: theme.bgSurface,
+          overflowY: "auto", flexShrink: 0, padding: 14,
+          animation: "sge-fade-in 0.2s ease",
         }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <span style={{ color: typeColor(selectedType || ""), fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <span style={{ color: typeColor(selectedType || ""), fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>
               {inspector.typeName}
             </span>
             <button onClick={() => { setSelectedId(null); setSelectedType(null); }}
-              style={{ background: "transparent", border: "none", color: theme.textDim, cursor: "pointer", fontSize: 16, padding: 4 }}>✕</button>
+              style={{ background: "transparent", border: "none", color: theme.textFaint, cursor: "pointer", fontSize: 14, padding: 4, lineHeight: 1 }}>✕</button>
           </div>
-          <h3 style={{ color: theme.text, fontSize: 16, fontWeight: 600, margin: "0 0 16px 0" }}>{inspector.name}</h3>
+          <h3 style={{ color: theme.text, fontSize: 15, fontWeight: 600, margin: "0 0 14px 0", lineHeight: 1.3 }}>{inspector.name}</h3>
           {inspector.fields.map((f, i) => (
             <div key={i} style={{ marginBottom: 10 }}>
-              <div style={{ color: theme.textDim, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>{f.label}</div>
-              <div style={{ color: theme.text, fontSize: 13 }}>{f.value}</div>
+              <div style={{ color: theme.textFaint, fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 }}>{f.label}</div>
+              <div style={{ color: theme.text, fontSize: 12, lineHeight: 1.4 }}>{f.value}</div>
             </div>
           ))}
           {selectedType && drillableTypes.has(selectedType) && (
             <button onClick={() => drillIn(selectedId!, selectedType!)}
               style={{
-                width: "100%", marginTop: 16, padding: "10px 16px",
-                background: `${typeColor(selectedType)}22`, border: `1px solid ${typeColor(selectedType)}44`,
+                width: "100%", marginTop: 14, padding: "8px 14px",
+                background: `${typeColor(selectedType)}1a`, border: `1px solid ${typeColor(selectedType)}33`,
                 borderRadius: 6, color: typeColor(selectedType), cursor: "pointer",
-                fontSize: 13, fontWeight: 600, fontFamily: "inherit",
+                fontSize: 12, fontWeight: 600, fontFamily: "inherit",
+                transition: "all 0.15s",
               }}>
               {current.level === 1 ? "View Stages" : current.level === 2 ? "View Stage Detail" : "View PPIT"} ›
             </button>
