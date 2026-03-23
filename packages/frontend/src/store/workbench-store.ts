@@ -270,10 +270,11 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
   // ── Lifecycle ──
 
   enterWorkbench: (scaffold) => {
+    const allCatalogs: CatalogType[] = ["capabilities", "valueStreams", "activities", "concepts", "roles", "metrics"];
     set({
       isActive: true,
-      currentStep: 1,
-      selectedCatalogs: [],
+      currentStep: 2,
+      selectedCatalogs: allCatalogs,
       workingScaffold: deepClone(scaffold),
       originalScaffoldHash: simpleHash(JSON.stringify(scaffold)),
       editHistory: [],

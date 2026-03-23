@@ -43,208 +43,76 @@ const theme = {
   red: "#ef4444",
 };
 
-// ── Orientation Step ──
+// ── Tree Sort ──
+// Builds a depth-first sorted list from parent-child hierarchy.
+// Works for capabilities (level + parentId) and any future hierarchical catalog.
 
-function OrientationStep() {
-  const { selectedCatalogs, setSelectedCatalogs, setStep, setActiveCatalog } =
-    useWorkbenchStore();
+interface TreeNode {
+  element: any;
+  children: TreeNode[];
+  depth: number;
+  sortKey: string; // e.g. "1.2.3" for hierarchical numbering
+}
 
-  const refinementTypes = [
-    {
-      catalog: "capabilities" as CatalogType,
-      label: "Capability Map",
-      icon: "🏛",
-      quality: "Foundational",
-      impact: "Highest single-edit impact — everything references capabilities",
-    },
-    {
-      catalog: "concepts" as CatalogType,
-      label: "Concept Model",
-      icon: "🔷",
-      quality: "Ontological",
-      impact: "Fixes what the org manages — ripples through grounding",
-    },
-    {
-      catalog: "valueStreams" as CatalogType,
-      label: "Value Streams & Stages",
-      icon: "🔄",
-      quality: "Delivery narrative",
-      impact: "Fixes how value flows — ripples through mappings",
-      includesActivities: true,
-    },
-    {
-      catalog: "roles" as CatalogType,
-      label: "Roles",
-      icon: "👤",
-      quality: "Responsibility clarity",
-      impact: "Corrects who performs what across stages",
-    },
-    {
-      catalog: "metrics" as CatalogType,
-      label: "Metrics",
-      icon: "📊",
-      quality: "Measurement accuracy",
-      impact: "Corrects what gets tracked and target alignment",
-    },
-  ];
+function buildTreeSorted(elements: Record<string, any>): { sorted: any[]; depthMap: Map<string, number>; sortKeyMap: Map<string, string> } {
+  const entries = Object.values(elements || {});
+  const byId = new Map(entries.map((e: any) => [e.id, e]));
+  const childrenOf = new Map<string | null, any[]>();
+  const depthMap = new Map<string, number>();
+  const sortKeyMap = new Map<string, string>();
 
-  const isFullReview = selectedCatalogs.length === ALL_CATALOGS.length;
+  // Group by parent
+  for (const el of entries) {
+    const pid = (el as any).parentId || null;
+    if (!childrenOf.has(pid)) childrenOf.set(pid, []);
+    childrenOf.get(pid)!.push(el);
+  }
 
-  const toggleCatalog = (cat: CatalogType) => {
-    if (selectedCatalogs.includes(cat)) {
-      setSelectedCatalogs(selectedCatalogs.filter((c) => c !== cat));
-    } else {
-      setSelectedCatalogs([...selectedCatalogs, cat]);
+  // Sort children within each parent by name
+  for (const [, children] of childrenOf) {
+    children.sort((a: any, b: any) => (a.name || "").localeCompare(b.name || ""));
+  }
+
+  // DFS walk
+  const sorted: any[] = [];
+  function walk(parentId: string | null, depth: number, prefix: string) {
+    const children = childrenOf.get(parentId) || [];
+    children.forEach((child: any, idx: number) => {
+      const key = prefix ? `${prefix}.${idx + 1}` : `${idx + 1}`;
+      depthMap.set(child.id, depth);
+      sortKeyMap.set(child.id, key);
+      sorted.push(child);
+      walk(child.id, depth + 1, key);
+    });
+  }
+
+  // Check if this catalog actually has hierarchy
+  const hasHierarchy = entries.some((e: any) => e.parentId);
+  if (hasHierarchy) {
+    // Start from roots (no parent or parent not in set)
+    walk(null, 0, "");
+    // Also collect orphans whose parent isn't in the set
+    for (const el of entries) {
+      if (!sorted.includes(el)) {
+        const pid = (el as any).parentId;
+        if (pid && !byId.has(pid)) {
+          depthMap.set(el.id, 0);
+          sortKeyMap.set(el.id, `?.${sorted.length + 1}`);
+          sorted.push(el);
+        }
+      }
     }
-  };
+  } else {
+    // Flat catalog — sort by name
+    entries.sort((a: any, b: any) => (a.name || "").localeCompare(b.name || ""));
+    entries.forEach((el: any, i: number) => {
+      depthMap.set(el.id, 0);
+      sortKeyMap.set(el.id, `${i + 1}`);
+      sorted.push(el);
+    });
+  }
 
-  const selectAll = () => {
-    setSelectedCatalogs([...ALL_CATALOGS]);
-  };
-
-  const proceed = () => {
-    // If VS selected, also include activities
-    let cats = [...selectedCatalogs];
-    if (cats.includes("valueStreams") && !cats.includes("activities")) {
-      cats.push("activities");
-    }
-    setSelectedCatalogs(cats);
-    setActiveCatalog(cats[0]);
-    setStep(2);
-  };
-
-  return (
-    <div
-      style={{
-        maxWidth: 720,
-        margin: "0 auto",
-        padding: "48px 24px",
-      }}
-    >
-      <h2
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          color: theme.accent,
-          marginBottom: 8,
-        }}
-      >
-        Scope your review
-      </h2>
-      <p
-        style={{
-          fontSize: 14,
-          color: theme.textMuted,
-          marginBottom: 32,
-          lineHeight: 1.6,
-        }}
-      >
-        Select which parts of the operating model you want to review and refine.
-        Each refinement type has a different quality impact on the model. You can
-        also select "Full Review" to review everything.
-      </p>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
-        {refinementTypes.map((rt) => {
-          const selected = selectedCatalogs.includes(rt.catalog);
-          return (
-            <button
-              key={rt.catalog}
-              onClick={() => toggleCatalog(rt.catalog)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 16,
-                padding: "14px 18px",
-                background: selected ? theme.accentMuted : "rgba(30, 41, 59, 0.5)",
-                border: `1px solid ${selected ? theme.accentBorder : theme.border}`,
-                borderRadius: 8,
-                cursor: "pointer",
-                textAlign: "left",
-                color: theme.text,
-                transition: "all 0.15s",
-              }}
-            >
-              <span style={{ fontSize: 24 }}>{rt.icon}</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>
-                  {rt.label}
-                  <span
-                    style={{
-                      marginLeft: 8,
-                      fontSize: 11,
-                      padding: "2px 8px",
-                      borderRadius: 10,
-                      background: selected
-                        ? "rgba(245, 158, 11, 0.2)"
-                        : "rgba(100, 116, 139, 0.2)",
-                      color: selected ? theme.accent : theme.textDim,
-                    }}
-                  >
-                    {rt.quality}
-                  </span>
-                </div>
-                <div style={{ fontSize: 12, color: theme.textMuted }}>{rt.impact}</div>
-              </div>
-              <div
-                style={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: 4,
-                  border: `2px solid ${selected ? theme.accent : theme.textDim}`,
-                  background: selected ? theme.accent : "transparent",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 12,
-                  color: selected ? theme.bg : "transparent",
-                  fontWeight: 700,
-                }}
-              >
-                ✓
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-        <button
-          onClick={selectAll}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 6,
-            border: `1px solid ${isFullReview ? theme.green : theme.border}`,
-            background: isFullReview ? theme.greenMuted : "rgba(30, 41, 59, 0.5)",
-            color: isFullReview ? theme.green : theme.textMuted,
-            cursor: "pointer",
-            fontSize: 13,
-            fontWeight: 600,
-          }}
-        >
-          ✅ Full Model Review
-        </button>
-        <div style={{ flex: 1 }} />
-        <button
-          onClick={proceed}
-          disabled={selectedCatalogs.length === 0}
-          style={{
-            padding: "10px 24px",
-            borderRadius: 6,
-            border: "none",
-            background:
-              selectedCatalogs.length > 0 ? theme.accent : "rgba(100, 116, 139, 0.3)",
-            color: selectedCatalogs.length > 0 ? theme.bg : theme.textDim,
-            cursor: selectedCatalogs.length > 0 ? "pointer" : "not-allowed",
-            fontSize: 14,
-            fontWeight: 700,
-          }}
-        >
-          Enter Catalog Review →
-        </button>
-      </div>
-    </div>
-  );
+  return { sorted, depthMap, sortKeyMap };
 }
 
 // ── Catalog Grid ──
@@ -267,24 +135,65 @@ function CatalogGrid({
   } | null>(null);
   const [editValue, setEditValue] = useState("");
 
-  // Convert Record to array for TanStack Table
-  const data = useMemo(() => {
-    const entries = Object.values(elements || {});
-    // For capabilities, sort by level then name for tree display
-    if (config.id === "capabilities") {
-      return entries.sort((a: any, b: any) => {
-        const la = a.level || 99;
-        const lb = b.level || 99;
-        if (la !== lb) return la - lb;
-        return (a.name || "").localeCompare(b.name || "");
-      });
+  // Convert Record to array with tree sort for hierarchical catalogs
+  const { data, depthMap, sortKeyMap } = useMemo(() => {
+    const isHierarchical = config.id === "capabilities" || config.id === "concepts";
+    if (isHierarchical) {
+      const tree = buildTreeSorted(elements);
+      return { data: tree.sorted, depthMap: tree.depthMap, sortKeyMap: tree.sortKeyMap };
     }
-    return entries;
+    const entries = Object.values(elements || {});
+    entries.sort((a: any, b: any) => (a.name || "").localeCompare(b.name || ""));
+    const dm = new Map<string, number>();
+    const sm = new Map<string, string>();
+    entries.forEach((e: any, i) => { dm.set(e.id, 0); sm.set(e.id, `${i + 1}`); });
+    return { data: entries, depthMap: dm, sortKeyMap: sm };
   }, [elements, config.id]);
 
-  // Build TanStack columns from catalog config
+  // Level badge colours
+  const levelColors: Record<number, string> = {
+    1: "rgba(245, 158, 11, 0.15)",
+    2: "rgba(168, 85, 247, 0.15)",
+    3: "rgba(59, 130, 246, 0.15)",
+    4: "rgba(34, 197, 94, 0.15)",
+  };
+  const levelTextColors: Record<number, string> = {
+    1: "#f59e0b",
+    2: "#a855f7",
+    3: "#3b82f6",
+    4: "#22c55e",
+  };
+
+  // Build TanStack columns from catalog config, prepending an ID column
   const columns = useMemo(() => {
-    return config.columns.map((col) => ({
+    const isHierarchical = config.id === "capabilities" || config.id === "concepts";
+
+    // ID column — always first
+    const idCol = {
+      id: "_sortKey",
+      header: "ID",
+      accessorFn: (row: any) => sortKeyMap.get(row.id) || row.id || "—",
+      size: 70,
+      enableSorting: false, // tree order is the default
+      meta: { editable: false, pinned: false, monospace: true },
+      cell: ({ getValue, row }: any) => {
+        const key = getValue();
+        const depth = depthMap.get(row.original.id) || 0;
+        const level = row.original.level;
+        return (
+          <span style={{
+            fontFamily: "'SF Mono', 'Fira Code', monospace",
+            fontSize: 11,
+            color: level ? (levelTextColors[level] || theme.textDim) : theme.textDim,
+            paddingLeft: isHierarchical ? depth * 8 : 0,
+          }}>
+            {key}
+          </span>
+        );
+      },
+    };
+
+    const dataCols = config.columns.map((col) => ({
       id: col.id,
       header: col.header,
       accessorFn: (row: any) => {
@@ -293,7 +202,7 @@ function CatalogGrid({
         return "";
       },
       size: parseInt(col.width || "100"),
-      enableSorting: true,
+      enableSorting: !isHierarchical, // disable column sorting on tree-sorted catalogs (tree order is canonical)
       meta: {
         editable: col.editable,
         editType: col.editType,
@@ -344,22 +253,11 @@ function CatalogGrid({
           );
         }
 
-        // Level badges for capabilities
-        if (config.id === "capabilities" && column.id === "name") {
+        // Name column with tree indent + level badges for hierarchical catalogs
+        if (isHierarchical && column.id === "name") {
+          const depth = depthMap.get(row.original.id) || 0;
           const level = row.original.level;
-          const levelColors: Record<number, string> = {
-            1: "rgba(245, 158, 11, 0.15)",
-            2: "rgba(168, 85, 247, 0.15)",
-            3: "rgba(59, 130, 246, 0.15)",
-            4: "rgba(34, 197, 94, 0.15)",
-          };
-          const levelTextColors: Record<number, string> = {
-            1: "#f59e0b",
-            2: "#a855f7",
-            3: "#3b82f6",
-            4: "#22c55e",
-          };
-          const indent = ((level || 1) - 1) * 20;
+          const indent = depth * 20;
 
           return (
             <div style={{ display: "flex", alignItems: "center", gap: 6, paddingLeft: indent }}>
@@ -379,7 +277,7 @@ function CatalogGrid({
                   L{level}
                 </span>
               )}
-              <span style={{ fontWeight: level && level <= 2 ? 600 : 400 }}>
+              <span style={{ fontWeight: depth <= 1 ? 600 : 400 }}>
                 {value}
               </span>
             </div>
@@ -415,7 +313,9 @@ function CatalogGrid({
         );
       },
     }));
-  }, [config, scaffoldData, editingCell, editValue, updateElement]);
+
+    return [idCol, ...dataCols];
+  }, [config, scaffoldData, editingCell, editValue, updateElement, depthMap, sortKeyMap]);
 
   const table = useReactTable({
     data,
@@ -990,7 +890,6 @@ export function WorkbenchView() {
   };
 
   const steps = [
-    { num: 1 as const, label: "Orientation" },
     { num: 2 as const, label: "Catalog Review" },
     { num: 3 as const, label: "Agent" },
     { num: 4 as const, label: "Reconcile" },
@@ -1141,7 +1040,7 @@ export function WorkbenchView() {
                       : "transparent",
                   }}
                 >
-                  {isCompleted ? "✓" : step.num}
+                  {isCompleted ? "✓" : i + 1}
                 </span>
                 {step.label}
               </button>
@@ -1159,9 +1058,6 @@ export function WorkbenchView() {
           );
         })}
       </div>
-
-      {/* Step 1: Orientation */}
-      {currentStep === 1 && <OrientationStep />}
 
       {/* Step 2: Catalog Review */}
       {currentStep === 2 && (
