@@ -244,7 +244,7 @@ function UpsellModalOverlay({
                 Continue
               </button>
             </div>
-          ) : canStartTrial ? (
+          ) : canStartTrial && !config.forcePricing ? (
             /* ── Free user: start trial ── */
             <div className="flex flex-col gap-3">
               <button
