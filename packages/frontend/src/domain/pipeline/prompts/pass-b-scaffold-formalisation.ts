@@ -1,17 +1,16 @@
 // ─── Pass B: Scaffold Formalisation ───────────────────────────────────────────
 // Input:  DiscoveryIR (VS, stages, roles, capabilities, metrics, tech)
-// Output: Complete ScaffoldModel.json with FSM chains, capabilityPPIT, registries
+// Output: Lean ScaffoldModel.json with FSM chains, registries, basic IOs
 //
 // This is a deterministic formalisation step — given the same inputs, it should
 // produce the same structural output. Creative variation is NOT desired here.
 //
-// The capabilityPPIT decomposition (People, Process, Information, Technology)
-// is the key structural element that makes the model rich and actionable.
-// Each capability on each activity gets decomposed into:
-//   - roleIds: who performs this capability in this stage
-//   - activities: 3 specific sub-activities (verb phrases)
-//   - informationObjectIds: what information this capability uses/produces
-//   - technologyAppIds: what systems support this capability
+// LEAN SCAFFOLD: Pass B focuses on the structural skeleton only.
+// Heavy enrichments are deferred to opt-in passes that run AFTER the user
+// sees the initial scaffold, so they get faster time-to-value:
+//   - Sub-activity DAGs → Pass C1 (Deepen Structure)
+//   - capabilityPPIT    → Pass C2 (Map PPIT)
+//   - Concept/Policy Cards → Pass D
 //
 // DECISION LOG:
 // - D-065: Three-pass pipeline with Gate 1/Gate 2
@@ -19,6 +18,9 @@
 // - Session 17: Extracted to standalone prompt file, added capabilityPPIT
 // - Session 26: Capsicum alignment — lifecycle states on info objects,
 //   sub-activity DAGs per stage, 4-level capability hierarchy in output
+// - Session 27: Extracted PPIT to separate Pass C
+// - Session 28: Extracted sub-activity DAGs to Pass C1, simplified lifecycle
+//   states to reduce output size. Pass B now produces lean scaffold.
 
 import type { DiscoveryIR } from "../discovery-ir";
 import { makeId } from "../discovery-ir";
@@ -179,76 +181,35 @@ derive additional shared capabilities from the domain context (e.g. "Data Manage
 Capabilities that appear in multiple activities create structural coupling — this is essential for the model.
 
 ## Information Objects (CRITICAL)
-NOTE: capabilityPPIT is generated in a separate enrichment pass (Pass C) — do NOT include it here.
+NOTE: capabilityPPIT is generated in a separate enrichment pass — do NOT include it here.
+NOTE: Sub-activity DAGs are generated in a separate enrichment pass — do NOT include subActivityGraphs here.
 For each activity, create 2-3 informationObjects (business documents, data records, reports) that the
 activity produces or consumes. E.g. "Customer Order", "Installation Record", "Service Schedule",
 "Territory Plan", "Sales Report". Put entries in elements.informationObjects with:
 { name, description, elementType: "InformationObject", lifecycleStates: [...] }
 Reference them in the activity via informationObjectIds: [...].
 
-## Lifecycle States on Information Objects (CRITICAL — Capsicum alignment)
-Each information object MUST have 2-5 lifecycleStates describing how the business object changes state
-through the value stream. Lifecycle states represent the STATUS progression of the information object.
+## Lifecycle States on Information Objects (Capsicum alignment)
+Each information object SHOULD have 2-3 lifecycleStates describing the key status progression.
+Keep this LEAN — just initial and terminal states, plus one intermediate if obvious.
 
 Each lifecycleState has:
 - id: "ls_<io_short>_<state_snake>" e.g. "ls_order_submitted"
-- label: short state name e.g. "Submitted", "Under Review", "Approved", "Rejected"
-- position: "initial" (entry state), "intermediate" (middle states), "terminal" (end states), or "decision" (branching gate)
-- transitionsTo: array of state IDs this state can transition to
-- triggerActivityId: the activity ID that causes this state transition (optional)
+- label: short state name e.g. "Draft", "Active", "Closed"
+- position: "initial" | "intermediate" | "terminal"
+- transitionsTo: array of next state IDs (empty for terminal)
 
 Example for "Customer Order":
 "lifecycleStates": [
-  { "id": "ls_order_draft", "label": "Draft", "position": "initial", "transitionsTo": ["ls_order_submitted"] },
-  { "id": "ls_order_submitted", "label": "Submitted", "position": "intermediate", "transitionsTo": ["ls_order_validated", "ls_order_rejected"], "triggerActivityId": "act_submit_order" },
-  { "id": "ls_order_validated", "label": "Validated", "position": "intermediate", "transitionsTo": ["ls_order_fulfilled"] },
-  { "id": "ls_order_rejected", "label": "Rejected", "position": "terminal" },
-  { "id": "ls_order_fulfilled", "label": "Fulfilled", "position": "terminal", "triggerActivityId": "act_fulfil_order" }
+  { "id": "ls_order_draft", "label": "Draft", "position": "initial", "transitionsTo": ["ls_order_active"] },
+  { "id": "ls_order_active", "label": "Active", "position": "intermediate", "transitionsTo": ["ls_order_closed"] },
+  { "id": "ls_order_closed", "label": "Closed", "position": "terminal", "transitionsTo": [] }
 ]
 
 Rules:
-- At least one "initial" state and at least one "terminal" state
-- All states must be reachable from an initial state via transitionsTo chains
-- Terminal states have no transitionsTo (or empty array)
-- Decision states have 2+ transitions (branching)
-- triggerActivityId links state transitions to specific activities in the FSM chain
-
-## Sub-Activity DAGs (CRITICAL — Capsicum alignment)
-For each activity in the FSM chain, produce a sub-activity DAG that shows the internal breakdown
-of that stage's work. This is stored in elements.subActivityGraphs keyed by activity ID.
-
-Each sub-activity DAG has:
-- nodes: array of SubActivity objects
-
-Each SubActivity node has:
-- id: "sa_<act_short>_<step_snake>" e.g. "sa_qualify_review_data"
-- label: short verb phrase e.g. "Review Submission Data"
-- nodeType: "activity" (work step) or "gate" (decision point — diamond shape)
-- nextIds: array of node IDs this step leads to (empty/omitted for terminal nodes)
-- edgeLabels: object mapping nextId → label for the transition (e.g. { "sa_qualify_approved": "Pass", "sa_qualify_rejected": "Fail" }). Only needed for gates.
-- roleId: which role performs this step (use role_xxx ID)
-- outcome: short outcome description for this step
-
-Example for "act_qualify_lead":
-"subActivityGraphs": {
-  "act_qualify_lead": {
-    "nodes": [
-      { "id": "sa_ql_gather", "label": "Gather Lead Data", "nodeType": "activity", "nextIds": ["sa_ql_score"], "roleId": "role_sales_rep", "outcome": "Lead data consolidated" },
-      { "id": "sa_ql_score", "label": "Score Lead", "nodeType": "activity", "nextIds": ["sa_ql_gate"], "roleId": "role_sales_rep", "outcome": "Lead scored" },
-      { "id": "sa_ql_gate", "label": "Qualification Gate", "nodeType": "gate", "nextIds": ["sa_ql_assign", "sa_ql_nurture"], "edgeLabels": { "sa_ql_assign": "Qualified", "sa_ql_nurture": "Not Ready" } },
-      { "id": "sa_ql_assign", "label": "Assign to Pipeline", "nodeType": "activity", "nextIds": [], "roleId": "role_sales_manager", "outcome": "Lead in pipeline" },
-      { "id": "sa_ql_nurture", "label": "Return to Nurture", "nodeType": "activity", "nextIds": [], "roleId": "role_sales_rep", "outcome": "Lead in nurture queue" }
-    ]
-  }
-}
-
-Rules:
-- Each activity should have 3-6 sub-activity nodes
-- Include at least one gate (decision point) per DAG where natural (qualification, approval, etc.)
-- Gates have 2+ nextIds with edgeLabels explaining the branching conditions
-- Terminal nodes have empty nextIds
-- All nodes must be reachable from the first node
-- roleId should reference roles from the main activity's performedByRoleIds
+- 2-3 states per IO (keep it lean — deeper lifecycle detail is added in enrichment)
+- At least one "initial" and one "terminal" state
+- Terminal states have empty transitionsTo
 
 ## Metrics (CRITICAL — wire to activities)
 Each activity should reference 0-2 relevant metricIds. Metrics from the discovery inputs MUST appear
@@ -264,6 +225,7 @@ For each VS:
 - Distribute roles across activities sensibly based on stage content
 - Wire metrics to the activities they measure
 - Do NOT include capabilityPPIT — it is generated in a separate enrichment pass
+- Do NOT include subActivityGraphs — they are generated in a separate enrichment pass
 
 ${buildGapContext(ir)}Confirmed inputs:
 ${JSON.stringify({ valueStreams: vsContext, roles: roleContext, tech: techContext, metrics: metricContext, layoutZones: ir.layoutZones ?? [] }, null, 2)}
@@ -283,7 +245,7 @@ Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
     "outcomes": { "<outcome_id>": { "name": "...", "elementType": "Outcome" } },
     "roles": { "<role_id>": { "name": "...", "description": "...", "elementType": "Role" } },
     "capabilities": { "<cap_id>": { "name": "...", "description": "...", "level": 4, "parentId": null, "businessObject": "...", "elementType": "Capability" } },
-    "informationObjects": { "<io_id>": { "name": "...", "description": "...", "elementType": "InformationObject", "lifecycleStates": [{ "id": "ls_xxx_draft", "label": "Draft", "position": "initial", "transitionsTo": ["ls_xxx_active"] }] } },
+    "informationObjects": { "<io_id>": { "name": "...", "description": "...", "elementType": "InformationObject", "lifecycleStates": [{ "id": "ls_xxx_draft", "label": "Draft", "position": "initial", "transitionsTo": ["ls_xxx_active"] }, { "id": "ls_xxx_active", "label": "Active", "position": "terminal", "transitionsTo": [] }] } },
     "controls": {},
     "constraints": {},
     "directives": {},
@@ -294,14 +256,14 @@ Return ONLY valid JSON — the complete ScaffoldModel — no markdown fences:
     "metrics": {},
     "measures": {},
     "conditions": {},
-    "subActivityGraphs": { "<act_id>": { "nodes": [{ "id": "sa_xxx_step1", "label": "Step 1", "nodeType": "activity", "nextIds": ["sa_xxx_step2"], "roleId": "role_xxx", "outcome": "Step completed" }] } }
+    "subActivityGraphs": {}
   }
 }
 
 CRITICAL: All element maps must be present, even if empty. Every ID referenced in activities MUST have a corresponding registry entry.
-CRITICAL: Do NOT include capabilityPPIT on activities — this is generated separately in Pass C.
-CRITICAL: Every informationObject MUST have lifecycleStates (2-5 states with initial→terminal progression).
-CRITICAL: Every activity MUST have a corresponding entry in elements.subActivityGraphs with 3-6 sub-activity nodes.
+CRITICAL: Do NOT include capabilityPPIT on activities — this is generated separately in enrichment.
+CRITICAL: Do NOT include subActivityGraphs content — leave as empty object {}. Generated separately in enrichment.
+CRITICAL: Every informationObject MUST have lifecycleStates (2-3 lean states: initial + terminal, optional intermediate).
 CRITICAL: Capabilities in elements.capabilities MUST have level: 4 and businessObject fields. L1/L2/L3 hierarchy nodes will be injected post-generation — only emit L4 operational capabilities.`;
 }
 

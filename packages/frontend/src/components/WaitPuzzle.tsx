@@ -104,7 +104,10 @@ export default function WaitPuzzle({ step }: { step: string }) {
   const stepLabel =
     step === "scaffold" ? "Building scaffold" :
     step === "validating" ? "Validating" :
-    step === "enriching" ? "Enriching PPIT" :
+    step === "subactivities" ? "Deepening structure" :
+    step === "ppit" ? "Mapping PPIT" :
+    step === "cards" ? "Generating cards" :
+    step === "enriching" ? "Enriching" :
     "Generating";
 
   const mins = Math.floor(elapsed / 60);

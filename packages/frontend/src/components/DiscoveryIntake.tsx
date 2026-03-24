@@ -6,6 +6,7 @@ import type { PipelineProgress } from "../domain/pipeline/pipeline-orchestrator"
 import { buildDiscoveryIR, makeId, type LayoutZone } from "../domain/pipeline/discovery-ir";
 import { LAYER_SCHEMES, DEFAULT_SCHEME, type LayerDef } from "../lib/layer-schemes";
 import WaitPuzzle from "./WaitPuzzle";
+import EnrichmentWizard from "./EnrichmentWizard";
 import * as XLSX from "xlsx";
 
 // ─── Colour palette matching VCC design ───────────────────────────────────
@@ -304,6 +305,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
   const [generateStep, setGenerateStep] = useState(""); // "scaffold" | "validating" | "enriching" | ""
   const [generated, setGenerated] = useState(false);
   const [generatedBundle, setGeneratedBundle] = useState<any>(null);
+  const [lastDiscoveryIR, setLastDiscoveryIR] = useState<any>(null);
   const [pipelineError, setPipelineError] = useState<string | null>(null);
   const dropRef = useRef<HTMLDivElement>(null);
 
@@ -516,15 +518,15 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
     const layoutZones: LayoutZone[] = formLayers.map((l, i) => ({ id: l.id, label: l.label, row: i, description: l.description }));
 
     const discoveryIR = buildDiscoveryIR(pass1Shape, pass2Shape, confirmedVS, layoutZones);
+    setLastDiscoveryIR(discoveryIR);
 
-    // Run Pass B via the pipeline
+    // Run Pass B via the pipeline — delivers lean scaffold immediately
+    // Enrichments (sub-activities, PPIT, cards) are now opt-in from the results view
     await continuePipeline(discoveryIR, (progress: PipelineProgress) => {
       if (progress.status === "pass-b") {
         setGenerateStep("scaffold");
       } else if (progress.status === "pass-b-repairing") {
         setGenerateStep("validating");
-      } else if (progress.status === "pass-c") {
-        setGenerateStep("enriching");
       } else if (progress.status === "pass-b-failed") {
         console.error("Scaffold generation failed:", progress.errorMessage);
         setPipelineError(progress.errorMessage ?? "Scaffold generation failed validation");
@@ -654,10 +656,10 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
           <div>
             <h2 className="text-xl font-semibold text-slate-800 mb-2">Scaffold generated</h2>
             <p className="text-sm text-slate-500 leading-relaxed">
-              Discovery IR compiled and passed to scaffold generator.
-              Your value stream canvas is ready — {form.valueStreams.filter(v=>v.name).length} value streams,{" "}
+              Your lean operating model is ready — {form.valueStreams.filter(v=>v.name).length} value streams,{" "}
               {form.valueStreams.reduce((n, vs) => n + vs.stages.length, 0)} stages,{" "}
               {form.painPoints.length} friction observations.
+              Open it now or enrich it first with deeper structure, PPIT mappings, and cards.
             </p>
           </div>
           <div className="rounded-lg border border-slate-200 bg-white p-4 text-left space-y-2">
@@ -674,6 +676,12 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
               </div>
             )}
           </div>
+          {/* ── Enrichment Wizard ── */}
+          <EnrichmentWizard
+            bundle={generatedBundle}
+            discoveryIR={lastDiscoveryIR}
+            onBundleUpdate={(updated) => setGeneratedBundle(updated)}
+          />
           <div className="flex gap-3 justify-center">
             <button onClick={() => setGenerated(false)}
               className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
@@ -748,7 +756,7 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
               className="rounded-lg bg-slate-800 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
               {generating
-                ? generateStep === "validating" ? "Validating scaffold…" : generateStep === "enriching" ? "Enriching PPIT…" : "Generating scaffold…"
+                ? generateStep === "validating" ? "Validating scaffold…" : "Generating scaffold…"
                 : "Generate →"}
             </button>
           </div>
@@ -1215,7 +1223,7 @@ Example: 'We're launching a new customer onboarding programme. Currently takes 4
                   className="rounded-lg bg-slate-800 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all whitespace-nowrap"
                 >
                   {generating
-                    ? generateStep === "validating" ? "Validating scaffold…" : generateStep === "enriching" ? "Enriching PPIT…" : "Generating scaffold…"
+                    ? generateStep === "validating" ? "Validating scaffold…" : "Generating scaffold…"
                     : `Generate scaffold →`}
                 </button>
               </div>

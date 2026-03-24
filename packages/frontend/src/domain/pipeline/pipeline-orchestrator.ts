@@ -393,13 +393,18 @@ export type PipelineStatus =
   | "pass-a1"          // extracting VS + stages
   | "pass-a2"          // extracting roles + caps + signals
   | "pass-a-done"      // DiscoveryIR ready — optional review point
-  | "pass-b"           // formalising scaffold
+  | "pass-b"           // formalising lean scaffold
   | "pass-b-repairing" // Gate 1 failed, attempting repair
   | "pass-b-failed"    // Gate 1 still failed after repair — surface to user
-  | "pass-c"           // PPIT enrichment (People/Process/Info/Tech per capability)
-  | "pass-d"           // generating concept + policy cards
-  | "done"
-  | "error";
+  | "done"             // lean scaffold delivered — user can browse immediately
+  | "error"
+  // Enrichment statuses (opt-in, run after scaffold is delivered)
+  | "enriching-subactivities" // Deepen Structure
+  | "enriching-ppit"          // Map PPIT
+  | "enriching-cards"         // Generate Cards
+  | "enrichment-done";        // enrichment step completed
+
+export type EnrichmentStep = "subactivities" | "ppit" | "cards";
 
 export interface PipelineProgress {
   status: PipelineStatus;
@@ -407,9 +412,10 @@ export interface PipelineProgress {
   scaffold?: any;                      // available after pass-b
   gate1?: GateResult;
   gate2?: GateResult;
-  cardRegistry?: CardRegistry;        // available after pass-d
+  cardRegistry?: CardRegistry;        // available after done/enrichment
   bundle?: any;                        // available after done
   errorMessage?: string;
+  enrichmentStep?: EnrichmentStep;    // which enrichment just completed
 }
 
 export type ProgressCallback = (progress: PipelineProgress) => void;
@@ -439,7 +445,6 @@ export async function runPipeline(
     try {
       pass1Result = JSON.parse(raw);
     } catch {
-      // LLM may have been truncated — attempt to repair by closing open braces/brackets
       const repaired = raw.replace(/,\s*$/, "") + "}".repeat((raw.match(/{/g) || []).length - (raw.match(/}/g) || []).length);
       pass1Result = JSON.parse(repaired);
     }
@@ -478,7 +483,11 @@ export async function runPipeline(
   onProgress({ status: "pass-a-done", discoveryIR });
 }
 
-// ── Pass B: Called by UI after form is ready ─────────────────────────────────
+// ── Pass B: Lean scaffold generation — delivers immediately ─────────────────
+// Post-Pass-B enrichments (sub-activities, PPIT, cards) are now opt-in steps
+// triggered by the user from the enrichment wizard. This gives faster time-to-
+// value: the user sees their structural model within seconds, then can choose
+// to deepen it incrementally.
 
 export async function continuePipeline(
   discoveryIR: DiscoveryIR,
@@ -505,19 +514,12 @@ export async function continuePipeline(
 
   const scaffold = formaliseResult.scaffold;
 
-  // ── Post-Pass-B enrichment ──────────────────────────────────────────────────
+  // ── Post-Pass-B deterministic enrichment ────────────────────────────────────
   // Inject L1/L2/L3 capability hierarchy from DiscoveryIR (lost during Pass B flattening)
   injectCapabilityHierarchy(scaffold, discoveryIR);
 
-  // ── Pass C: PPIT Enrichment ────────────────────────────────────────────────
-  onProgress({ status: "pass-c", discoveryIR, scaffold });
-  const ppitResult = await runPassC(scaffold);
-  if (!ppitResult.success) {
-    console.warn("[pipeline] Pass C (PPIT) failed — continuing without PPIT:", ppitResult.error);
-  }
-
   // Derive Capsicum Triad concepts (Party/Record/Resource) from scaffold registries
-  // (runs after PPIT so concept relationships can use PPIT data)
+  // (runs without PPIT — relationships are basic; enriched after PPIT)
   deriveConceptsFromScaffold(scaffold, discoveryIR);
 
   // Store pain points on the scaffold for later friction assessment
@@ -531,22 +533,7 @@ export async function continuePipeline(
     scaffold._discoveryPainPoints = ppSummary;
   }
 
-  // ── Pass D: Generate Concept & Policy Cards ──────────────────────────────
-  onProgress({ status: "pass-d", discoveryIR, scaffold });
-  let cardRegistry: CardRegistry | undefined;
-
-  try {
-    const cardResult = await generateCards(scaffold);
-    if (cardResult.registry) {
-      cardRegistry = cardResult.registry;
-    } else {
-      console.warn("[pipeline] Card generation returned no cards:", cardResult.error);
-    }
-  } catch (e) {
-    // Card generation is non-fatal — we still emit the scaffold
-    console.warn("[pipeline] Card generation failed (non-fatal):", e);
-  }
-
+  // ── Deliver lean scaffold immediately ──────────────────────────────────────
   const now = new Date().toISOString();
   const bundle: Record<string, unknown> = {
     bundleVersion: "2.0",
@@ -554,9 +541,6 @@ export async function continuePipeline(
     scaffold,
     heatmaps: [] as any[],
   };
-  if (cardRegistry) {
-    bundle.cardRegistry = cardRegistry;
-  }
 
   onProgress({
     status: "done",
@@ -564,7 +548,60 @@ export async function continuePipeline(
     scaffold,
     gate1: formaliseResult.gate1,
     gate2: formaliseResult.gate2,
-    cardRegistry,
     bundle,
   });
+}
+
+// ── Opt-in enrichment steps ──────────────────────────────────────────────────
+// Each step can be triggered independently from the Enrichment Wizard.
+// They modify the scaffold in-place and are all non-fatal.
+
+import { runSubActivityEnrichment } from "./subactivity-enricher";
+
+export async function runEnrichmentStep(
+  step: EnrichmentStep,
+  scaffold: any,
+  discoveryIR: DiscoveryIR | undefined,
+  onProgress: ProgressCallback
+): Promise<void> {
+  switch (step) {
+    case "subactivities": {
+      onProgress({ status: "enriching-subactivities", scaffold });
+      const result = await runSubActivityEnrichment(scaffold);
+      if (!result.success) {
+        console.warn("[enrichment] Sub-activities failed:", result.error);
+      }
+      onProgress({ status: "enrichment-done", scaffold, enrichmentStep: "subactivities" });
+      break;
+    }
+    case "ppit": {
+      onProgress({ status: "enriching-ppit", scaffold });
+      const result = await runPassC(scaffold);
+      if (!result.success) {
+        console.warn("[enrichment] PPIT failed:", result.error);
+      }
+      // Re-derive concepts with PPIT data now available
+      if (discoveryIR) {
+        deriveConceptsFromScaffold(scaffold, discoveryIR);
+      }
+      onProgress({ status: "enrichment-done", scaffold, enrichmentStep: "ppit" });
+      break;
+    }
+    case "cards": {
+      onProgress({ status: "enriching-cards", scaffold });
+      let cardRegistry: CardRegistry | undefined;
+      try {
+        const cardResult = await generateCards(scaffold);
+        if (cardResult.registry) {
+          cardRegistry = cardResult.registry;
+        } else {
+          console.warn("[enrichment] Card generation returned no cards:", cardResult.error);
+        }
+      } catch (e) {
+        console.warn("[enrichment] Card generation failed:", e);
+      }
+      onProgress({ status: "enrichment-done", scaffold, cardRegistry, enrichmentStep: "cards" });
+      break;
+    }
+  }
 }

@@ -158,11 +158,15 @@ export function runGate2(scaffold: any): GateResult {
     }
   }
 
-  // V-SCAFFOLD-10: sub-activity graphs exist for activities
+  // V-SCAFFOLD-10: sub-activity graphs exist for activities (optional — added by enrichment)
   const subActivityGraphs = elements.subActivityGraphs ?? {};
-  for (const actId of Object.keys(activities)) {
-    if (!subActivityGraphs[actId]) {
-      warnings.push(`Activity ${actId}: no sub-activity graph in subActivityGraphs`);
+  const hasAnyDAGs = Object.keys(subActivityGraphs).length > 0;
+  // Only warn about missing DAGs if some DAGs exist (partial enrichment) — not for lean scaffolds
+  if (hasAnyDAGs) {
+    for (const actId of Object.keys(activities)) {
+      if (!subActivityGraphs[actId]) {
+        warnings.push(`Activity ${actId}: no sub-activity graph in subActivityGraphs`);
+      }
     }
   }
   // Validate sub-activity DAG structure
