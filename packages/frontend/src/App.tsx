@@ -2,7 +2,7 @@ import { useEffect, useCallback, useRef, useState } from "react";
 import { useCanvasStore } from "./store/canvas-store.ts";
 import { useAuthStore } from "./store/auth-store.ts";
 import { useProjectStore } from "./store/project-store.ts";
-import { useThemeStore } from "./store/theme-store.ts";
+import { SideNav } from "./components/SideNav.tsx";
 import { FileLoader } from "./components/FileLoader.tsx";
 import { CanvasView } from "./components/CanvasView.tsx";
 import { StageWizard } from "./components/StageWizard.tsx";
@@ -36,9 +36,6 @@ export default function App() {
     error,
     backToNetwork,
     goToIntake,
-    goToCapabilityMap,
-    goToConceptGraph,
-    goToFriction,
     loading,
     loadScaffold,
     loadHeatmap,
@@ -265,31 +262,18 @@ export default function App() {
   // In local mode, skip project list and show original landing page
   const showProjectList = !isLocalMode && !isLoaded && !isIntake;
 
-  // Navigate back to project list — flush any pending save first
-  const goToProjects = async () => {
-    const canvas = useCanvasStore.getState();
-    if (canvas.scaffoldDirty && canvas.scaffoldData) {
-      await canvas.saveToProject();
-    }
-    canvas.reset();
-    useProjectStore.getState().setCurrentProject(null);
-  };
-
   return (
     <UpsellModalProvider>
     <UpgradeURLTrigger />
-    <div className="flex h-screen flex-col">
-      {/* Header */}
-      <header className="flex items-center justify-between border-b border-gray-200 bg-vcc-900 px-6 py-2.5">
-        <div className="flex items-center gap-5">
+    <div className="flex h-screen">
+      {/* Side navigation */}
+      <SideNav onOpenAccountSettings={() => setShowAccountSettings(true)} />
+
+      {/* Right column: header + content */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Slim header — project name + save + version */}
+        <header className="flex h-11 items-center justify-between border-b border-gray-200 bg-vcc-900 px-5">
           <div className="flex items-center gap-2.5">
-            <h1
-              className="cursor-pointer text-sm font-semibold tracking-tight text-white"
-              onClick={!isLocalMode ? goToProjects : undefined}
-            >
-              VCC
-            </h1>
-            {/* Project name */}
             {scaffoldData?.name && (
               <span className="text-[11px] font-medium text-white/60">
                 {scaffoldData.name}
@@ -300,60 +284,15 @@ export default function App() {
                 Projects
               </span>
             )}
+            {saving && (
+              <span className="text-[10px] text-white/40">Saving...</span>
+            )}
           </div>
-
-          {/* Subway nav */}
-          {(isLoaded || (!isLocalMode && isIntake)) && (
-            <SubwayNav
-              stations={[
-                ...(isLocalMode ? [] : [{ id: "projects", label: "Projects", onClick: goToProjects, active: false }]),
-                { id: "discovery", label: "Discovery", onClick: goToIntake, active: isIntake },
-                { id: "network", label: "Network", onClick: backToNetwork, active: isNetwork },
-                { id: "stream", label: "Stream", onClick: () => {
-                  const store = useCanvasStore.getState();
-                  const vsId = store.selectedVsId
-                    || Object.keys(store.scaffoldData?.elements?.valueStreams ?? {})[0];
-                  if (vsId) store.selectVs(vsId);
-                }, active: isStage },
-                { id: "capabilities", label: "Capabilities", onClick: goToCapabilityMap, active: isCapabilityMap },
-                { id: "concepts", label: "Concepts", onClick: goToConceptGraph, active: isConceptGraph },
-                { id: "friction", label: "Friction", onClick: goToFriction, active: isFriction },
-              ]}
-            />
-          )}
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* Save indicator (subtle) */}
-          {saving && (
-            <span className="text-[10px] text-white/40">Saving...</span>
-          )}
-
-          {/* User info — click to open Account Settings */}
-          {!isLocalMode && user && (
-            <button
-              onClick={() => setShowAccountSettings(true)}
-              className="flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors hover:bg-white/10"
-              title="Account settings"
-            >
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-vcc-600 text-[9px] font-bold text-white">
-                {(user.user_metadata?.full_name ?? user.email ?? "?")[0].toUpperCase()}
-              </div>
-              <span className="text-[10px] text-white/50">{user.email}</span>
-            </button>
-          )}
-
-          {/* Refine & Regenerate — removed from nav bar, functionality available via Workbench Agent */}
-
-          {/* Theme toggle */}
-          <ThemeToggle />
-
           <VersionBadge />
-        </div>
-      </header>
+        </header>
 
-      {/* Content selectors (stage view only) */}
-      {isStage && <StageWizard />}
+        {/* Content selectors (stage view only) */}
+        {isStage && <StageWizard />}
 
       {/* Checkout banner */}
       {checkoutBanner === "success" && (
@@ -495,7 +434,8 @@ export default function App() {
       {showAccountSettings && (
         <AccountSettings onClose={() => setShowAccountSettings(false)} />
       )}
-    </div>
+      </div>{/* end right column */}
+    </div>{/* end outer flex */}
     </UpsellModalProvider>
   );
 }
@@ -537,75 +477,3 @@ function UpgradeURLTrigger() {
   return null;
 }
 
-/* ── Subway Navigation ────────────────────────────────────── */
-
-interface SubwayStation {
-  id: string;
-  label: string;
-  onClick: () => void;
-  active: boolean;
-}
-
-function SubwayNav({ stations }: { stations: SubwayStation[] }) {
-  return (
-    <nav className="flex items-center gap-0">
-      {stations.map((station, i) => (
-        <div key={station.id} className="flex items-center">
-          {/* Connecting line (before each station except the first) */}
-          {i > 0 && (
-            <div className="h-px w-4" style={{ background: "rgba(255,255,255,0.2)" }} />
-          )}
-          {/* Station */}
-          <button
-            onClick={station.onClick}
-            className="group flex items-center gap-1.5 rounded-full px-2.5 py-1 transition-all"
-            style={station.active
-              ? { background: "rgba(255,255,255,0.15)" }
-              : {}}
-          >
-            {/* Dot */}
-            <span
-              className="inline-block h-2 w-2 rounded-full border transition-all"
-              style={station.active
-                ? { background: "#4a9eda", borderColor: "#4a9eda" }
-                : { background: "transparent", borderColor: "rgba(255,255,255,0.35)" }}
-            />
-            {/* Label */}
-            <span
-              className="text-[11px] font-medium transition-colors"
-              style={station.active
-                ? { color: "#ffffff" }
-                : { color: "rgba(255,255,255,0.45)" }}
-            >
-              {station.label}
-            </span>
-          </button>
-        </div>
-      ))}
-    </nav>
-  );
-}
-
-/* ── Theme Toggle Button ─────────────────────────────────── */
-function ThemeToggle() {
-  const { mode, toggle } = useThemeStore();
-  return (
-    <button
-      onClick={toggle}
-      className="rounded-md border border-white/20 px-2 py-1 text-[11px] font-medium text-white/60 transition-all hover:border-white/30 hover:bg-white/10 hover:text-white"
-      title={`Switch to ${mode === "dark" ? "light" : "dark"} mode`}
-    >
-      {mode === "dark" ? (
-        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      ) : (
-        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-        </svg>
-      )}
-    </button>
-  );
-}
