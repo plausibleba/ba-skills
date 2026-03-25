@@ -128,6 +128,7 @@ export function parseReferenceModelWorkbook(
   const { valueStreams, activities, outcomes } = parseValueStreams(wb);
   const roles = parseStakeholders(wb);
   const informationObjects = parseInformationMap(wb);
+  const concepts = parseConcepts(wb, informationObjects);
 
   // Wire capability IDs onto value streams based on stage-level stakeholder/capability cross-refs
   // For now, collect all unique capability IDs and assign to VS
@@ -157,6 +158,7 @@ export function parseReferenceModelWorkbook(
       constraints: {},
       metrics: {},
       informationObjects,
+      concepts,
     },
   };
 
@@ -183,15 +185,33 @@ function parseCapabilities(
   const rows = sheetToRows(sheet);
   const caps: Record<string, ScaffoldCapability> = {};
 
-  // Find header row (contains "Capability" or "Level")
-  let headerIdx = 0;
-  for (let i = 0; i < Math.min(rows.length, 5); i++) {
-    const row = rows[i];
-    if (row.some((c) => String(c).toLowerCase().includes("capability"))) {
+  // Find header row — must contain BOTH a "capability" column AND a "level" or
+  // "tier" column.  A title row like "Capability Map" only has one keyword so
+  // it won't match, avoiding the false-positive that previously let the title
+  // row masquerade as the column header.
+  let headerIdx = -1;
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    const cells = rows[i].map((c) => String(c).toLowerCase().trim());
+    const hasCap = cells.some((c) => c === "capability" || c === "capabilities");
+    const hasLevel = cells.some(
+      (c) => c === "level" || c === "tier" || c === "tier " || c === "level ",
+    );
+    if (hasCap && hasLevel) {
       headerIdx = i;
       break;
     }
   }
+  // Fallback: if we didn't find a combined header, look for any row with "tier" + "level"
+  if (headerIdx < 0) {
+    for (let i = 0; i < Math.min(rows.length, 10); i++) {
+      const cells = rows[i].map((c) => String(c).toLowerCase().trim());
+      if (cells.some((c) => c === "tier") && cells.some((c) => c === "level")) {
+        headerIdx = i;
+        break;
+      }
+    }
+  }
+  if (headerIdx < 0) return {}; // No recognisable header found
 
   // Detect column positions from header
   const header = rows[headerIdx].map((c) => String(c).toLowerCase().trim());
@@ -549,6 +569,115 @@ function parseInformationMap(
   }
 
   return infoObjects;
+}
+
+/* ── Concepts parser (Information Map → ConceptNode shape) ── */
+
+/** Heuristic: classify an information concept as Party / Record / Resource.
+ *  The Guild Information Map may include a "category" or "type" column.
+ *  If not, we fall back to keyword matching on the concept name.             */
+const PARTY_KEYWORDS = [
+  "customer", "client", "partner", "supplier", "vendor", "employee",
+  "stakeholder", "regulator", "agent", "applicant", "user", "member",
+  "citizen", "patient", "beneficiary", "provider", "broker", "insured",
+  "claimant", "advisor", "consultant", "officer", "director", "manager",
+  "owner", "operator", "tenant", "subscriber", "account holder",
+  "borrower", "lender", "guarantor", "sponsor", "trustee",
+];
+const RESOURCE_KEYWORDS = [
+  "product", "service", "asset", "resource", "device", "equipment",
+  "facility", "location", "site", "system", "platform", "tool",
+  "infrastructure", "material", "inventory", "vehicle", "property",
+  "instrument", "channel", "network",
+];
+
+function classifyConcept(
+  name: string,
+  categoryHint?: string,
+): "Party" | "Record" | "Resource" {
+  // Prefer explicit category column when available
+  if (categoryHint) {
+    const lc = categoryHint.toLowerCase();
+    if (lc.includes("party") || lc.includes("person") || lc.includes("org")) return "Party";
+    if (lc.includes("resource") || lc.includes("thing") || lc.includes("product")) return "Resource";
+    if (lc.includes("record") || lc.includes("document") || lc.includes("event")) return "Record";
+  }
+  const lc = name.toLowerCase();
+  if (PARTY_KEYWORDS.some((kw) => lc.includes(kw))) return "Party";
+  if (RESOURCE_KEYWORDS.some((kw) => lc.includes(kw))) return "Resource";
+  return "Record"; // default
+}
+
+function parseConcepts(
+  wb: XLSX.WorkBook,
+  infoObjects: Record<string, ScaffoldInfoObject>,
+): Record<string, unknown> {
+  const concepts: Record<string, unknown> = {};
+
+  const sheet = findSheet(wb, "information map");
+
+  // Detect whether the Information Map has a "category" / "type" column
+  let categoryCol = -1;
+  if (sheet) {
+    const rows = sheetToRows(sheet);
+    let headerIdx = 0;
+    for (let i = 0; i < Math.min(rows.length, 5); i++) {
+      if (rows[i].some((c) => String(c).toLowerCase().includes("information concept"))) {
+        headerIdx = i;
+        break;
+      }
+    }
+    const hdr = rows[headerIdx].map((c) => String(c).toLowerCase().trim());
+    categoryCol = hdr.findIndex(
+      (h) =>
+        h === "category" ||
+        h === "type" ||
+        h.includes("concept type") ||
+        h.includes("concept category"),
+    );
+    const nameCol = hdr.findIndex(
+      (h) => h === "information concept" || (h.includes("information concept") && !h.includes("category") && !h.includes("definition") && !h.includes("type") && !h.includes("state") && !h.includes("related")),
+    );
+
+    // Re-parse rows to pick up category
+    for (let i = headerIdx + 1; i < rows.length; i++) {
+      const name = cellStr(rows[i], nameCol >= 0 ? nameCol : 0);
+      if (!name) continue;
+      const id = makeId("io", name);
+      const io = infoObjects[id];
+      if (!io) continue;
+
+      const categoryHint = categoryCol >= 0 ? cellStr(rows[i], categoryCol) : "";
+      const conceptType = classifyConcept(name, categoryHint);
+
+      concepts[id] = {
+        id,
+        name: io.name,
+        type: conceptType,
+        definition: io.description,
+        lifecycleStates: io.lifecycleStates,
+        relationships: [],
+        properties: {},
+      };
+    }
+  }
+
+  // Ensure every informationObject has a concept entry (fallback for sheets without a category column)
+  for (const [id, io] of Object.entries(infoObjects)) {
+    if (concepts[id]) continue;
+    const ioName = io.name ?? id;
+    concepts[id] = {
+      id,
+      name: ioName,
+      type: classifyConcept(ioName),
+      definition: io.description,
+      lifecycleStates: io.lifecycleStates,
+      relationships: [],
+      properties: {},
+    };
+  }
+
+  return concepts;
 }
 
 /* ── Convenience: parse from File object ─────────────────── */
