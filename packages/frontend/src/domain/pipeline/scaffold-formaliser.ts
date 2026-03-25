@@ -17,16 +17,43 @@ export interface FormaliseResult {
 }
 
 /** Estimate a reasonable max_tokens ceiling based on input complexity.
- *  Each stage generates roughly 1k tokens of lean scaffold output (activity
+ *  Each stage generates roughly 1.2k tokens of lean scaffold output (activity
  *  with FSM chain, basic IO with 2-3 lifecycle states, registry entries).
  *  Sub-activity DAGs and PPIT are generated in separate enrichment passes.
- *  We add headroom for registries and the JSON envelope. */
+ *  We add headroom for registries, shared capabilities, and the JSON envelope. */
 function estimateMaxTokens(ir: DiscoveryIR): number {
   const totalStages = ir.valueStreams.reduce((sum, vs) => sum + (vs.stages?.length ?? 0), 0);
-  // ~1k per activity (lean scaffold), + 2k for registries/envelope
-  const estimate = totalStages * 1000 + 2000;
-  // Clamp between 6k (minimum viable) and 16k (comfortable ceiling for lean scaffold)
-  return Math.max(6000, Math.min(16000, estimate));
+  // ~1.2k per activity (lean scaffold incl. IOs + lifecycle), + 4k for registries/envelope
+  const estimate = totalStages * 1200 + 4000;
+  // Clamp between 8k (minimum viable) and 32k (generous ceiling — avoids truncation)
+  return Math.max(8000, Math.min(32000, estimate));
+}
+
+/** Attempt to repair truncated JSON by closing open strings, arrays, and objects.
+ *  This handles the common case where the LLM response hits max_tokens mid-output. */
+function repairTruncatedJSON(raw: string): any {
+  let s = raw.trim();
+
+  // Close any unterminated string (odd number of unescaped quotes)
+  const quoteCount = (s.match(/(?<!\\)"/g) || []).length;
+  if (quoteCount % 2 !== 0) {
+    s += '"';
+  }
+
+  // Remove any trailing comma after our repair
+  s = s.replace(/,\s*$/, "");
+
+  // Count open vs close braces/brackets and close them
+  const openBraces = (s.match(/{/g) || []).length;
+  const closeBraces = (s.match(/}/g) || []).length;
+  const openBrackets = (s.match(/\[/g) || []).length;
+  const closeBrackets = (s.match(/]/g) || []).length;
+
+  // Close brackets first (inner), then braces (outer)
+  s += "]".repeat(Math.max(0, openBrackets - closeBrackets));
+  s += "}".repeat(Math.max(0, openBraces - closeBraces));
+
+  return JSON.parse(s);
 }
 
 export async function runPassB(
@@ -47,10 +74,19 @@ export async function runPassB(
       temperature: 0,
       messages: [{ role: "user", content: scaffoldPrompt }],
     });
-    if (llmRes.stopReason === "max_tokens") {
-      console.warn("Pass B response truncated at max_tokens — output may be incomplete");
+    const wasTruncated = llmRes.stopReason === "max_tokens";
+    if (wasTruncated) {
+      console.warn(`Pass B response truncated at max_tokens (${maxTokens}) — attempting JSON repair`);
     }
-    scaffold = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
+    const raw = llmRes.text.replace(/`{3}json|`{3}/g, "").trim();
+    try {
+      scaffold = JSON.parse(raw);
+    } catch {
+      // JSON parse failed — attempt repair (handles truncation + minor issues)
+      console.warn("Pass B: direct JSON.parse failed, attempting repair…");
+      scaffold = repairTruncatedJSON(raw);
+      console.log("Pass B: JSON repair succeeded");
+    }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("Pass B failed:", msg);
@@ -77,7 +113,14 @@ export async function runPassB(
         temperature: 0,
         messages: [{ role: "user", content: repairPrompt }],
       });
-      scaffold = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
+      const raw = llmRes.text.replace(/`{3}json|`{3}/g, "").trim();
+      try {
+        scaffold = JSON.parse(raw);
+      } catch {
+        console.warn("Pass B repair: direct JSON.parse failed, attempting repair…");
+        scaffold = repairTruncatedJSON(raw);
+        console.log("Pass B repair: JSON repair succeeded");
+      }
       gate1 = runGate1(scaffold);
     } catch (e) {
       return {
