@@ -20,7 +20,7 @@ import {
   deriveTopologyView,
 } from "./network-derivation.ts";
 
-type ViewMode = "network" | "stage" | "intake" | "capabilityMap" | "conceptGraph" | "friction" | "workbench";
+type ViewMode = "network" | "stage" | "intake" | "import" | "capabilityMap" | "conceptGraph" | "friction" | "workbench";
 
 interface CanvasState {
   // View navigation
@@ -64,6 +64,7 @@ interface CanvasState {
   selectVs: (vsId: string) => void;
   backToNetwork: () => void;
   goToIntake: () => void;
+  goToImport: () => void;
   goToCapabilityMap: () => void;
   goToConceptGraph: () => void;
   goToFriction: () => void;
@@ -464,6 +465,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   goToIntake: () => {
     set({ viewMode: "intake" });
+  },
+
+  goToImport: () => {
+    set({ viewMode: "import" });
   },
 
   goToCapabilityMap: () => {

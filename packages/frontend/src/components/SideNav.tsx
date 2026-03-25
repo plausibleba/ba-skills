@@ -6,13 +6,12 @@
  *
  * Session 28 — Account Management & Nav restructure.
  */
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { useWorkbenchStore } from "../store/workbench-store.ts";
 import { useAuthStore } from "../store/auth-store.ts";
 import { useThemeStore } from "../store/theme-store.ts";
 import { useProjectStore } from "../store/project-store.ts";
-import { autoSaveToProject } from "../utils/auto-save.ts";
 
 /* ── Icon components (inline SVG, 20×20) ─────────────────── */
 
@@ -135,8 +134,6 @@ interface SideNavProps {
 
 export function SideNav({ onOpenAccountSettings }: SideNavProps) {
   const [expanded, setExpanded] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { user, isLocalMode } = useAuthStore();
   const { mode: themeMode, toggle: toggleTheme } = useThemeStore();
@@ -147,6 +144,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     viewMode,
     backToNetwork,
     goToIntake,
+    goToImport,
     goToCapabilityMap,
     goToConceptGraph,
     goToFriction,
@@ -184,38 +182,9 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     canvas.goToWorkbench();
   };
 
-  // Import reference model from .xlsx
+  // Navigate to the import view
   const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    // Reset so the same file can be re-selected
-    e.target.value = "";
-
-    setImporting(true);
-    try {
-      const { importReferenceModelFile } = await import(
-        "../utils/reference-model-import.ts"
-      );
-      const { scaffold, stats } = await importReferenceModelFile(file);
-      const store = useCanvasStore.getState();
-      await store.loadScaffold(scaffold);
-      store.backToNetwork();
-      await autoSaveToProject({});
-      console.log(
-        `[SideNav] Reference model imported: ${stats.valueStreams} VS, ${stats.activities} activities, ${stats.capabilities} capabilities, ${stats.roles} roles, ${stats.informationObjects} IOs`,
-      );
-    } catch (err) {
-      console.error("[SideNav] Reference model import failed:", err);
-      useCanvasStore.setState({
-        error: `Import failed: ${err instanceof Error ? err.message : String(err)}`,
-      });
-    } finally {
-      setImporting(false);
-    }
+    goToImport();
   };
 
   /* ── Build nav items ──────────────────────────────── */
@@ -245,10 +214,10 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
   // Import reference model
   items.push({
     id: "import",
-    label: importing ? "Importing..." : "Import Model",
+    label: "Import Model",
     icon: <IconImport />,
     onClick: handleImportClick,
-    disabled: importing,
+    active: viewMode === "import",
   });
 
   // Divider before model views
@@ -341,15 +310,6 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
   /* ── Render ───────────────────────────────────────── */
 
   return (
-    <>
-    {/* Hidden file input for reference model import */}
-    <input
-      ref={fileInputRef}
-      type="file"
-      accept=".xlsx,.xls"
-      className="hidden"
-      onChange={handleFileChange}
-    />
     <nav
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
@@ -467,6 +427,5 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
         )}
       </div>
     </nav>
-    </>
   );
 }

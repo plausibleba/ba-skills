@@ -19,6 +19,7 @@ import { autoSaveToProject } from "./utils/auto-save.ts";
 import { VersionBadge } from "./components/ChangelogModal.tsx";
 import { UpsellModalProvider, useUpsellModal } from "./components/UpsellModal.tsx";
 import { RefinementExportModal } from "./components/RefinementExport.tsx";
+import { ImportView } from "./components/ImportView.tsx";
 import { WorkbenchView } from "./components/WorkbenchView.tsx";
 import { useWorkbenchStore } from "./store/workbench-store.ts";
 import { DevTierSwitcher } from "./components/DevTierSwitcher.tsx";
@@ -228,6 +229,7 @@ export default function App() {
   const isStage = viewMode === "stage" && (!!canvasViewModel || loading);
   const isStageReady = viewMode === "stage" && !!canvasViewModel;
   const isIntake = viewMode === "intake";
+  const isImport = viewMode === "import";
   const isCapabilityMap = viewMode === "capabilityMap";
   const isConceptGraph = viewMode === "conceptGraph";
   const isFriction = viewMode === "friction";
@@ -260,7 +262,7 @@ export default function App() {
 
   // Project list: show when authenticated but no project/scaffold loaded
   // In local mode, skip project list and show original landing page
-  const showProjectList = !isLocalMode && !isLoaded && !isIntake;
+  const showProjectList = !isLocalMode && !isLoaded && !isIntake && !isImport;
 
   return (
     <UpsellModalProvider>
@@ -277,6 +279,11 @@ export default function App() {
             {scaffoldData?.name && (
               <span className="text-[11px] font-medium text-white/60">
                 {scaffoldData.name}
+              </span>
+            )}
+            {isImport && !scaffoldData?.name && (
+              <span className="text-[11px] font-medium text-white/60">
+                Import Model
               </span>
             )}
             {showProjectList && !isLocalMode && (
@@ -369,7 +376,7 @@ export default function App() {
         </div>
 
         {/* Landing page — local mode only (no project list) */}
-        {isLocalMode && !isIntake && !isLoaded && (
+        {isLocalMode && !isIntake && !isImport && !isLoaded && (
           <div className="flex h-full flex-col items-center justify-center gap-8 p-6">
             <div className="max-w-md text-center">
               <div className="mb-4 flex justify-center">
@@ -419,6 +426,7 @@ export default function App() {
           </div>
         )}
 
+        {isImport && !isWorkbench && <ImportView />}
         {!isIntake && isLoaded && isNetwork && !isWorkbench && <NetworkView />}
         {!isIntake && isStageReady && !isWorkbench && <CanvasView />}
         {!isIntake && isLoaded && isCapabilityMap && !isWorkbench && <CapabilityMapView />}
