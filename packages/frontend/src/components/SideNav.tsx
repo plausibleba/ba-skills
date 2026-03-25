@@ -6,12 +6,13 @@
  *
  * Session 28 — Account Management & Nav restructure.
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { useWorkbenchStore } from "../store/workbench-store.ts";
 import { useAuthStore } from "../store/auth-store.ts";
 import { useThemeStore } from "../store/theme-store.ts";
 import { useProjectStore } from "../store/project-store.ts";
+import { autoSaveToProject } from "../utils/auto-save.ts";
 
 /* ── Icon components (inline SVG, 20×20) ─────────────────── */
 
@@ -105,6 +106,14 @@ function IconMoon() {
   );
 }
 
+function IconImport() {
+  return (
+    <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.6} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+    </svg>
+  );
+}
+
 /* ── Types ────────────────────────────────────────────────── */
 
 interface NavItem {
@@ -126,6 +135,8 @@ interface SideNavProps {
 
 export function SideNav({ onOpenAccountSettings }: SideNavProps) {
   const [expanded, setExpanded] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { user, isLocalMode } = useAuthStore();
   const { mode: themeMode, toggle: toggleTheme } = useThemeStore();
@@ -163,9 +174,48 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     if (vsId) store.selectVs(vsId);
   };
 
-  // Navigate to workbench
+  // Navigate to workbench — must enter with scaffold if not already active
   const goToWorkbench = () => {
-    useCanvasStore.setState({ viewMode: "workbench" as any });
+    const canvas = useCanvasStore.getState();
+    const wb = useWorkbenchStore.getState();
+    if (!wb.isActive && canvas.scaffoldData) {
+      wb.enterWorkbench(canvas.scaffoldData);
+    }
+    canvas.goToWorkbench();
+  };
+
+  // Import reference model from .xlsx
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Reset so the same file can be re-selected
+    e.target.value = "";
+
+    setImporting(true);
+    try {
+      const { importReferenceModelFile } = await import(
+        "../utils/reference-model-import.ts"
+      );
+      const { scaffold, stats } = await importReferenceModelFile(file);
+      const store = useCanvasStore.getState();
+      await store.loadScaffold(scaffold);
+      store.backToNetwork();
+      await autoSaveToProject({});
+      console.log(
+        `[SideNav] Reference model imported: ${stats.valueStreams} VS, ${stats.activities} activities, ${stats.capabilities} capabilities, ${stats.roles} roles, ${stats.informationObjects} IOs`,
+      );
+    } catch (err) {
+      console.error("[SideNav] Reference model import failed:", err);
+      useCanvasStore.setState({
+        error: `Import failed: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    } finally {
+      setImporting(false);
+    }
   };
 
   /* ── Build nav items ──────────────────────────────── */
@@ -192,6 +242,15 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     active: viewMode === "intake",
   });
 
+  // Import reference model
+  items.push({
+    id: "import",
+    label: importing ? "Importing..." : "Import Model",
+    icon: <IconImport />,
+    onClick: handleImportClick,
+    disabled: importing,
+  });
+
   // Divider before model views
   items.push({
     id: "network",
@@ -205,7 +264,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
 
   items.push({
     id: "stream",
-    label: "Stream",
+    label: "Value Stream",
     icon: <IconStream />,
     onClick: goToStream,
     active: viewMode === "stage",
@@ -282,6 +341,15 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
   /* ── Render ───────────────────────────────────────── */
 
   return (
+    <>
+    {/* Hidden file input for reference model import */}
+    <input
+      ref={fileInputRef}
+      type="file"
+      accept=".xlsx,.xls"
+      className="hidden"
+      onChange={handleFileChange}
+    />
     <nav
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
@@ -399,5 +467,6 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
         )}
       </div>
     </nav>
+    </>
   );
 }

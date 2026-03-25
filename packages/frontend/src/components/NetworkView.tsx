@@ -705,25 +705,6 @@ export function NetworkView() {
         </div>
 
         <div className="flex items-center gap-3 text-[10px]">
-          {/* Op Model Workbench entry button */}
-          <button
-            onClick={() => {
-              if (scaffoldData) {
-                useWorkbenchStore.getState().enterWorkbench(scaffoldData);
-                useCanvasStore.getState().goToWorkbench();
-              }
-            }}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all"
-            style={{
-              background: isDark ? "rgba(245,158,11,0.12)" : "rgba(245,158,11,0.1)",
-              color: isDark ? "#f59e0b" : "#b45309",
-              border: `1px solid ${isDark ? "rgba(245,158,11,0.25)" : "rgba(245,158,11,0.3)"}`,
-            }}
-            title="Open the Op Model Workbench to review and refine catalogs"
-          >
-            <span style={{ fontSize: 13 }}>⚙</span>
-            Op Model Workbench
-          </button>
           <span className="rounded-full px-3 py-1 font-medium" style={{ background: isDark ? "rgba(74,158,218,0.15)" : "rgba(37,99,235,0.1)", color: isDark ? "#4a9eda" : "#2563eb" }}>
             {networkNodes.length} value streams
           </span>
