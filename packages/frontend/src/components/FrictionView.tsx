@@ -782,27 +782,103 @@ function SolutionsTab() {
     e.target.value = "";
   }, [addLibrary]);
 
-  // JSON upload handler for customer stories
-  const handleStoryUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  // Upload handler for customer stories — supports JSON, CSV, and Excel (.xlsx)
+  const handleStoryUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const data = JSON.parse(ev.target?.result as string) as CustomerStoryCatalogue;
+    e.target.value = "";
+
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+
+    try {
+      if (ext === "json") {
+        // JSON: existing catalogue format
+        const text = await file.text();
+        const data = JSON.parse(text) as CustomerStoryCatalogue;
         if (!data.vendorId || !data.stories?.length) {
           throw new Error("Invalid story catalogue format — needs vendorId, stories[]");
         }
         if (!data.catalogueId) data.catalogueId = `custom-${data.vendorId}-${Date.now()}`;
         if (!data.title) data.title = `${data.vendorId} Customer Stories`;
         addStoryCatalogue(data);
-        setShowUploadStories(false);
-      } catch (err) {
-        alert("Failed to parse story catalogue: " + (err as Error).message);
+      } else if (ext === "csv" || ext === "xlsx" || ext === "xls") {
+        // CSV / Excel: parse rows into CustomerStory[]
+        const XLSX = await import("xlsx");
+        let wb: ReturnType<typeof XLSX.read>;
+        if (ext === "csv") {
+          const text = await file.text();
+          wb = XLSX.read(text, { type: "string" });
+        } else {
+          const buf = await file.arrayBuffer();
+          wb = XLSX.read(buf, { type: "array" });
+        }
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const rows: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet);
+
+        if (!rows.length) throw new Error("File contains no data rows");
+
+        // Map columns flexibly (case-insensitive, trimmed)
+        const normalise = (s: unknown) => String(s ?? "").toLowerCase().trim().replace(/[\s_-]+/g, "");
+        const findCol = (row: Record<string, unknown>, ...candidates: string[]) => {
+          for (const key of Object.keys(row)) {
+            const nk = normalise(key);
+            if (candidates.some((c) => nk.includes(normalise(c)))) return key;
+          }
+          return null;
+        };
+
+        const first = rows[0];
+        const colCompany = findCol(first, "company", "customer", "client", "organisation", "organization");
+        const colIndustry = findCol(first, "industry", "sector", "vertical");
+        const colSize = findCol(first, "size", "companysize", "employees");
+        const colRegion = findCol(first, "region", "country", "location", "geo");
+        const colStatus = findCol(first, "status", "state", "stage");
+        const colUseCase = findCol(first, "usecase", "use case");
+        const colChallenge = findCol(first, "challenge", "problem", "pain");
+        const colSolution = findCol(first, "solution", "approach", "how");
+        const colMetric = findCol(first, "metric", "keymetric", "result", "outcome", "impact");
+        const colProducts = findCol(first, "products", "productsused", "tools", "platform");
+        const colTags = findCol(first, "tags", "featuretags", "features", "capabilities");
+
+        const cell = (row: Record<string, unknown>, col: string | null) =>
+          col ? String(row[col] ?? "").trim() : "";
+        const cellArray = (row: Record<string, unknown>, col: string | null) => {
+          const v = col ? row[col] : null;
+          if (!v) return [];
+          if (Array.isArray(v)) return v.map(String);
+          return String(v).split(/[,;|]/).map((s: string) => s.trim()).filter(Boolean);
+        };
+
+        const stories: CustomerStory[] = rows.map((row, i) => ({
+          storyId: `story-${i + 1}`,
+          company: cell(row, colCompany) || `Company ${i + 1}`,
+          industry: cell(row, colIndustry) || "Unknown",
+          companySize: cell(row, colSize) || "Unknown",
+          region: cell(row, colRegion) || undefined,
+          status: cell(row, colStatus) || "Active",
+          useCase: cell(row, colUseCase) || "",
+          challenge: cell(row, colChallenge) || "",
+          solution: cell(row, colSolution) || "",
+          keyMetric: cell(row, colMetric) || "",
+          productsUsed: cellArray(row, colProducts),
+          featureTags: cellArray(row, colTags),
+        }));
+
+        const vendorId = file.name.replace(/\.(csv|xlsx|xls)$/i, "").replace(/[\s_]+/g, "-").toLowerCase();
+        addStoryCatalogue({
+          catalogueId: `custom-${vendorId}-${Date.now()}`,
+          vendorId,
+          title: file.name.replace(/\.(csv|xlsx|xls)$/i, ""),
+          lastUpdated: new Date().toISOString().split("T")[0],
+          stories,
+        });
+      } else {
+        throw new Error("Unsupported file type. Use .json, .csv, or .xlsx");
       }
-    };
-    reader.readAsText(file);
-    e.target.value = "";
+      setShowUploadStories(false);
+    } catch (err) {
+      alert("Failed to parse story catalogue: " + (err as Error).message);
+    }
   }, [addStoryCatalogue]);
 
   // PDF export
@@ -1027,8 +1103,8 @@ function SolutionsTab() {
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
-              Upload Stories JSON
-              <input type="file" accept=".json" className="hidden" onChange={handleStoryUpload} />
+              Upload Stories
+              <input type="file" accept=".json,.csv,.xlsx,.xls" className="hidden" onChange={handleStoryUpload} />
             </label>
           </div>
 
