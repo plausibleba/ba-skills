@@ -17,6 +17,10 @@ interface AuthState {
   initialize: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: string | null }>;
+  signInWithPassword: (email: string, password: string) => Promise<{ error: string | null }>;
+  resetPasswordForEmail: (email: string) => Promise<{ error: string | null }>;
+  updatePassword: (newPassword: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -70,6 +74,54 @@ export const useAuthStore = create<AuthState>((set) => ({
     });
     if (error) {
       console.error("[VCC Auth] Magic link error:", error.message);
+      return { error: error.message };
+    }
+    return { error: null };
+  },
+
+  signUp: async (email: string, password: string) => {
+    if (!isSupabaseConfigured) return { error: "Supabase not configured" };
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    });
+    if (error) {
+      console.error("[VCC Auth] Sign-up error:", error.message);
+      return { error: error.message };
+    }
+    return { error: null };
+  },
+
+  signInWithPassword: async (email: string, password: string) => {
+    if (!isSupabaseConfigured) return { error: "Supabase not configured" };
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      console.error("[VCC Auth] Password sign-in error:", error.message);
+      return { error: error.message };
+    }
+    return { error: null };
+  },
+
+  resetPasswordForEmail: async (email: string) => {
+    if (!isSupabaseConfigured) return { error: "Supabase not configured" };
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}?reset=true`,
+    });
+    if (error) {
+      console.error("[VCC Auth] Password reset error:", error.message);
+      return { error: error.message };
+    }
+    return { error: null };
+  },
+
+  updatePassword: async (newPassword: string) => {
+    if (!isSupabaseConfigured) return { error: "Supabase not configured" };
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      console.error("[VCC Auth] Update password error:", error.message);
       return { error: error.message };
     }
     return { error: null };

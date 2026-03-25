@@ -13,6 +13,7 @@ import { ConceptGraphView } from "./components/ConceptGraphView.tsx";
 import { FrictionView } from "./components/FrictionView.tsx";
 import DiscoveryIntake from "./components/DiscoveryIntake.tsx";
 import { LoginPage } from "./components/LoginPage.tsx";
+import { AccountSettings } from "./components/AccountSettings.tsx";
 import { ProjectList } from "./components/ProjectList.tsx";
 import { autoSaveToProject } from "./utils/auto-save.ts";
 import { VersionBadge } from "./components/ChangelogModal.tsx";
@@ -44,6 +45,7 @@ export default function App() {
   } = useCanvasStore();
 
   const [showRefinementExport, setShowRefinementExport] = useState(false);
+  const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [claimImporting, setClaimImporting] = useState(false);
   const claimProcessed = useRef(false);
   const checkoutHandled = useRef(false);
@@ -60,6 +62,16 @@ export default function App() {
       initializeTier(user.id);
     }
   }, [user?.id, initializeTier]);
+
+  // Handle password reset redirect (?reset=true) — open Account Settings on Security tab
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("reset") !== "true" || !user) return;
+    setShowAccountSettings(true);
+    params.delete("reset");
+    const clean = params.toString();
+    window.history.replaceState({}, "", clean ? `?${clean}` : window.location.pathname);
+  }, [user]);
 
   // Handle Stripe checkout redirect (?checkout=success or ?checkout=cancelled)
   useEffect(() => {
@@ -317,9 +329,18 @@ export default function App() {
             <span className="text-[10px] text-white/40">Saving...</span>
           )}
 
-          {/* User info */}
+          {/* User info — click to open Account Settings */}
           {!isLocalMode && user && (
-            <span className="text-[10px] text-white/35">{user.email}</span>
+            <button
+              onClick={() => setShowAccountSettings(true)}
+              className="flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors hover:bg-white/10"
+              title="Account settings"
+            >
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-vcc-600 text-[9px] font-bold text-white">
+                {(user.user_metadata?.full_name ?? user.email ?? "?")[0].toUpperCase()}
+              </div>
+              <span className="text-[10px] text-white/50">{user.email}</span>
+            </button>
           )}
 
           {/* Refine & Regenerate — removed from nav bar, functionality available via Workbench Agent */}
@@ -470,6 +491,9 @@ export default function App() {
       <DevTierSwitcher />
       {showRefinementExport && (
         <RefinementExportModal onClose={() => setShowRefinementExport(false)} />
+      )}
+      {showAccountSettings && (
+        <AccountSettings onClose={() => setShowAccountSettings(false)} />
       )}
     </div>
     </UpsellModalProvider>
