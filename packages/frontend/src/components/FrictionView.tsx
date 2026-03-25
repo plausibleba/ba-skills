@@ -750,6 +750,7 @@ function SolutionsTab() {
   const [expandedStory, setExpandedStory] = useState<string | null>(null);
   const { gate } = useGateCheck();
   const storyFileRef = useRef<HTMLInputElement>(null);
+  const libFileRef = useRef<HTMLInputElement>(null);
 
   // Merge built-in + custom
   const allLibraries = useMemo(() => [
@@ -985,16 +986,16 @@ function SolutionsTab() {
         <div>
           {/* Action bar */}
           <div className="mb-4 flex items-center gap-2">
-            <label
+            <input ref={libFileRef} type="file" accept=".json" className="hidden" onChange={handleLibUpload} />
+            <button
               className="flex cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-violet-300 bg-white px-3 py-2 text-xs font-medium text-violet-600 hover:border-violet-400 hover:bg-violet-50/40"
-              onClick={(e) => { e.preventDefault(); const el = e.currentTarget.querySelector("input") as HTMLInputElement; gate("upload_vendor_library", () => { el?.click(); }, "uploading vendor library"); }}
+              onClick={() => gate("upload_vendor_library", () => { libFileRef.current?.click(); }, "uploading vendor library")}
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
               Upload JSON
-              <input type="file" accept=".json" className="hidden" onChange={handleLibUpload} />
-            </label>
+            </button>
             <button
               onClick={() => gate("create_vendor_library", () => setShowAddForm(!showAddForm), "creating vendor library")}
               className="flex items-center gap-1.5 rounded-md border border-dashed border-emerald-300 bg-white px-3 py-2 text-xs font-medium text-emerald-600 hover:border-emerald-400 hover:bg-emerald-50/40"
@@ -1097,16 +1098,16 @@ function SolutionsTab() {
       {activeSection === "stories" && (
         <div>
           <div className="mb-4 flex items-center gap-2">
-            <label
+            <input ref={storyFileRef} type="file" accept=".json,.csv,.xlsx,.xls" className="hidden" onChange={handleStoryUpload} />
+            <button
               className="flex cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-violet-300 bg-white px-3 py-2 text-xs font-medium text-violet-600 hover:border-violet-400 hover:bg-violet-50/40"
-              onClick={(e) => { e.preventDefault(); gate("upload_stories", () => { storyFileRef.current?.click(); }, "uploading customer stories"); }}
+              onClick={() => gate("upload_stories", () => { storyFileRef.current?.click(); }, "uploading customer stories")}
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
               Upload Stories
-              <input ref={storyFileRef} type="file" accept=".json,.csv,.xlsx,.xls" className="hidden" onChange={handleStoryUpload} />
-            </label>
+            </button>
           </div>
 
           {/* Story catalogues */}
