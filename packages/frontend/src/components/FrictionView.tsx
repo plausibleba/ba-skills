@@ -812,15 +812,15 @@ function SolutionsTab() {
           wb = XLSX.read(text, { type: "string" });
         } else {
           const buf = await file.arrayBuffer();
-          wb = XLSX.read(buf, { type: "array" });
+          wb = XLSX.read(new Uint8Array(buf), { type: "array" });
         }
         const sheet = wb.Sheets[wb.SheetNames[0]];
         const rows: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet);
 
         if (!rows.length) throw new Error("File contains no data rows");
 
-        // Map columns flexibly (case-insensitive, trimmed)
-        const normalise = (s: unknown) => String(s ?? "").toLowerCase().trim().replace(/[\s_-]+/g, "");
+        // Map columns flexibly (case-insensitive, normalised)
+        const normalise = (s: unknown) => String(s ?? "").toLowerCase().trim().replace(/[\s_\-/]+/g, "");
         const findCol = (row: Record<string, unknown>, ...candidates: string[]) => {
           for (const key of Object.keys(row)) {
             const nk = normalise(key);
@@ -830,17 +830,20 @@ function SolutionsTab() {
         };
 
         const first = rows[0];
-        const colCompany = findCol(first, "company", "customer", "client", "organisation", "organization");
+        const colCompany = findCol(first, "company", "customer", "client", "organisation", "organization", "account");
         const colIndustry = findCol(first, "industry", "sector", "vertical");
-        const colSize = findCol(first, "size", "companysize", "employees");
+        const colSize = findCol(first, "size", "companysize", "employees", "segment");
         const colRegion = findCol(first, "region", "country", "location", "geo");
         const colStatus = findCol(first, "status", "state", "stage");
-        const colUseCase = findCol(first, "usecase", "use case");
+        const colUseCase = findCol(first, "usecase", "use case", "linesofbusiness", "lines of business", "line of business");
         const colChallenge = findCol(first, "challenge", "problem", "pain");
         const colSolution = findCol(first, "solution", "approach", "how");
         const colMetric = findCol(first, "metric", "keymetric", "result", "outcome", "impact");
-        const colProducts = findCol(first, "products", "productsused", "tools", "platform");
+        const colProducts = findCol(first, "products", "productsused", "tools", "platform", "clouds");
         const colTags = findCol(first, "tags", "featuretags", "features", "capabilities");
+        const colStoryType = findCol(first, "storytype", "story type", "type");
+        const colMacroSegment = findCol(first, "macrosegment", "macro segment");
+        const colExtInt = findCol(first, "externalinternal", "external/internal", "external internal", "visibility");
 
         const cell = (row: Record<string, unknown>, col: string | null) =>
           col ? String(row[col] ?? "").trim() : "";
@@ -851,20 +854,45 @@ function SolutionsTab() {
           return String(v).split(/[,;|]/).map((s: string) => s.trim()).filter(Boolean);
         };
 
-        const stories: CustomerStory[] = rows.map((row, i) => ({
-          storyId: `story-${i + 1}`,
-          company: cell(row, colCompany) || `Company ${i + 1}`,
-          industry: cell(row, colIndustry) || "Unknown",
-          companySize: cell(row, colSize) || "Unknown",
-          region: cell(row, colRegion) || undefined,
-          status: cell(row, colStatus) || "Active",
-          useCase: cell(row, colUseCase) || "",
-          challenge: cell(row, colChallenge) || "",
-          solution: cell(row, colSolution) || "",
-          keyMetric: cell(row, colMetric) || "",
-          productsUsed: cellArray(row, colProducts),
-          featureTags: cellArray(row, colTags),
-        }));
+        // Filter out non-data rows (tips, notes, instructional text, logo-only, empty company)
+        const isJunkRow = (row: Record<string, unknown>) => {
+          const company = cell(row, colCompany).toLowerCase();
+          if (!company) return true;
+          if (company.startsWith("usage tip")) return true;
+          if (company.startsWith("note:") || company.startsWith("note ")) return true;
+          if (company.startsWith("for ") && company.length > 60) return true; // Long instructional sentences
+          // Skip "Logo Feature" story types — they're not real customer stories
+          const storyType = cell(row, colStoryType).toLowerCase();
+          if (storyType === "logo feature") return true;
+          return false;
+        };
+
+        const dataRows = rows.filter((row) => !isJunkRow(row));
+        if (!dataRows.length) throw new Error("File contains no valid data rows");
+
+        const stories: CustomerStory[] = dataRows.map((row, i) => {
+          // Build featureTags from explicit tags + macro segment + story type
+          const tags = cellArray(row, colTags);
+          const macro = cell(row, colMacroSegment);
+          if (macro) tags.push(macro);
+          const extInt = cell(row, colExtInt);
+          if (extInt) tags.push(extInt);
+
+          return {
+            storyId: `story-${i + 1}`,
+            company: cell(row, colCompany) || `Company ${i + 1}`,
+            industry: cell(row, colIndustry) || "Unknown",
+            companySize: cell(row, colSize) || "Unknown",
+            region: cell(row, colRegion) || undefined,
+            status: cell(row, colStatus) || "Active",
+            useCase: cell(row, colUseCase) || "",
+            challenge: cell(row, colChallenge) || "",
+            solution: cell(row, colSolution) || "",
+            keyMetric: cell(row, colMetric) || "",
+            productsUsed: cellArray(row, colProducts),
+            featureTags: tags,
+          };
+        });
 
         const vendorId = file.name.replace(/\.(csv|xlsx|xls)$/i, "").replace(/[\s_]+/g, "-").toLowerCase();
         addStoryCatalogue({
