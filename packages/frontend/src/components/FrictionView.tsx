@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import type {
   FrictionObservation,
@@ -749,6 +749,7 @@ function SolutionsTab() {
   const [expandedVendor, setExpandedVendor] = useState<string | null>(null);
   const [expandedStory, setExpandedStory] = useState<string | null>(null);
   const { gate } = useGateCheck();
+  const storyFileRef = useRef<HTMLInputElement>(null);
 
   // Merge built-in + custom
   const allLibraries = useMemo(() => [
@@ -986,7 +987,7 @@ function SolutionsTab() {
           <div className="mb-4 flex items-center gap-2">
             <label
               className="flex cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-violet-300 bg-white px-3 py-2 text-xs font-medium text-violet-600 hover:border-violet-400 hover:bg-violet-50/40"
-              onClick={(e) => { e.preventDefault(); gate("upload_vendor_library", () => { (e.currentTarget.querySelector("input") as HTMLInputElement)?.click(); }, "uploading vendor library"); }}
+              onClick={(e) => { e.preventDefault(); const el = e.currentTarget.querySelector("input") as HTMLInputElement; gate("upload_vendor_library", () => { el?.click(); }, "uploading vendor library"); }}
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -1098,13 +1099,13 @@ function SolutionsTab() {
           <div className="mb-4 flex items-center gap-2">
             <label
               className="flex cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-violet-300 bg-white px-3 py-2 text-xs font-medium text-violet-600 hover:border-violet-400 hover:bg-violet-50/40"
-              onClick={(e) => { e.preventDefault(); gate("upload_stories", () => { (e.currentTarget.querySelector("input") as HTMLInputElement)?.click(); }, "uploading customer stories"); }}
+              onClick={(e) => { e.preventDefault(); gate("upload_stories", () => { storyFileRef.current?.click(); }, "uploading customer stories"); }}
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
               Upload Stories
-              <input type="file" accept=".json,.csv,.xlsx,.xls" className="hidden" onChange={handleStoryUpload} />
+              <input ref={storyFileRef} type="file" accept=".json,.csv,.xlsx,.xls" className="hidden" onChange={handleStoryUpload} />
             </label>
           </div>
 
