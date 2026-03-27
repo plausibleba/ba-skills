@@ -266,12 +266,14 @@ export function CapabilityMapView() {
 
   return (
     <div
-      className="h-full overflow-auto"
+      className="flex h-full"
       style={{
         background: tv.bgPrimary,
         fontFamily: "'DM Sans', system-ui, sans-serif",
       }}
     >
+      {/* Main scrollable content */}
+      <div className="flex-1 overflow-auto">
       <div className="mx-auto max-w-[1400px] p-5">
         {/* Header */}
         <div className="mb-4">
@@ -414,14 +416,22 @@ export function CapabilityMapView() {
               </div>
             )}
 
-            {/* Enriched Inspector panel */}
-            <CapabilityInspectorPanel cap={selectedL3} ppit={selectedL3 ? ppitByCapId.get(selectedL3.id) : undefined} />
           </>
         ) : (
           /* Table view */
           <CapabilityTable hierarchy={hierarchy} ppitByCapId={ppitByCapId} onSelect={setSelectedL3} selectedId={selectedL3?.id ?? null} />
         )}
       </div>
+      </div>
+
+      {/* Right-side Inspector panel */}
+      {selectedL3 && (
+        <CapabilityInspectorPanel
+          cap={selectedL3}
+          ppit={ppitByCapId.get(selectedL3.id)}
+          onClose={() => setSelectedL3(null)}
+        />
+      )}
     </div>
   );
 }
