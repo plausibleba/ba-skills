@@ -66,17 +66,34 @@ interface EnrichmentCardDef {
 
 // ─── Cross-Mapping Types ────────────────────────────────────────────────────
 
-/** Entity types that can participate in cross-mapping */
-type MappableEntity = "capabilities" | "activities" | "valueStreams" | "roles" | "information" | "technology" | "processes";
+/** Entity types that can participate in cross-mapping.
+ *
+ * Stages and Activities are broken out separately despite both being subclasses
+ * of Activity in the domain model, because their relationship semantics to other
+ * elements (especially Capabilities) are fundamentally different:
+ *
+ *   - **Stages** represent sequential steps in a Value Stream flow. A Capability → Stage
+ *     mapping answers "which stages in the value stream does this capability participate in?"
+ *     — it is about flow position and sequencing.
+ *
+ *   - **Activities** are PPIT-level items that underpin/enable a Capability. A Capability →
+ *     Activity mapping answers "what operational activities does this capability rely on?"
+ *     — it is about enablement and decomposition.
+ *
+ * Conflating them into a single "Activities / Stages" entity would produce semantically
+ * ambiguous mappings, so they must be mapped independently.
+ */
+type MappableEntity = "capabilities" | "stages" | "activities" | "valueStreams" | "roles" | "information" | "technology" | "processes";
 
-const MAPPABLE_ENTITIES: { value: MappableEntity; label: string }[] = [
-  { value: "capabilities",  label: "Capabilities" },
-  { value: "activities",     label: "Activities / Stages" },
-  { value: "valueStreams",   label: "Value Streams" },
-  { value: "roles",          label: "Roles / Stakeholders" },
-  { value: "information",    label: "Information Assets" },
-  { value: "technology",     label: "Technology / Systems" },
-  { value: "processes",      label: "Processes" },
+const MAPPABLE_ENTITIES: { value: MappableEntity; label: string; description: string }[] = [
+  { value: "capabilities",  label: "Capabilities",            description: "Business capabilities in your capability hierarchy (L1–L4)" },
+  { value: "stages",        label: "Value Stream Stages",     description: "Sequential steps within a value stream that illustrate the flow of work from trigger to outcome" },
+  { value: "activities",    label: "Activities",              description: "Operational activities that underpin and enable capabilities — part of the PPIT decomposition" },
+  { value: "valueStreams",  label: "Value Streams",           description: "End-to-end flows that deliver value to a customer or stakeholder" },
+  { value: "roles",         label: "Roles / Stakeholders",   description: "People, roles, or organisational units involved in the operating model" },
+  { value: "information",   label: "Information Assets",      description: "Data, documents, knowledge, and information objects consumed or produced" },
+  { value: "technology",    label: "Technology / Systems",    description: "Applications, platforms, tools, and infrastructure that enable operations" },
+  { value: "processes",     label: "Processes",               description: "Defined procedures, workflows, and standard operating procedures" },
 ];
 
 /** Semantic properties for a mapping relationship */
@@ -161,9 +178,12 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
     id: "cross-mapping",
     label: "Cross-Map Relationships",
     description:
-      "Your model contains many different types of elements — capabilities, activities, value streams, roles, information assets, and technologies. " +
+      "Your model contains many different types of elements — capabilities, value stream stages, activities, roles, information assets, and technologies. " +
       "This enrichment builds explicit relationship maps between any two element types you choose. For example, you might map " +
-      "Capabilities → Technology to see which systems support which capabilities, or Roles → Activities to clarify who is responsible for what. " +
+      "Capabilities → Technology to see which systems support which capabilities, or Roles → Stages to clarify who is responsible at each step in the flow. " +
+      "Note that Stages and Activities are listed separately: Stages represent the sequential steps in a value stream flow (\"where in the process\"), " +
+      "while Activities are the operational tasks that underpin capabilities (\"what work enables this capability\"). " +
+      "Mapping them independently preserves these distinct semantics. " +
       "By default, the inverse mapping (e.g. Technology → Capabilities) is also generated. You can also define the semantics of each mapping — " +
       "whether the relationship is symmetrical, transitive, functional, and what cardinality applies.",
     icon: "🔄",
@@ -396,7 +416,7 @@ export function EnrichmentView() {
       {
         id: `mp-${Date.now()}`,
         from: "capabilities",
-        to: "technology",
+        to: "stages",
         includeInverse: true,
         semantics: { symmetrical: false, functional: false, transitive: false, cardinality: "many-to-many" },
       },
@@ -990,7 +1010,7 @@ function MappingPairRow({
           style={{ background: tv.bgCard, border: `1px solid ${tv.borderSubtle}`, color: tv.textPrimary }}
         >
           {MAPPABLE_ENTITIES.map((e) => (
-            <option key={e.value} value={e.value}>{e.label}</option>
+            <option key={e.value} value={e.value} title={e.description}>{e.label}</option>
           ))}
         </select>
 
@@ -1003,7 +1023,7 @@ function MappingPairRow({
           style={{ background: tv.bgCard, border: `1px solid ${tv.borderSubtle}`, color: tv.textPrimary }}
         >
           {MAPPABLE_ENTITIES.map((e) => (
-            <option key={e.value} value={e.value}>{e.label}</option>
+            <option key={e.value} value={e.value} title={e.description}>{e.label}</option>
           ))}
         </select>
 
@@ -1040,6 +1060,22 @@ function MappingPairRow({
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
+      </div>
+
+      {/* Entity descriptions — helps clarify the distinction between similar types */}
+      <div className="mt-1.5 flex gap-4 text-[9px] leading-relaxed" style={{ color: tv.textDim }}>
+        <div className="flex-1">
+          <span className="font-semibold" style={{ color: tv.textSecondary }}>
+            {MAPPABLE_ENTITIES.find((e) => e.value === pair.from)?.label}:
+          </span>{" "}
+          {MAPPABLE_ENTITIES.find((e) => e.value === pair.from)?.description}
+        </div>
+        <div className="flex-1">
+          <span className="font-semibold" style={{ color: tv.textSecondary }}>
+            {MAPPABLE_ENTITIES.find((e) => e.value === pair.to)?.label}:
+          </span>{" "}
+          {MAPPABLE_ENTITIES.find((e) => e.value === pair.to)?.description}
+        </div>
       </div>
 
       {/* Semantics panel */}
