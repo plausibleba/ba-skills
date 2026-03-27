@@ -10,6 +10,7 @@ import { useState, useRef, useCallback } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { tv } from "../theme.ts";
 import { autoSaveToProject } from "../utils/auto-save.ts";
+import { trackEvent } from "../utils/analytics.ts";
 
 /* ── Types ────────────────────────────────────────────────── */
 
@@ -37,6 +38,7 @@ export function ImportView() {
     setImporting(true);
     setError(null);
     setResult(null);
+    trackEvent("import_model", { filename: file.name });
 
     try {
       const { importReferenceModelFile } = await import(
@@ -56,6 +58,12 @@ export function ImportView() {
       setResult({
         stats: { ...stats, concepts: conceptCount },
         name: scaffold.name,
+      });
+
+      trackEvent("import_model_completed", {
+        value_streams: stats.valueStreams,
+        capabilities: stats.capabilities,
+        concepts: conceptCount,
       });
 
       console.log(

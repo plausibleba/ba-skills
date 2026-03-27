@@ -466,6 +466,12 @@ export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: 
     setGenerateStep("scaffold");
     setPipelineError(null);
 
+    // Track discovery start (anonymous + authenticated)
+    try {
+      const { trackEvent } = await import("../utils/analytics.ts");
+      trackEvent("discovery_started", { org: form.org.name || "unknown" });
+    } catch { /* analytics should never break the app */ }
+
     // Build DiscoveryIR from form state
     const id = (prefix: string, name: string) =>
       `${prefix}_${name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")}`;

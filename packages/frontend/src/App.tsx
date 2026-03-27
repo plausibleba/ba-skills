@@ -25,6 +25,7 @@ import { useWorkbenchStore } from "./store/workbench-store.ts";
 import { DevTierSwitcher } from "./components/DevTierSwitcher.tsx";
 import { extractClaimFromURL, consumePendingClaim } from "./utils/bundle-claim.ts";
 import { useTierStore } from "./store/tier-store.ts";
+import { trackEvent, startHeartbeat, stopHeartbeat } from "./utils/analytics.ts";
 
 export default function App() {
   const { user, loading: authLoading, isLocalMode, initialize: initAuth } = useAuthStore();
@@ -44,6 +45,7 @@ export default function App() {
 
   const [showRefinementExport, setShowRefinementExport] = useState(false);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
+  const [showSignUpNudge, setShowSignUpNudge] = useState(false);
   const [claimImporting, setClaimImporting] = useState(false);
   const claimProcessed = useRef(false);
   const checkoutHandled = useRef(false);
@@ -60,6 +62,15 @@ export default function App() {
       initializeTier(user.id);
     }
   }, [user?.id, initializeTier]);
+
+  // Session heartbeat — track active usage time for authenticated users
+  useEffect(() => {
+    if (user) {
+      startHeartbeat();
+      trackEvent("sign_in");
+    }
+    return () => stopHeartbeat();
+  }, [user?.id]);
 
   // Handle password reset redirect (?reset=true) — open Account Settings on Security tab
   useEffect(() => {
@@ -365,12 +376,21 @@ export default function App() {
         <div style={{ display: isIntake ? undefined : "none" }}>
           <DiscoveryIntake
             onComplete={async (bundle) => {
+              trackEvent("discovery_completed", {
+                has_scaffold: !!bundle.scaffold,
+                has_heatmaps: !!(bundle.heatmaps?.length),
+              });
               const { scaffold, heatmaps = [], cardRegistry } = bundle;
               await loadScaffold(scaffold ?? bundle);
               for (const hm of heatmaps) await loadHeatmap(hm);
               if (cardRegistry) useCanvasStore.getState().loadCards(cardRegistry);
               backToNetwork();
               await autoSaveToProject({ cardRegistry });
+
+              // Nudge anonymous users to sign up after completing discovery
+              if (!user && !isLocalMode) {
+                setTimeout(() => setShowSignUpNudge(true), 2000);
+              }
             }}
           />
         </div>
@@ -441,6 +461,41 @@ export default function App() {
       )}
       {showAccountSettings && (
         <AccountSettings onClose={() => setShowAccountSettings(false)} />
+      )}
+
+      {/* Sign-up nudge for anonymous users after discovery */}
+      {showSignUpNudge && !user && (
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 animate-slide-up">
+          <div className="flex items-center gap-4 rounded-xl border border-vcc-200 bg-white px-6 py-4 shadow-xl">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-vcc-50">
+              <svg className="h-5 w-5 text-vcc-600" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Your operating model is ready!</p>
+              <p className="text-xs text-gray-500">Create a free account to save your work and come back anytime.</p>
+            </div>
+            <button
+              onClick={() => {
+                setShowSignUpNudge(false);
+                trackEvent("sign_up", { source: "discovery_nudge" });
+                window.location.href = "/";
+              }}
+              className="shrink-0 rounded-lg bg-vcc-600 px-4 py-2 text-xs font-semibold text-white hover:bg-vcc-700 transition-colors"
+            >
+              Create Free Account
+            </button>
+            <button
+              onClick={() => setShowSignUpNudge(false)}
+              className="shrink-0 text-gray-400 hover:text-gray-600"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
       )}
       </div>{/* end right column */}
     </div>{/* end outer flex */}

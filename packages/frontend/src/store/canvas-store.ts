@@ -11,6 +11,7 @@ import type {
 } from "../types.ts";
 import type { CardRegistry } from "../types/cards.ts";
 import { resolveScaffoldMeasures } from "./scaffold-resolver.ts";
+import { trackViewChange } from "../utils/analytics.ts";
 import { validateThroughputRules } from "./throughput-validator.ts";
 import {
   deriveNetworkEdges,
@@ -461,30 +462,37 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       canvasViewModel: null,
       heatmapData: null,
     });
+    trackViewChange("network");
   },
 
   goToIntake: () => {
     set({ viewMode: "intake" });
+    trackViewChange("intake");
   },
 
   goToImport: () => {
     set({ viewMode: "import" });
+    trackViewChange("import");
   },
 
   goToCapabilityMap: () => {
     set({ viewMode: "capabilityMap" });
+    trackViewChange("capabilityMap");
   },
 
   goToConceptGraph: () => {
     set({ viewMode: "conceptGraph" });
+    trackViewChange("conceptGraph");
   },
 
   goToFriction: () => {
     set({ viewMode: "friction" });
+    trackViewChange("friction");
   },
 
   goToWorkbench: () => {
     set({ viewMode: "workbench" });
+    trackViewChange("workbench");
   },
 
   reset: () => {
