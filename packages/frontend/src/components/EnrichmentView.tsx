@@ -18,12 +18,39 @@ import WaitPuzzle from "./WaitPuzzle";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+/** How user-supplied content should influence the enrichment */
+type InfluenceMode = "indicative" | "include" | "exclude" | "restrict-to";
+
+const INFLUENCE_MODES: { value: InfluenceMode; label: string; description: string }[] = [
+  { value: "indicative",  label: "Indicative",  description: "Use as guidance — the AI may adapt, extend, or supplement" },
+  { value: "include",     label: "Include",      description: "Must be included alongside AI-generated content" },
+  { value: "exclude",     label: "Exclude",      description: "Explicitly exclude these items from the output" },
+  { value: "restrict-to", label: "Restrict to",  description: "Only use the items provided — do not add others" },
+];
+
+/** Per-card user content input */
+interface UserContent {
+  text: string;
+  influence: InfluenceMode;
+}
+
+/** Snapshot captured before an enrichment run — enables rollback */
+interface EnrichmentSnapshot {
+  cardId: string;
+  label: string;
+  timestamp: number;
+  scaffold: any;          // deep-cloned scaffold before the run
+  cardRegistry: any;      // deep-cloned card registry before the run
+}
+
 interface EnrichmentCardDef {
   id: string;
   label: string;
   description: string;
   icon: string;
   category: "structure" | "assessment" | "custom";
+  /** Hint for what kind of content the user might provide */
+  contentHint?: string;
   /** Built-in enrichment step ID (if wired to pipeline) */
   enrichmentStep?: EnrichmentStep;
   /** For assessment actions that navigate elsewhere */
@@ -45,6 +72,7 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
     icon: "🔀",
     category: "structure",
     enrichmentStep: "subactivities",
+    contentHint: "Paste process steps, SOP fragments, or workflow descriptions to guide sub-activity generation...",
     checkDone: (scaffold) =>
       scaffold?.elements?.subActivityGraphs &&
       Object.keys(scaffold.elements.subActivityGraphs).length > 0 &&
@@ -57,6 +85,7 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
     icon: "🧩",
     category: "structure",
     enrichmentStep: "ppit",
+    contentHint: "Paste role names, team structures, system lists, or technology stack details...",
     checkDone: (scaffold) =>
       scaffold?.elements?.activities &&
       Object.values(scaffold.elements.activities).some((a: any) => a.capabilityPPIT && Object.keys(a.capabilityPPIT).length > 0),
@@ -68,6 +97,7 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
     icon: "🃏",
     category: "structure",
     enrichmentStep: "cards",
+    contentHint: "Paste glossary terms, business definitions, policy documents, or governance rules...",
     checkDone: (_scaffold, cardRegistry) =>
       cardRegistry &&
       ((Object.keys(cardRegistry.conceptCards ?? {}).length > 0) || (Object.keys(cardRegistry.policyCards ?? {}).length > 0)),
@@ -81,6 +111,7 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
     icon: "⚡",
     category: "assessment",
     navigateTo: "friction",
+    contentHint: "Paste known pain points, customer complaints, or operational bottleneck descriptions...",
     checkDone: () => {
       const store = useCanvasStore.getState();
       return store.heatmapsByVs.size > 0;
@@ -92,6 +123,7 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
     description: "Derive KPIs and performance metrics for each stage and capability, aligned to business outcomes.",
     icon: "📊",
     category: "assessment",
+    contentHint: "Paste existing KPIs, SLAs, performance targets, or metric definitions...",
     comingSoon: true,
   },
   {
@@ -100,6 +132,7 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
     description: "Identify and visualize cross-value-stream dependencies, shared capabilities, and integration points.",
     icon: "🔗",
     category: "assessment",
+    contentHint: "Paste integration maps, system dependency lists, or API contract details...",
     comingSoon: true,
   },
   {
@@ -108,6 +141,7 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
     description: "Evaluate capability maturity levels across your operating model using industry-standard frameworks.",
     icon: "📈",
     category: "assessment",
+    contentHint: "Paste maturity framework criteria, current-state assessments, or benchmark data...",
     comingSoon: true,
   },
   {
@@ -116,6 +150,7 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
     description: "Compare current-state capabilities against target-state requirements to identify gaps and investment areas.",
     icon: "🎯",
     category: "assessment",
+    contentHint: "Paste target-state requirements, strategic objectives, or capability wish-lists...",
     comingSoon: true,
   },
   {
@@ -124,6 +159,7 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
     description: "Identify operational risks by analysing control coverage, single points of failure, and governance gaps.",
     icon: "🛡️",
     category: "assessment",
+    contentHint: "Paste risk registers, audit findings, incident reports, or compliance requirements...",
     comingSoon: true,
   },
 ];
@@ -157,6 +193,23 @@ export function EnrichmentView() {
   const [error, setError] = useState<string | null>(null);
   const [completedThisSession, setCompletedThisSession] = useState<Set<string>>(new Set());
 
+  // Per-card user content (persists while on the page)
+  const [userContentByCard, setUserContentByCard] = useState<Record<string, UserContent>>({});
+  const updateUserContent = useCallback((cardId: string, patch: Partial<UserContent>) => {
+    setUserContentByCard((prev) => ({
+      ...prev,
+      [cardId]: {
+        text: prev[cardId]?.text ?? "",
+        influence: prev[cardId]?.influence ?? "indicative",
+        ...patch,
+      },
+    }));
+  }, []);
+
+  // Enrichment snapshots for rollback
+  const [snapshots, setSnapshots] = useState<EnrichmentSnapshot[]>([]);
+  const [revertConfirm, setRevertConfirm] = useState<string | null>(null);
+
   // Custom skills state
   const [customSkills, setCustomSkills] = useState<CustomSkill[]>([]);
   const [showSkillEditor, setShowSkillEditor] = useState(false);
@@ -166,17 +219,30 @@ export function EnrichmentView() {
   const runBuiltIn = useCallback(async (card: EnrichmentCardDef) => {
     if (!card.enrichmentStep || !scaffoldData) return;
 
+    // Snapshot current state before enrichment for rollback
+    const store = useCanvasStore.getState();
+    const snapshot: EnrichmentSnapshot = {
+      cardId: card.id,
+      label: card.label,
+      timestamp: Date.now(),
+      scaffold: JSON.parse(JSON.stringify(scaffoldData)),
+      cardRegistry: store.cardRegistry ? JSON.parse(JSON.stringify(store.cardRegistry)) : null,
+    };
+
     setRunning(card.id);
     setError(null);
 
     try {
       await runEnrichmentStep(card.enrichmentStep, scaffoldData, discoveryIR ?? undefined, (progress: PipelineProgress) => {
         if (progress.status === "enrichment-done") {
+          // Store the snapshot now that enrichment succeeded
+          setSnapshots((prev) => [...prev, snapshot]);
+
           // Update canvas store with enriched scaffold
-          const store = useCanvasStore.getState();
-          store.loadScaffold(progress.scaffold);
+          const s = useCanvasStore.getState();
+          s.loadScaffold(progress.scaffold);
           if (progress.cardRegistry) {
-            store.loadCards(progress.cardRegistry);
+            s.loadCards(progress.cardRegistry);
           }
           setCompletedThisSession((prev) => new Set([...prev, card.id]));
           setRunning(null);
@@ -188,6 +254,28 @@ export function EnrichmentView() {
       setRunning(null);
     }
   }, [scaffoldData, discoveryIR]);
+
+  // ── Revert an enrichment step ──
+  const revertEnrichment = useCallback((cardId: string) => {
+    // Find the most recent snapshot for this card
+    const snapshot = [...snapshots].reverse().find((s) => s.cardId === cardId);
+    if (!snapshot) return;
+
+    const store = useCanvasStore.getState();
+    store.loadScaffold(snapshot.scaffold);
+    if (snapshot.cardRegistry !== null) {
+      store.loadCards(snapshot.cardRegistry);
+    }
+
+    // Remove the snapshot and mark card as no longer completed this session
+    setSnapshots((prev) => prev.filter((s) => s !== snapshot));
+    setCompletedThisSession((prev) => {
+      const next = new Set(prev);
+      next.delete(cardId);
+      return next;
+    });
+    setRevertConfirm(null);
+  }, [snapshots]);
 
   // ── Navigate to assessment view ──
   const navigateTo = useCallback((viewMode: string) => {
@@ -281,6 +369,13 @@ export function EnrichmentView() {
               onRun={() => runBuiltIn(card)}
               onNavigate={() => card.navigateTo && navigateTo(card.navigateTo)}
               disabled={!!running}
+              userContent={userContentByCard[card.id]}
+              onUserContentChange={(patch) => updateUserContent(card.id, patch)}
+              canRevert={snapshots.some((s) => s.cardId === card.id)}
+              revertConfirmActive={revertConfirm === card.id}
+              onRevertRequest={() => setRevertConfirm(card.id)}
+              onRevertConfirm={() => revertEnrichment(card.id)}
+              onRevertCancel={() => setRevertConfirm(null)}
             />
           ))}
         </div>
@@ -299,6 +394,13 @@ export function EnrichmentView() {
               onRun={() => runBuiltIn(card)}
               onNavigate={() => card.navigateTo && navigateTo(card.navigateTo)}
               disabled={!!running}
+              userContent={userContentByCard[card.id]}
+              onUserContentChange={(patch) => updateUserContent(card.id, patch)}
+              canRevert={snapshots.some((s) => s.cardId === card.id)}
+              revertConfirmActive={revertConfirm === card.id}
+              onRevertRequest={() => setRevertConfirm(card.id)}
+              onRevertConfirm={() => revertEnrichment(card.id)}
+              onRevertCancel={() => setRevertConfirm(null)}
             />
           ))}
         </div>
@@ -377,72 +479,232 @@ function EnrichmentCard({
   onRun,
   onNavigate,
   disabled,
+  userContent,
+  onUserContentChange,
+  canRevert,
+  revertConfirmActive,
+  onRevertRequest,
+  onRevertConfirm,
+  onRevertCancel,
 }: {
   card: EnrichmentCardDef;
   status: "done" | "running" | "available" | "coming-soon";
   onRun: () => void;
   onNavigate: () => void;
   disabled: boolean;
+  userContent?: UserContent;
+  onUserContentChange: (patch: Partial<UserContent>) => void;
+  canRevert?: boolean;
+  revertConfirmActive?: boolean;
+  onRevertRequest?: () => void;
+  onRevertConfirm?: () => void;
+  onRevertCancel?: () => void;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const isDone = status === "done";
   const isComingSoon = status === "coming-soon";
+  const hasContent = (userContent?.text ?? "").trim().length > 0;
+  const influence = userContent?.influence ?? "indicative";
 
   return (
     <div
-      className="flex items-center gap-3 rounded-lg px-4 py-3 transition-all"
+      className="rounded-lg transition-all"
       style={{
         background: isDone ? "rgba(16,185,129,0.06)" : tv.bgCard,
         border: `1px solid ${isDone ? "rgba(16,185,129,0.25)" : tv.borderSubtle}`,
         opacity: isComingSoon ? 0.5 : 1,
       }}
     >
-      <span className="flex-shrink-0 text-lg">{card.icon}</span>
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium" style={{ color: isDone ? "#10b981" : tv.textPrimary }}>
-          {card.label}
-        </p>
-        <p className="text-[11px] leading-relaxed mt-0.5" style={{ color: tv.textDim }}>
-          {card.description}
-        </p>
+      {/* Main row */}
+      <div className="flex items-center gap-3 px-4 py-3">
+        <span className="flex-shrink-0 text-lg">{card.icon}</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] font-medium" style={{ color: isDone ? "#10b981" : tv.textPrimary }}>
+            {card.label}
+          </p>
+          <p className="text-[11px] leading-relaxed mt-0.5" style={{ color: tv.textDim }}>
+            {card.description}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Add Content toggle — only for non-coming-soon cards */}
+          {!isComingSoon && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="flex items-center gap-1 rounded px-2 py-1 text-[10px] font-medium transition-colors"
+              style={{
+                background: hasContent ? "rgba(212,160,83,0.12)" : tv.bgSurface,
+                color: hasContent ? tv.accent : tv.textDim,
+                border: `1px solid ${hasContent ? "rgba(212,160,83,0.3)" : tv.borderSubtle}`,
+                cursor: "pointer",
+              }}
+              title="Add discovery content to guide this enrichment"
+            >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              {hasContent ? "Content" : "Add"}
+              {hasContent && (
+                <span className="ml-0.5 rounded-full px-1 text-[8px]" style={{ background: tv.accent, color: "#fff" }}>
+                  {INFLUENCE_MODES.find((m) => m.value === influence)?.label}
+                </span>
+              )}
+            </button>
+          )}
+
+          {/* Revert button — shown for done cards with a snapshot */}
+          {isDone && canRevert && !revertConfirmActive && (
+            <button
+              onClick={onRevertRequest}
+              className="rounded px-2 py-1 text-[10px] font-medium transition-colors"
+              style={{
+                background: tv.bgSurface,
+                color: tv.textDim,
+                border: `1px solid ${tv.borderSubtle}`,
+                cursor: "pointer",
+              }}
+              title="Revert this enrichment to restore the previous model state"
+            >
+              ↩ Revert
+            </button>
+          )}
+
+          {/* Status / Action button */}
+          {isDone ? (
+            <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
+              style={{ background: "rgba(16,185,129,0.15)", color: "#10b981" }}>
+              Done
+            </span>
+          ) : isComingSoon ? (
+            <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
+              style={{ background: tv.bgSurface, color: tv.textDim }}>
+              Soon
+            </span>
+          ) : card.navigateTo ? (
+            <button
+              onClick={onNavigate}
+              disabled={disabled}
+              className="rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all whitespace-nowrap"
+              style={{
+                background: tv.accent,
+                color: "#fff",
+                cursor: disabled ? "not-allowed" : "pointer",
+                opacity: disabled ? 0.5 : 1,
+              }}
+            >
+              Open
+            </button>
+          ) : (
+            <button
+              onClick={onRun}
+              disabled={disabled}
+              className="rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all whitespace-nowrap"
+              style={{
+                background: tv.textPrimary,
+                color: tv.bgPrimary,
+                cursor: disabled ? "not-allowed" : "pointer",
+                opacity: disabled ? 0.5 : 1,
+              }}
+            >
+              Run
+            </button>
+          )}
+        </div>
       </div>
-      {isDone ? (
-        <span className="flex-shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-medium"
-          style={{ background: "rgba(16,185,129,0.15)", color: "#10b981" }}>
-          Done
-        </span>
-      ) : isComingSoon ? (
-        <span className="flex-shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-medium"
-          style={{ background: tv.bgSurface, color: tv.textDim }}>
-          Soon
-        </span>
-      ) : card.navigateTo ? (
-        <button
-          onClick={onNavigate}
-          disabled={disabled}
-          className="flex-shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all whitespace-nowrap"
-          style={{
-            background: tv.accent,
-            color: "#fff",
-            cursor: disabled ? "not-allowed" : "pointer",
-            opacity: disabled ? 0.5 : 1,
-          }}
-        >
-          Open
-        </button>
-      ) : (
-        <button
-          onClick={onRun}
-          disabled={disabled}
-          className="flex-shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all whitespace-nowrap"
-          style={{
-            background: tv.textPrimary,
-            color: tv.bgPrimary,
-            cursor: disabled ? "not-allowed" : "pointer",
-            opacity: disabled ? 0.5 : 1,
-          }}
-        >
-          Run
-        </button>
+
+      {/* Revert confirmation banner */}
+      {revertConfirmActive && (
+        <div className="mx-4 mb-2 rounded-lg px-3 py-2.5 flex items-center gap-3"
+          style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
+          <svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="#ef4444" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-medium" style={{ color: "#dc2626" }}>
+              Revert "{card.label}"?
+            </p>
+            <p className="text-[10px] mt-0.5" style={{ color: "#b91c1c" }}>
+              This will restore the model to its state before this enrichment was applied. Any data added by this step will be removed.
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <button
+              onClick={onRevertCancel}
+              className="rounded px-2.5 py-1 text-[10px] font-medium"
+              style={{ background: tv.bgCard, color: tv.textSecondary, border: `1px solid ${tv.borderSubtle}`, cursor: "pointer" }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onRevertConfirm}
+              className="rounded px-2.5 py-1 text-[10px] font-semibold"
+              style={{ background: "#ef4444", color: "#fff", cursor: "pointer" }}
+            >
+              Confirm Revert
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Expandable content input */}
+      {expanded && (
+        <div className="px-4 pb-3 pt-0">
+          <div className="rounded-lg p-3" style={{ background: tv.bgPrimary, border: `1px solid ${tv.borderSubtle}` }}>
+            {/* Influence mode selector */}
+            <div className="flex items-center gap-1 mb-2">
+              <span className="text-[9px] font-semibold uppercase tracking-wider mr-1" style={{ color: tv.textDim }}>
+                Influence:
+              </span>
+              {INFLUENCE_MODES.map((mode) => (
+                <button
+                  key={mode.value}
+                  onClick={() => onUserContentChange({ influence: mode.value })}
+                  className="rounded px-2 py-0.5 text-[10px] font-medium transition-colors"
+                  style={{
+                    background: influence === mode.value ? tv.accent : tv.bgSurface,
+                    color: influence === mode.value ? "#fff" : tv.textDim,
+                    border: `1px solid ${influence === mode.value ? tv.accent : tv.borderSubtle}`,
+                    cursor: "pointer",
+                  }}
+                  title={mode.description}
+                >
+                  {mode.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] mb-2" style={{ color: tv.textDim }}>
+              {INFLUENCE_MODES.find((m) => m.value === influence)?.description}
+            </p>
+
+            {/* Content textarea */}
+            <textarea
+              value={userContent?.text ?? ""}
+              onChange={(e) => onUserContentChange({ text: e.target.value })}
+              rows={4}
+              placeholder={card.contentHint ?? "Paste your content here..."}
+              className="block w-full rounded-lg px-3 py-2 text-[12px] leading-relaxed outline-none resize-y"
+              style={{
+                background: tv.bgCard,
+                border: `1px solid ${tv.borderSubtle}`,
+                color: tv.textPrimary,
+              }}
+            />
+            {hasContent && (
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-[10px]" style={{ color: tv.textDim }}>
+                  {(userContent?.text ?? "").split("\n").filter((l) => l.trim()).length} lines
+                </span>
+                <button
+                  onClick={() => onUserContentChange({ text: "" })}
+                  className="text-[10px] underline"
+                  style={{ color: tv.textDim, cursor: "pointer" }}
+                >
+                  Clear
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
