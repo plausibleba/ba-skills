@@ -5,7 +5,7 @@
  * Supports the standard Guild format:
  *   - "Capability Map" sheet → capabilities (hierarchical, Tier/Level)
  *   - "Value Streams Inventory" (or similar) sheet → value streams
- *   - Per-VS detail sheets → activities (stages) with entrance/exit criteria, stakeholders
+ *   - Per-VS detail sheets → stages with entrance/exit criteria, stakeholders
  *   - "Stakeholder Map" sheet → roles
  *   - "Information Map" sheet → information objects with lifecycle states
  *   - "Organization Map" sheet → (metadata, not mapped to scaffold currently)

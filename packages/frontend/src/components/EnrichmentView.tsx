@@ -46,6 +46,96 @@ interface EnrichmentSnapshot {
   cardRegistry: any;      // deep-cloned card registry before the run
 }
 
+/**
+ * ReviewResult — captured after a successful enrichment run.
+ * Holds a human-readable summary of what changed and where to view the impact.
+ */
+interface ReviewResult {
+  cardId: string;
+  label: string;
+  timestamp: number;
+  /** Plain-language summary of what changed, e.g. "Added 47 sub-activities across 12 stages" */
+  changeSummary: string[];
+  /** Whether the user has committed (accepted) the changes */
+  committed: boolean;
+}
+
+/**
+ * Maps each enrichment card ID to the view where the user can see
+ * the impact of the enrichment they just ran.
+ */
+const IMPACT_DESTINATIONS: Record<string, {
+  label: string;
+  description: string;
+  navigate: (store: any) => void;
+}> = {
+  subactivities: {
+    label: "View in Value Stream Canvas",
+    description: "See the sub-activity DAGs inside each stage",
+    navigate: (store) => {
+      // Navigate to stage view (first VS)
+      const vsIds = Object.keys(store.scaffoldData?.elements?.valueStreams ?? {});
+      if (vsIds.length) {
+        store.selectValueStream(vsIds[0]);
+      }
+    },
+  },
+  ppit: {
+    label: "View in Capability Map",
+    description: "See People, Process, Information & Technology mapped to capabilities",
+    navigate: (store) => store.goToCapabilityMap(),
+  },
+  cards: {
+    label: "View in Concept Explorer",
+    description: "Browse the Concept and Policy cards that were generated",
+    navigate: (store) => store.goToConceptGraph(),
+  },
+  "cross-mapping": {
+    label: "View in Network",
+    description: "See relationship topology across your model",
+    navigate: (store) => {
+      const vsIds = Object.keys(store.scaffoldData?.elements?.valueStreams ?? {});
+      if (vsIds.length) store.selectValueStream(vsIds[0]);
+    },
+  },
+  friction: {
+    label: "View Friction Heatmap",
+    description: "See the friction observations overlaid on your value streams",
+    navigate: (store) => store.goToFriction(),
+  },
+  metrics: {
+    label: "View in Value Stream Canvas",
+    description: "See performance metrics attached to stages",
+    navigate: (store) => {
+      const vsIds = Object.keys(store.scaffoldData?.elements?.valueStreams ?? {});
+      if (vsIds.length) store.selectValueStream(vsIds[0]);
+    },
+  },
+  dependencies: {
+    label: "View in Network",
+    description: "See cross-stream dependency connections",
+    navigate: (store) => {
+      const vsIds = Object.keys(store.scaffoldData?.elements?.valueStreams ?? {});
+      if (vsIds.length) store.selectValueStream(vsIds[0]);
+    },
+  },
+  maturity: {
+    label: "View in Capability Map",
+    description: "See maturity levels across your capability hierarchy",
+    navigate: (store) => store.goToCapabilityMap(),
+  },
+  "gap-analysis": {
+    label: "View in Capability Map",
+    description: "See current-vs-target gap indicators on capabilities",
+    navigate: (store) => store.goToCapabilityMap(),
+  },
+  risk: {
+    label: "View Friction Heatmap",
+    description: "See risk observations overlaid on your value streams",
+    navigate: (store) => store.goToFriction(),
+  },
+};
+
 interface EnrichmentCardDef {
   id: string;
   label: string;
@@ -293,11 +383,80 @@ interface CustomSkill {
 
 const TARGET_LABELS: Record<CustomSkill["target"], string> = {
   capabilities: "Capabilities",
-  activities: "Activities / Stages",
+  activities: "Activities",
   valueStreams: "Value Streams",
   roles: "Roles / Stakeholders",
   "full-model": "Full Model",
 };
+
+// ─── Change Summary Helpers ──────────────────────────────────────────────────
+
+/** Compute a plain-language summary of what changed between before-snapshot and after-state */
+function computeChangeSummary(cardId: string, beforeScaffold: any, afterScaffold: any, beforeCards: any, afterCards: any): string[] {
+  const lines: string[] = [];
+  const be = beforeScaffold?.elements ?? {};
+  const ae = afterScaffold?.elements ?? {};
+
+  const countKeys = (obj: any) => (obj ? Object.keys(obj).length : 0);
+  const diff = (before: any, after: any) => countKeys(after) - countKeys(before);
+
+  if (cardId === "subactivities") {
+    const beforeGraphs = countKeys(be.subActivityGraphs);
+    const afterGraphs = countKeys(ae.subActivityGraphs);
+    const newGraphs = afterGraphs - beforeGraphs;
+    const totalNodes = Object.values(ae.subActivityGraphs ?? {}).reduce(
+      (sum: number, g: any) => sum + (g?.nodes?.length ?? 0), 0
+    );
+    if (newGraphs > 0) lines.push(`Created ${newGraphs} sub-activity graph${newGraphs !== 1 ? "s" : ""} with ${totalNodes} total work steps`);
+    else if (totalNodes > 0) lines.push(`Updated sub-activity graphs — now ${afterGraphs} graphs with ${totalNodes} total work steps`);
+  }
+
+  if (cardId === "ppit") {
+    const rolesDiff = diff(be.roles, ae.roles);
+    const capDiff = diff(be.capabilities, ae.capabilities);
+    const infoDiff = diff(be.informationObjects, ae.informationObjects);
+    const appDiff = diff(be.applicationFunctions, ae.applicationFunctions);
+    const parts: string[] = [];
+    if (rolesDiff > 0) parts.push(`${rolesDiff} role${rolesDiff !== 1 ? "s" : ""}`);
+    if (capDiff > 0) parts.push(`${capDiff} capabilit${capDiff !== 1 ? "ies" : "y"}`);
+    if (infoDiff > 0) parts.push(`${infoDiff} information object${infoDiff !== 1 ? "s" : ""}`);
+    if (appDiff > 0) parts.push(`${appDiff} application function${appDiff !== 1 ? "s" : ""}`);
+    if (parts.length) lines.push(`Added ${parts.join(", ")}`);
+    else lines.push("Updated PPIT mappings across capabilities");
+  }
+
+  if (cardId === "cards") {
+    const conceptsBefore = countKeys(beforeCards?.conceptCards);
+    const conceptsAfter = countKeys(afterCards?.conceptCards);
+    const policiesBefore = countKeys(beforeCards?.policyCards);
+    const policiesAfter = countKeys(afterCards?.policyCards);
+    const newConcepts = conceptsAfter - conceptsBefore;
+    const newPolicies = policiesAfter - policiesBefore;
+    if (newConcepts > 0) lines.push(`Generated ${newConcepts} Concept Card${newConcepts !== 1 ? "s" : ""}`);
+    if (newPolicies > 0) lines.push(`Generated ${newPolicies} Policy Card${newPolicies !== 1 ? "s" : ""}`);
+    if (!lines.length) lines.push("Updated concept and policy cards");
+  }
+
+  // Generic element-level diffs for any enrichment
+  const elementTypes = [
+    { key: "activities", label: "stage" },
+    { key: "roles", label: "role" },
+    { key: "capabilities", label: "capability" },
+    { key: "controls", label: "control" },
+    { key: "metrics", label: "metric" },
+    { key: "constraints", label: "constraint" },
+  ];
+
+  if (!["subactivities", "ppit", "cards"].includes(cardId)) {
+    for (const { key, label } of elementTypes) {
+      const d = diff(be[key], ae[key]);
+      if (d > 0) lines.push(`Added ${d} ${label}${d !== 1 ? "s" : ""}`);
+    }
+  }
+
+  if (!lines.length) lines.push("Enrichment applied successfully — model updated");
+  return lines;
+}
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -344,6 +503,9 @@ export function EnrichmentView() {
   const [snapshots, setSnapshots] = useState<EnrichmentSnapshot[]>([]);
   const [revertConfirm, setRevertConfirm] = useState<string | null>(null);
 
+  // Review results — one per completed enrichment, shown until committed
+  const [reviewResults, setReviewResults] = useState<ReviewResult[]>([]);
+
   // Cross-mapping state
   const [mappingPairs, setMappingPairs] = useState<MappingPair[]>([]);
 
@@ -375,12 +537,35 @@ export function EnrichmentView() {
           // Store the snapshot now that enrichment succeeded
           setSnapshots((prev) => [...prev, snapshot]);
 
+          // Compute change summary BEFORE updating the store (we have before+after)
+          const afterCards = progress.cardRegistry ?? store.cardRegistry;
+          const changeSummary = computeChangeSummary(
+            card.id,
+            snapshot.scaffold,
+            progress.scaffold,
+            snapshot.cardRegistry,
+            afterCards,
+          );
+
           // Update canvas store with enriched scaffold
           const s = useCanvasStore.getState();
           s.loadScaffold(progress.scaffold);
           if (progress.cardRegistry) {
             s.loadCards(progress.cardRegistry);
           }
+
+          // Create review result for the user to review and commit
+          setReviewResults((prev) => [
+            ...prev.filter((r) => r.cardId !== card.id), // replace any existing review for this card
+            {
+              cardId: card.id,
+              label: card.label,
+              timestamp: Date.now(),
+              changeSummary,
+              committed: false,
+            },
+          ]);
+
           setCompletedThisSession((prev) => new Set([...prev, card.id]));
           setRunning(null);
         }
@@ -404,8 +589,9 @@ export function EnrichmentView() {
       store.loadCards(snapshot.cardRegistry);
     }
 
-    // Remove the snapshot and mark card as no longer completed this session
+    // Remove the snapshot, review result, and mark card as no longer completed this session
     setSnapshots((prev) => prev.filter((s) => s !== snapshot));
+    setReviewResults((prev) => prev.filter((r) => r.cardId !== cardId));
     setCompletedThisSession((prev) => {
       const next = new Set(prev);
       next.delete(cardId);
@@ -418,6 +604,21 @@ export function EnrichmentView() {
   const navigateTo = useCallback((viewMode: string) => {
     const store = useCanvasStore.getState();
     if (viewMode === "friction") store.goToFriction();
+  }, []);
+
+  // ── Commit a review result (accept changes) ──
+  const commitReview = useCallback((cardId: string) => {
+    setReviewResults((prev) =>
+      prev.map((r) => (r.cardId === cardId ? { ...r, committed: true } : r)),
+    );
+  }, []);
+
+  // ── Navigate to impact view ──
+  const viewImpact = useCallback((cardId: string) => {
+    const dest = IMPACT_DESTINATIONS[cardId];
+    if (!dest) return;
+    const store = useCanvasStore.getState();
+    dest.navigate(store);
   }, []);
 
   // ── Card status ──
@@ -503,22 +704,35 @@ export function EnrichmentView() {
           <p className="text-[11px] font-semibold mb-2" style={{ color: tv.textPrimary }}>How enrichment works</p>
           <div className="grid gap-2 text-[11px] leading-relaxed" style={{ color: tv.textDim }}>
             <div className="flex gap-2">
-              <span className="flex-shrink-0 font-bold" style={{ color: tv.accent }}>Run</span>
-              <span>Click <b>Run</b> on any enrichment to apply it to your model. The AI will analyse your current model and add the relevant data layer.</span>
+              <span className="flex-shrink-0 font-bold" style={{ color: tv.accent }}>1. Add</span>
+              <span>
+                Optionally click <b>+ Add</b> to provide your own content that will guide the enrichment.
+                For example, paste your actual KPIs before running "Generate Metrics", or a team roster before mapping People.
+                You choose an <b>influence mode</b> — whether your content is guidance, must-include, exclusions, or the only items to use.
+              </span>
             </div>
             <div className="flex gap-2">
-              <span className="flex-shrink-0 font-bold" style={{ color: tv.accent }}>+ Add</span>
+              <span className="flex-shrink-0 font-bold" style={{ color: tv.accent }}>2. Run</span>
+              <span>Click <b>Run</b> on any enrichment. The AI analyses your current model and adds the relevant data layer. A snapshot of your model is saved automatically before it runs.</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="flex-shrink-0 font-bold" style={{ color: "#10b981" }}>3. Review</span>
               <span>
-                Before running, you can optionally click <b>+ Add</b> to provide your own content that will guide the enrichment.
-                For example, you might paste a list of your actual KPIs before running "Generate Metrics", or paste a team roster before mapping People.
-                You also choose an <b>influence mode</b> — whether your content should be treated as guidance, must-include items, exclusions, or the only items to use.
+                After enrichment completes, a <b>review panel</b> appears showing exactly what was added or changed — for example, "Created 12 sub-activity graphs with 47 work steps".
+                This is your chance to check the output before committing.
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <span className="flex-shrink-0 font-bold" style={{ color: "#10b981" }}>4. Commit</span>
+              <span>
+                Click <b>✓ Commit Changes</b> to accept the enrichment output. Or click the distinctive <b style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff", padding: "0 4px", borderRadius: 3, fontSize: 10 }}>View Impact</b> button
+                to navigate directly to the part of the application where you can see the content you just created — for example, the Capability Map or the Value Stream Canvas.
               </span>
             </div>
             <div className="flex gap-2">
               <span className="flex-shrink-0 font-bold" style={{ color: tv.accent }}>↩ Revert</span>
               <span>
-                Every enrichment automatically saves a snapshot of your model before it runs. If the results aren't what you expected,
-                click <b>↩ Revert</b> to instantly roll back to the exact state your model was in before that enrichment was applied.
+                If the results aren't what you expected, click <b>↩ Undo Instead</b> to instantly roll back to the exact state your model was in before that enrichment was applied.
                 You can then adjust your input content and try again.
               </span>
             </div>
@@ -581,6 +795,9 @@ export function EnrichmentView() {
               onRevertRequest={() => setRevertConfirm(card.id)}
               onRevertConfirm={() => revertEnrichment(card.id)}
               onRevertCancel={() => setRevertConfirm(null)}
+              reviewResult={reviewResults.find((r) => r.cardId === card.id)}
+              onCommitReview={() => commitReview(card.id)}
+              onViewImpact={() => viewImpact(card.id)}
             />
           ))}
         </div>
@@ -612,6 +829,9 @@ export function EnrichmentView() {
                 onRevertConfirm={() => revertEnrichment(card.id)}
                 onRevertCancel={() => setRevertConfirm(null)}
                 hideActionButton
+                reviewResult={reviewResults.find((r) => r.cardId === card.id)}
+                onCommitReview={() => commitReview(card.id)}
+                onViewImpact={() => viewImpact(card.id)}
               />
             </div>
           ))}
@@ -694,6 +914,9 @@ export function EnrichmentView() {
               onRevertConfirm={() => revertEnrichment(card.id)}
               onRevertCancel={() => setRevertConfirm(null)}
               hideActionButton
+              reviewResult={reviewResults.find((r) => r.cardId === card.id)}
+              onCommitReview={() => commitReview(card.id)}
+              onViewImpact={() => viewImpact(card.id)}
             />
           ))}
         </div>
@@ -748,6 +971,9 @@ export function EnrichmentView() {
               onRevertRequest={() => setRevertConfirm(card.id)}
               onRevertConfirm={() => revertEnrichment(card.id)}
               onRevertCancel={() => setRevertConfirm(null)}
+              reviewResult={reviewResults.find((r) => r.cardId === card.id)}
+              onCommitReview={() => commitReview(card.id)}
+              onViewImpact={() => viewImpact(card.id)}
             />
           ))}
         </div>
@@ -839,6 +1065,9 @@ function EnrichmentCard({
   onRevertConfirm,
   onRevertCancel,
   hideActionButton,
+  reviewResult,
+  onCommitReview,
+  onViewImpact,
 }: {
   card: EnrichmentCardDef;
   status: "done" | "running" | "available" | "coming-soon";
@@ -853,6 +1082,12 @@ function EnrichmentCard({
   onRevertConfirm?: () => void;
   onRevertCancel?: () => void;
   hideActionButton?: boolean;
+  /** Review result shown after enrichment completes */
+  reviewResult?: ReviewResult;
+  /** Called when user accepts/commits the changes */
+  onCommitReview?: () => void;
+  /** Called when user wants to see where the enrichment output appears */
+  onViewImpact?: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const isDone = status === "done";
@@ -1001,6 +1236,94 @@ function EnrichmentCard({
               Confirm Revert
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Review panel — shows after enrichment completes, before user commits */}
+      {reviewResult && !reviewResult.committed && (
+        <div className="mx-4 mb-2 rounded-lg p-4"
+          style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.2)" }}>
+          {/* Header */}
+          <div className="flex items-center gap-2 mb-2">
+            <svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="#10b981" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-[11px] font-semibold" style={{ color: "#059669" }}>
+              Review Changes
+            </span>
+            <span className="text-[10px]" style={{ color: tv.textDim }}>
+              — what was added or changed
+            </span>
+          </div>
+
+          {/* Change summary lines */}
+          <div className="mb-3 space-y-1">
+            {reviewResult.changeSummary.map((line, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <span className="mt-0.5 flex-shrink-0 text-[10px]" style={{ color: "#10b981" }}>✓</span>
+                <span className="text-[11px] leading-relaxed" style={{ color: tv.textSecondary }}>{line}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2">
+            {/* Commit button */}
+            <button
+              onClick={onCommitReview}
+              className="rounded-lg px-4 py-2 text-[11px] font-semibold transition-all"
+              style={{
+                background: "#10b981",
+                color: "#fff",
+                cursor: "pointer",
+              }}
+            >
+              ✓ Commit Changes
+            </button>
+
+            {/* View Impact button — distinctive styling */}
+            {IMPACT_DESTINATIONS[card.id] && (
+              <button
+                onClick={onViewImpact}
+                className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-[11px] font-semibold transition-all"
+                style={{
+                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                  color: "#fff",
+                  cursor: "pointer",
+                  boxShadow: "0 2px 8px rgba(99,102,241,0.3)",
+                }}
+              >
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                {IMPACT_DESTINATIONS[card.id].label}
+              </button>
+            )}
+
+            {/* Revert option in context */}
+            {canRevert && (
+              <button
+                onClick={onRevertRequest}
+                className="rounded-lg px-3 py-2 text-[11px] font-medium transition-colors"
+                style={{
+                  background: "transparent",
+                  color: tv.textDim,
+                  border: `1px solid ${tv.borderSubtle}`,
+                  cursor: "pointer",
+                }}
+              >
+                ↩ Undo Instead
+              </button>
+            )}
+          </div>
+
+          {/* Impact destination hint */}
+          {IMPACT_DESTINATIONS[card.id] && (
+            <p className="mt-2 text-[10px]" style={{ color: tv.textDim }}>
+              {IMPACT_DESTINATIONS[card.id].description}
+            </p>
+          )}
         </div>
       )}
 

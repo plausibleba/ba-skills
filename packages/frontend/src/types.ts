@@ -502,7 +502,7 @@ export interface ScaffoldData {
     // D-053: New reference registries (Session 11)
     applicationFunctions?: Record<string, ApplicationFunction>;
     recordClasses?: Record<string, RecordClass>;
-    /** Sub-activity DAGs per stage (keyed by activity/stage ID) */
+    /** Sub-activity DAGs per stage (keyed by stage ID) */
     subActivityGraphs?: Record<string, { nodes: SubActivity[] }>;
     [key: string]: Record<string, unknown> | undefined;
   };
