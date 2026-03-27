@@ -119,9 +119,43 @@ export interface VendorFeatureLibrary {
 
 // ---
 
+/**
+ * Observation taxonomy — the broad type of operational finding.
+ * Each type carries different analytical weight and response patterns:
+ * - painPoint: A subjective experience of difficulty reported by stakeholders
+ * - friction: A structural impediment measurable through process analysis
+ * - risk: A potential future failure mode that hasn't yet materialised
+ * - control: A governance mechanism that may be over- or under-applied
+ * - constraint: A hard boundary (regulatory, contractual, physical) that limits options
+ */
+export type ObservationType = "painPoint" | "friction" | "risk" | "control" | "constraint";
+
+/**
+ * Observation lifecycle status — tracks the consensus journey.
+ * - suggested: Initial state — AI-intuited or human-proposed, not yet reviewed
+ * - agreed: Stakeholders have reviewed and confirmed this observation is valid
+ * - discarded: Reviewed and determined to be invalid, duplicate, or out of scope
+ * - resolved: The underlying issue has been addressed (keeps audit trail)
+ */
+export type ObservationStatus = "suggested" | "agreed" | "discarded" | "resolved";
+
+/**
+ * Provenance — how this observation came into existence.
+ * This is a READ-ONLY field; it cannot be changed after creation.
+ * - provided: Explicitly supplied by a human stakeholder (interview, workshop, import)
+ * - intuited: Inferred by AI analysis of structural patterns in the scaffold
+ */
+export type ObservationProvenance = "provided" | "intuited";
+
 export interface FrictionObservation {
   observationId: string;
   category: string;
+  /** Broad observation type — defaults to "friction" for backward compatibility */
+  observationType?: ObservationType;
+  /** Lifecycle status — defaults to "suggested" */
+  status?: ObservationStatus;
+  /** How this observation was created — read-only after creation */
+  provenance?: ObservationProvenance;
   primaryAnchor: AnchorRef;
   contributingAnchors?: AnchorRef[];
   intensity: Intensity;

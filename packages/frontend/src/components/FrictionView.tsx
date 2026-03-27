@@ -6,6 +6,9 @@ import type {
   HeatmapData,
   ScaffoldData,
   AnchorRef,
+  ObservationType,
+  ObservationStatus,
+  ObservationProvenance,
 } from "../types.ts";
 import { classifyCategory, categoryLabel, buildActivityFrictionMap } from "./FrictionOverlay.tsx";
 import { useVendorLibraryStore, type CustomerStory, type CustomerStoryCatalogue } from "../store/vendor-library-store.ts";
@@ -60,16 +63,16 @@ export interface StructuralSignal {
 }
 
 const DEFAULT_STRUCTURAL_SIGNALS: StructuralSignal[] = [
-  { id: "sig-handoff-chain", category: "ProcessHandoffFriction", label: "Long activity chains without branching", description: "Sequential gating pattern — 4+ activities in a linear chain with no parallel paths", enabled: true },
-  { id: "sig-handoff-loops", category: "ProcessHandoffFriction", label: "Repeated outcome loops", description: "Rework loops where an activity's post-outcome feeds back to an earlier pre-outcome", enabled: true },
-  { id: "sig-tech-multi-cap", category: "TechnologyIntegrationFriction", label: "Single activity requiring multiple capabilities", description: "Integration pressure — one activity needing 3+ capabilities suggests system fragmentation", enabled: true },
+  { id: "sig-handoff-chain", category: "ProcessHandoffFriction", label: "Long Stage chains without branching", description: "Sequential gating pattern — 4+ Stages in a linear chain with no parallel paths", enabled: true },
+  { id: "sig-handoff-loops", category: "ProcessHandoffFriction", label: "Repeated outcome loops", description: "Rework loops where a Stage's post-outcome feeds back to an earlier pre-outcome", enabled: true },
+  { id: "sig-tech-multi-cap", category: "TechnologyIntegrationFriction", label: "Single Stage requiring multiple capabilities", description: "Integration pressure — one Stage needing 3+ capabilities suggests system fragmentation", enabled: true },
   { id: "sig-tech-cap-spread", category: "TechnologyIntegrationFriction", label: "Capability spread across value streams", description: "Same capability appearing in 3+ value streams without shared infrastructure", enabled: true },
-  { id: "sig-data-info-repeat", category: "DataSignalFriction", label: "Repeated information objects across sequential activities", description: "Same informationObjectIds appearing in 3+ consecutive activities suggests data dependency chains", enabled: true },
-  { id: "sig-auth-single-role", category: "DecisionAuthorityFriction", label: "Single-point approval role in 5+ activities", description: "Role overload — one role appearing in 5+ activities as the sole performer", enabled: true },
-  { id: "sig-gov-control-stack", category: "GovernanceRiskFriction", label: "2+ controls per activity", description: "Control layering — multiple governance controls stacked on a single activity", enabled: true },
+  { id: "sig-data-info-repeat", category: "DataSignalFriction", label: "Repeated information objects across sequential Stages", description: "Same informationObjectIds appearing in 3+ consecutive Stages suggests data dependency chains", enabled: true },
+  { id: "sig-auth-single-role", category: "DecisionAuthorityFriction", label: "Single-point approval role in 5+ Stages", description: "Role overload — one role appearing in 5+ Stages as the sole performer", enabled: true },
+  { id: "sig-gov-control-stack", category: "GovernanceRiskFriction", label: "2+ controls per Stage", description: "Control layering — multiple governance controls stacked on a single Stage", enabled: true },
   { id: "sig-gov-metric-absence", category: "GovernanceRiskFriction", label: "Metric absence where controls exist", description: "Controls without corresponding metrics indicate unmeasured governance", enabled: true },
-  { id: "sig-incentive-role-overload", category: "IncentiveCapacityFriction", label: "Role overload across 5+ activities", description: "One role spread across many activities suggests capacity constraint and misaligned incentives", enabled: true },
-  { id: "sig-incentive-metric-misalign", category: "IncentiveCapacityFriction", label: "Missing or misaligned metrics", description: "Activities with outcomes but no attached metrics suggest unmeasured performance", enabled: true },
+  { id: "sig-incentive-role-overload", category: "IncentiveCapacityFriction", label: "Role overload across 5+ Stages", description: "One role spread across many Stages suggests capacity constraint and misaligned incentives", enabled: true },
+  { id: "sig-incentive-metric-misalign", category: "IncentiveCapacityFriction", label: "Missing or misaligned metrics", description: "Stages with outcomes but no attached metrics suggest unmeasured performance", enabled: true },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -161,8 +164,70 @@ export function FrictionView() {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// OBSERVATIONS TAB — aggregate friction manager with CRUD
+// OBSERVATIONS TAB — type-grouped, status-tracked observation manager
 // ═════════════════════════════════════════════════════════════════════════════
+
+/** Observation type metadata — defines the taxonomy of operational findings */
+const OBSERVATION_TYPES: {
+  type: ObservationType;
+  label: string;
+  icon: string;
+  colour: { bg: string; text: string; border: string; dot: string };
+  description: string;
+}[] = [
+  {
+    type: "painPoint",
+    label: "Pain Points",
+    icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z",
+    colour: { bg: "#fef3c7", text: "#92400e", border: "#fbbf24", dot: "#f59e0b" },
+    description: "Subjective experiences of difficulty reported by stakeholders during interviews, workshops, or day-to-day operations. Pain points represent the human cost of process inefficiency — they may not always map to a measurable structural cause, but they signal where attention is needed.",
+  },
+  {
+    type: "friction",
+    label: "Friction",
+    icon: "M13 10V3L4 14h7v7l9-11h-7z",
+    colour: { bg: "#fee2e2", text: "#991b1b", border: "#f87171", dot: "#ef4444" },
+    description: "Structural impediments identified through process analysis — handoff delays, integration gaps, data signal failures, authority bottlenecks, or governance layering. These are measurable, anchored to specific scaffold elements, and directly contribute to the friction heatmap.",
+  },
+  {
+    type: "risk",
+    label: "Risks",
+    icon: "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+    colour: { bg: "#fce7f3", text: "#9d174d", border: "#f472b6", dot: "#ec4899" },
+    description: "Potential future failure modes that have not yet materialised but are implied by the current process structure. Risks are forward-looking — they represent what could go wrong if the process continues unchanged, such as single points of failure, unmonitored compliance gaps, or capacity overloads.",
+  },
+  {
+    type: "control",
+    label: "Controls",
+    icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
+    colour: { bg: "#ede9fe", text: "#5b21b6", border: "#a78bfa", dot: "#8b5cf6" },
+    description: "Governance mechanisms that may be over-applied (creating unnecessary friction) or under-applied (creating unmitigated risk). Controls include approval gates, audit checkpoints, compliance requirements, and quality assurance steps. The goal is not to eliminate controls but to ensure they are proportionate.",
+  },
+  {
+    type: "constraint",
+    label: "Constraints",
+    icon: "M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636",
+    colour: { bg: "#e0e7ff", text: "#3730a3", border: "#818cf8", dot: "#6366f1" },
+    description: "Hard boundaries that limit options — regulatory requirements, contractual obligations, physical capacity limits, or technology platform restrictions. Constraints cannot be resolved through process improvement; they must be designed around. Understanding them prevents wasted optimisation effort.",
+  },
+];
+
+/** Status workflow metadata */
+const OBSERVATION_STATUSES: {
+  status: ObservationStatus;
+  label: string;
+  colour: { bg: string; text: string; border: string };
+}[] = [
+  { status: "suggested", label: "Suggested", colour: { bg: "#f3f4f6", text: "#6b7280", border: "#d1d5db" } },
+  { status: "agreed", label: "Agreed", colour: { bg: "#dcfce7", text: "#166534", border: "#86efac" } },
+  { status: "discarded", label: "Discarded", colour: { bg: "#fef2f2", text: "#991b1b", border: "#fca5a5" } },
+  { status: "resolved", label: "Resolved", colour: { bg: "#dbeafe", text: "#1e40af", border: "#93c5fd" } },
+];
+
+const PROVENANCE_META: Record<ObservationProvenance, { label: string; icon: string; colour: string }> = {
+  provided: { label: "Provided", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", colour: "#059669" },
+  intuited: { label: "AI-Intuited", icon: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z", colour: "#7c3aed" },
+};
 
 interface AggregatedObservation {
   obs: FrictionObservation;
@@ -179,11 +244,13 @@ function ObservationsTab({
   scaffoldData: ScaffoldData;
   heatmapsByVs: Map<string, HeatmapData>;
 }) {
-  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [showExplainer, setShowExplainer] = useState(true);
+  const [showImportGraphic, setShowImportGraphic] = useState(false);
   const [filterVs, setFilterVs] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<"intensity" | "category" | "vs">("intensity");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [addingForType, setAddingForType] = useState<ObservationType | null>(null);
+  const [importingForType, setImportingForType] = useState<ObservationType | null>(null);
   const { gate } = useGateCheck();
 
   // Aggregate all observations across value streams
@@ -209,25 +276,32 @@ function ObservationsTab({
     return result;
   }, [heatmapsByVs, scaffoldData]);
 
-  // Filter
+  // Filter by VS and status
   const filtered = useMemo(() => {
     let items = aggregated;
-    if (filterCategory !== "all") {
-      items = items.filter((a) => a.obs.category === filterCategory);
-    }
-    if (filterVs !== "all") {
-      items = items.filter((a) => a.vsId === filterVs);
-    }
-    // Sort
-    items = [...items].sort((a, b) => {
-      if (sortBy === "intensity") return (b.obs.intensity.score ?? 0) - (a.obs.intensity.score ?? 0);
-      if (sortBy === "category") return a.obs.category.localeCompare(b.obs.category);
-      return a.vsName.localeCompare(b.vsName);
-    });
+    if (filterVs !== "all") items = items.filter((a) => a.vsId === filterVs);
+    if (filterStatus !== "all") items = items.filter((a) => (a.obs.status ?? "suggested") === filterStatus);
     return items;
-  }, [aggregated, filterCategory, filterVs, sortBy]);
+  }, [aggregated, filterVs, filterStatus]);
 
-  // Value streams for filter dropdown
+  // Group by observation type
+  const grouped = useMemo(() => {
+    const groups: Record<ObservationType, AggregatedObservation[]> = {
+      painPoint: [], friction: [], risk: [], control: [], constraint: [],
+    };
+    for (const item of filtered) {
+      const type = item.obs.observationType ?? "friction"; // backward compat
+      if (groups[type]) groups[type].push(item);
+      else groups.friction.push(item); // fallback
+    }
+    // Sort each group by intensity descending
+    for (const key of Object.keys(groups) as ObservationType[]) {
+      groups[key].sort((a, b) => (b.obs.intensity.score ?? 0) - (a.obs.intensity.score ?? 0));
+    }
+    return groups;
+  }, [filtered]);
+
+  // Value stream options
   const vsOptions = useMemo(() => {
     const vs = scaffoldData.elements.valueStreams;
     return Object.entries(vs).map(([id, v]) => ({ id, name: v.name || id }));
@@ -235,71 +309,98 @@ function ObservationsTab({
 
   // Summary stats
   const stats = useMemo(() => {
-    const exec = aggregated.filter((a) => classifyCategory(a.obs.category) === "execution").length;
-    const gov = aggregated.filter((a) => classifyCategory(a.obs.category) === "governing").length;
-    const binding = aggregated.filter((a) => a.isBinding).length;
-    const avgIntensity = aggregated.length > 0
-      ? (aggregated.reduce((sum, a) => sum + (a.obs.intensity.score ?? 0), 0) / aggregated.length).toFixed(1)
-      : "—";
-    return { total: aggregated.length, exec, gov, binding, avgIntensity };
+    const byType: Record<string, number> = {};
+    for (const t of OBSERVATION_TYPES) byType[t.type] = 0;
+    const byStatus: Record<string, number> = { suggested: 0, agreed: 0, discarded: 0, resolved: 0 };
+    let provided = 0, intuited = 0;
+    for (const a of aggregated) {
+      const t = a.obs.observationType ?? "friction";
+      if (byType[t] !== undefined) byType[t]++;
+      const s = a.obs.status ?? "suggested";
+      if (byStatus[s] !== undefined) byStatus[s]++;
+      if (a.obs.provenance === "provided") provided++;
+      else intuited++;
+    }
+    return { total: aggregated.length, byType, byStatus, provided, intuited };
   }, [aggregated]);
 
-  if (aggregated.length === 0) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-4 p-12">
-        <div className="rounded-full bg-amber-50 p-4">
-          <svg className="h-8 w-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-          </svg>
-        </div>
-        <div className="text-center">
-          <p className="text-sm font-medium text-gray-700">No friction observations yet</p>
-          <p className="mt-1 text-xs text-gray-500">Run "Assess Friction" from the Stream view, or add observations manually below.</p>
-        </div>
-        <button
-          onClick={() => gate("add_observation", () => setShowAddForm(true))}
-          className="flex items-center gap-1.5 rounded-lg bg-vcc-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-vcc-700"
-        >
-          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Observation
-        </button>
-        {showAddForm && (
-          <AddObservationForm
-            scaffoldData={scaffoldData}
-            onClose={() => setShowAddForm(false)}
-          />
-        )}
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6">
-      {/* Summary row */}
-      <div className="mb-5 flex items-center gap-4">
+    <div className="p-6 max-w-5xl mx-auto">
+      {/* ── Explainer panel ──────────────────────────────────────────── */}
+      {showExplainer && (
+        <div className="mb-6 rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/60 to-white p-5">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100">
+                <svg className="h-4 w-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-sm font-bold text-gray-900">What are Observations?</h3>
+            </div>
+            <button onClick={() => setShowExplainer(false)} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <p className="text-xs text-gray-600 leading-relaxed mb-3">
+            Observations are the atomic findings that emerge from analysing your value streams. They represent anything noteworthy about how
+            work flows (or fails to flow) through your organisation. Each observation is <strong>anchored</strong> to one or more scaffold
+            elements (an activity, role, capability, control, or metric) and carries an <strong>intensity score</strong> that feeds the
+            friction heatmap.
+          </p>
+          <p className="text-xs text-gray-600 leading-relaxed mb-3">
+            Observations come in five types, each with different analytical weight and response patterns. They can be <strong>provided</strong> by
+            human stakeholders (from interviews, workshops, or spreadsheet imports) or <strong>intuited</strong> by AI analysis of structural
+            patterns in the scaffold. Every observation follows a status workflow: it starts as <strong>Suggested</strong>, can be
+            promoted to <strong>Agreed</strong> after stakeholder review, marked as <strong>Discarded</strong> if deemed invalid, or
+            moved to <strong>Resolved</strong> once the underlying issue has been addressed.
+          </p>
+          <div className="grid grid-cols-5 gap-2 mt-4">
+            {OBSERVATION_TYPES.map((t) => (
+              <div key={t.type} className="rounded-lg border p-2.5" style={{ borderColor: t.colour.border, background: t.colour.bg }}>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <svg className="h-3.5 w-3.5" style={{ color: t.colour.dot }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={t.icon} />
+                  </svg>
+                  <span className="text-[10px] font-bold" style={{ color: t.colour.text }}>{t.label}</span>
+                </div>
+                <p className="text-[9px] leading-relaxed" style={{ color: t.colour.text, opacity: 0.8 }}>
+                  {t.description.split(".")[0]}.
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Summary stats bar ────────────────────────────────────────── */}
+      <div className="mb-5 flex items-center gap-3 flex-wrap">
         <StatCard label="Total" value={stats.total} color="gray" />
-        <StatCard label="Execution" value={stats.exec} color="amber" />
-        <StatCard label="Governing" value={stats.gov} color="red" />
-        <StatCard label="Binding" value={stats.binding} color="blue" />
-        <StatCard label="Avg Intensity" value={stats.avgIntensity} color="gray" />
+        {OBSERVATION_TYPES.map((t) => (
+          <StatCard key={t.type} label={t.label} value={stats.byType[t.type] ?? 0} color={t.type} />
+        ))}
+        <div className="h-6 w-px bg-gray-200" />
+        <div className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5">
+          <svg className="h-3 w-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={PROVENANCE_META.provided.icon} />
+          </svg>
+          <span className="text-xs font-semibold text-gray-700">{stats.provided}</span>
+          <span className="text-[9px] text-gray-400">provided</span>
+        </div>
+        <div className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5">
+          <svg className="h-3 w-3 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={PROVENANCE_META.intuited.icon} />
+          </svg>
+          <span className="text-xs font-semibold text-gray-700">{stats.intuited}</span>
+          <span className="text-[9px] text-gray-400">intuited</span>
+        </div>
       </div>
 
-      {/* Filters + actions */}
-      <div className="mb-4 flex items-center justify-between">
+      {/* ── Filters + global actions ─────────────────────────────────── */}
+      <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700"
-          >
-            <option value="all">All Categories</option>
-            {ALL_CATEGORIES.map((c) => (
-              <option key={c} value={c}>{categoryLabel(c)}</option>
-            ))}
-          </select>
-
           <select
             value={filterVs}
             onChange={(e) => setFilterVs(e.target.value)}
@@ -312,24 +413,31 @@ function ObservationsTab({
           </select>
 
           <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
             className="rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700"
           >
-            <option value="intensity">Sort: Intensity</option>
-            <option value="category">Sort: Category</option>
-            <option value="vs">Sort: Value Stream</option>
+            <option value="all">All Statuses</option>
+            {OBSERVATION_STATUSES.map((s) => (
+              <option key={s.status} value={s.status}>{s.label}</option>
+            ))}
           </select>
+
+          {!showExplainer && (
+            <button
+              onClick={() => setShowExplainer(true)}
+              className="rounded-md border border-gray-200 px-2.5 py-1.5 text-xs text-gray-500 hover:bg-gray-50"
+            >
+              What are observations?
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Save assessment */}
           <button
             onClick={() => gate("save_assessment", () => {
               const allHeatmaps: Record<string, any> = {};
-              for (const [vsId, hm] of heatmapsByVs.entries()) {
-                allHeatmaps[vsId] = hm;
-              }
+              for (const [vsId, hm] of heatmapsByVs.entries()) allHeatmaps[vsId] = hm;
               const bundle = { exportedAt: new Date().toISOString(), heatmaps: allHeatmaps };
               const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });
               const url = URL.createObjectURL(blob);
@@ -338,88 +446,189 @@ function ObservationsTab({
               URL.revokeObjectURL(url);
             })}
             className="flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
-            title="Save all friction observations as JSON"
+            title="Export all observations as JSON"
           >
             <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            Save
+            Export
           </button>
-          {/* Load assessment */}
-          <label
-            className="flex cursor-pointer items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
-            title="Load friction observations from JSON"
+          <button
+            onClick={() => setShowImportGraphic(!showImportGraphic)}
+            className="flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+            title="View spreadsheet import format"
+          >
+            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Import Guide
+          </button>
+        </div>
+      </div>
+
+      {/* ── Spreadsheet import graphic ───────────────────────────────── */}
+      {showImportGraphic && <SpreadsheetImportGuide onClose={() => setShowImportGraphic(false)} />}
+
+      {/* ── Type-grouped observation sections ────────────────────────── */}
+      {OBSERVATION_TYPES.map((typeMeta) => {
+        const items = grouped[typeMeta.type];
+        return (
+          <ObservationTypeSection
+            key={typeMeta.type}
+            typeMeta={typeMeta}
+            items={items}
+            scaffoldData={scaffoldData}
+            editingId={editingId}
+            onEdit={(id) => gate("edit_observation", () => setEditingId(editingId === id ? null : id))}
+            onDelete={(vsId, obsId) => handleDeleteObservation(vsId, obsId)}
+            onAdd={() => gate("add_observation", () => setAddingForType(typeMeta.type))}
+            onImport={() => gate("import_observations", () => setImportingForType(typeMeta.type))}
+            showAddForm={addingForType === typeMeta.type}
+            showImportArea={importingForType === typeMeta.type}
+            onCloseAdd={() => setAddingForType(null)}
+            onCloseImport={() => setImportingForType(null)}
+          />
+        );
+      })}
+
+      <p className="mt-6 text-[10px] text-gray-400 text-center">
+        Showing {filtered.length} of {aggregated.length} total observations across {heatmapsByVs.size} value stream{heatmapsByVs.size !== 1 ? "s" : ""}
+      </p>
+    </div>
+  );
+}
+
+// ── Observation Type Section ─────────────────────────────────────────────────
+
+function ObservationTypeSection({
+  typeMeta,
+  items,
+  scaffoldData,
+  editingId,
+  onEdit,
+  onDelete,
+  onAdd,
+  onImport,
+  showAddForm,
+  showImportArea,
+  onCloseAdd,
+  onCloseImport,
+}: {
+  typeMeta: (typeof OBSERVATION_TYPES)[number];
+  items: AggregatedObservation[];
+  scaffoldData: ScaffoldData;
+  editingId: string | null;
+  onEdit: (id: string) => void;
+  onDelete: (vsId: string, obsId: string) => void;
+  onAdd: () => void;
+  onImport: () => void;
+  showAddForm: boolean;
+  showImportArea: boolean;
+  onCloseAdd: () => void;
+  onCloseImport: () => void;
+}) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  return (
+    <div className="mb-6">
+      {/* Section header */}
+      <div
+        className="flex items-center gap-3 mb-3 cursor-pointer group"
+        onClick={() => setCollapsed(!collapsed)}
+      >
+        <div
+          className="flex h-7 w-7 items-center justify-center rounded-lg"
+          style={{ background: typeMeta.colour.bg, border: `1px solid ${typeMeta.colour.border}` }}
+        >
+          <svg className="h-4 w-4" style={{ color: typeMeta.colour.dot }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={typeMeta.icon} />
+          </svg>
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-bold text-gray-900">{typeMeta.label}</h3>
+            <span
+              className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+              style={{ background: typeMeta.colour.bg, color: typeMeta.colour.text }}
+            >
+              {items.length}
+            </span>
+          </div>
+          <p className="text-[10px] text-gray-500 leading-relaxed mt-0.5 max-w-2xl">
+            {typeMeta.description}
+          </p>
+        </div>
+        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={onImport}
+            className="flex items-center gap-1 rounded-md border border-gray-200 px-2 py-1 text-[10px] font-medium text-gray-500 hover:bg-gray-50"
+            title={`Import ${typeMeta.label} from spreadsheet`}
           >
             <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
             Load
-            <input type="file" accept=".json" className="hidden" onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              const reader = new FileReader();
-              reader.onload = (ev) => {
-                try {
-                  const data = JSON.parse(ev.target?.result as string);
-                  const store = useCanvasStore.getState();
-                  if (data.heatmaps) {
-                    // Bundle format
-                    for (const [vsId, hm] of Object.entries(data.heatmaps)) {
-                      store.heatmapsByVs.set(vsId, hm as HeatmapData);
-                    }
-                  } else if (data.observations) {
-                    // Single heatmap format
-                    const vsId = data.valueStreamId || "unknown";
-                    store.heatmapsByVs.set(vsId, data as HeatmapData);
-                  }
-                  useCanvasStore.setState({ heatmapsByVs: new Map(store.heatmapsByVs), scaffoldDirty: true });
-                } catch (err) {
-                  alert("Failed to parse assessment file: " + (err as Error).message);
-                }
-              };
-              reader.readAsText(file);
-              e.target.value = "";
-            }} />
-          </label>
-
-          <div className="h-4 w-px bg-gray-200" />
-
+          </button>
           <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-1.5 rounded-lg bg-vcc-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-vcc-700"
+            onClick={onAdd}
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold text-white shadow-sm"
+            style={{ background: typeMeta.colour.dot }}
+            title={`Add ${typeMeta.label.slice(0, -1)} manually`}
           >
-            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Add
           </button>
         </div>
+        <svg className={`h-4 w-4 text-gray-400 transition-transform ${collapsed ? "-rotate-90" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
       </div>
 
-      {showAddForm && (
-        <AddObservationForm
-          scaffoldData={scaffoldData}
-          onClose={() => setShowAddForm(false)}
-        />
+      {!collapsed && (
+        <>
+          {/* Import area */}
+          {showImportArea && (
+            <ObservationImportArea
+              observationType={typeMeta.type}
+              scaffoldData={scaffoldData}
+              onClose={onCloseImport}
+            />
+          )}
+
+          {/* Add form */}
+          {showAddForm && (
+            <AddObservationForm
+              scaffoldData={scaffoldData}
+              defaultObservationType={typeMeta.type}
+              onClose={onCloseAdd}
+            />
+          )}
+
+          {/* Observation cards */}
+          {items.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50/50 p-6 text-center mb-2">
+              <p className="text-xs text-gray-400">
+                No {typeMeta.label.toLowerCase()} recorded yet. Click <strong>Add</strong> to create one manually, or <strong>Load</strong> to import from a spreadsheet.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2 mb-2">
+              {items.map((item) => (
+                <ObservationRow
+                  key={item.obs.observationId}
+                  item={item}
+                  scaffoldData={scaffoldData}
+                  isEditing={editingId === item.obs.observationId}
+                  onEdit={() => onEdit(item.obs.observationId)}
+                  onDelete={() => onDelete(item.vsId, item.obs.observationId)}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
-
-      {/* Observations list */}
-      <div className="space-y-2">
-        {filtered.map((item) => (
-          <ObservationRow
-            key={item.obs.observationId}
-            item={item}
-            scaffoldData={scaffoldData}
-            isEditing={editingId === item.obs.observationId}
-            onEdit={() => gate("edit_observation", () => setEditingId(editingId === item.obs.observationId ? null : item.obs.observationId))}
-            onDelete={() => handleDeleteObservation(item.vsId, item.obs.observationId)}
-          />
-        ))}
-      </div>
-
-      <p className="mt-4 text-[10px] text-gray-400">
-        {filtered.length} of {aggregated.length} observations shown
-      </p>
     </div>
   );
 }
@@ -429,19 +638,24 @@ function ObservationsTab({
 function StatCard({ label, value, color }: { label: string; value: number | string; color: string }) {
   const colours: Record<string, string> = {
     gray: "bg-gray-50 text-gray-700 border-gray-200",
+    painPoint: "bg-amber-50 text-amber-700 border-amber-200",
+    friction: "bg-red-50 text-red-700 border-red-200",
+    risk: "bg-pink-50 text-pink-700 border-pink-200",
+    control: "bg-violet-50 text-violet-700 border-violet-200",
+    constraint: "bg-indigo-50 text-indigo-700 border-indigo-200",
     amber: "bg-amber-50 text-amber-700 border-amber-200",
     red: "bg-red-50 text-red-700 border-red-200",
     blue: "bg-blue-50 text-blue-700 border-blue-200",
   };
   return (
-    <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${colours[color]}`}>
-      <span className="text-lg font-bold">{value}</span>
-      <span className="text-[10px] font-medium uppercase tracking-wide opacity-70">{label}</span>
+    <div className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 ${colours[color] ?? colours.gray}`}>
+      <span className="text-sm font-bold">{value}</span>
+      <span className="text-[9px] font-medium uppercase tracking-wide opacity-70">{label}</span>
     </div>
   );
 }
 
-// ── Observation row ──────────────────────────────────────────────────────────
+// ── Observation row (with status + provenance) ───────────────────────────────
 
 function ObservationRow({
   item,
@@ -457,14 +671,18 @@ function ObservationRow({
   onDelete: () => void;
 }) {
   const { obs, vsName, anchorName, isBinding } = item;
-  const group = classifyCategory(obs.category);
   const colours = CATEGORY_COLOURS[obs.category] || CATEGORY_COLOURS.ProcessHandoffFriction;
   const score = obs.intensity.score ?? 0;
+  const status = obs.status ?? "suggested";
+  const provenance = obs.provenance ?? "intuited";
+  const statusMeta = OBSERVATION_STATUSES.find((s) => s.status === status) ?? OBSERVATION_STATUSES[0];
+  const provenanceMeta = PROVENANCE_META[provenance];
 
-  // Editable state (local — changes persist to heatmap on save)
+  // Editable local state
   const [editCategory, setEditCategory] = useState(obs.category);
   const [editIntensity, setEditIntensity] = useState(score);
   const [editRationale, setEditRationale] = useState(obs.rationale);
+  const [editStatus, setEditStatus] = useState<ObservationStatus>(status);
 
   const handleSave = () => {
     const store = useCanvasStore.getState();
@@ -474,7 +692,7 @@ function ObservationRow({
       ...hm,
       observations: hm.observations.map((o) =>
         o.observationId === obs.observationId
-          ? { ...o, category: editCategory, intensity: { ...o.intensity, score: editIntensity }, rationale: editRationale }
+          ? { ...o, category: editCategory, intensity: { ...o.intensity, score: editIntensity }, rationale: editRationale, status: editStatus }
           : o
       ),
     };
@@ -483,10 +701,25 @@ function ObservationRow({
     onEdit(); // close
   };
 
+  // Quick status toggle (no edit mode needed)
+  const handleStatusChange = (newStatus: ObservationStatus) => {
+    const store = useCanvasStore.getState();
+    const hm = store.heatmapsByVs.get(item.vsId);
+    if (!hm) return;
+    const updated = {
+      ...hm,
+      observations: hm.observations.map((o) =>
+        o.observationId === obs.observationId ? { ...o, status: newStatus } : o
+      ),
+    };
+    store.heatmapsByVs.set(item.vsId, updated);
+    useCanvasStore.setState({ heatmapsByVs: new Map(store.heatmapsByVs), scaffoldDirty: true });
+  };
+
   return (
     <div className={`rounded-lg border ${isBinding ? "border-blue-300 bg-blue-50/30" : "border-gray-200 bg-white"} transition-shadow hover:shadow-sm`}>
       <div className="flex items-start gap-3 px-4 py-3">
-        {/* Intensity bar */}
+        {/* Intensity indicator */}
         <div className="flex flex-col items-center gap-1 pt-0.5">
           <div
             className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
@@ -501,7 +734,8 @@ function ObservationRow({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            {/* Category pill */}
             <span
               className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
               style={{ background: colours.bg, color: colours.text }}
@@ -509,6 +743,29 @@ function ObservationRow({
               <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: colours.dot }} />
               {categoryLabel(obs.category)}
             </span>
+            {/* Status pill */}
+            <select
+              value={status}
+              onChange={(e) => handleStatusChange(e.target.value as ObservationStatus)}
+              className="rounded-full border px-2 py-0.5 text-[10px] font-semibold cursor-pointer appearance-none"
+              style={{
+                background: statusMeta.colour.bg,
+                color: statusMeta.colour.text,
+                borderColor: statusMeta.colour.border,
+              }}
+            >
+              {OBSERVATION_STATUSES.map((s) => (
+                <option key={s.status} value={s.status}>{s.label}</option>
+              ))}
+            </select>
+            {/* Provenance (read-only) */}
+            <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-500" title="Provenance — how this observation was created (read-only)">
+              <svg className="h-2.5 w-2.5" style={{ color: provenanceMeta.colour }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={provenanceMeta.icon} />
+              </svg>
+              {provenanceMeta.label}
+            </span>
+            {/* VS + Anchor */}
             <span className="text-[10px] text-gray-400">{vsName}</span>
             <span className="text-[10px] text-gray-300">·</span>
             <span className="text-[10px] text-gray-500 font-medium">{anchorName}</span>
@@ -516,7 +773,7 @@ function ObservationRow({
 
           {isEditing ? (
             <div className="space-y-2 mt-2">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <select
                   value={editCategory}
                   onChange={(e) => setEditCategory(e.target.value)}
@@ -526,18 +783,27 @@ function ObservationRow({
                     <option key={c} value={c}>{categoryLabel(c)}</option>
                   ))}
                 </select>
+                <select
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value as ObservationStatus)}
+                  className="rounded border border-gray-200 px-2 py-1 text-xs"
+                >
+                  {OBSERVATION_STATUSES.map((s) => (
+                    <option key={s.status} value={s.status}>{s.label}</option>
+                  ))}
+                </select>
                 <label className="flex items-center gap-1 text-xs text-gray-600">
                   Intensity:
-                  <input
-                    type="range"
-                    min={0}
-                    max={10}
-                    value={editIntensity}
-                    onChange={(e) => setEditIntensity(Number(e.target.value))}
-                    className="w-24"
-                  />
+                  <input type="range" min={0} max={10} value={editIntensity} onChange={(e) => setEditIntensity(Number(e.target.value))} className="w-24" />
                   <span className="font-bold text-gray-800">{editIntensity}</span>
                 </label>
+              </div>
+              {/* Provenance shown but not editable */}
+              <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                <svg className="h-3 w-3" style={{ color: provenanceMeta.colour }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={provenanceMeta.icon} />
+                </svg>
+                Provenance: <strong className="text-gray-600">{provenanceMeta.label}</strong> <span className="italic">(read-only)</span>
               </div>
               <textarea
                 value={editRationale}
@@ -575,16 +841,19 @@ function ObservationRow({
   );
 }
 
-// ── Add observation form ─────────────────────────────────────────────────────
+// ── Add observation form (with type + provenance) ────────────────────────────
 
 function AddObservationForm({
   scaffoldData,
+  defaultObservationType,
   onClose,
 }: {
   scaffoldData: ScaffoldData;
+  defaultObservationType?: ObservationType;
   onClose: () => void;
 }) {
   const [category, setCategory] = useState(ALL_CATEGORIES[0]);
+  const [observationType, setObservationType] = useState<ObservationType>(defaultObservationType ?? "friction");
   const [anchorType, setAnchorType] = useState<string>("Activity");
   const [anchorId, setAnchorId] = useState("");
   const [intensity, setIntensity] = useState(5);
@@ -609,6 +878,9 @@ function AddObservationForm({
     const newObs: FrictionObservation = {
       observationId: obsId,
       category,
+      observationType,
+      status: "suggested" as ObservationStatus,
+      provenance: "provided" as ObservationProvenance,
       primaryAnchor: { anchorType, anchorId },
       intensity: { scale: "0-10", score: intensity },
       rationale: rationale.trim(),
@@ -619,7 +891,6 @@ function AddObservationForm({
       const updated = { ...hm, observations: [...hm.observations, newObs] };
       store.heatmapsByVs.set(vsId, updated);
     } else {
-      // Create new heatmap for this VS
       const newHm: HeatmapData = {
         schemaVersion: "1.0",
         heatmapId: `heatmap-${vsId}-${Date.now()}`,
@@ -635,10 +906,26 @@ function AddObservationForm({
     onClose();
   };
 
+  const typeMeta = OBSERVATION_TYPES.find((t) => t.type === observationType);
+
   return (
     <div className="mb-4 rounded-lg border border-vcc-200 bg-vcc-50/30 p-4">
-      <h4 className="mb-3 text-xs font-semibold text-gray-700">Add Friction Observation</h4>
-      <div className="grid grid-cols-2 gap-3">
+      <h4 className="mb-3 text-xs font-semibold text-gray-700">
+        Add {typeMeta?.label.replace(/s$/, "") ?? "Observation"}
+      </h4>
+      <div className="grid grid-cols-3 gap-3">
+        <div>
+          <label className="mb-1 block text-[10px] font-medium text-gray-500 uppercase tracking-wide">Observation Type</label>
+          <select
+            value={observationType}
+            onChange={(e) => setObservationType(e.target.value as ObservationType)}
+            className="w-full rounded border border-gray-200 px-2 py-1.5 text-xs"
+          >
+            {OBSERVATION_TYPES.map((t) => (
+              <option key={t.type} value={t.type}>{t.label}</option>
+            ))}
+          </select>
+        </div>
         <div>
           <label className="mb-1 block text-[10px] font-medium text-gray-500 uppercase tracking-wide">Value Stream</label>
           <select value={vsId} onChange={(e) => setVsId(e.target.value)} className="w-full rounded border border-gray-200 px-2 py-1.5 text-xs">
@@ -663,7 +950,7 @@ function AddObservationForm({
             ))}
           </select>
         </div>
-        <div>
+        <div className="col-span-2">
           <label className="mb-1 block text-[10px] font-medium text-gray-500 uppercase tracking-wide">Anchor Element</label>
           <select value={anchorId} onChange={(e) => setAnchorId(e.target.value)} className="w-full rounded border border-gray-200 px-2 py-1.5 text-xs">
             <option value="">Select...</option>
@@ -685,15 +972,271 @@ function AddObservationForm({
           value={rationale}
           onChange={(e) => setRationale(e.target.value)}
           rows={2}
-          placeholder="Describe the friction observation and its impact..."
+          placeholder="Describe the observation and its impact on the value stream..."
           className="w-full rounded border border-gray-200 px-2 py-1.5 text-xs text-gray-700"
         />
+      </div>
+      <div className="mt-2 flex items-center gap-1 text-[10px] text-gray-400">
+        <svg className="h-3 w-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={PROVENANCE_META.provided.icon} />
+        </svg>
+        Provenance will be set to <strong className="text-gray-600">Provided</strong> (human-supplied)
       </div>
       <div className="mt-3 flex gap-2">
         <button onClick={handleAdd} disabled={!anchorId || !rationale.trim()} className="rounded bg-vcc-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-vcc-700 disabled:opacity-40">
           Add Observation
         </button>
         <button onClick={onClose} className="rounded border border-gray-200 px-4 py-1.5 text-xs text-gray-600 hover:bg-gray-50">Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Import area per observation type ─────────────────────────────────────────
+
+function ObservationImportArea({
+  observationType,
+  scaffoldData,
+  onClose,
+}: {
+  observationType: ObservationType;
+  scaffoldData: ScaffoldData;
+  onClose: () => void;
+}) {
+  const typeMeta = OBSERVATION_TYPES.find((t) => t.type === observationType)!;
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleImport = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+      let rows: Record<string, unknown>[] = [];
+
+      if (ext === "json") {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        rows = Array.isArray(data) ? data : data.observations ?? data.rows ?? [];
+      } else if (ext === "csv" || ext === "xlsx" || ext === "xls") {
+        const XLSX = await import("xlsx");
+        let wb: ReturnType<typeof XLSX.read>;
+        if (ext === "csv") {
+          const text = await file.text();
+          wb = XLSX.read(text, { type: "string" });
+        } else {
+          const buf = await file.arrayBuffer();
+          wb = XLSX.read(new Uint8Array(buf), { type: "array" });
+        }
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(sheet);
+      } else {
+        throw new Error("Unsupported file type. Use .json, .csv, or .xlsx");
+      }
+
+      if (!rows.length) throw new Error("File contains no data rows");
+
+      // Flexible column matching
+      const normalise = (s: unknown) => String(s ?? "").toLowerCase().trim().replace(/[\s_\-/]+/g, "");
+      const findCol = (row: Record<string, unknown>, ...candidates: string[]) => {
+        for (const key of Object.keys(row)) {
+          const nk = normalise(key);
+          if (candidates.some((c) => nk.includes(normalise(c)))) return key;
+        }
+        return null;
+      };
+
+      const first = rows[0];
+      const colRationale = findCol(first, "rationale", "description", "detail", "observation", "finding", "note");
+      const colAnchor = findCol(first, "anchor", "element", "activity", "stage", "component");
+      const colAnchorType = findCol(first, "anchortype", "anchor type", "elementtype", "type");
+      const colIntensity = findCol(first, "intensity", "score", "severity", "impact");
+      const colCategory = findCol(first, "category", "frictioncategory", "friction category");
+      const colVs = findCol(first, "valuestream", "value stream", "vs", "stream");
+      const colStatus = findCol(first, "status", "state");
+
+      const cell = (row: Record<string, unknown>, col: string | null) => col ? String(row[col] ?? "").trim() : "";
+
+      const store = useCanvasStore.getState();
+      const vsIds = Object.keys(scaffoldData.elements.valueStreams);
+      const defaultVsId = vsIds[0] ?? "unknown";
+      let imported = 0;
+
+      for (const row of rows) {
+        const rationale = cell(row, colRationale);
+        if (!rationale) continue;
+
+        const anchorName = cell(row, colAnchor);
+        const anchorTypeVal = cell(row, colAnchorType) || "Activity";
+        const intensityVal = parseInt(cell(row, colIntensity) || "5", 10);
+        const categoryVal = cell(row, colCategory) || ALL_CATEGORIES[0];
+        const statusVal = cell(row, colStatus) || "suggested";
+        const vsName = cell(row, colVs);
+
+        // Resolve anchor ID from name
+        let resolvedAnchorId = "";
+        const elts = scaffoldData.elements;
+        const typeKey = anchorTypeVal.toLowerCase();
+        if (typeKey === "activity" || typeKey === "stage") {
+          const match = Object.entries(elts.activities).find(([, a]) => a.name?.toLowerCase() === anchorName.toLowerCase());
+          resolvedAnchorId = match?.[0] ?? anchorName;
+        } else if (typeKey === "role") {
+          const match = Object.entries(elts.roles).find(([, r]) => (r.name ?? "").toLowerCase() === anchorName.toLowerCase());
+          resolvedAnchorId = match?.[0] ?? anchorName;
+        } else if (typeKey === "capability") {
+          const match = Object.entries(elts.capabilities).find(([, c]) => (c.name ?? "").toLowerCase() === anchorName.toLowerCase());
+          resolvedAnchorId = match?.[0] ?? anchorName;
+        } else {
+          resolvedAnchorId = anchorName;
+        }
+
+        // Resolve VS
+        let targetVsId = defaultVsId;
+        if (vsName) {
+          const match = Object.entries(scaffoldData.elements.valueStreams).find(([, v]) => (v.name ?? "").toLowerCase() === vsName.toLowerCase());
+          if (match) targetVsId = match[0];
+        }
+
+        const newObs: FrictionObservation = {
+          observationId: `fr_import_${Date.now()}_${imported}`,
+          category: ALL_CATEGORIES.includes(categoryVal as any) ? categoryVal : ALL_CATEGORIES[0],
+          observationType,
+          status: (["suggested", "agreed", "discarded", "resolved"].includes(statusVal) ? statusVal : "suggested") as ObservationStatus,
+          provenance: "provided" as ObservationProvenance,
+          primaryAnchor: { anchorType: anchorTypeVal || "Activity", anchorId: resolvedAnchorId || "unknown" },
+          intensity: { scale: "0-10", score: Math.max(0, Math.min(10, isNaN(intensityVal) ? 5 : intensityVal)) },
+          rationale,
+          observedAt: new Date().toISOString(),
+        };
+
+        const hm = store.heatmapsByVs.get(targetVsId);
+        if (hm) {
+          hm.observations.push(newObs);
+        } else {
+          store.heatmapsByVs.set(targetVsId, {
+            schemaVersion: "1.0",
+            heatmapId: `heatmap-${targetVsId}-${Date.now()}`,
+            scaffoldId: scaffoldData.scaffoldId,
+            valueStreamId: targetVsId,
+            createdAt: new Date().toISOString(),
+            observations: [newObs],
+            bindingConstraint: null as any,
+          } as HeatmapData);
+        }
+        imported++;
+      }
+
+      useCanvasStore.setState({ heatmapsByVs: new Map(store.heatmapsByVs), scaffoldDirty: true });
+      alert(`Successfully imported ${imported} ${typeMeta.label.toLowerCase()}.`);
+      onClose();
+    } catch (err) {
+      alert("Import failed: " + (err as Error).message);
+    }
+  }, [observationType, scaffoldData, onClose, typeMeta]);
+
+  return (
+    <div className="mb-4 rounded-lg border border-dashed border-indigo-300 bg-indigo-50/30 p-4">
+      <div className="flex items-start justify-between mb-2">
+        <h4 className="text-xs font-semibold text-gray-700">
+          Import {typeMeta.label} from Spreadsheet
+        </h4>
+        <button onClick={onClose} className="rounded p-1 text-gray-400 hover:bg-gray-100">
+          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <p className="text-[10px] text-gray-500 leading-relaxed mb-3">
+        Upload a CSV, Excel (.xlsx), or JSON file with observation data. The importer will automatically match column
+        headers to observation fields. All imported observations will be marked as <strong>Provided</strong> provenance
+        with type <strong>{typeMeta.label}</strong>.
+      </p>
+      <div className="flex items-center gap-3">
+        <input ref={fileRef} type="file" accept=".json,.csv,.xlsx,.xls" className="hidden" onChange={handleImport} />
+        <button
+          onClick={() => fileRef.current?.click()}
+          className="flex items-center gap-1.5 rounded-md bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
+        >
+          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          Choose File
+        </button>
+        <span className="text-[10px] text-gray-400">Accepts .csv, .xlsx, .json</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Spreadsheet import guide graphic ─────────────────────────────────────────
+
+function SpreadsheetImportGuide({ onClose }: { onClose: () => void }) {
+  const columns = [
+    { name: "Rationale *", desc: "Description of the observation", example: "Handoff between sales and onboarding takes 3+ days", width: "flex-[2]" },
+    { name: "Observation Type", desc: "painPoint, friction, risk, control, constraint", example: "friction", width: "flex-1" },
+    { name: "Anchor", desc: "Name of the scaffold element", example: "Qualify Lead", width: "flex-1" },
+    { name: "Anchor Type", desc: "Activity, Role, Capability, Control, Metric", example: "Activity", width: "flex-1" },
+    { name: "Intensity", desc: "Score 0-10", example: "7", width: "flex-[0.5]" },
+    { name: "Category", desc: "Friction category code", example: "ProcessHandoffFriction", width: "flex-1" },
+    { name: "Value Stream", desc: "Name of the target value stream", example: "Customer Acquisition", width: "flex-1" },
+    { name: "Status", desc: "suggested, agreed, discarded, resolved", example: "suggested", width: "flex-1" },
+  ];
+
+  return (
+    <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h3 className="text-sm font-bold text-gray-900">Recommended Spreadsheet Columns</h3>
+          <p className="text-[10px] text-gray-500 mt-1">
+            Use these column headers in your CSV or Excel file. Only <strong>Rationale</strong> is required — all other columns will use
+            sensible defaults if omitted. Column matching is case-insensitive and flexible (e.g., "Description" matches "Rationale").
+          </p>
+        </div>
+        <button onClick={onClose} className="rounded p-1 text-gray-400 hover:bg-gray-100">
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Visual spreadsheet graphic */}
+      <div className="overflow-x-auto rounded-lg border border-gray-200">
+        {/* Header row */}
+        <div className="flex bg-gray-100 border-b border-gray-200">
+          {columns.map((col) => (
+            <div key={col.name} className={`${col.width} px-3 py-2 border-r border-gray-200 last:border-r-0`}>
+              <span className="text-[10px] font-bold text-gray-800">{col.name}</span>
+            </div>
+          ))}
+        </div>
+        {/* Description row */}
+        <div className="flex bg-blue-50/50 border-b border-gray-100">
+          {columns.map((col) => (
+            <div key={col.name} className={`${col.width} px-3 py-1.5 border-r border-gray-100 last:border-r-0`}>
+              <span className="text-[9px] text-gray-500 italic">{col.desc}</span>
+            </div>
+          ))}
+        </div>
+        {/* Example data row */}
+        <div className="flex bg-white">
+          {columns.map((col) => (
+            <div key={col.name} className={`${col.width} px-3 py-2 border-r border-gray-100 last:border-r-0`}>
+              <span className="text-[10px] text-gray-700 font-mono">{col.example}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-start gap-2">
+        <svg className="h-3.5 w-3.5 text-amber-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p className="text-[10px] text-gray-500 leading-relaxed">
+          <strong>Tip:</strong> The importer fuzzy-matches column headers. "Description", "Finding", or "Detail" will all match to Rationale.
+          "Element", "Stage", or "Component" will match to Anchor. Anchor names are resolved against the scaffold — if the importer can't find
+          a matching element, it will use the raw text as the anchor ID.
+        </p>
       </div>
     </div>
   );
@@ -1389,17 +1932,17 @@ function HowItWorksTab() {
         <div className="mb-4">
           <h4 className="mb-2 text-xs font-semibold text-amber-700">Execution Friction (Amber)</h4>
           <div className="space-y-2">
-            <TaxonomyCard cat="Process Handoff" def="Work stalls between stages. Rework loops, wait-time queues, and sequential gating without parallelism." signal="Long activity chains without branching; repeated outcome loops" />
-            <TaxonomyCard cat="Technology Integration" def="Systems don't interoperate. Manual data re-entry, automation gaps, capability spread across unlinked systems." signal="Single activity requiring multiple capabilities; capability spread across VS" />
-            <TaxonomyCard cat="Data Signal" def="Information is fragmented or delayed. Decision latency due to data dependency chains." signal="Repeated informationObjectIds across sequential activities" />
+            <TaxonomyCard cat="Process Handoff" def="Work stalls between Stages. Rework loops, wait-time queues, and sequential gating without parallelism." signal="Long Stage chains without branching; repeated outcome loops" />
+            <TaxonomyCard cat="Technology Integration" def="Systems don't interoperate. Manual data re-entry, automation gaps, capability spread across unlinked systems." signal="Single Stage requiring multiple capabilities; capability spread across VS" />
+            <TaxonomyCard cat="Data Signal" def="Information is fragmented or delayed. Decision latency due to data dependency chains." signal="Repeated informationObjectIds across sequential Stages" />
           </div>
         </div>
         <div>
           <h4 className="mb-2 text-xs font-semibold text-red-700">Governing Friction (Red)</h4>
           <div className="space-y-2">
-            <TaxonomyCard cat="Decision Authority" def="Decision rights are ambiguous. Escalation layers multiply, approval gates concentrate on single roles." signal="Single-point approval; role appearing in 5+ activities" />
-            <TaxonomyCard cat="Governance Risk" def="Control layering creates overhead. Compliance gates multiply without clear risk reduction." signal="2+ controls per activity; metric absence where controls exist" />
-            <TaxonomyCard cat="Incentive Capacity" def="Performance measures distort behaviour. Budget fragments accountability. Metrics misaligned with outcomes." signal="Role overload (5+ activities); missing or misaligned metrics" />
+            <TaxonomyCard cat="Decision Authority" def="Decision rights are ambiguous. Escalation layers multiply, approval gates concentrate on single roles." signal="Single-point approval; role appearing in 5+ Stages" />
+            <TaxonomyCard cat="Governance Risk" def="Control layering creates overhead. Compliance gates multiply without clear risk reduction." signal="2+ controls per Stage; metric absence where controls exist" />
+            <TaxonomyCard cat="Incentive Capacity" def="Performance measures distort behaviour. Budget fragments accountability. Metrics misaligned with outcomes." signal="Role overload (5+ Stages); missing or misaligned metrics" />
           </div>
         </div>
       </Section>
@@ -1444,7 +1987,7 @@ function HowItWorksTab() {
           {[
             { dim: "Observation Frequency", desc: "How many friction observations reference this anchor point" },
             { dim: "Authority Centralisation", desc: "Degree to which decision rights concentrate at this point" },
-            { dim: "Downstream Dependency", desc: "How many subsequent activities depend on this anchor's output" },
+            { dim: "Downstream Dependency", desc: "How many subsequent Stages depend on this anchor's output" },
             { dim: "Control Layering", desc: "Number of governance controls stacked at this point" },
             { dim: "Capacity Constraint", desc: "Whether this point is resource-limited (people, systems, budget)" },
           ].map((d) => (
@@ -1463,28 +2006,37 @@ function HowItWorksTab() {
       {/* Anchor model */}
       <Section title="The Anchor Model">
         <p className="mb-3 text-xs text-gray-600 leading-relaxed">
-          In a value stream canvas, the columns represent Activities (stages). The heatmap overlay works by lighting up
-          those columns with colour intensity to show where friction is concentrated. But friction doesn't always originate
-          at an Activity — it might be caused by a Role that is overloaded, a Capability that is immature, or a Control
-          that adds excessive overhead. The Anchor Model solves this by letting every friction observation attach to
-          <strong> any</strong> element type in the model, and then resolving that anchor back to the set of Activities it
-          affects. This is how a friction observation about a Role (e.g. "the Compliance Officer is a bottleneck") can
-          correctly light up all the activity columns where that role is involved.
+          In a value stream canvas, the columns represent <strong>Stages</strong> — the sequential steps that illustrate
+          how work flows across a value stream. The heatmap overlay works by lighting up those Stage columns with colour
+          intensity to show where friction is concentrated. But friction doesn't always originate at a Stage — it might
+          be caused by a Role that is overloaded, a Capability that is immature, or a Control that adds excessive overhead.
+          The Anchor Model solves this by letting every friction observation attach to <strong>any</strong> element type
+          in the model, and then resolving that anchor back to the set of Stages it affects. This is how a friction
+          observation about a Role (e.g. "the Compliance Officer is a bottleneck") can correctly light up all the Stage
+          columns where that role is involved.
+        </p>
+        <p className="mb-2 text-[10px] text-gray-500 leading-relaxed italic border-l-2 border-indigo-200 pl-3">
+          <strong>Note on Stages vs Activities:</strong> Stages and Activities are distinct ontological concepts. A <strong>Stage</strong> represents
+          a position in the flow across a Value Stream — it is what you see as columns in the canvas. An <strong>Activity</strong> is
+          a PPIT (People, Process, Information, Technology) item that underpins and enables a Capability. Stages illustrate sequence and
+          flow; Activities describe enablement and execution. The heatmap renders friction at the Stage level because that is the unit of
+          flow in the value stream.
         </p>
         <p className="mb-3 text-xs text-gray-600 leading-relaxed">
-          <strong>Direct anchors:</strong> When an observation is anchored directly to an Activity, it maps 1:1 — that
-          activity column lights up on the heatmap. No resolution is needed.
+          <strong>Direct anchors:</strong> When an observation is anchored directly to a Stage, it maps 1:1 — that
+          Stage column lights up on the heatmap. No resolution is needed.
         </p>
         <p className="mb-3 text-xs text-gray-600 leading-relaxed">
-          <strong>Indirect anchors:</strong> When an observation is anchored to a non-activity element, the system
-          performs a reverse lookup to find every Activity that references that element. The resolution rules are:
+          <strong>Indirect anchors:</strong> When an observation is anchored to a non-Stage element, the system
+          performs a reverse lookup to find every Stage that references that element. The resolution rules are:
         </p>
         <div className="space-y-2 mb-3">
           {[
-            { from: "Role", to: "Activities where performedByRoleIds includes the role", example: "\"Compliance Officer is overloaded\" → lights up every activity that role performs" },
-            { from: "Capability", to: "Activities where requiresCapabilityIds includes the capability", example: "\"Customer Onboarding capability is immature\" → lights up every activity that requires that capability" },
-            { from: "Metric", to: "Activities where metricIds includes the metric", example: "\"SLA metric is not being tracked\" → lights up every activity measured by that metric" },
-            { from: "Control", to: "Activities where controlIds includes the control", example: "\"Dual-approval control adds excessive delay\" → lights up every activity governed by that control" },
+            { from: "Role", to: "Stages where performedByRoleIds includes the role", example: "\"Compliance Officer is overloaded\" → lights up every Stage that role performs in" },
+            { from: "Capability", to: "Stages where requiresCapabilityIds includes the capability", example: "\"Customer Onboarding capability is immature\" → lights up every Stage that requires that capability" },
+            { from: "Metric", to: "Stages where metricIds includes the metric", example: "\"SLA metric is not being tracked\" → lights up every Stage measured by that metric" },
+            { from: "Control", to: "Stages where controlIds includes the control", example: "\"Dual-approval control adds excessive delay\" → lights up every Stage governed by that control" },
+            { from: "Activity", to: "Stages that the Activity enables (via Capability mapping)", example: "\"Data entry Activity is manual\" → lights up every Stage where the enabled Capability is required" },
           ].map((r) => (
             <div key={r.from} className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
               <div className="flex items-center gap-2 text-[10px]">
@@ -1497,9 +2049,9 @@ function HowItWorksTab() {
           ))}
         </div>
         <p className="text-[10px] text-gray-500 leading-relaxed">
-          This anchor resolution means you can describe friction at the level that makes sense — a problematic role, an underperforming capability, or an excessive control —
-          and the system will automatically show you everywhere in the value stream where that friction manifests. Multiple observations can share anchors, which is how the
-          heatmap builds up intensity at bottleneck points.
+          This anchor resolution means you can describe friction at the level that makes sense — a problematic role, an underperforming capability, an excessive control,
+          or even an Activity that fails to enable its Capability properly — and the system will automatically show you everywhere in the value stream where that friction
+          manifests at the Stage level. Multiple observations can share anchors, which is how the heatmap builds up intensity at bottleneck points.
         </p>
       </Section>
     </div>
