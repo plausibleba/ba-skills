@@ -285,7 +285,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
   });
 
   // ── ENRICH ──
-  items.push({ id: "sh-enrich", label: "Enrich", sectionHeader: true, icon: null, onClick: () => {}, divider: true });
+  items.push({ id: "sh-enrich", label: "Enrich", sectionHeader: true, icon: null, onClick: () => goToEnrich(), divider: true, disabled: !isLoaded });
 
   items.push({
     id: "enrich-structure",
@@ -409,10 +409,12 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
                 />
               )}
               {item.sectionHeader ? (
-                /* Section header — small uppercase label, only visible when expanded */
+                /* Section header — small uppercase label, only visible when expanded.
+                   If the header has an onClick (e.g. ENRICH), it becomes clickable and navigates to the section overview. */
                 <div
-                  className="flex h-6 items-center px-2.5"
+                  className={`flex h-6 items-center px-2.5 ${!item.disabled ? "cursor-pointer" : ""}`}
                   style={{ opacity: expanded ? 1 : 0 }}
+                  onClick={item.disabled ? undefined : item.onClick}
                 >
                   <span
                     className="whitespace-nowrap text-[9px] font-bold uppercase tracking-widest transition-opacity duration-200"

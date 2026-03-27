@@ -1,0 +1,264 @@
+/**
+ * enrichment-store.ts — Zustand store for enrichment state that persists
+ * across sub-view navigation.
+ *
+ * Previously this state lived inside the EnrichmentView component and was
+ * lost whenever the user navigated between enrichment sections (because they
+ * all lived on one page). Now that each section is its own routed sub-view,
+ * this store ensures state like running status, snapshots, review results,
+ * user content, and custom skills survive sub-view switches.
+ */
+
+import { create } from "zustand";
+// Pipeline types used by consumers via the shared hook
+
+// ─── Types (re-exported for sub-views) ──────────────────────────────────────
+
+/** How user-supplied content should influence the enrichment */
+export type InfluenceMode = "indicative" | "include" | "exclude" | "restrict-to";
+
+export const INFLUENCE_MODES: { value: InfluenceMode; label: string; description: string }[] = [
+  { value: "indicative",  label: "Indicative",  description: "Use as guidance — the AI may adapt, extend, or supplement your content with its own analysis" },
+  { value: "include",     label: "Include",      description: "Your content must be included in the output alongside anything the AI generates" },
+  { value: "exclude",     label: "Exclude",      description: "Explicitly exclude these items — the AI will omit anything matching your content" },
+  { value: "restrict-to", label: "Restrict to",  description: "Only use the items you provide — the AI will not add anything beyond your list" },
+];
+
+/** Per-card user content input */
+export interface UserContent {
+  text: string;
+  influence: InfluenceMode;
+}
+
+/** Snapshot captured before an enrichment run — enables rollback */
+export interface EnrichmentSnapshot {
+  cardId: string;
+  label: string;
+  timestamp: number;
+  scaffold: any;
+  cardRegistry: any;
+}
+
+/**
+ * ReviewResult — captured after a successful enrichment run.
+ * Holds a human-readable summary of what changed and where to view the impact.
+ */
+export interface ReviewResult {
+  cardId: string;
+  label: string;
+  timestamp: number;
+  changeSummary: string[];
+  committed: boolean;
+}
+
+/** Semantic properties for a mapping relationship */
+export interface MappingSemantics {
+  symmetrical: boolean;
+  functional: boolean;
+  transitive: boolean;
+  cardinality: "one-to-one" | "one-to-many" | "many-to-one" | "many-to-many";
+}
+
+/** Entity types that can participate in cross-mapping */
+export type MappableEntity = "capabilities" | "stages" | "activities" | "valueStreams" | "roles" | "information" | "technology" | "processes";
+
+/** A requested cross-mapping pair */
+export interface MappingPair {
+  id: string;
+  from: MappableEntity;
+  to: MappableEntity;
+  includeInverse: boolean;
+  semantics: MappingSemantics;
+}
+
+/** Custom enrichment skill */
+export interface CustomSkill {
+  id: string;
+  name: string;
+  prompt: string;
+  target: "capabilities" | "activities" | "valueStreams" | "roles" | "full-model";
+  createdAt: number;
+}
+
+// ─── Store Interface ────────────────────────────────────────────────────────
+
+interface EnrichmentState {
+  // Running state
+  running: string | null;
+  error: string | null;
+  completedThisSession: Set<string>;
+
+  // User content per card
+  userContentByCard: Record<string, UserContent>;
+
+  // Snapshots for rollback
+  snapshots: EnrichmentSnapshot[];
+  revertConfirm: string | null;
+
+  // Review results
+  reviewResults: ReviewResult[];
+
+  // Cross-mapping
+  mappingPairs: MappingPair[];
+
+  // Custom skills
+  customSkills: CustomSkill[];
+  showSkillEditor: boolean;
+  editingSkill: CustomSkill | null;
+
+  // Friction workspace
+  frictionExpanded: boolean;
+
+  // Actions
+  setRunning: (id: string | null) => void;
+  setError: (msg: string | null) => void;
+  markCompleted: (cardId: string) => void;
+  unmarkCompleted: (cardId: string) => void;
+  updateUserContent: (cardId: string, patch: Partial<UserContent>) => void;
+  addSnapshot: (snapshot: EnrichmentSnapshot) => void;
+  removeSnapshot: (snapshot: EnrichmentSnapshot) => void;
+  setRevertConfirm: (cardId: string | null) => void;
+  addReviewResult: (result: ReviewResult) => void;
+  updateReviewResult: (cardId: string, patch: Partial<ReviewResult>) => void;
+  removeReviewResult: (cardId: string) => void;
+  commitReview: (cardId: string) => void;
+
+  // Cross-mapping actions
+  addMappingPair: () => void;
+  updateMappingPair: (id: string, patch: Partial<MappingPair>) => void;
+  updateMappingSemantics: (id: string, semPatch: Partial<MappingSemantics>) => void;
+  removeMappingPair: (id: string) => void;
+
+  // Custom skills actions
+  setShowSkillEditor: (show: boolean) => void;
+  setEditingSkill: (skill: CustomSkill | null) => void;
+  saveCustomSkill: (skill: CustomSkill) => void;
+  deleteCustomSkill: (id: string) => void;
+
+  // Friction
+  setFrictionExpanded: (expanded: boolean) => void;
+}
+
+export const useEnrichmentStore = create<EnrichmentState>((set) => ({
+  running: null,
+  error: null,
+  completedThisSession: new Set(),
+  userContentByCard: {},
+  snapshots: [],
+  revertConfirm: null,
+  reviewResults: [],
+  mappingPairs: [],
+  customSkills: [],
+  showSkillEditor: false,
+  editingSkill: null,
+  frictionExpanded: false,
+
+  setRunning: (id) => set({ running: id }),
+  setError: (msg) => set({ error: msg }),
+
+  markCompleted: (cardId) =>
+    set((s) => ({ completedThisSession: new Set([...s.completedThisSession, cardId]) })),
+
+  unmarkCompleted: (cardId) =>
+    set((s) => {
+      const next = new Set(s.completedThisSession);
+      next.delete(cardId);
+      return { completedThisSession: next };
+    }),
+
+  updateUserContent: (cardId, patch) =>
+    set((s) => ({
+      userContentByCard: {
+        ...s.userContentByCard,
+        [cardId]: {
+          text: s.userContentByCard[cardId]?.text ?? "",
+          influence: s.userContentByCard[cardId]?.influence ?? "indicative",
+          ...patch,
+        },
+      },
+    })),
+
+  addSnapshot: (snapshot) =>
+    set((s) => ({ snapshots: [...s.snapshots, snapshot] })),
+
+  removeSnapshot: (snapshot) =>
+    set((s) => ({ snapshots: s.snapshots.filter((sn) => sn !== snapshot) })),
+
+  setRevertConfirm: (cardId) => set({ revertConfirm: cardId }),
+
+  addReviewResult: (result) =>
+    set((s) => ({
+      reviewResults: [
+        ...s.reviewResults.filter((r) => r.cardId !== result.cardId),
+        result,
+      ],
+    })),
+
+  updateReviewResult: (cardId, patch) =>
+    set((s) => ({
+      reviewResults: s.reviewResults.map((r) =>
+        r.cardId === cardId ? { ...r, ...patch } : r,
+      ),
+    })),
+
+  removeReviewResult: (cardId) =>
+    set((s) => ({ reviewResults: s.reviewResults.filter((r) => r.cardId !== cardId) })),
+
+  commitReview: (cardId) =>
+    set((s) => ({
+      reviewResults: s.reviewResults.map((r) =>
+        r.cardId === cardId ? { ...r, committed: true } : r,
+      ),
+    })),
+
+  // Cross-mapping
+  addMappingPair: () =>
+    set((s) => ({
+      mappingPairs: [
+        ...s.mappingPairs,
+        {
+          id: `mp-${Date.now()}`,
+          from: "capabilities" as MappableEntity,
+          to: "stages" as MappableEntity,
+          includeInverse: true,
+          semantics: { symmetrical: false, functional: false, transitive: false, cardinality: "many-to-many" as const },
+        },
+      ],
+    })),
+
+  updateMappingPair: (id, patch) =>
+    set((s) => ({
+      mappingPairs: s.mappingPairs.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+    })),
+
+  updateMappingSemantics: (id, semPatch) =>
+    set((s) => ({
+      mappingPairs: s.mappingPairs.map((p) =>
+        p.id === id ? { ...p, semantics: { ...p.semantics, ...semPatch } } : p,
+      ),
+    })),
+
+  removeMappingPair: (id) =>
+    set((s) => ({ mappingPairs: s.mappingPairs.filter((p) => p.id !== id) })),
+
+  // Custom skills
+  setShowSkillEditor: (show) => set({ showSkillEditor: show }),
+  setEditingSkill: (skill) => set({ editingSkill: skill }),
+
+  saveCustomSkill: (skill) =>
+    set((s) => {
+      const idx = s.customSkills.findIndex((sk) => sk.id === skill.id);
+      if (idx >= 0) {
+        const updated = [...s.customSkills];
+        updated[idx] = skill;
+        return { customSkills: updated, showSkillEditor: false, editingSkill: null };
+      }
+      return { customSkills: [...s.customSkills, skill], showSkillEditor: false, editingSkill: null };
+    }),
+
+  deleteCustomSkill: (id) =>
+    set((s) => ({ customSkills: s.customSkills.filter((sk) => sk.id !== id) })),
+
+  // Friction
+  setFrictionExpanded: (expanded) => set({ frictionExpanded: expanded }),
+}));

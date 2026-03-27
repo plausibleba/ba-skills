@@ -21,7 +21,12 @@ import { UpsellModalProvider, useUpsellModal } from "./components/UpsellModal.ts
 import { RefinementExportModal } from "./components/RefinementExport.tsx";
 import { ImportView } from "./components/ImportView.tsx";
 import { WorkbenchView } from "./components/WorkbenchView.tsx";
-import { EnrichmentView } from "./components/EnrichmentView.tsx";
+import { EnrichOverview } from "./components/enrichment/EnrichOverview";
+import { EnrichStructureView } from "./components/enrichment/EnrichStructureView";
+import { EnrichMappingView } from "./components/enrichment/EnrichMappingView";
+import { EnrichFrictionView } from "./components/enrichment/EnrichFrictionView";
+import { EnrichAssessmentView } from "./components/enrichment/EnrichAssessmentView";
+import { EnrichCustomView } from "./components/enrichment/EnrichCustomView";
 import { useWorkbenchStore } from "./store/workbench-store.ts";
 import { DevTierSwitcher } from "./components/DevTierSwitcher.tsx";
 import { extractClaimFromURL, consumePendingClaim } from "./utils/bundle-claim.ts";
@@ -36,6 +41,7 @@ export default function App() {
     scaffoldData,
     canvasViewModel,
     viewMode,
+    enrichSection,
     error,
     backToNetwork,
     goToIntake,
@@ -459,7 +465,14 @@ export default function App() {
         {!isIntake && isLoaded && isCapabilityMap && !isWorkbench && <CapabilityMapView />}
         {!isIntake && isLoaded && isConceptGraph && !isWorkbench && <ConceptGraphView />}
         {!isIntake && isLoaded && isFriction && !isWorkbench && <FrictionView />}
-        {!isIntake && isLoaded && isEnrich && !isWorkbench && <EnrichmentView />}
+        {!isIntake && isLoaded && isEnrich && !isWorkbench && (
+          enrichSection === "structure" ? <EnrichStructureView /> :
+          enrichSection === "mapping" ? <EnrichMappingView /> :
+          enrichSection === "friction" ? <EnrichFrictionView /> :
+          enrichSection === "assessment" ? <EnrichAssessmentView /> :
+          enrichSection === "custom" ? <EnrichCustomView /> :
+          <EnrichOverview />
+        )}
         {isWorkbench && workbenchActive && <WorkbenchView />}
       </main>
       <UserGuidePanel />
