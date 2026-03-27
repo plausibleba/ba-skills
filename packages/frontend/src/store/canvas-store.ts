@@ -24,9 +24,13 @@ import {
 
 type ViewMode = "network" | "stage" | "intake" | "import" | "enrich" | "capabilityMap" | "conceptGraph" | "friction" | "workbench";
 
+/** Sub-section within the Enrich view */
+export type EnrichSection = "structure" | "mapping" | "friction" | "assessment" | "custom" | null;
+
 interface CanvasState {
   // View navigation
   viewMode: ViewMode;
+  enrichSection: EnrichSection;
   selectedVsId: string | null;
 
   // Data
@@ -70,7 +74,7 @@ interface CanvasState {
   goToCapabilityMap: () => void;
   goToConceptGraph: () => void;
   goToFriction: () => void;
-  goToEnrich: () => void;
+  goToEnrich: (section?: EnrichSection) => void;
   goToWorkbench: () => void;
   reset: () => void;
   saveUserStory: (activityId: string, story: TransformationUserStory) => void;
@@ -120,6 +124,7 @@ interface CanvasState {
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
   viewMode: "network",
+  enrichSection: null,
   selectedVsId: null,
   scaffoldData: null,
   heatmapData: null,
@@ -496,8 +501,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     trackViewChange("friction");
   },
 
-  goToEnrich: () => {
-    set({ viewMode: "enrich" });
+  goToEnrich: (section?: EnrichSection) => {
+    set({ viewMode: "enrich", enrichSection: section ?? null });
     trackViewChange("enrich");
   },
 
@@ -511,6 +516,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     useWorkbenchStore.getState().exitWorkbench();
     set({
       viewMode: "network",
+      enrichSection: null,
       selectedVsId: null,
       scaffoldData: null,
       heatmapData: null,

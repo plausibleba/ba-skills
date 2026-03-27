@@ -124,6 +124,10 @@ interface NavItem {
   disabled?: boolean;
   /** Visually separate from above item */
   divider?: boolean;
+  /** If true, render as a section header (small, uppercase, no icon, not clickable) */
+  sectionHeader?: boolean;
+  /** Indent level for child items under a section header */
+  indent?: boolean;
 }
 
 /* ── Main component ──────────────────────────────────────── */
@@ -189,6 +193,8 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     goToImport();
   };
 
+  const enrichSection = useCanvasStore((s) => s.enrichSection);
+
   /* ── Build nav items ──────────────────────────────── */
 
   const items: NavItem[] = [];
@@ -204,25 +210,40 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     });
   }
 
-  // Discovery
+  // ── ELABORATE ──
+  items.push({ id: "sh-elaborate", label: "Elaborate", sectionHeader: true, icon: null, onClick: () => {}, divider: true });
+
   items.push({
     id: "discovery",
     label: "Discovery",
     icon: <IconDiscovery />,
     onClick: goToIntake,
     active: viewMode === "intake",
+    indent: true,
   });
 
-  // Import reference model
   items.push({
     id: "import",
     label: "Import Model",
     icon: <IconImport />,
     onClick: handleImportClick,
     active: viewMode === "import",
+    indent: true,
   });
 
-  // Divider before model views
+  items.push({
+    id: "workbench",
+    label: "Workbench",
+    icon: <IconWorkbench />,
+    onClick: goToWorkbench,
+    active: viewMode === "workbench" && workbenchActive,
+    disabled: !isLoaded,
+    indent: true,
+  });
+
+  // ── EXPLORE ──
+  items.push({ id: "sh-explore", label: "Explore", sectionHeader: true, icon: null, onClick: () => {}, divider: true });
+
   items.push({
     id: "network",
     label: "Network",
@@ -230,16 +251,17 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     onClick: backToNetwork,
     active: viewMode === "network",
     disabled: !isLoaded,
-    divider: true,
+    indent: true,
   });
 
   items.push({
     id: "stream",
-    label: "Value Stream",
+    label: "Value Streams",
     icon: <IconStream />,
     onClick: goToStream,
     active: viewMode === "stage",
     disabled: !isLoaded,
+    indent: true,
   });
 
   items.push({
@@ -249,6 +271,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     onClick: goToCapabilityMap,
     active: viewMode === "capabilityMap",
     disabled: !isLoaded,
+    indent: true,
   });
 
   items.push({
@@ -258,27 +281,60 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     onClick: goToConceptGraph,
     active: viewMode === "conceptGraph",
     disabled: !isLoaded,
+    indent: true,
   });
 
-  // Enrichment (includes Friction as an embedded section)
+  // ── ENRICH ──
+  items.push({ id: "sh-enrich", label: "Enrich", sectionHeader: true, icon: null, onClick: () => {}, divider: true });
+
   items.push({
-    id: "enrich",
-    label: "Enrich",
+    id: "enrich-structure",
+    label: "Structure",
     icon: <IconEnrich />,
-    onClick: goToEnrich,
-    active: viewMode === "enrich",
+    onClick: () => goToEnrich("structure"),
+    active: viewMode === "enrich" && enrichSection === "structure",
     disabled: !isLoaded,
+    indent: true,
   });
 
-  // Workbench
   items.push({
-    id: "workbench",
-    label: "Workbench",
-    icon: <IconWorkbench />,
-    onClick: goToWorkbench,
-    active: viewMode === "workbench" && workbenchActive,
+    id: "enrich-mapping",
+    label: "Cross-Mapping",
+    icon: <IconEnrich />,
+    onClick: () => goToEnrich("mapping"),
+    active: viewMode === "enrich" && enrichSection === "mapping",
     disabled: !isLoaded,
-    divider: true,
+    indent: true,
+  });
+
+  items.push({
+    id: "enrich-friction",
+    label: "Friction",
+    icon: <IconEnrich />,
+    onClick: () => goToEnrich("friction"),
+    active: viewMode === "enrich" && enrichSection === "friction",
+    disabled: !isLoaded,
+    indent: true,
+  });
+
+  items.push({
+    id: "enrich-assessment",
+    label: "Assessment",
+    icon: <IconEnrich />,
+    onClick: () => goToEnrich("assessment"),
+    active: viewMode === "enrich" && enrichSection === "assessment",
+    disabled: !isLoaded,
+    indent: true,
+  });
+
+  items.push({
+    id: "enrich-custom",
+    label: "Custom Skills",
+    icon: <IconEnrich />,
+    onClick: () => goToEnrich("custom"),
+    active: viewMode === "enrich" && enrichSection === "custom",
+    disabled: !isLoaded,
+    indent: true,
   });
 
   /* ── Bottom-pinned items ──────────────────────────── */
@@ -352,37 +408,61 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
                   style={{ height: 1, background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.12)" }}
                 />
               )}
-              <button
-                onClick={item.disabled ? undefined : item.onClick}
-                disabled={item.disabled}
-                title={expanded ? undefined : item.label}
-                className={`
-                  group flex h-9 w-full items-center gap-2.5 rounded-md px-2.5
-                  transition-colors duration-100
-                  ${item.disabled ? "opacity-30 cursor-not-allowed" : `cursor-pointer ${hoverBg}`}
-                `}
-                style={
-                  item.active
-                    ? { background: isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.15)" }
-                    : undefined
-                }
-              >
-                <span
-                  className="shrink-0"
-                  style={{ color: item.active ? activeColor : "rgba(255,255,255,0.55)" }}
+              {item.sectionHeader ? (
+                /* Section header — small uppercase label, only visible when expanded */
+                <div
+                  className="flex h-6 items-center px-2.5"
+                  style={{ opacity: expanded ? 1 : 0 }}
                 >
-                  {item.icon}
-                </span>
-                <span
-                  className="whitespace-nowrap text-[12px] font-medium transition-opacity duration-200"
-                  style={{
-                    color: item.active ? "#ffffff" : "rgba(255,255,255,0.55)",
-                    opacity: expanded ? 1 : 0,
-                  }}
+                  <span
+                    className="whitespace-nowrap text-[9px] font-bold uppercase tracking-widest transition-opacity duration-200"
+                    style={{ color: isDark ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.35)" }}
+                  >
+                    {item.label}
+                  </span>
+                </div>
+              ) : (
+                <button
+                  onClick={item.disabled ? undefined : item.onClick}
+                  disabled={item.disabled}
+                  title={expanded ? undefined : item.label}
+                  className={`
+                    group flex w-full items-center gap-2.5 rounded-md
+                    transition-colors duration-100
+                    ${item.indent ? "h-8" : "h-9"}
+                    ${item.indent ? "px-2.5" : "px-2.5"}
+                    ${item.disabled ? "opacity-30 cursor-not-allowed" : `cursor-pointer ${hoverBg}`}
+                  `}
+                  style={
+                    item.active
+                      ? { background: isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.15)" }
+                      : undefined
+                  }
                 >
-                  {item.label}
-                </span>
-              </button>
+                  <span
+                    className="shrink-0"
+                    style={{
+                      color: item.active ? activeColor : "rgba(255,255,255,0.55)",
+                      width: 20,
+                      height: 20,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {item.icon}
+                  </span>
+                  <span
+                    className={`whitespace-nowrap font-medium transition-opacity duration-200 ${item.indent ? "text-[11px]" : "text-[12px]"}`}
+                    style={{
+                      color: item.active ? "#ffffff" : "rgba(255,255,255,0.55)",
+                      opacity: expanded ? 1 : 0,
+                    }}
+                  >
+                    {item.label}
+                  </span>
+                </button>
+              )}
             </div>
           ))}
         </div>

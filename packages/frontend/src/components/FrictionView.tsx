@@ -106,7 +106,7 @@ export function FrictionView() {
   const scaffoldData = useCanvasStore((s) => s.scaffoldData);
   const heatmapsByVs = useCanvasStore((s) => s.heatmapsByVs);
 
-  const [activeTab, setActiveTab] = useState<FrictionTab>("observations");
+  const [activeTab, setActiveTab] = useState<FrictionTab>("howItWorks");
 
   if (!scaffoldData) {
     return (
@@ -117,10 +117,10 @@ export function FrictionView() {
   }
 
   const tabs: { id: FrictionTab; label: string; icon: string }[] = [
+    { id: "howItWorks", label: "How it works", icon: "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
     { id: "observations", label: "Observations", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" },
     { id: "survey", label: "Survey", icon: "M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
     { id: "solutions", label: "Solutions", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
-    { id: "howItWorks", label: "How it works", icon: "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
     { id: "settings", label: "Signals", icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" },
   ];
 
@@ -1462,23 +1462,45 @@ function HowItWorksTab() {
 
       {/* Anchor model */}
       <Section title="The Anchor Model">
-        <p className="mb-3 text-xs text-gray-600">
-          Every friction observation is anchored to one or more elements in the scaffold: Activity, Role, Capability, Control, Metric, or Constraint. When anchored to a non-activity element, the system resolves it to the set of activities that reference that element — this is how the heatmap overlay lights up the correct activity columns on the canvas.
+        <p className="mb-3 text-xs text-gray-600 leading-relaxed">
+          In a value stream canvas, the columns represent Activities (stages). The heatmap overlay works by lighting up
+          those columns with colour intensity to show where friction is concentrated. But friction doesn't always originate
+          at an Activity — it might be caused by a Role that is overloaded, a Capability that is immature, or a Control
+          that adds excessive overhead. The Anchor Model solves this by letting every friction observation attach to
+          <strong> any</strong> element type in the model, and then resolving that anchor back to the set of Activities it
+          affects. This is how a friction observation about a Role (e.g. "the Compliance Officer is a bottleneck") can
+          correctly light up all the activity columns where that role is involved.
         </p>
-        <div className="space-y-1">
+        <p className="mb-3 text-xs text-gray-600 leading-relaxed">
+          <strong>Direct anchors:</strong> When an observation is anchored directly to an Activity, it maps 1:1 — that
+          activity column lights up on the heatmap. No resolution is needed.
+        </p>
+        <p className="mb-3 text-xs text-gray-600 leading-relaxed">
+          <strong>Indirect anchors:</strong> When an observation is anchored to a non-activity element, the system
+          performs a reverse lookup to find every Activity that references that element. The resolution rules are:
+        </p>
+        <div className="space-y-2 mb-3">
           {[
-            { from: "Role", to: "Activities where performedByRoleIds includes the role" },
-            { from: "Capability", to: "Activities where requiresCapabilityIds includes the capability" },
-            { from: "Metric", to: "Activities where metricIds includes the metric" },
-            { from: "Control", to: "Activities where controlIds includes the control" },
+            { from: "Role", to: "Activities where performedByRoleIds includes the role", example: "\"Compliance Officer is overloaded\" → lights up every activity that role performs" },
+            { from: "Capability", to: "Activities where requiresCapabilityIds includes the capability", example: "\"Customer Onboarding capability is immature\" → lights up every activity that requires that capability" },
+            { from: "Metric", to: "Activities where metricIds includes the metric", example: "\"SLA metric is not being tracked\" → lights up every activity measured by that metric" },
+            { from: "Control", to: "Activities where controlIds includes the control", example: "\"Dual-approval control adds excessive delay\" → lights up every activity governed by that control" },
           ].map((r) => (
-            <div key={r.from} className="flex items-center gap-2 text-[10px]">
-              <span className="font-bold text-gray-700 w-20">{r.from}</span>
-              <span className="text-gray-400">→</span>
-              <span className="text-gray-600">{r.to}</span>
+            <div key={r.from} className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
+              <div className="flex items-center gap-2 text-[10px]">
+                <span className="font-bold text-gray-700 w-20 shrink-0">{r.from}</span>
+                <span className="text-gray-400">→</span>
+                <span className="text-gray-600">{r.to}</span>
+              </div>
+              <p className="mt-1 text-[9px] text-gray-400 italic">{r.example}</p>
             </div>
           ))}
         </div>
+        <p className="text-[10px] text-gray-500 leading-relaxed">
+          This anchor resolution means you can describe friction at the level that makes sense — a problematic role, an underperforming capability, or an excessive control —
+          and the system will automatically show you everywhere in the value stream where that friction manifests. Multiple observations can share anchors, which is how the
+          heatmap builds up intensity at bottleneck points.
+        </p>
       </Section>
     </div>
   );

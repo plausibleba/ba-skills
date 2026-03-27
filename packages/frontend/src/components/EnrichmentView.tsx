@@ -10,7 +10,7 @@
  *   5. Custom enrichment skills (user-editable prompts applied to the model)
  */
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { useDiscoverySessionStore } from "../store/discovery-session-store.ts";
 import { tv } from "../theme.ts";
@@ -304,7 +304,24 @@ const TARGET_LABELS: Record<CustomSkill["target"], string> = {
 export function EnrichmentView() {
   const scaffoldData = useCanvasStore((s) => s.scaffoldData);
   const cardRegistry = useCanvasStore((s) => s.cardRegistry);
+  const enrichSection = useCanvasStore((s) => s.enrichSection);
   const discoveryIR = useDiscoverySessionStore((s) => s.discoveryIR);
+
+  // Section refs for scroll-into-view
+  const sectionRefs = {
+    structure: useRef<HTMLDivElement>(null),
+    mapping: useRef<HTMLDivElement>(null),
+    friction: useRef<HTMLDivElement>(null),
+    assessment: useRef<HTMLDivElement>(null),
+    custom: useRef<HTMLDivElement>(null),
+  };
+
+  // Scroll to section when enrichSection changes from nav
+  useEffect(() => {
+    if (enrichSection && sectionRefs[enrichSection]?.current) {
+      sectionRefs[enrichSection].current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [enrichSection]);
 
   const [running, setRunning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -539,6 +556,7 @@ export function EnrichmentView() {
         )}
 
         {/* ── Section 1: Structure & Depth ── */}
+        <div ref={sectionRefs.structure} />
         <SectionHeader
           title="Structure & Depth"
           subtitle={
@@ -568,6 +586,7 @@ export function EnrichmentView() {
         </div>
 
         {/* ── Section 2: Cross-Mapping ── */}
+        <div ref={sectionRefs.mapping} />
         <SectionHeader
           title="Cross-Mapping"
           subtitle={
@@ -648,6 +667,7 @@ export function EnrichmentView() {
         </div>
 
         {/* ── Section 3: Friction & Bottleneck Analysis ── */}
+        <div ref={sectionRefs.friction} />
         <SectionHeader
           title="Friction & Bottleneck Analysis"
           subtitle={
@@ -703,6 +723,7 @@ export function EnrichmentView() {
         </div>
 
         {/* ── Section 4: Assessment & Analysis ── */}
+        <div ref={sectionRefs.assessment} />
         <SectionHeader
           title="Assessment & Analysis"
           subtitle={
@@ -732,6 +753,7 @@ export function EnrichmentView() {
         </div>
 
         {/* ── Section 5: Custom Enrichments ── */}
+        <div ref={sectionRefs.custom} />
         <SectionHeader
           title="Custom Enrichments"
           subtitle={
@@ -1151,30 +1173,38 @@ function MappingPairRow({
             during analysis — for example, a transitive mapping means that indirect relationships are automatically inferred.
           </p>
           <div className="grid grid-cols-2 gap-3">
-            {/* Cardinality */}
-            <div>
+            {/* Cardinality — disabled when transitive (transitive relations cannot be cardinality-constrained) */}
+            <div style={{ opacity: pair.semantics.transitive ? 0.4 : 1 }}>
               <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: tv.textDim }}>Cardinality</span>
+              {pair.semantics.transitive && (
+                <p className="text-[9px] mt-0.5 mb-1" style={{ color: "#d97706" }}>
+                  Disabled — transitive relations do not support fixed cardinality constraints because the inferred closure can produce any number of relationships.
+                </p>
+              )}
               <div className="flex flex-wrap gap-1 mt-1">
                 {CARDINALITY_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
-                    onClick={() => onUpdateSemantics({ cardinality: opt.value })}
+                    onClick={() => !pair.semantics.transitive && onUpdateSemantics({ cardinality: opt.value })}
+                    disabled={pair.semantics.transitive}
                     className="rounded px-2 py-0.5 text-[10px] font-medium"
                     style={{
-                      background: pair.semantics.cardinality === opt.value ? tv.accent : tv.bgSurface,
-                      color: pair.semantics.cardinality === opt.value ? "#fff" : tv.textDim,
-                      border: `1px solid ${pair.semantics.cardinality === opt.value ? tv.accent : tv.borderSubtle}`,
-                      cursor: "pointer",
+                      background: pair.semantics.cardinality === opt.value && !pair.semantics.transitive ? tv.accent : tv.bgSurface,
+                      color: pair.semantics.cardinality === opt.value && !pair.semantics.transitive ? "#fff" : tv.textDim,
+                      border: `1px solid ${pair.semantics.cardinality === opt.value && !pair.semantics.transitive ? tv.accent : tv.borderSubtle}`,
+                      cursor: pair.semantics.transitive ? "not-allowed" : "pointer",
                     }}
-                    title={opt.description}
+                    title={pair.semantics.transitive ? "Cardinality not applicable for transitive relations" : opt.description}
                   >
                     {opt.label}
                   </button>
                 ))}
               </div>
-              <p className="text-[9px] mt-1" style={{ color: tv.textDim }}>
-                {CARDINALITY_OPTIONS.find((o) => o.value === pair.semantics.cardinality)?.description}
-              </p>
+              {!pair.semantics.transitive && (
+                <p className="text-[9px] mt-1" style={{ color: tv.textDim }}>
+                  {CARDINALITY_OPTIONS.find((o) => o.value === pair.semantics.cardinality)?.description}
+                </p>
+              )}
             </div>
 
             {/* Boolean properties */}
