@@ -2,11 +2,12 @@
  * EnrichmentView — Dedicated page for iteratively enriching a loaded model.
  *
  * Accessible from SideNav at any time after a scaffold is loaded.
- * Contains four sections:
+ * Contains five sections:
  *   1. Built-in enrichment passes (Deepen Structure, Map PPIT, Generate Cards)
  *   2. Cross-Mapping (build relationships between model elements)
- *   3. Assessment & analysis actions (Friction Assessment, Gate Validation, etc.)
- *   4. Custom enrichment skills (user-editable prompts applied to the model)
+ *   3. Friction & Bottleneck Analysis (elevated from Assessment — full FrictionView embedded)
+ *   4. Assessment & analysis actions (Metrics, Dependencies, Maturity, etc.)
+ *   5. Custom enrichment skills (user-editable prompts applied to the model)
  */
 
 import { useState, useCallback, useMemo } from "react";
@@ -16,6 +17,7 @@ import { tv } from "../theme.ts";
 import { runEnrichmentStep } from "../domain/pipeline/pipeline-orchestrator";
 import type { EnrichmentStep, PipelineProgress } from "../domain/pipeline/pipeline-orchestrator";
 import WaitPuzzle from "./WaitPuzzle";
+import { FrictionView } from "./FrictionView";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -49,7 +51,7 @@ interface EnrichmentCardDef {
   label: string;
   description: string;
   icon: string;
-  category: "structure" | "assessment" | "mapping" | "custom";
+  category: "structure" | "friction" | "assessment" | "mapping" | "custom";
   /** Hint for what kind of content the user might provide */
   contentHint?: string;
   /** Built-in enrichment step ID (if wired to pipeline) */
@@ -193,7 +195,7 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
     comingSoon: false,
   },
 
-  // ── Assessment & Analysis ──
+  // ── Friction & Bottleneck Analysis (elevated — own section) ──
   {
     id: "friction",
     label: "Assess Friction & Bottlenecks",
@@ -203,14 +205,15 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
       "It identifies binding constraints (the single biggest blocker in each stream), structural bottlenecks (capacity mismatches), " +
       "and pain points that affect the customer or employee experience. The results appear as a heatmap overlay on your value stream canvas.",
     icon: "⚡",
-    category: "assessment",
-    navigateTo: "friction",
+    category: "friction",
     contentHint: "Paste known pain points, customer complaints, NPS feedback, operational incident reports, or anything that describes where things go wrong or slow down...",
     checkDone: () => {
       const store = useCanvasStore.getState();
       return store.heatmapsByVs.size > 0;
     },
   },
+
+  // ── Assessment & Analysis ──
   {
     id: "metrics",
     label: "Generate Performance Metrics",
@@ -437,9 +440,13 @@ export function EnrichmentView() {
     setMappingPairs((prev) => prev.filter((p) => p.id !== id));
   }, []);
 
+  // Friction view expanded state
+  const [frictionExpanded, setFrictionExpanded] = useState(false);
+
   // ── Group cards by category ──
   const structureCards = ENRICHMENT_CARDS.filter((c) => c.category === "structure");
   const mappingCards = ENRICHMENT_CARDS.filter((c) => c.category === "mapping");
+  const frictionCards = ENRICHMENT_CARDS.filter((c) => c.category === "friction");
   const assessmentCards = ENRICHMENT_CARDS.filter((c) => c.category === "assessment");
 
   // ── Enrichment stats ──
@@ -634,13 +641,68 @@ export function EnrichmentView() {
                   opacity: running ? 0.5 : 1,
                 }}
               >
-                Run {mappingPairs.length} Mapping{mappingPairs.length !== 1 ? "s" : ""}
+                Run {mappingPairs.length} Mapping Set{mappingPairs.length !== 1 ? "s" : ""}
               </button>
             )}
           </div>
         </div>
 
-        {/* ── Section 3: Assessment & Analysis ── */}
+        {/* ── Section 3: Friction & Bottleneck Analysis ── */}
+        <SectionHeader
+          title="Friction & Bottleneck Analysis"
+          subtitle={
+            "Friction analysis is a foundational assessment that identifies where work slows down, errors accumulate, and customers or employees " +
+            "experience pain across your value streams. Because friction insights inform almost every other assessment and improvement decision, " +
+            "it is surfaced here as its own dedicated section. You can provide known pain points as input content, then run the analysis to generate " +
+            "a full heatmap of observations, binding constraints, and bottlenecks."
+          }
+        />
+        <div className="grid gap-3 mb-3">
+          {frictionCards.map((card) => (
+            <EnrichmentCard
+              key={card.id}
+              card={card}
+              status={getStatus(card)}
+              onRun={() => {}}
+              onNavigate={() => {}}
+              disabled={!!running}
+              userContent={userContentByCard[card.id]}
+              onUserContentChange={(patch) => updateUserContent(card.id, patch)}
+              canRevert={snapshots.some((s) => s.cardId === card.id)}
+              revertConfirmActive={revertConfirm === card.id}
+              onRevertRequest={() => setRevertConfirm(card.id)}
+              onRevertConfirm={() => revertEnrichment(card.id)}
+              onRevertCancel={() => setRevertConfirm(null)}
+              hideActionButton
+            />
+          ))}
+        </div>
+        {/* Open / collapse the full friction workspace */}
+        <div className="mb-8">
+          <button
+            onClick={() => setFrictionExpanded(!frictionExpanded)}
+            className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-[12px] font-semibold transition-all"
+            style={{
+              background: frictionExpanded ? tv.bgSurface : tv.textPrimary,
+              color: frictionExpanded ? tv.textSecondary : tv.bgPrimary,
+              border: frictionExpanded ? `1px solid ${tv.borderSubtle}` : "none",
+              cursor: "pointer",
+            }}
+          >
+            <span>{frictionExpanded ? "▾" : "▸"}</span>
+            {frictionExpanded ? "Collapse Friction Workspace" : "Open Friction Workspace"}
+          </button>
+          {frictionExpanded && (
+            <div
+              className="mt-3 rounded-xl overflow-hidden"
+              style={{ border: `1px solid ${tv.borderSubtle}`, height: "calc(100vh - 200px)" }}
+            >
+              <FrictionView />
+            </div>
+          )}
+        </div>
+
+        {/* ── Section 4: Assessment & Analysis ── */}
         <SectionHeader
           title="Assessment & Analysis"
           subtitle={
@@ -669,7 +731,7 @@ export function EnrichmentView() {
           ))}
         </div>
 
-        {/* ── Section 4: Custom Enrichments ── */}
+        {/* ── Section 5: Custom Enrichments ── */}
         <SectionHeader
           title="Custom Enrichments"
           subtitle={
@@ -1126,7 +1188,7 @@ function MappingPairRow({
                 />
                 <div>
                   <span className="text-[10px] font-medium" style={{ color: tv.textPrimary }}>Symmetrical</span>
-                  <p className="text-[9px]" style={{ color: tv.textDim }}>If A relates to B, then B relates to A in the same way</p>
+                  <p className="text-[9px]" style={{ color: tv.textDim }}>If A relates to B, then B relates to A in the same way. Example: <em>marriedTo</em> — if Alice is married to Bob, then Bob is married to Alice.</p>
                 </div>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
@@ -1138,7 +1200,7 @@ function MappingPairRow({
                 />
                 <div>
                   <span className="text-[10px] font-medium" style={{ color: tv.textPrimary }}>Functional</span>
-                  <p className="text-[9px]" style={{ color: tv.textDim }}>Each source element maps to at most one target element</p>
+                  <p className="text-[9px]" style={{ color: tv.textDim }}>Each source element maps to at most one target. Example: <em>motherOf</em> — every person has exactly one biological mother, so the mapping is a function.</p>
                 </div>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
@@ -1150,7 +1212,7 @@ function MappingPairRow({
                 />
                 <div>
                   <span className="text-[10px] font-medium" style={{ color: tv.textPrimary }}>Transitive</span>
-                  <p className="text-[9px]" style={{ color: tv.textDim }}>If A→B and B→C, then A→C is implied automatically</p>
+                  <p className="text-[9px]" style={{ color: tv.textDim }}>If A→B and B→C, then A→C is implied automatically. Example: <em>memberOf</em> — if Alice is a member of Team X, and Team X is a member of Division Y, then Alice is a member of Division Y.</p>
                 </div>
               </label>
             </div>
