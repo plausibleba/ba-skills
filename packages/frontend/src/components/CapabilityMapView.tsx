@@ -61,6 +61,7 @@ function buildHierarchy(caps: Record<string, any>): L1Block[] {
       id: l1.id,
       name: l1.name,
       gov: isGovCap(l1) || isGov(l1.name),
+      capNode: l1,
       l2s: l2s
         .filter((l2) => l2.parentId === l1.id)
         .map((l2) => {
@@ -68,23 +69,24 @@ function buildHierarchy(caps: Record<string, any>): L1Block[] {
           const directCaps = l4s.filter((l4) => l4.parentId === l2.id);
 
           if (l3sAreLeaves) {
-            // L3s are leaf capabilities — put them in caps array directly
-            return { id: l2.id, name: l2.name, l3s: [], caps: [...l3Children, ...directCaps] };
+            return { id: l2.id, name: l2.name, capNode: l2, l3s: [], caps: [...l3Children, ...directCaps] };
           }
 
           if (l3Children.length > 0) {
             return {
               id: l2.id,
               name: l2.name,
+              capNode: l2,
               l3s: l3Children.map((l3) => ({
                 id: l3.id,
                 name: l3.name,
+                capNode: l3,
                 caps: l4s.filter((l4) => l4.parentId === l3.id),
               })),
               caps: directCaps,
             };
           }
-          return { id: l2.id, name: l2.name, l3s: [], caps: directCaps };
+          return { id: l2.id, name: l2.name, capNode: l2, l3s: [], caps: directCaps };
         }),
     }));
   }
@@ -482,15 +484,19 @@ function L1Card({
         overflow: "visible",
       }}
     >
-      {/* L1 header */}
+      {/* L1 header — clickable for inspector */}
       <div
-        className="flex items-center justify-between border-b px-2.5 py-2"
-        style={{ background: headerBg, borderColor: tv.borderSubtle }}
+        className="flex items-center justify-between border-b px-2.5 py-2 cursor-pointer"
+        style={{
+          background: selectedL3?.id === block.id ? (block.gov ? tv.govMuted : tv.accentMuted) : headerBg,
+          borderColor: selectedL3?.id === block.id ? (block.gov ? tv.govColor : tv.accent) : tv.borderSubtle,
+        }}
+        onClick={() => block.capNode && onSelectL3(block.capNode)}
       >
         <div>
           <div
             className="overflow-hidden text-ellipsis whitespace-nowrap text-[10px] font-bold uppercase tracking-wider"
-            style={{ color: tv.textPrimary }}
+            style={{ color: selectedL3?.id === block.id ? tv.accent : tv.textPrimary }}
             title={block.name}
           >
             {block.name}
@@ -535,15 +541,16 @@ function L1Card({
               }}
             >
               <div
-                className="flex items-center justify-between px-2 py-1"
+                className="flex items-center justify-between px-2 py-1 cursor-pointer"
                 style={{
-                  background: tv.bgSurface,
-                  borderBottom: `1px solid ${tv.borderSubtle}`,
+                  background: selectedL3?.id === l2.id ? tv.accentMuted : tv.bgSurface,
+                  borderBottom: `1px solid ${selectedL3?.id === l2.id ? tv.accent : tv.borderSubtle}`,
                 }}
+                onClick={() => l2.capNode && onSelectL3(l2.capNode)}
               >
                 <div
                   className="text-[9px] font-semibold"
-                  style={{ color: tv.textSecondary }}
+                  style={{ color: selectedL3?.id === l2.id ? tv.accent : tv.textSecondary }}
                 >
                   {l2.name}
                 </div>
@@ -566,13 +573,17 @@ function L1Card({
 
                   return (
                     <div key={l3.id} className="rounded" style={{
-                      border: `1px dashed ${tv.borderSubtle}`,
+                      border: `1px ${selectedL3?.id === l3.id ? "solid" : "dashed"} ${selectedL3?.id === l3.id ? tv.accent : tv.borderSubtle}`,
                       padding: 4,
                       flex: l2Layout === "horizontal" ? "0 0 auto" : undefined,
                       minWidth: l2Layout === "horizontal" ? 160 : undefined,
+                      background: selectedL3?.id === l3.id ? tv.accentMuted : undefined,
                     }}>
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="text-[8px] font-semibold uppercase tracking-wider" style={{ color: tv.textDim }}>
+                      <div
+                        className="flex items-center justify-between mb-1 cursor-pointer"
+                        onClick={() => l3.capNode && onSelectL3(l3.capNode)}
+                      >
+                        <div className="text-[8px] font-semibold uppercase tracking-wider" style={{ color: selectedL3?.id === l3.id ? tv.accent : tv.textDim }}>
                           {l3.name}
                         </div>
                         <LayoutToggle mode={l3Layout} onToggle={() => toggleLayout(l3Key)} />

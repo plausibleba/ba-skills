@@ -15,6 +15,8 @@ export interface L3Group {
   id: string;
   name: string;
   caps: CapNode[];
+  /** Original capability node for this L3 group */
+  capNode?: CapNode;
 }
 
 export interface L2Group {
@@ -22,6 +24,8 @@ export interface L2Group {
   name: string;
   l3s: L3Group[];
   caps: CapNode[];
+  /** Original capability node for this L2 domain */
+  capNode?: CapNode;
 }
 
 export interface L1Block {
@@ -29,4 +33,6 @@ export interface L1Block {
   name: string;
   gov: boolean;
   l2s: L2Group[];
+  /** Original capability node for this L1 business area */
+  capNode?: CapNode;
 }

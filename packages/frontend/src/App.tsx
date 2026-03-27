@@ -21,6 +21,7 @@ import { UpsellModalProvider, useUpsellModal } from "./components/UpsellModal.ts
 import { RefinementExportModal } from "./components/RefinementExport.tsx";
 import { ImportView } from "./components/ImportView.tsx";
 import { WorkbenchView } from "./components/WorkbenchView.tsx";
+import { EnrichmentView } from "./components/EnrichmentView.tsx";
 import { useWorkbenchStore } from "./store/workbench-store.ts";
 import { DevTierSwitcher } from "./components/DevTierSwitcher.tsx";
 import { extractClaimFromURL, consumePendingClaim } from "./utils/bundle-claim.ts";
@@ -244,6 +245,7 @@ export default function App() {
   const isCapabilityMap = viewMode === "capabilityMap";
   const isConceptGraph = viewMode === "conceptGraph";
   const isFriction = viewMode === "friction";
+  const isEnrich = viewMode === "enrich";
   const isWorkbench = viewMode === "workbench";
   const workbenchActive = useWorkbenchStore((s) => s.isActive);
 
@@ -295,6 +297,11 @@ export default function App() {
             {isImport && !scaffoldData?.name && (
               <span className="text-[11px] font-medium text-white/60">
                 Import Model
+              </span>
+            )}
+            {isEnrich && (
+              <span className="text-[11px] font-medium text-white/60">
+                Model Enrichment
               </span>
             )}
             {showProjectList && !isLocalMode && (
@@ -452,6 +459,7 @@ export default function App() {
         {!isIntake && isLoaded && isCapabilityMap && !isWorkbench && <CapabilityMapView />}
         {!isIntake && isLoaded && isConceptGraph && !isWorkbench && <ConceptGraphView />}
         {!isIntake && isLoaded && isFriction && !isWorkbench && <FrictionView />}
+        {!isIntake && isLoaded && isEnrich && !isWorkbench && <EnrichmentView />}
         {isWorkbench && workbenchActive && <WorkbenchView />}
       </main>
       <UserGuidePanel />

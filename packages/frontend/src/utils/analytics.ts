@@ -83,6 +83,7 @@ export type TrackableEvent =
   | "view_friction"
   | "view_workbench"
   | "view_import"
+  | "view_enrich"
   | "upload_stories"
   | "upload_library"
   | "export_pdf"
@@ -168,6 +169,7 @@ const VIEW_EVENT_MAP: Record<string, TrackableEvent> = {
   friction: "view_friction",
   workbench: "view_workbench",
   import: "view_import",
+  enrich: "view_enrich",
 };
 
 export function trackViewChange(viewMode: string) {

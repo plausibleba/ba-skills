@@ -56,6 +56,18 @@ function ChipList({ items, color }: { items: string[]; color: { bg: string; fg: 
   );
 }
 
+/* ── Level label helper ─────────────────────────────────────────────── */
+
+function levelLabel(level?: number): string {
+  switch (level) {
+    case 1: return "Business Area";
+    case 2: return "Domain";
+    case 3: return "Capability Group";
+    case 4: return "Capability";
+    default: return "Capability";
+  }
+}
+
 /* ── Main Panel ────────────────────────────────────────────────────── */
 
 export function CapabilityInspectorPanel({
@@ -85,7 +97,7 @@ export function CapabilityInspectorPanel({
             className="rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
             style={{ background: pal.cap.bg, color: pal.cap.fg }}
           >
-            Capability
+            {cap ? levelLabel(cap.level) : "Capability"}
           </span>
           <span className="text-[11px] font-medium" style={{ color: tv.textPrimary }}>
             Inspector
@@ -129,13 +141,19 @@ function CapabilityDetail({
 }) {
   return (
     <>
-      {/* Name */}
+      {/* Name + Level */}
       <div>
         <div className="text-[15px] font-bold leading-snug" style={{ color: tv.textPrimary }}>
           {cap.name}
         </div>
+        <div className="mt-1 flex items-center gap-2">
+          <span className="rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
+            style={{ background: pal.cap.bg, color: pal.cap.fg }}>
+            L{cap.level ?? "?"} · {levelLabel(cap.level)}
+          </span>
+        </div>
         {cap.businessObject && (
-          <div className="mt-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: pal.cap.fg }}>
+          <div className="mt-1.5 text-[10px] font-bold uppercase tracking-wider" style={{ color: pal.cap.fg }}>
             Business Object: {cap.businessObject}
           </div>
         )}
