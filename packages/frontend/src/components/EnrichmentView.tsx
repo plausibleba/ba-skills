@@ -2,10 +2,11 @@
  * EnrichmentView — Dedicated page for iteratively enriching a loaded model.
  *
  * Accessible from SideNav at any time after a scaffold is loaded.
- * Contains three sections:
+ * Contains four sections:
  *   1. Built-in enrichment passes (Deepen Structure, Map PPIT, Generate Cards)
- *   2. Assessment & analysis actions (Friction Assessment, Gate Validation, etc.)
- *   3. Custom enrichment skills (user-editable prompts applied to the model)
+ *   2. Cross-Mapping (build relationships between model elements)
+ *   3. Assessment & analysis actions (Friction Assessment, Gate Validation, etc.)
+ *   4. Custom enrichment skills (user-editable prompts applied to the model)
  */
 
 import { useState, useCallback, useMemo } from "react";
@@ -22,10 +23,10 @@ import WaitPuzzle from "./WaitPuzzle";
 type InfluenceMode = "indicative" | "include" | "exclude" | "restrict-to";
 
 const INFLUENCE_MODES: { value: InfluenceMode; label: string; description: string }[] = [
-  { value: "indicative",  label: "Indicative",  description: "Use as guidance — the AI may adapt, extend, or supplement" },
-  { value: "include",     label: "Include",      description: "Must be included alongside AI-generated content" },
-  { value: "exclude",     label: "Exclude",      description: "Explicitly exclude these items from the output" },
-  { value: "restrict-to", label: "Restrict to",  description: "Only use the items provided — do not add others" },
+  { value: "indicative",  label: "Indicative",  description: "Use as guidance — the AI may adapt, extend, or supplement your content with its own analysis" },
+  { value: "include",     label: "Include",      description: "Your content must be included in the output alongside anything the AI generates" },
+  { value: "exclude",     label: "Exclude",      description: "Explicitly exclude these items — the AI will omit anything matching your content" },
+  { value: "restrict-to", label: "Restrict to",  description: "Only use the items you provide — the AI will not add anything beyond your list" },
 ];
 
 /** Per-card user content input */
@@ -48,7 +49,7 @@ interface EnrichmentCardDef {
   label: string;
   description: string;
   icon: string;
-  category: "structure" | "assessment" | "custom";
+  category: "structure" | "assessment" | "mapping" | "custom";
   /** Hint for what kind of content the user might provide */
   contentHint?: string;
   /** Built-in enrichment step ID (if wired to pipeline) */
@@ -59,6 +60,47 @@ interface EnrichmentCardDef {
   checkDone?: (scaffold: any, cardRegistry: any) => boolean;
   /** Placeholder — coming soon */
   comingSoon?: boolean;
+  /** If true, this card uses a custom UI instead of the standard Run button */
+  customUI?: boolean;
+}
+
+// ─── Cross-Mapping Types ────────────────────────────────────────────────────
+
+/** Entity types that can participate in cross-mapping */
+type MappableEntity = "capabilities" | "activities" | "valueStreams" | "roles" | "information" | "technology" | "processes";
+
+const MAPPABLE_ENTITIES: { value: MappableEntity; label: string }[] = [
+  { value: "capabilities",  label: "Capabilities" },
+  { value: "activities",     label: "Activities / Stages" },
+  { value: "valueStreams",   label: "Value Streams" },
+  { value: "roles",          label: "Roles / Stakeholders" },
+  { value: "information",    label: "Information Assets" },
+  { value: "technology",     label: "Technology / Systems" },
+  { value: "processes",      label: "Processes" },
+];
+
+/** Semantic properties for a mapping relationship */
+interface MappingSemantics {
+  symmetrical: boolean;    // A→B implies B→A
+  functional: boolean;     // Each source maps to at most one target
+  transitive: boolean;     // A→B and B→C implies A→C
+  cardinality: "one-to-one" | "one-to-many" | "many-to-one" | "many-to-many";
+}
+
+const CARDINALITY_OPTIONS: { value: MappingSemantics["cardinality"]; label: string; description: string }[] = [
+  { value: "one-to-one",   label: "1:1",  description: "Each source maps to exactly one target, and vice versa" },
+  { value: "one-to-many",  label: "1:N",  description: "Each source can map to multiple targets" },
+  { value: "many-to-one",  label: "N:1",  description: "Multiple sources can map to a single target" },
+  { value: "many-to-many", label: "N:N",  description: "Sources and targets can have multiple relationships" },
+];
+
+/** A requested cross-mapping pair */
+interface MappingPair {
+  id: string;
+  from: MappableEntity;
+  to: MappableEntity;
+  includeInverse: boolean;
+  semantics: MappingSemantics;
 }
 
 // ─── Built-in Enrichment Definitions ─────────────────────────────────────────
@@ -68,11 +110,14 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
   {
     id: "subactivities",
     label: "Deepen Structure",
-    description: "Generate sub-activity DAGs showing the internal breakdown of each stage — decision gates, handoffs, and work steps.",
+    description:
+      "Each stage in your value streams currently shows a high-level step (e.g. \"Review Application\" or \"Onboard Customer\"). " +
+      "This enrichment looks inside each stage and breaks it down into the detailed work steps, decision points, handoffs, and checkpoints that actually happen within it. " +
+      "The result is a richer, more granular view of how work really flows through each stage — making it easier to spot inefficiencies, missing steps, or unclear responsibilities.",
     icon: "🔀",
     category: "structure",
     enrichmentStep: "subactivities",
-    contentHint: "Paste process steps, SOP fragments, or workflow descriptions to guide sub-activity generation...",
+    contentHint: "Paste process steps, standard operating procedures, workflow descriptions, or any documentation that describes how work is done within your stages...",
     checkDone: (scaffold) =>
       scaffold?.elements?.subActivityGraphs &&
       Object.keys(scaffold.elements.subActivityGraphs).length > 0 &&
@@ -80,38 +125,67 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
   },
   {
     id: "ppit",
-    label: "Map PPIT",
-    description: "Decompose each capability into People, Process, Information, and Technology dimensions per stage.",
+    label: "Map People, Process, Information & Technology",
+    description:
+      "For every capability in your model, this enrichment identifies the four foundational dimensions that support it: " +
+      "the People (roles, teams, skills) involved, the Processes (procedures, workflows) that execute it, " +
+      "the Information (data, documents, knowledge) it consumes or produces, and the Technology (systems, tools, platforms) that enables it. " +
+      "This gives you a complete picture of what underpins each capability, which is essential for impact analysis, transformation planning, and investment decisions.",
     icon: "🧩",
     category: "structure",
     enrichmentStep: "ppit",
-    contentHint: "Paste role names, team structures, system lists, or technology stack details...",
+    contentHint: "Paste role names, team structures, system inventories, application lists, data dictionaries, or any documentation about who does what with which tools...",
     checkDone: (scaffold) =>
       scaffold?.elements?.activities &&
       Object.values(scaffold.elements.activities).some((a: any) => a.capabilityPPIT && Object.keys(a.capabilityPPIT).length > 0),
   },
   {
     id: "cards",
-    label: "Generate Cards",
-    description: "Create Concept Cards and Policy Cards that capture business definitions, rules, and governance.",
+    label: "Generate Concept & Policy Cards",
+    description:
+      "This enrichment scans your model and generates two types of reference cards: Concept Cards capture the key business terms, " +
+      "definitions, and domain concepts that your operating model relies on (e.g. \"What exactly is a 'Customer Segment'?\"), while " +
+      "Policy Cards document the business rules, governance constraints, and regulatory requirements that govern how work is done. " +
+      "Together they form a living glossary and rule book for your organisation that keeps everyone aligned on meaning and compliance.",
     icon: "🃏",
     category: "structure",
     enrichmentStep: "cards",
-    contentHint: "Paste glossary terms, business definitions, policy documents, or governance rules...",
+    contentHint: "Paste glossary terms, business definitions, policy documents, regulatory requirements, governance rules, or any reference material that defines how your organisation operates...",
     checkDone: (_scaffold, cardRegistry) =>
       cardRegistry &&
       ((Object.keys(cardRegistry.conceptCards ?? {}).length > 0) || (Object.keys(cardRegistry.policyCards ?? {}).length > 0)),
   },
 
+  // ── Cross-Mapping ──
+  {
+    id: "cross-mapping",
+    label: "Cross-Map Relationships",
+    description:
+      "Your model contains many different types of elements — capabilities, activities, value streams, roles, information assets, and technologies. " +
+      "This enrichment builds explicit relationship maps between any two element types you choose. For example, you might map " +
+      "Capabilities → Technology to see which systems support which capabilities, or Roles → Activities to clarify who is responsible for what. " +
+      "By default, the inverse mapping (e.g. Technology → Capabilities) is also generated. You can also define the semantics of each mapping — " +
+      "whether the relationship is symmetrical, transitive, functional, and what cardinality applies.",
+    icon: "🔄",
+    category: "mapping",
+    contentHint: "Paste any existing mapping documentation, RACI matrices, system-capability registers, or relationship data you already have...",
+    customUI: true,
+    comingSoon: false,
+  },
+
   // ── Assessment & Analysis ──
   {
     id: "friction",
-    label: "Assess Friction",
-    description: "Identify friction observations, binding constraints, and structural bottlenecks across value streams.",
+    label: "Assess Friction & Bottlenecks",
+    description:
+      "This assessment analyses every stage and handoff across your value streams to identify where friction occurs — " +
+      "places where work slows down, errors accumulate, customers experience delays, or teams struggle with manual workarounds. " +
+      "It identifies binding constraints (the single biggest blocker in each stream), structural bottlenecks (capacity mismatches), " +
+      "and pain points that affect the customer or employee experience. The results appear as a heatmap overlay on your value stream canvas.",
     icon: "⚡",
     category: "assessment",
     navigateTo: "friction",
-    contentHint: "Paste known pain points, customer complaints, or operational bottleneck descriptions...",
+    contentHint: "Paste known pain points, customer complaints, NPS feedback, operational incident reports, or anything that describes where things go wrong or slow down...",
     checkDone: () => {
       const store = useCanvasStore.getState();
       return store.heatmapsByVs.size > 0;
@@ -119,47 +193,67 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
   },
   {
     id: "metrics",
-    label: "Generate Metrics",
-    description: "Derive KPIs and performance metrics for each stage and capability, aligned to business outcomes.",
+    label: "Generate Performance Metrics",
+    description:
+      "Derives a set of meaningful KPIs and performance metrics for each stage and capability in your model. " +
+      "These are aligned to business outcomes — not just technical measures — so you get metrics like cycle time, throughput, " +
+      "error rate, customer satisfaction impact, and cost per transaction. If you already have metrics or SLAs, you can paste them " +
+      "using the Add Content button and the AI will incorporate and build upon them rather than starting from scratch.",
     icon: "📊",
     category: "assessment",
-    contentHint: "Paste existing KPIs, SLAs, performance targets, or metric definitions...",
+    contentHint: "Paste existing KPIs, SLAs, performance targets, dashboard definitions, or any metric data you already track...",
     comingSoon: true,
   },
   {
     id: "dependencies",
-    label: "Map Dependencies",
-    description: "Identify and visualize cross-value-stream dependencies, shared capabilities, and integration points.",
+    label: "Map Cross-Stream Dependencies",
+    description:
+      "Identifies where your value streams share capabilities, hand off work to each other, or depend on the same " +
+      "underlying systems and teams. These cross-stream dependencies are often invisible but critical — a change in one stream " +
+      "can ripple through others unexpectedly. This enrichment makes those connections explicit so you can plan changes with full " +
+      "awareness of downstream impact and avoid breaking shared services or overloading shared teams.",
     icon: "🔗",
     category: "assessment",
-    contentHint: "Paste integration maps, system dependency lists, or API contract details...",
+    contentHint: "Paste integration maps, system dependency documentation, shared service catalogues, API contract details, or notes about cross-team coordination...",
     comingSoon: true,
   },
   {
     id: "maturity",
-    label: "Maturity Assessment",
-    description: "Evaluate capability maturity levels across your operating model using industry-standard frameworks.",
+    label: "Capability Maturity Assessment",
+    description:
+      "Evaluates each capability in your model against a maturity scale, from ad-hoc and reactive (Level 1) through to " +
+      "optimised and continuously improving (Level 5). The assessment considers factors like process standardisation, automation, " +
+      "measurement, governance, and adaptability. This gives you a clear, comparable view of where your organisation is strong " +
+      "and where investment in capability uplift would deliver the most value.",
     icon: "📈",
     category: "assessment",
-    contentHint: "Paste maturity framework criteria, current-state assessments, or benchmark data...",
+    contentHint: "Paste maturity framework criteria you use (e.g. CMMI, COBIT), current-state self-assessments, audit reports, or benchmark data from industry peers...",
     comingSoon: true,
   },
   {
     id: "gap-analysis",
-    label: "Gap Analysis",
-    description: "Compare current-state capabilities against target-state requirements to identify gaps and investment areas.",
+    label: "Current vs. Target Gap Analysis",
+    description:
+      "Compares your model's current-state capabilities, processes, and technology against a defined target state to identify " +
+      "where the gaps are. This is essential for transformation planning — it tells you exactly what needs to change, where new " +
+      "capabilities are needed, which existing capabilities need strengthening, and where you can decommission legacy elements. " +
+      "The output is a prioritised gap register that can feed directly into a roadmap or business case.",
     icon: "🎯",
     category: "assessment",
-    contentHint: "Paste target-state requirements, strategic objectives, or capability wish-lists...",
+    contentHint: "Paste target-state requirements, strategic objectives, future-state architecture documents, capability wish-lists, or transformation goals...",
     comingSoon: true,
   },
   {
     id: "risk",
-    label: "Risk Assessment",
-    description: "Identify operational risks by analysing control coverage, single points of failure, and governance gaps.",
+    label: "Operational Risk Assessment",
+    description:
+      "Analyses your operating model to identify operational risks — single points of failure, inadequate controls, " +
+      "governance gaps, key-person dependencies, and areas where a disruption would have outsized impact. Each risk is rated " +
+      "by likelihood and severity, linked to the specific capabilities and stages it affects, and accompanied by mitigation " +
+      "recommendations. This is particularly valuable for regulatory compliance, business continuity planning, and audit preparation.",
     icon: "🛡️",
     category: "assessment",
-    contentHint: "Paste risk registers, audit findings, incident reports, or compliance requirements...",
+    contentHint: "Paste risk registers, audit findings, incident reports, compliance requirements, BCP documentation, or any existing risk assessment data...",
     comingSoon: true,
   },
 ];
@@ -209,6 +303,9 @@ export function EnrichmentView() {
   // Enrichment snapshots for rollback
   const [snapshots, setSnapshots] = useState<EnrichmentSnapshot[]>([]);
   const [revertConfirm, setRevertConfirm] = useState<string | null>(null);
+
+  // Cross-mapping state
+  const [mappingPairs, setMappingPairs] = useState<MappingPair[]>([]);
 
   // Custom skills state
   const [customSkills, setCustomSkills] = useState<CustomSkill[]>([]);
@@ -292,8 +389,37 @@ export function EnrichmentView() {
     return "available";
   }, [running, completedThisSession, scaffoldData, cardRegistry]);
 
+  // ── Cross-mapping helpers ──
+  const addMappingPair = useCallback(() => {
+    setMappingPairs((prev) => [
+      ...prev,
+      {
+        id: `mp-${Date.now()}`,
+        from: "capabilities",
+        to: "technology",
+        includeInverse: true,
+        semantics: { symmetrical: false, functional: false, transitive: false, cardinality: "many-to-many" },
+      },
+    ]);
+  }, []);
+
+  const updateMappingPair = useCallback((id: string, patch: Partial<MappingPair>) => {
+    setMappingPairs((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+  }, []);
+
+  const updateMappingSemantics = useCallback((id: string, semPatch: Partial<MappingSemantics>) => {
+    setMappingPairs((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, semantics: { ...p.semantics, ...semPatch } } : p)),
+    );
+  }, []);
+
+  const removeMappingPair = useCallback((id: string) => {
+    setMappingPairs((prev) => prev.filter((p) => p.id !== id));
+  }, []);
+
   // ── Group cards by category ──
   const structureCards = ENRICHMENT_CARDS.filter((c) => c.category === "structure");
+  const mappingCards = ENRICHMENT_CARDS.filter((c) => c.category === "mapping");
   const assessmentCards = ENRICHMENT_CARDS.filter((c) => c.category === "assessment");
 
   // ── Enrichment stats ──
@@ -301,7 +427,7 @@ export function EnrichmentView() {
     let done = 0;
     let total = 0;
     for (const card of ENRICHMENT_CARDS) {
-      if (card.comingSoon) continue;
+      if (card.comingSoon || card.customUI) continue;
       total++;
       if (getStatus(card) === "done") done++;
     }
@@ -322,23 +448,53 @@ export function EnrichmentView() {
           <div className="mb-1 text-lg font-bold" style={{ color: tv.textPrimary }}>
             {scaffoldData.name}
           </div>
-          <div className="text-[11px]" style={{ color: tv.textSecondary }}>
-            Iteratively add depth, assessment, and analysis layers to your operating model. Each enrichment can be run independently and re-run at any time.
+          <div className="text-[12px] leading-relaxed" style={{ color: tv.textSecondary }}>
+            This page lets you iteratively add depth, detail, and analysis to your operating model.
+            Each enrichment below can be run independently, re-run at any time, and reverted if the results aren't what you expected.
           </div>
-          {stats.done > 0 && (
-            <div className="mt-2 flex items-center gap-2">
-              <div className="h-1.5 flex-1 rounded-full" style={{ background: tv.borderSubtle }}>
-                <div
-                  className="h-1.5 rounded-full transition-all duration-500"
-                  style={{ width: `${(stats.done / stats.total) * 100}%`, background: "#10b981" }}
-                />
-              </div>
-              <span className="text-[10px] font-medium" style={{ color: tv.textDim }}>
-                {stats.done}/{stats.total}
+        </div>
+
+        {/* How it works explainer */}
+        <div className="mb-6 rounded-lg p-4" style={{ background: tv.bgCard, border: `1px solid ${tv.borderSubtle}` }}>
+          <p className="text-[11px] font-semibold mb-2" style={{ color: tv.textPrimary }}>How enrichment works</p>
+          <div className="grid gap-2 text-[11px] leading-relaxed" style={{ color: tv.textDim }}>
+            <div className="flex gap-2">
+              <span className="flex-shrink-0 font-bold" style={{ color: tv.accent }}>Run</span>
+              <span>Click <b>Run</b> on any enrichment to apply it to your model. The AI will analyse your current model and add the relevant data layer.</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="flex-shrink-0 font-bold" style={{ color: tv.accent }}>+ Add</span>
+              <span>
+                Before running, you can optionally click <b>+ Add</b> to provide your own content that will guide the enrichment.
+                For example, you might paste a list of your actual KPIs before running "Generate Metrics", or paste a team roster before mapping People.
+                You also choose an <b>influence mode</b> — whether your content should be treated as guidance, must-include items, exclusions, or the only items to use.
               </span>
             </div>
-          )}
+            <div className="flex gap-2">
+              <span className="flex-shrink-0 font-bold" style={{ color: tv.accent }}>↩ Revert</span>
+              <span>
+                Every enrichment automatically saves a snapshot of your model before it runs. If the results aren't what you expected,
+                click <b>↩ Revert</b> to instantly roll back to the exact state your model was in before that enrichment was applied.
+                You can then adjust your input content and try again.
+              </span>
+            </div>
+          </div>
         </div>
+
+        {/* Progress bar */}
+        {stats.done > 0 && (
+          <div className="mb-6 flex items-center gap-2">
+            <div className="h-1.5 flex-1 rounded-full" style={{ background: tv.borderSubtle }}>
+              <div
+                className="h-1.5 rounded-full transition-all duration-500"
+                style={{ width: `${(stats.done / stats.total) * 100}%`, background: "#10b981" }}
+              />
+            </div>
+            <span className="text-[10px] font-medium" style={{ color: tv.textDim }}>
+              {stats.done}/{stats.total} enrichments applied
+            </span>
+          </div>
+        )}
 
         {/* Running step — show puzzle */}
         {running && (
@@ -358,7 +514,11 @@ export function EnrichmentView() {
         {/* ── Section 1: Structure & Depth ── */}
         <SectionHeader
           title="Structure & Depth"
-          subtitle="Add internal detail to your model's stages, capabilities, and business concepts."
+          subtitle={
+            "These enrichments add internal detail to your model. They break down high-level elements into their constituent parts, " +
+            "making your model richer and more useful for analysis, planning, and communication. " +
+            "You can run them in any order, and each one builds on the data already in your model."
+          }
         />
         <div className="grid gap-3 mb-8">
           {structureCards.map((card) => (
@@ -380,10 +540,94 @@ export function EnrichmentView() {
           ))}
         </div>
 
-        {/* ── Section 2: Assessment & Analysis ── */}
+        {/* ── Section 2: Cross-Mapping ── */}
+        <SectionHeader
+          title="Cross-Mapping"
+          subtitle={
+            "Build explicit relationship maps between different element types in your model. For example, map which Technologies support " +
+            "which Capabilities, or which Roles are responsible for which Activities. These cross-references unlock powerful impact analysis — " +
+            "when something changes, you can instantly see everything that's affected."
+          }
+        />
+        <div className="grid gap-3 mb-4">
+          {mappingCards.map((card) => (
+            <div key={card.id}>
+              <EnrichmentCard
+                card={card}
+                status={getStatus(card)}
+                onRun={() => {}}
+                onNavigate={() => {}}
+                disabled={!!running}
+                userContent={userContentByCard[card.id]}
+                onUserContentChange={(patch) => updateUserContent(card.id, patch)}
+                canRevert={snapshots.some((s) => s.cardId === card.id)}
+                revertConfirmActive={revertConfirm === card.id}
+                onRevertRequest={() => setRevertConfirm(card.id)}
+                onRevertConfirm={() => revertEnrichment(card.id)}
+                onRevertCancel={() => setRevertConfirm(null)}
+                hideActionButton
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Mapping pair builder */}
+        <div className="mb-8 rounded-lg p-4" style={{ background: tv.bgCard, border: `1px solid ${tv.borderSubtle}` }}>
+          <p className="text-[11px] font-semibold mb-1" style={{ color: tv.textPrimary }}>
+            Configure Mappings
+          </p>
+          <p className="text-[10px] mb-3" style={{ color: tv.textDim }}>
+            Add one or more mapping pairs below. For each pair, choose the source and target element types, and optionally configure
+            the relationship semantics. The inverse mapping (target → source) is included by default.
+          </p>
+
+          {/* Existing pairs */}
+          {mappingPairs.map((pair) => (
+            <MappingPairRow
+              key={pair.id}
+              pair={pair}
+              onUpdate={(patch) => updateMappingPair(pair.id, patch)}
+              onUpdateSemantics={(sem) => updateMappingSemantics(pair.id, sem)}
+              onRemove={() => removeMappingPair(pair.id)}
+            />
+          ))}
+
+          {/* Add pair button */}
+          <div className="flex items-center gap-2 mt-2">
+            <button
+              onClick={addMappingPair}
+              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-[11px] font-medium transition-colors"
+              style={{ background: tv.bgSurface, border: `1.5px dashed ${tv.borderSubtle}`, color: tv.textSecondary, cursor: "pointer" }}
+            >
+              <span style={{ fontSize: 14 }}>+</span>
+              Add Mapping Pair
+            </button>
+            {mappingPairs.length > 0 && (
+              <button
+                onClick={() => {/* TODO: run cross-mapping enrichment */}}
+                disabled={!!running || mappingPairs.length === 0}
+                className="rounded-lg px-4 py-2 text-[11px] font-semibold transition-all"
+                style={{
+                  background: tv.textPrimary,
+                  color: tv.bgPrimary,
+                  cursor: running ? "not-allowed" : "pointer",
+                  opacity: running ? 0.5 : 1,
+                }}
+              >
+                Run {mappingPairs.length} Mapping{mappingPairs.length !== 1 ? "s" : ""}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* ── Section 3: Assessment & Analysis ── */}
         <SectionHeader
           title="Assessment & Analysis"
-          subtitle="Evaluate, score, and diagnose your operating model against best practices."
+          subtitle={
+            "These enrichments evaluate your model against various lenses — performance, risk, maturity, dependencies, and gaps. " +
+            "They don't add structural detail but instead overlay analytical insights that help you understand the strengths and weaknesses " +
+            "of your operating model and where to focus improvement efforts."
+          }
         />
         <div className="grid gap-3 mb-8">
           {assessmentCards.map((card) => (
@@ -405,10 +649,14 @@ export function EnrichmentView() {
           ))}
         </div>
 
-        {/* ── Section 3: Custom Enrichments ── */}
+        {/* ── Section 4: Custom Enrichments ── */}
         <SectionHeader
           title="Custom Enrichments"
-          subtitle="Create your own enrichment skills with editable prompts to apply domain-specific analysis to your model."
+          subtitle={
+            "Create your own enrichment skills with editable prompts. This is for domain-specific analysis that isn't covered by the built-in " +
+            "enrichments above — for example, a regulatory compliance check specific to your industry, a vendor assessment framework your " +
+            "organisation uses, or a custom scoring model. Write the prompt, choose what model elements it applies to, and run it like any other enrichment."
+          }
         />
         <div className="grid gap-3 mb-4">
           {customSkills.map((skill) => (
@@ -468,7 +716,7 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle: string })
       <h3 className="text-[11px] font-bold uppercase tracking-wider" style={{ color: tv.accent }}>
         {title}
       </h3>
-      <p className="mt-0.5 text-[11px]" style={{ color: tv.textDim }}>{subtitle}</p>
+      <p className="mt-0.5 text-[11px] leading-relaxed" style={{ color: tv.textDim }}>{subtitle}</p>
     </div>
   );
 }
@@ -486,6 +734,7 @@ function EnrichmentCard({
   onRevertRequest,
   onRevertConfirm,
   onRevertCancel,
+  hideActionButton,
 }: {
   card: EnrichmentCardDef;
   status: "done" | "running" | "available" | "coming-soon";
@@ -499,6 +748,7 @@ function EnrichmentCard({
   onRevertRequest?: () => void;
   onRevertConfirm?: () => void;
   onRevertCancel?: () => void;
+  hideActionButton?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const isDone = status === "done";
@@ -516,8 +766,8 @@ function EnrichmentCard({
       }}
     >
       {/* Main row */}
-      <div className="flex items-center gap-3 px-4 py-3">
-        <span className="flex-shrink-0 text-lg">{card.icon}</span>
+      <div className="flex items-start gap-3 px-4 py-3">
+        <span className="flex-shrink-0 text-lg mt-0.5">{card.icon}</span>
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-medium" style={{ color: isDone ? "#10b981" : tv.textPrimary }}>
             {card.label}
@@ -526,7 +776,7 @@ function EnrichmentCard({
             {card.description}
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
           {/* Add Content toggle — only for non-coming-soon cards */}
           {!isComingSoon && (
             <button
@@ -538,12 +788,12 @@ function EnrichmentCard({
                 border: `1px solid ${hasContent ? "rgba(212,160,83,0.3)" : tv.borderSubtle}`,
                 cursor: "pointer",
               }}
-              title="Add discovery content to guide this enrichment"
+              title="Optionally add your own content to guide this enrichment — paste documents, lists, or data and choose how it should influence the output"
             >
               <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
               </svg>
-              {hasContent ? "Content" : "Add"}
+              {hasContent ? "Content" : "+ Add"}
               {hasContent && (
                 <span className="ml-0.5 rounded-full px-1 text-[8px]" style={{ background: tv.accent, color: "#fff" }}>
                   {INFLUENCE_MODES.find((m) => m.value === influence)?.label}
@@ -563,51 +813,55 @@ function EnrichmentCard({
                 border: `1px solid ${tv.borderSubtle}`,
                 cursor: "pointer",
               }}
-              title="Revert this enrichment to restore the previous model state"
+              title="Undo this enrichment and restore your model to the state it was in before this step was applied"
             >
               ↩ Revert
             </button>
           )}
 
           {/* Status / Action button */}
-          {isDone ? (
-            <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
-              style={{ background: "rgba(16,185,129,0.15)", color: "#10b981" }}>
-              Done
-            </span>
-          ) : isComingSoon ? (
-            <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
-              style={{ background: tv.bgSurface, color: tv.textDim }}>
-              Soon
-            </span>
-          ) : card.navigateTo ? (
-            <button
-              onClick={onNavigate}
-              disabled={disabled}
-              className="rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all whitespace-nowrap"
-              style={{
-                background: tv.accent,
-                color: "#fff",
-                cursor: disabled ? "not-allowed" : "pointer",
-                opacity: disabled ? 0.5 : 1,
-              }}
-            >
-              Open
-            </button>
-          ) : (
-            <button
-              onClick={onRun}
-              disabled={disabled}
-              className="rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all whitespace-nowrap"
-              style={{
-                background: tv.textPrimary,
-                color: tv.bgPrimary,
-                cursor: disabled ? "not-allowed" : "pointer",
-                opacity: disabled ? 0.5 : 1,
-              }}
-            >
-              Run
-            </button>
+          {!hideActionButton && (
+            <>
+              {isDone ? (
+                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
+                  style={{ background: "rgba(16,185,129,0.15)", color: "#10b981" }}>
+                  Done
+                </span>
+              ) : isComingSoon ? (
+                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
+                  style={{ background: tv.bgSurface, color: tv.textDim }}>
+                  Soon
+                </span>
+              ) : card.navigateTo ? (
+                <button
+                  onClick={onNavigate}
+                  disabled={disabled}
+                  className="rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all whitespace-nowrap"
+                  style={{
+                    background: tv.accent,
+                    color: "#fff",
+                    cursor: disabled ? "not-allowed" : "pointer",
+                    opacity: disabled ? 0.5 : 1,
+                  }}
+                >
+                  Open
+                </button>
+              ) : (
+                <button
+                  onClick={onRun}
+                  disabled={disabled}
+                  className="rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all whitespace-nowrap"
+                  style={{
+                    background: tv.textPrimary,
+                    color: tv.bgPrimary,
+                    cursor: disabled ? "not-allowed" : "pointer",
+                    opacity: disabled ? 0.5 : 1,
+                  }}
+                >
+                  Run
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -624,7 +878,7 @@ function EnrichmentCard({
               Revert "{card.label}"?
             </p>
             <p className="text-[10px] mt-0.5" style={{ color: "#b91c1c" }}>
-              This will restore the model to its state before this enrichment was applied. Any data added by this step will be removed.
+              This will restore your model to its exact state before this enrichment was applied. All data added by this step will be removed. You can always re-run the enrichment afterwards.
             </p>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -709,6 +963,169 @@ function EnrichmentCard({
     </div>
   );
 }
+
+// ─── Cross-Mapping Pair Row ─────────────────────────────────────────────────
+
+function MappingPairRow({
+  pair,
+  onUpdate,
+  onUpdateSemantics,
+  onRemove,
+}: {
+  pair: MappingPair;
+  onUpdate: (patch: Partial<MappingPair>) => void;
+  onUpdateSemantics: (sem: Partial<MappingSemantics>) => void;
+  onRemove: () => void;
+}) {
+  const [showSemantics, setShowSemantics] = useState(false);
+
+  return (
+    <div className="mb-3 rounded-lg p-3" style={{ background: tv.bgPrimary, border: `1px solid ${tv.borderSubtle}` }}>
+      {/* From → To row */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <select
+          value={pair.from}
+          onChange={(e) => onUpdate({ from: e.target.value as MappableEntity })}
+          className="rounded-lg px-2.5 py-1.5 text-[11px] outline-none"
+          style={{ background: tv.bgCard, border: `1px solid ${tv.borderSubtle}`, color: tv.textPrimary }}
+        >
+          {MAPPABLE_ENTITIES.map((e) => (
+            <option key={e.value} value={e.value}>{e.label}</option>
+          ))}
+        </select>
+
+        <span className="text-[12px] font-bold" style={{ color: tv.accent }}>→</span>
+
+        <select
+          value={pair.to}
+          onChange={(e) => onUpdate({ to: e.target.value as MappableEntity })}
+          className="rounded-lg px-2.5 py-1.5 text-[11px] outline-none"
+          style={{ background: tv.bgCard, border: `1px solid ${tv.borderSubtle}`, color: tv.textPrimary }}
+        >
+          {MAPPABLE_ENTITIES.map((e) => (
+            <option key={e.value} value={e.value}>{e.label}</option>
+          ))}
+        </select>
+
+        {/* Include inverse toggle */}
+        <label className="flex items-center gap-1.5 ml-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={pair.includeInverse}
+            onChange={(e) => onUpdate({ includeInverse: e.target.checked })}
+            className="rounded"
+          />
+          <span className="text-[10px]" style={{ color: tv.textDim }}>
+            Include inverse ({MAPPABLE_ENTITIES.find((e) => e.value === pair.to)?.label} → {MAPPABLE_ENTITIES.find((e) => e.value === pair.from)?.label})
+          </span>
+        </label>
+
+        {/* Semantics toggle */}
+        <button
+          onClick={() => setShowSemantics(!showSemantics)}
+          className="ml-auto rounded px-2 py-0.5 text-[10px] font-medium"
+          style={{ background: tv.bgSurface, color: tv.textDim, border: `1px solid ${tv.borderSubtle}`, cursor: "pointer" }}
+        >
+          {showSemantics ? "Hide" : "Semantics"}
+        </button>
+
+        {/* Remove */}
+        <button
+          onClick={onRemove}
+          className="rounded p-1 text-[10px]"
+          style={{ color: tv.textDim, cursor: "pointer" }}
+          title="Remove this mapping pair"
+        >
+          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Semantics panel */}
+      {showSemantics && (
+        <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${tv.borderSubtle}` }}>
+          <p className="text-[10px] font-semibold mb-2" style={{ color: tv.textSecondary }}>
+            Relationship Semantics
+          </p>
+          <p className="text-[10px] mb-2 leading-relaxed" style={{ color: tv.textDim }}>
+            Define the mathematical properties of this relationship. These semantics affect how the mapping is interpreted
+            during analysis — for example, a transitive mapping means that indirect relationships are automatically inferred.
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Cardinality */}
+            <div>
+              <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: tv.textDim }}>Cardinality</span>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {CARDINALITY_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => onUpdateSemantics({ cardinality: opt.value })}
+                    className="rounded px-2 py-0.5 text-[10px] font-medium"
+                    style={{
+                      background: pair.semantics.cardinality === opt.value ? tv.accent : tv.bgSurface,
+                      color: pair.semantics.cardinality === opt.value ? "#fff" : tv.textDim,
+                      border: `1px solid ${pair.semantics.cardinality === opt.value ? tv.accent : tv.borderSubtle}`,
+                      cursor: "pointer",
+                    }}
+                    title={opt.description}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[9px] mt-1" style={{ color: tv.textDim }}>
+                {CARDINALITY_OPTIONS.find((o) => o.value === pair.semantics.cardinality)?.description}
+              </p>
+            </div>
+
+            {/* Boolean properties */}
+            <div className="grid gap-1.5">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={pair.semantics.symmetrical}
+                  onChange={(e) => onUpdateSemantics({ symmetrical: e.target.checked })}
+                  className="rounded"
+                />
+                <div>
+                  <span className="text-[10px] font-medium" style={{ color: tv.textPrimary }}>Symmetrical</span>
+                  <p className="text-[9px]" style={{ color: tv.textDim }}>If A relates to B, then B relates to A in the same way</p>
+                </div>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={pair.semantics.functional}
+                  onChange={(e) => onUpdateSemantics({ functional: e.target.checked })}
+                  className="rounded"
+                />
+                <div>
+                  <span className="text-[10px] font-medium" style={{ color: tv.textPrimary }}>Functional</span>
+                  <p className="text-[9px]" style={{ color: tv.textDim }}>Each source element maps to at most one target element</p>
+                </div>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={pair.semantics.transitive}
+                  onChange={(e) => onUpdateSemantics({ transitive: e.target.checked })}
+                  className="rounded"
+                />
+                <div>
+                  <span className="text-[10px] font-medium" style={{ color: tv.textPrimary }}>Transitive</span>
+                  <p className="text-[9px]" style={{ color: tv.textDim }}>If A→B and B→C, then A→C is implied automatically</p>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Custom Skill Card ──────────────────────────────────────────────────────
 
 function CustomSkillCard({
   skill,
