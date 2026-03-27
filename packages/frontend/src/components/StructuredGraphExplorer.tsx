@@ -70,18 +70,36 @@ interface SectionData {
 // ── Helpers ──
 
 function resolveActivityIds(vs: any, acts: Record<string, any>): string[] {
-  if (Array.isArray(vs.activityIds)) return vs.activityIds;
+  // If activityIds is a non-empty array, use it directly
+  if (Array.isArray(vs.activityIds) && vs.activityIds.length > 0) return vs.activityIds;
+
+  // Fall through to chain resolution (handles missing activityIds OR empty array)
   const head = vs.activityChainHead;
-  if (!head) return [];
-  const chain: string[] = [];
-  const seen = new Set<string>();
-  let cur: string | null = head;
-  while (cur && !seen.has(cur) && acts[cur]) {
-    seen.add(cur);
-    chain.push(cur);
-    cur = acts[cur].nextActivityId ?? null;
+  if (head) {
+    const chain: string[] = [];
+    const seen = new Set<string>();
+    let cur: string | null = head;
+    while (cur && !seen.has(cur) && acts[cur]) {
+      seen.add(cur);
+      chain.push(cur);
+      cur = acts[cur].nextActivityId ?? null;
+    }
+    if (chain.length > 0) return chain;
   }
-  return chain;
+
+  // Last resort: scan activities whose valueStreamId matches this VS
+  const vsId = vs.id;
+  if (vsId) {
+    const matched = Object.entries(acts)
+      .filter(([, a]: [string, any]) => a.valueStreamId === vsId)
+      .sort(([, a]: [string, any], [, b]: [string, any]) =>
+        (a.stageNumber ?? a.order ?? 0) - (b.stageNumber ?? b.order ?? 0),
+      )
+      .map(([id]) => id);
+    if (matched.length > 0) return matched;
+  }
+
+  return [];
 }
 
 function getZone(vs: any): string {

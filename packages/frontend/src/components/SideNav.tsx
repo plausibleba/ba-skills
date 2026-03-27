@@ -176,7 +176,9 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
   const goToWorkbench = () => {
     const canvas = useCanvasStore.getState();
     const wb = useWorkbenchStore.getState();
-    if (!wb.isActive && canvas.scaffoldData) {
+    if (canvas.scaffoldData) {
+      // Always (re-)enter workbench with the current scaffold.
+      // This ensures switching projects doesn't leave stale data.
       wb.enterWorkbench(canvas.scaffoldData);
     }
     canvas.goToWorkbench();

@@ -13,6 +13,7 @@ import type { CardRegistry } from "../types/cards.ts";
 import { resolveScaffoldMeasures } from "./scaffold-resolver.ts";
 import { trackViewChange } from "../utils/analytics.ts";
 import { validateThroughputRules } from "./throughput-validator.ts";
+import { useWorkbenchStore } from "./workbench-store.ts";
 import {
   deriveNetworkEdges,
   computeNodePositions,
@@ -134,6 +135,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   scaffoldDirty: false,
 
   loadScaffold: async (json: ScaffoldData) => {
+    // Exit workbench if active — the new scaffold replaces the old one
+    if (useWorkbenchStore.getState().isActive) {
+      useWorkbenchStore.getState().exitWorkbench();
+    }
     // Normalise pipeline-generated scaffolds: ensure every metric has a measures block
     // and elements.measures exists, so downstream validators don't crash on undefined.
     // Auto-derive layoutZones from VS layoutZone values if not present
@@ -496,6 +501,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   },
 
   reset: () => {
+    // Clear workbench state so it doesn't hold stale scaffold from previous project
+    useWorkbenchStore.getState().exitWorkbench();
     set({
       viewMode: "network",
       selectedVsId: null,

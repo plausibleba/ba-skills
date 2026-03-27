@@ -231,7 +231,7 @@ export function UserGuidePanel() {
   const isDark = useThemeStore((s) => s.mode) === "dark";
 
   return (
-    <div className={`fixed bottom-4 z-40 w-64 rounded-xl border shadow-lg ${isDark ? "border-slate-700 bg-slate-800" : "border-gray-200 bg-white"}`} style={{ left: 56 }}>
+    <div className={`fixed bottom-4 z-40 w-64 rounded-xl border shadow-lg ${isDark ? "border-slate-700 bg-slate-800" : "border-gray-200 bg-white"}`} style={{ left: 192 }}>
       {/* Header */}
       <div
         className={`flex cursor-pointer items-center justify-between rounded-t-xl border-b px-3 py-2 ${isDark ? "border-slate-700 bg-slate-700/80" : "border-gray-100 bg-gray-50/80"}`}
