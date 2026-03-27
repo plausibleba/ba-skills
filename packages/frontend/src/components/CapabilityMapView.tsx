@@ -424,14 +424,12 @@ export function CapabilityMapView() {
       </div>
       </div>
 
-      {/* Right-side Inspector panel */}
-      {selectedL3 && (
-        <CapabilityInspectorPanel
-          cap={selectedL3}
-          ppit={ppitByCapId.get(selectedL3.id)}
-          onClose={() => setSelectedL3(null)}
-        />
-      )}
+      {/* Right-side Inspector panel — always visible */}
+      <CapabilityInspectorPanel
+        cap={selectedL3}
+        ppit={selectedL3 ? ppitByCapId.get(selectedL3.id) : undefined}
+        onClose={() => setSelectedL3(null)}
+      />
     </div>
   );
 }
@@ -674,10 +672,10 @@ function CapTile({
     <div
       onClick={onSelect}
       onDoubleClick={onStartEdit}
-      className="cursor-pointer rounded px-1.5 py-0.5 text-[8px] leading-snug transition-colors"
+      className="cursor-pointer rounded px-1.5 py-0.5 text-[8px] leading-snug transition-colors hover:brightness-125"
       style={{
         background: isSelected ? selectedBg : tv.tileBg,
-        border: `0.5px solid ${isSelected ? selectedBorder : tv.borderSubtle}`,
+        border: `1px solid ${isSelected ? selectedBorder : tv.borderSubtle}`,
         color: isSelected ? selectedColor : tv.textSecondary,
         whiteSpace: "normal",
         minWidth: 60,
