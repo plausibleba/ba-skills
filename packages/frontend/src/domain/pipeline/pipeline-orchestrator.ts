@@ -165,18 +165,55 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
   if (!scaffold?.elements) return;
   const concepts: Record<string, any> = scaffold.elements.concepts ?? {};
 
-  // Derive Party concepts from roles
+  // Derive Party concepts from roles (internal stakeholders)
   const roles = scaffold.elements.roles ?? {};
   for (const [id, role] of Object.entries(roles)) {
     const r = role as any;
     const cId = `concept_party_${id}`;
     if (!concepts[cId]) {
       concepts[cId] = {
-        id: cId, name: r.name, type: "Party",
+        id: cId, name: r.name, type: "Party", subtype: "Role",
         definition: r.description ?? `Stakeholder role: ${r.name}`,
         lifecycleStates: [], relatedCapabilityIds: [],
         elementType: "Concept", relationships: [],
       };
+    }
+  }
+
+  // Derive external Party concepts inferred from value stream names, record names,
+  // and capability context (e.g. Customer, Supplier, Partner, Vendor, Patient, etc.)
+  const EXTERNAL_PARTY_PATTERNS: Array<{ pattern: RegExp; name: string; defn: string }> = [
+    { pattern: /customer|client|buyer|consumer|patron|diner|guest|shopper|member/i, name: "Customer", defn: "External party who receives products or services" },
+    { pattern: /supplier|vendor|provider|wholesaler|distributor/i, name: "Supplier", defn: "External party who provides goods or materials" },
+    { pattern: /partner|affiliate|franchisee/i, name: "Partner", defn: "External party in a business partnership" },
+    { pattern: /patient/i, name: "Patient", defn: "External party receiving healthcare services" },
+    { pattern: /student|learner|trainee/i, name: "Student", defn: "External party receiving educational services" },
+    { pattern: /tenant|resident/i, name: "Tenant", defn: "External party occupying a property" },
+  ];
+  // Collect all text sources for external party inference
+  const textSources: string[] = [];
+  for (const io of Object.values(scaffold.elements.informationObjects ?? {})) textSources.push((io as any).name ?? "");
+  for (const act of Object.values(scaffold.elements.activities ?? {})) textSources.push((act as any).name ?? "");
+  for (const cap of Object.values(scaffold.elements.capabilities ?? {})) textSources.push((cap as any).name ?? "");
+  if (ir?.valueStreams?.length) for (const vs of ir.valueStreams) textSources.push(vs.name ?? "", vs.valueObject ?? "");
+  const allText = textSources.join(" ");
+  const seenExternalParties = new Set(
+    Object.values(concepts).filter((c: any) => c.type === "Party" && c.subtype === "External").map((c: any) => (c.name ?? "").toLowerCase())
+  );
+  for (const ep of EXTERNAL_PARTY_PATTERNS) {
+    if (ep.pattern.test(allText) && !seenExternalParties.has(ep.name.toLowerCase())) {
+      // Check it's not already a role name
+      const existingRole = Object.values(concepts).find((c: any) => c.type === "Party" && (c.name ?? "").toLowerCase() === ep.name.toLowerCase());
+      if (!existingRole) {
+        const cId = `concept_party_ext_${makeId("ext", ep.name)}`;
+        concepts[cId] = {
+          id: cId, name: ep.name, type: "Party", subtype: "External",
+          definition: ep.defn,
+          lifecycleStates: [], relatedCapabilityIds: [],
+          elementType: "Concept", relationships: [],
+        };
+        seenExternalParties.add(ep.name.toLowerCase());
+      }
     }
   }
 
@@ -387,35 +424,82 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
     }
   }
 
+  // Collect all parties (including external) and all resources for semantic matching
+  const allParties = Object.entries(concepts).filter(([, c]) => (c as any).type === "Party");
+
   for (const recId of Object.keys(concepts).filter(id => (concepts[id] as any).type === "Record")) {
     if (recordObject[recId]) continue; // already assigned
-    if (allResources.length === 0) continue;
+    const recName = ((concepts[recId] as any).name ?? "").toLowerCase();
 
-    // Strategy 1: shared capability context — record and resource are on the same capability
-    const recCaps = recordToCaps[recId];
-    if (recCaps) {
-      for (const cId of recCaps) {
-        if (capToResource[cId]) {
-          recordObject[recId] = capToResource[cId];
-          break;
+    // Strategy 1: semantic name matching — infer object from the record's name
+    // "Customer Profile" → object is "Customer" (a Party)
+    // "Customer Order" → object is "Food Item" (a Resource, via capability context)
+    // "Loyalty Profile" → object is "Customer" (a Party)
+    // "Dispatch Ticket" → object is the product being dispatched
+
+    // 1a: Does the record name reference an external party? (profile/record of someone)
+    const PARTY_RECORD_KW = /profile|record|account|membership|enrollment|registration|subscription/i;
+    if (PARTY_RECORD_KW.test(recName)) {
+      // Find the party whose name best matches the record name prefix
+      // e.g. "Customer Profile" → look for a party called "Customer"
+      let bestParty: string | null = null;
+      let bestScore = 0;
+      for (const [pId, p] of allParties) {
+        const pName = ((p as any).name ?? "").toLowerCase();
+        if (recName.includes(pName) && pName.length > bestScore) {
+          bestParty = pId;
+          bestScore = pName.length;
         }
       }
-    }
-    if (recordObject[recId]) continue;
-
-    // Strategy 2: party→resource — the party that created the record also uses a resource
-    const subjectParty = recordSubject[recId];
-    const partyResources = subjectParty ? partyToResources[subjectParty] : undefined;
-    if (partyResources?.size) {
-      recordObject[recId] = [...partyResources][0];
-      continue;
+      if (bestParty) {
+        recordObject[recId] = bestParty;
+        continue;
+      }
     }
 
-    // Strategy 3: if there's only one product-type resource, assign it as the default object
-    // (common in simple models like pizza company where "Food Item" is the core resource)
-    const productResources = allResources.filter(id => (concepts[id] as any).subtype === "Product");
-    if (productResources.length === 1) {
-      recordObject[recId] = productResources[0];
+    // 1b: Does the record name reference a product/resource?
+    // "Kitchen Order" → Food Item, "Dispatch Ticket" → Food Item
+    const ORDER_KW = /order|ticket|invoice|receipt|shipment|delivery|dispatch/i;
+    if (ORDER_KW.test(recName) && allResources.length > 0) {
+      // Strategy 2: shared capability context — record and resource on same capability
+      const recCaps = recordToCaps[recId];
+      if (recCaps) {
+        for (const cId of recCaps) {
+          if (capToResource[cId]) {
+            recordObject[recId] = capToResource[cId];
+            break;
+          }
+        }
+      }
+      if (recordObject[recId]) continue;
+
+      // Strategy 3: party→resource — the party that created the record also uses a resource
+      const subjectParty = recordSubject[recId];
+      const partyResources = subjectParty ? partyToResources[subjectParty] : undefined;
+      if (partyResources?.size) {
+        recordObject[recId] = [...partyResources][0];
+        continue;
+      }
+
+      // Strategy 4: if there's a single Product resource, assign it to order-like records only
+      const productResources = allResources.filter(id => (concepts[id] as any).subtype === "Product");
+      if (productResources.length === 1) {
+        recordObject[recId] = productResources[0];
+        continue;
+      }
+    }
+
+    // 1c: Fallback — try capability context for any remaining record
+    if (!recordObject[recId]) {
+      const recCaps = recordToCaps[recId];
+      if (recCaps) {
+        for (const cId of recCaps) {
+          if (capToResource[cId]) {
+            recordObject[recId] = capToResource[cId];
+            break;
+          }
+        }
+      }
     }
   }
 
@@ -429,7 +513,9 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
   for (const [recId, objId] of Object.entries(recordObject)) {
     const rels = (concepts[recId].relationships as any[]);
     if (!rels.some((r: any) => r.targetId === objId)) {
-      rels.push({ targetId: objId, type: "regarding", label: "regarding", cardinality: "N:1" });
+      const objType = (concepts[objId] as any)?.type;
+      const label = objType === "Party" ? "about" : "regarding";
+      rels.push({ targetId: objId, type: label, label, cardinality: "N:1" });
     }
   }
   // Party → Resource (uses) — limit to max 2 per party
