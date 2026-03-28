@@ -160,11 +160,15 @@ export function CapabilityBlock({
   const capPPIT = ppitMap?.[capabilityId] ?? null;
   const activityRec = storeActivity as Record<string, unknown>;
 
-  // Resolve role IDs — v4 uses capPPIT.roleIds, v5 falls back to activity-level
+  // Resolve role IDs — ONLY show per-capability data from capabilityPPIT.
+  // Before PPIT enrichment runs, activity-level fields (performedByRoleIds, informationObjectIds)
+  // are NOT meaningful at the capability level — showing them creates a misleading impression
+  // of per-capability mapping when the same data is repeated across every capability in the stage.
+  const hasPPIT = !!capPPIT;
   const roleIds: string[] = ppitToggles.roles
     ? capPPIT
       ? (capPPIT.roleIds ?? [])
-      : ((activityRec.performedByRoleIds as string[] | undefined) ?? [])
+      : [] // No fallback — activity-level roles are not per-capability
     : [];
   const resolveRoleName = (rid: string) => {
     const roles = scaffoldData?.elements.roles ?? scaffold.elements.roles;
@@ -175,17 +179,17 @@ export function CapabilityBlock({
   const activities = ppitToggles.activities
     ? capPPIT
       ? (capPPIT.activities ?? [])
-      : [storeActivity.name ?? activity.name]
+      : [] // No fallback — activity name as sub-activity is misleading
     : [];
 
   // Whether sub-activities come from capabilityPPIT (editable) or fallback (not editable)
   const activitiesEditable = ppitToggles.activities && !!capPPIT;
 
-  // Resolve Info Objects — keep IDs for add/remove (read from store for freshness)
+  // Resolve Info Objects — ONLY from capabilityPPIT, no activity-level fallback
   const infoObjIds: string[] = ppitToggles.concepts
     ? capPPIT
       ? (capPPIT.informationObjectIds ?? [])
-      : ((activityRec.informationObjectIds as string[] | undefined) ?? [])
+      : [] // No fallback — activity-level IOs are not per-capability
     : [];
   const resolveInfoName = (iid: string) => {
     const src = scaffoldData?.elements ?? scaffold.elements;
@@ -193,11 +197,11 @@ export function CapabilityBlock({
     return el?.[iid]?.name ?? humanizeId(iid);
   };
 
-  // Resolve Tech Apps — keep IDs for add/remove (read from store for freshness)
+  // Resolve Tech Apps — ONLY from capabilityPPIT, no activity-level fallback
   const techAppIds: string[] = ppitToggles.applications
     ? capPPIT
       ? (capPPIT.technologyAppIds ?? [])
-      : ((activityRec.technologyAppIds as string[] | undefined) ?? [])
+      : [] // No fallback — activity-level tech is not per-capability
     : [];
   const resolveTechName = (tid: string) => {
     const src = scaffoldData?.elements ?? scaffold.elements;
@@ -253,6 +257,12 @@ export function CapabilityBlock({
           {!anyToggle && <CapabilityBadgeCounts ppit={capPPIT} />}
         </div>
       </div>
+
+      {anyToggle && !hasPPIT && !hasContent && (
+        <p className="mt-1 text-[9px] italic" style={{ color: tv.textDim }}>
+          PPIT not yet mapped
+        </p>
+      )}
 
       {anyToggle && hasContent && (
         <div className="mt-1.5 space-y-1.5">

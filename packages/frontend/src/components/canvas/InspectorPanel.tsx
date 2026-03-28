@@ -690,7 +690,10 @@ function CapabilityInspector({ capabilityId, activityId, scaffold, pal }: { capa
 
   const description = (cap as unknown as Record<string, unknown> | undefined)?.description as string | undefined;
 
-  const roles = (ppit?.roleIds ?? (act?.performedByRoleIds as string[] | undefined) ?? [])
+  // Only show PPIT data when it exists — do NOT fall back to activity-level fields,
+  // which are shared across all capabilities in the stage and would be misleading.
+  const hasPPIT = !!ppit;
+  const roles = (ppit?.roleIds ?? [])
     .map(id => ({ id, name: scaffold.elements.roles[id]?.name ?? humanizeId(id) }));
   const subActivities = ppit?.activities ?? [];
   const infoObjs = (ppit?.informationObjectIds ?? [])
@@ -711,30 +714,40 @@ function CapabilityInspector({ capabilityId, activityId, scaffold, pal }: { capa
         </p>
       </div>
 
-      <Section title={`People (${roles.length})`}>
-        <ChipList items={roles} color={pal.role} />
-      </Section>
+      {!hasPPIT ? (
+        <div className="rounded-md px-3 py-2" style={{ background: `${tv.textDim}15` }}>
+          <p className="text-[10px] leading-relaxed" style={{ color: tv.textDim }}>
+            Per-capability PPIT breakdown not yet available. Run <strong style={{ color: tv.textSecondary }}>Map PPIT</strong> enrichment to see roles, sub-activities, information, and technology mapped to each capability.
+          </p>
+        </div>
+      ) : (
+        <>
+          <Section title={`People (${roles.length})`}>
+            <ChipList items={roles} color={pal.role} />
+          </Section>
 
-      {subActivities.length > 0 && (
-        <Section title={`Sub-Activities (${subActivities.length})`}>
-          <div className="space-y-0.5">
-            {subActivities.map((a, i) => (
-              <div key={i} className="flex items-start gap-1.5">
-                <span className="mt-[3px] h-1 w-1 flex-shrink-0 rounded-full" style={{ background: pal.activ.fg }} />
-                <span className="text-[10px] leading-tight" style={{ color: pal.activ.fg }}>{a}</span>
+          {subActivities.length > 0 && (
+            <Section title={`Sub-Activities (${subActivities.length})`}>
+              <div className="space-y-0.5">
+                {subActivities.map((a, i) => (
+                  <div key={i} className="flex items-start gap-1.5">
+                    <span className="mt-[3px] h-1 w-1 flex-shrink-0 rounded-full" style={{ background: pal.activ.fg }} />
+                    <span className="text-[10px] leading-tight" style={{ color: pal.activ.fg }}>{a}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </Section>
+            </Section>
+          )}
+
+          <Section title={`Information (${infoObjs.length})`}>
+            <ChipList items={infoObjs} color={pal.info} />
+          </Section>
+
+          <Section title={`Technology (${techApps.length})`}>
+            <ChipList items={techApps} color={pal.tech} />
+          </Section>
+        </>
       )}
-
-      <Section title={`Information (${infoObjs.length})`}>
-        <ChipList items={infoObjs} color={pal.info} />
-      </Section>
-
-      <Section title={`Technology (${techApps.length})`}>
-        <ChipList items={techApps} color={pal.tech} />
-      </Section>
 
       {/* Cross-VS Usage */}
       {crossVs.length > 1 && (

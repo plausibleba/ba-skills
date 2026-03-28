@@ -212,6 +212,99 @@ const OBSERVATION_TYPES: {
   },
 ];
 
+// ─────────────────────────────────────────────────────────────────────────────
+// AI Generate — context hints and suggestion types per observation type
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Describes what user-provided context improves AI-generated recommendations for each observation type */
+const GENERATION_CONTEXT: Record<ObservationType, {
+  contextLabel: string;
+  contextHint: string;
+  examples: string[];
+}> = {
+  painPoint: {
+    contextLabel: "Stakeholder Context",
+    contextHint: "Provide any qualitative feedback, interview notes, customer complaints, NPS comments, or workshop outputs that describe where people struggle. The AI will use these to identify pain points anchored to your model.",
+    examples: [
+      "Customer interview transcripts or verbatim quotes",
+      "NPS or CSAT free-text responses",
+      "Internal workshop sticky-note outputs",
+      "Support ticket themes or complaint categories",
+      "Employee satisfaction survey results",
+    ],
+  },
+  friction: {
+    contextLabel: "Process Evidence",
+    contextHint: "Provide process documentation, SLA data, cycle time reports, handoff logs, or system integration notes. The AI will analyse the structural model to detect friction — delays, bottlenecks, integration gaps, and governance layering — and your evidence sharpens the accuracy.",
+    examples: [
+      "SLA breach reports or cycle time data",
+      "System integration architecture diagrams or notes",
+      "Handoff documentation between teams",
+      "Queue length or wait time measurements",
+      "Incident reports related to process failures",
+    ],
+  },
+  risk: {
+    contextLabel: "Risk Intelligence",
+    contextHint: "Provide existing risk registers, audit findings, compliance reports, business continuity plans, or incident histories. The AI will look for structural single-points-of-failure, unmonitored gaps, and capacity overloads in your model, and your intelligence guides the severity assessment.",
+    examples: [
+      "Internal or external audit findings",
+      "Risk register entries from existing frameworks",
+      "Business continuity / disaster recovery plans",
+      "Regulatory compliance gap assessments",
+      "Historical incident post-mortems",
+    ],
+  },
+  control: {
+    contextLabel: "Governance Documentation",
+    contextHint: "Provide existing control frameworks, approval matrices, compliance checklists, audit procedures, or quality assurance documents. The AI will assess whether your controls are proportionate — too heavy (creating friction) or too light (leaving risk unmitigated).",
+    examples: [
+      "Existing control framework documentation (COBIT, SOX, ISO)",
+      "RACI or approval authority matrices",
+      "Quality assurance / quality control procedures",
+      "Change management approval workflows",
+      "Compliance monitoring reports",
+    ],
+  },
+  constraint: {
+    contextLabel: "Boundary Conditions",
+    contextHint: "Provide regulatory requirements, contractual obligations, platform limitations, capacity data, or budget parameters. The AI will identify hard boundaries in your model that cannot be resolved through process improvement — only designed around.",
+    examples: [
+      "Regulatory or legal requirements (e.g. data residency, retention)",
+      "Contractual SLAs or vendor lock-in terms",
+      "Technology platform capacity limits",
+      "Budget or headcount constraints",
+      "Physical infrastructure limitations (e.g. throughput, geography)",
+    ],
+  },
+};
+
+/** A single AI-generated suggestion awaiting user review */
+type SuggestionDisposition = "pending" | "accepted" | "rejected" | "parked" | "modified";
+
+interface GeneratedSuggestion {
+  id: string;
+  observationType: ObservationType;
+  /** AI-suggested category from the friction taxonomy */
+  category: string;
+  /** AI-suggested anchor */
+  anchorType: string;
+  anchorId: string;
+  anchorName: string;
+  /** Intensity score 0–10 */
+  intensity: number;
+  /** AI rationale */
+  rationale: string;
+  /** User's disposition */
+  disposition: SuggestionDisposition;
+  /** If modified, the user-edited version of the rationale */
+  editedRationale?: string;
+  /** If modified, the user-edited intensity */
+  editedIntensity?: number;
+  /** Value stream ID this observation would be added to */
+  vsId: string;
+}
+
 /** Status workflow metadata */
 const OBSERVATION_STATUSES: {
   status: ObservationStatus;
@@ -237,6 +330,40 @@ interface AggregatedObservation {
   isBinding: boolean;
 }
 
+/** Generate plausible rationale text for AI suggestions (placeholder — production would use actual LLM output) */
+function generateSuggestionRationale(type: ObservationType, anchorName: string, scaffold: ScaffoldData): string {
+  const templates: Record<ObservationType, string[]> = {
+    painPoint: [
+      `Stakeholders at "${anchorName}" report delays caused by unclear handoff responsibilities and inconsistent communication channels between upstream and downstream teams.`,
+      `The "${anchorName}" step is frequently cited as a source of rework — participants describe having to re-enter information that should have been captured earlier in the process.`,
+      `Teams working on "${anchorName}" report confusion about escalation paths when exceptions occur, leading to ad-hoc workarounds and inconsistent outcomes.`,
+    ],
+    friction: [
+      `Structural analysis indicates "${anchorName}" creates a sequential bottleneck — all work must pass through this single stage with no parallel processing path, creating queue buildup during peak demand.`,
+      `"${anchorName}" requires integration between multiple technology systems with no automated data exchange, resulting in manual re-keying that introduces latency and error risk.`,
+      `The handoff from "${anchorName}" to downstream stages involves a format transformation that requires specialist knowledge, creating a capacity constraint tied to specific individuals.`,
+    ],
+    risk: [
+      `"${anchorName}" represents a single point of failure — if the primary performer is unavailable, no documented fallback procedure exists to maintain continuity of service.`,
+      `The controls applied at "${anchorName}" have not been tested against current regulatory requirements, creating potential compliance exposure.`,
+      `Capacity modelling suggests "${anchorName}" is operating at 85%+ utilisation — any demand increase or staff absence will likely cause cascading delays across dependent stages.`,
+    ],
+    control: [
+      `The approval gate at "${anchorName}" requires sign-off from a role that is also responsible for 4+ other stages, suggesting over-centralised authority that creates both a bottleneck and a governance risk.`,
+      `"${anchorName}" has layered compliance checks (quality assurance and regulatory audit) that may be redundant — the second control appears to re-verify information already validated by the first.`,
+      `No monitoring or measurement control exists at "${anchorName}" despite it being on the critical path — the absence of metrics means performance degradation would go undetected.`,
+    ],
+    constraint: [
+      `"${anchorName}" is constrained by a regulatory requirement that mandates a minimum processing period — this cannot be optimised through process improvement and must be designed around.`,
+      `The technology platform supporting "${anchorName}" has a documented throughput limit that caps the number of transactions that can be processed per period, regardless of demand.`,
+      `Contractual obligations at "${anchorName}" require specific data retention and audit trail formats that constrain the technology choices available for this stage.`,
+    ],
+  };
+
+  const options = templates[type];
+  return options[Math.floor(Math.random() * options.length)];
+}
+
 function ObservationsTab({
   scaffoldData,
   heatmapsByVs,
@@ -252,6 +379,143 @@ function ObservationsTab({
   const [addingForType, setAddingForType] = useState<ObservationType | null>(null);
   const [importingForType, setImportingForType] = useState<ObservationType | null>(null);
   const { gate } = useGateCheck();
+
+  // ── Generate state ──
+  const [generatingForType, setGeneratingForType] = useState<ObservationType | null>(null);
+  const [generatingSuggestions, setGeneratingSuggestions] = useState(false);
+  const [suggestionsByType, setSuggestionsByType] = useState<Record<ObservationType, GeneratedSuggestion[]>>({
+    painPoint: [], friction: [], risk: [], control: [], constraint: [],
+  });
+  const [generateContextByType, setGenerateContextByType] = useState<Record<ObservationType, string>>({
+    painPoint: "", friction: "", risk: "", control: "", constraint: "",
+  });
+
+  /** Handle Generate click — if panel is already showing suggestions, trigger the AI call */
+  const handleGenerate = useCallback((type: ObservationType) => {
+    if (generatingForType === type && suggestionsByType[type].length === 0 && !generatingSuggestions) {
+      // Panel is open, user clicked "Analyse Model" — simulate AI generation
+      setGeneratingSuggestions(true);
+
+      // Simulate AI response (in production this would call the pipeline)
+      setTimeout(() => {
+        const vsEntries = Object.entries(scaffoldData.elements.valueStreams);
+        const activities = scaffoldData.elements.activities;
+        const activityEntries = Object.entries(activities);
+
+        // Generate realistic suggestions based on the model
+        const newSuggestions: GeneratedSuggestion[] = [];
+
+        // Pick up to 6 anchor points from the model
+        const sampleSize = Math.min(6, activityEntries.length);
+        const shuffled = [...activityEntries].sort(() => Math.random() - 0.5);
+
+        for (let i = 0; i < sampleSize; i++) {
+          const [actId, act] = shuffled[i];
+          // Find the VS this activity belongs to
+          let ownerVsId = vsEntries[0]?.[0] ?? "";
+          for (const [vId, vs] of vsEntries) {
+            if (vs.stages?.some((s: any) => s.activityId === actId || s === actId)) {
+              ownerVsId = vId;
+              break;
+            }
+          }
+
+          const category = type === "painPoint" ? "ProcessHandoffFriction"
+            : type === "friction" ? ALL_CATEGORIES[Math.floor(Math.random() * ALL_CATEGORIES.length)]
+            : type === "risk" ? "GovernanceRiskFriction"
+            : type === "control" ? "GovernanceRiskFriction"
+            : "IncentiveCapacityFriction";
+
+          newSuggestions.push({
+            id: `gen_${type}_${Date.now()}_${i}`,
+            observationType: type,
+            category,
+            anchorType: "Activity",
+            anchorId: actId,
+            anchorName: act.name ?? actId,
+            intensity: Math.floor(Math.random() * 5) + 4, // 4-8
+            rationale: generateSuggestionRationale(type, act.name ?? actId, scaffoldData),
+            disposition: "pending",
+            vsId: ownerVsId,
+          });
+        }
+
+        setSuggestionsByType((prev) => ({ ...prev, [type]: newSuggestions }));
+        setGeneratingSuggestions(false);
+      }, 2500);
+    } else {
+      // First click — open the generate panel
+      setGeneratingForType(type);
+    }
+  }, [generatingForType, generatingSuggestions, suggestionsByType, scaffoldData]);
+
+  /** Dispose a suggestion (accept/reject/park/modify/pending) */
+  const handleSuggestionDispose = useCallback((type: ObservationType, id: string, disposition: SuggestionDisposition) => {
+    setSuggestionsByType((prev) => ({
+      ...prev,
+      [type]: prev[type].map((s) => s.id === id ? { ...s, disposition } : s),
+    }));
+  }, []);
+
+  /** Edit a suggestion's rationale or intensity */
+  const handleSuggestionEdit = useCallback((type: ObservationType, id: string, patch: { editedRationale?: string; editedIntensity?: number }) => {
+    setSuggestionsByType((prev) => ({
+      ...prev,
+      [type]: prev[type].map((s) => s.id === id ? { ...s, ...patch } : s),
+    }));
+  }, []);
+
+  /** Commit accepted/modified suggestions to the heatmap */
+  const handleCommitSuggestions = useCallback((type: ObservationType) => {
+    const accepted = suggestionsByType[type].filter((s) => s.disposition === "accepted" || s.disposition === "modified");
+    if (accepted.length === 0) return;
+
+    const store = useCanvasStore.getState();
+
+    for (const sug of accepted) {
+      const newObs: FrictionObservation = {
+        observationId: `fr_gen_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        category: sug.category,
+        observationType: sug.observationType,
+        status: "suggested" as ObservationStatus,
+        provenance: "intuited" as ObservationProvenance,
+        primaryAnchor: { anchorType: sug.anchorType, anchorId: sug.anchorId },
+        intensity: { scale: "0-10", score: sug.editedIntensity ?? sug.intensity },
+        rationale: (sug.editedRationale ?? sug.rationale).trim(),
+        observedAt: new Date().toISOString(),
+      };
+
+      const hm = store.heatmapsByVs.get(sug.vsId);
+      if (hm) {
+        hm.observations.push(newObs);
+      } else {
+        const newHm: HeatmapData = {
+          schemaVersion: "1.0",
+          heatmapId: `heatmap-${sug.vsId}-${Date.now()}`,
+          scaffoldId: scaffoldData.scaffoldId,
+          valueStreamId: sug.vsId,
+          createdAt: new Date().toISOString(),
+          observations: [newObs],
+          bindingConstraint: null as any,
+        };
+        store.heatmapsByVs.set(sug.vsId, newHm);
+      }
+    }
+
+    useCanvasStore.setState({ heatmapsByVs: new Map(store.heatmapsByVs), scaffoldDirty: true });
+
+    // Clear committed suggestions, keep parked ones
+    setSuggestionsByType((prev) => ({
+      ...prev,
+      [type]: prev[type].filter((s) => s.disposition === "parked"),
+    }));
+
+    // If no parked items remain, close the panel
+    const remaining = suggestionsByType[type].filter((s) => s.disposition === "parked");
+    if (remaining.length === 0) {
+      setGeneratingForType(null);
+    }
+  }, [suggestionsByType, scaffoldData]);
 
   // Aggregate all observations across value streams
   const aggregated = useMemo(() => {
@@ -483,10 +747,20 @@ function ObservationsTab({
             onDelete={(vsId, obsId) => handleDeleteObservation(vsId, obsId)}
             onAdd={() => gate("add_observation", () => setAddingForType(typeMeta.type))}
             onImport={() => gate("import_observations", () => setImportingForType(typeMeta.type))}
+            onGenerate={() => gate("generate_observations", () => handleGenerate(typeMeta.type))}
             showAddForm={addingForType === typeMeta.type}
             showImportArea={importingForType === typeMeta.type}
+            showGeneratePanel={generatingForType === typeMeta.type}
+            generatingSuggestions={generatingSuggestions && generatingForType === typeMeta.type}
+            suggestions={suggestionsByType[typeMeta.type]}
+            onSuggestionDispose={(id, disp) => handleSuggestionDispose(typeMeta.type, id, disp)}
+            onSuggestionEdit={(id, patch) => handleSuggestionEdit(typeMeta.type, id, patch)}
+            onCommitSuggestions={() => handleCommitSuggestions(typeMeta.type)}
             onCloseAdd={() => setAddingForType(null)}
             onCloseImport={() => setImportingForType(null)}
+            onCloseGenerate={() => { setGeneratingForType(null); setSuggestionsByType((prev) => ({ ...prev, [typeMeta.type]: [] })); }}
+            generateContext={generateContextByType[typeMeta.type]}
+            onGenerateContextChange={(text) => setGenerateContextByType((prev) => ({ ...prev, [typeMeta.type]: text }))}
           />
         );
       })}
@@ -509,10 +783,20 @@ function ObservationTypeSection({
   onDelete,
   onAdd,
   onImport,
+  onGenerate,
   showAddForm,
   showImportArea,
+  showGeneratePanel,
+  generatingSuggestions,
+  suggestions,
+  onSuggestionDispose,
+  onSuggestionEdit,
+  onCommitSuggestions,
   onCloseAdd,
   onCloseImport,
+  onCloseGenerate,
+  generateContext,
+  onGenerateContextChange,
 }: {
   typeMeta: (typeof OBSERVATION_TYPES)[number];
   items: AggregatedObservation[];
@@ -522,12 +806,27 @@ function ObservationTypeSection({
   onDelete: (vsId: string, obsId: string) => void;
   onAdd: () => void;
   onImport: () => void;
+  onGenerate: () => void;
   showAddForm: boolean;
   showImportArea: boolean;
+  showGeneratePanel: boolean;
+  generatingSuggestions: boolean;
+  suggestions: GeneratedSuggestion[];
+  onSuggestionDispose: (id: string, disposition: SuggestionDisposition) => void;
+  onSuggestionEdit: (id: string, patch: { editedRationale?: string; editedIntensity?: number }) => void;
+  onCommitSuggestions: () => void;
   onCloseAdd: () => void;
   onCloseImport: () => void;
+  onCloseGenerate: () => void;
+  generateContext: string;
+  onGenerateContextChange: (text: string) => void;
 }) {
   const [collapsed, setCollapsed] = useState(false);
+
+  const contextMeta = GENERATION_CONTEXT[typeMeta.type];
+  const pendingSuggestions = suggestions.filter((s) => s.disposition === "pending");
+  const acceptedSuggestions = suggestions.filter((s) => s.disposition === "accepted" || s.disposition === "modified");
+  const parkedSuggestions = suggestions.filter((s) => s.disposition === "parked");
 
   return (
     <div className="mb-6">
@@ -580,6 +879,17 @@ function ObservationTypeSection({
             </svg>
             Add
           </button>
+          <button
+            onClick={onGenerate}
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold text-white shadow-sm"
+            style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)", boxShadow: "0 1px 4px rgba(99,102,241,0.3)" }}
+            title={`Ask AI to analyse your model and suggest ${typeMeta.label.toLowerCase()}`}
+          >
+            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            Generate
+          </button>
         </div>
         <svg className={`h-4 w-4 text-gray-400 transition-transform ${collapsed ? "-rotate-90" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -606,11 +916,32 @@ function ObservationTypeSection({
             />
           )}
 
+          {/* Generate panel */}
+          {showGeneratePanel && (
+            <GeneratePanel
+              typeMeta={typeMeta}
+              contextMeta={contextMeta}
+              scaffoldData={scaffoldData}
+              generating={generatingSuggestions}
+              suggestions={suggestions}
+              context={generateContext}
+              onContextChange={onGenerateContextChange}
+              onGenerate={onGenerate}
+              onDispose={onSuggestionDispose}
+              onEdit={onSuggestionEdit}
+              onCommit={onCommitSuggestions}
+              onClose={onCloseGenerate}
+              pendingCount={pendingSuggestions.length}
+              acceptedCount={acceptedSuggestions.length}
+              parkedCount={parkedSuggestions.length}
+            />
+          )}
+
           {/* Observation cards */}
-          {items.length === 0 ? (
+          {items.length === 0 && !showGeneratePanel ? (
             <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50/50 p-6 text-center mb-2">
               <p className="text-xs text-gray-400">
-                No {typeMeta.label.toLowerCase()} recorded yet. Click <strong>Add</strong> to create one manually, or <strong>Load</strong> to import from a spreadsheet.
+                No {typeMeta.label.toLowerCase()} recorded yet. Click <strong>Add</strong> to create one manually, <strong>Load</strong> to import from a spreadsheet, or <strong>Generate</strong> to let the AI analyse your model.
               </p>
             </div>
           ) : (
@@ -629,6 +960,392 @@ function ObservationTypeSection({
           )}
         </>
       )}
+    </div>
+  );
+}
+
+// ── Generate Panel ────────────────────────────────────────────────────────────
+
+function GeneratePanel({
+  typeMeta,
+  contextMeta,
+  scaffoldData,
+  generating,
+  suggestions,
+  context,
+  onContextChange,
+  onGenerate,
+  onDispose,
+  onEdit,
+  onCommit,
+  onClose,
+  pendingCount,
+  acceptedCount,
+  parkedCount,
+}: {
+  typeMeta: (typeof OBSERVATION_TYPES)[number];
+  contextMeta: (typeof GENERATION_CONTEXT)[ObservationType];
+  scaffoldData: ScaffoldData;
+  generating: boolean;
+  suggestions: GeneratedSuggestion[];
+  context: string;
+  onContextChange: (text: string) => void;
+  onGenerate: () => void;
+  onDispose: (id: string, disposition: SuggestionDisposition) => void;
+  onEdit: (id: string, patch: { editedRationale?: string; editedIntensity?: number }) => void;
+  onCommit: () => void;
+  onClose: () => void;
+  pendingCount: number;
+  acceptedCount: number;
+  parkedCount: number;
+}) {
+  const [editingSuggestion, setEditingSuggestion] = useState<string | null>(null);
+  const hasSuggestions = suggestions.length > 0;
+  const hasReviewed = suggestions.length > 0 && pendingCount === 0;
+
+  return (
+    <div className="mb-4 rounded-lg border-2 overflow-hidden" style={{ borderColor: "#8b5cf6", background: "#faf5ff" }}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3" style={{ background: "linear-gradient(135deg, #7c3aed08, #6366f108)" }}>
+        <div className="flex items-center gap-2">
+          <svg className="h-4 w-4" style={{ color: "#7c3aed" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+          <span className="text-xs font-bold" style={{ color: "#5b21b6" }}>Generate {typeMeta.label}</span>
+          <span className="text-[10px]" style={{ color: "#7c3aed" }}>— AI will analyse your model and suggest observations</span>
+        </div>
+        <button onClick={onClose} className="rounded p-1 hover:bg-purple-100 transition-colors" style={{ color: "#7c3aed" }}>
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Context input — before generation */}
+      {!hasSuggestions && !generating && (
+        <div className="px-4 py-3">
+          <div className="mb-2">
+            <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#5b21b6" }}>
+              {contextMeta.contextLabel}
+            </label>
+            <span className="ml-1 text-[10px] font-medium" style={{ color: "#9ca3af" }}>(optional — improves accuracy)</span>
+          </div>
+          <p className="text-[10px] leading-relaxed mb-2" style={{ color: "#6b7280" }}>
+            {contextMeta.contextHint}
+          </p>
+
+          {/* Example context chips */}
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {contextMeta.examples.map((ex, i) => (
+              <span key={i} className="rounded-full px-2.5 py-1 text-[9px] font-medium" style={{ background: "#ede9fe", color: "#6d28d9" }}>
+                {ex}
+              </span>
+            ))}
+          </div>
+
+          <textarea
+            value={context}
+            onChange={(e) => onContextChange(e.target.value)}
+            rows={3}
+            placeholder={`Paste ${contextMeta.contextLabel.toLowerCase()} here to improve the accuracy of generated ${typeMeta.label.toLowerCase()}...`}
+            className="block w-full rounded-lg px-3 py-2 text-xs leading-relaxed outline-none resize-y"
+            style={{ background: "#fff", border: "1px solid #ddd6fe", color: "#1f2937" }}
+          />
+
+          <div className="mt-3 flex items-center gap-2">
+            <button
+              onClick={onGenerate}
+              className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-[11px] font-semibold text-white transition-all"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)", boxShadow: "0 2px 8px rgba(99,102,241,0.3)", cursor: "pointer" }}
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              Analyse Model & Generate {typeMeta.label}
+            </button>
+            {context.trim().length > 0 && (
+              <span className="text-[10px]" style={{ color: "#7c3aed" }}>
+                {context.split("\n").filter((l) => l.trim()).length} lines of context provided
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Generating spinner */}
+      {generating && (
+        <div className="px-4 py-8 text-center">
+          <div className="inline-flex items-center gap-2">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-purple-200 border-t-purple-600" />
+            <span className="text-xs font-medium" style={{ color: "#5b21b6" }}>
+              Analysing your model to generate {typeMeta.label.toLowerCase()}...
+            </span>
+          </div>
+          <p className="mt-2 text-[10px]" style={{ color: "#9ca3af" }}>
+            This examines your value streams, stages, capabilities, roles, and controls to identify potential {typeMeta.label.toLowerCase()}.
+          </p>
+        </div>
+      )}
+
+      {/* Suggestion review area */}
+      {hasSuggestions && !generating && (
+        <div className="px-4 py-3">
+          {/* Status bar */}
+          <div className="flex items-center gap-3 mb-3 pb-2" style={{ borderBottom: "1px solid #ede9fe" }}>
+            <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#5b21b6" }}>
+              Review Suggestions
+            </span>
+            <div className="flex items-center gap-2 ml-auto">
+              {pendingCount > 0 && (
+                <span className="rounded-full px-2 py-0.5 text-[9px] font-bold" style={{ background: "#f3f4f6", color: "#6b7280" }}>
+                  {pendingCount} pending
+                </span>
+              )}
+              {acceptedCount > 0 && (
+                <span className="rounded-full px-2 py-0.5 text-[9px] font-bold" style={{ background: "#dcfce7", color: "#166534" }}>
+                  {acceptedCount} accepted
+                </span>
+              )}
+              {parkedCount > 0 && (
+                <span className="rounded-full px-2 py-0.5 text-[9px] font-bold" style={{ background: "#fef3c7", color: "#92400e" }}>
+                  {parkedCount} parked
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Each suggestion card */}
+          <div className="space-y-2 mb-3">
+            {suggestions.map((sug) => (
+              <SuggestionCard
+                key={sug.id}
+                suggestion={sug}
+                typeMeta={typeMeta}
+                scaffoldData={scaffoldData}
+                isEditing={editingSuggestion === sug.id}
+                onToggleEdit={() => setEditingSuggestion(editingSuggestion === sug.id ? null : sug.id)}
+                onDispose={(disp) => onDispose(sug.id, disp)}
+                onEdit={(patch) => onEdit(sug.id, patch)}
+              />
+            ))}
+          </div>
+
+          {/* Commit bar */}
+          <div className="flex items-center gap-2 pt-2" style={{ borderTop: "1px solid #ede9fe" }}>
+            {acceptedCount > 0 && (
+              <button
+                onClick={onCommit}
+                className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-[11px] font-semibold text-white transition-all"
+                style={{ background: "#10b981", cursor: "pointer" }}
+              >
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Commit {acceptedCount} {typeMeta.label} to Model
+              </button>
+            )}
+            {pendingCount > 0 && (
+              <button
+                onClick={() => suggestions.filter((s) => s.disposition === "pending").forEach((s) => onDispose(s.id, "accepted"))}
+                className="rounded-lg px-3 py-2 text-[10px] font-medium transition-colors"
+                style={{ background: "#f3f4f6", color: "#374151", cursor: "pointer", border: "1px solid #e5e7eb" }}
+              >
+                Accept All Remaining
+              </button>
+            )}
+            {pendingCount > 0 && (
+              <button
+                onClick={() => suggestions.filter((s) => s.disposition === "pending").forEach((s) => onDispose(s.id, "rejected"))}
+                className="rounded-lg px-3 py-2 text-[10px] font-medium transition-colors"
+                style={{ background: "#fff", color: "#9ca3af", cursor: "pointer", border: "1px solid #e5e7eb" }}
+              >
+                Reject All Remaining
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Suggestion Card ─────────────────────────────────────────────────────────
+
+function SuggestionCard({
+  suggestion,
+  typeMeta,
+  scaffoldData,
+  isEditing,
+  onToggleEdit,
+  onDispose,
+  onEdit,
+}: {
+  suggestion: GeneratedSuggestion;
+  typeMeta: (typeof OBSERVATION_TYPES)[number];
+  scaffoldData: ScaffoldData;
+  isEditing: boolean;
+  onToggleEdit: () => void;
+  onDispose: (disposition: SuggestionDisposition) => void;
+  onEdit: (patch: { editedRationale?: string; editedIntensity?: number }) => void;
+}) {
+  const disp = suggestion.disposition;
+  const isResolved = disp === "accepted" || disp === "rejected" || disp === "modified";
+  const isParked = disp === "parked";
+
+  const bgColour = disp === "accepted" || disp === "modified"
+    ? "#f0fdf4"
+    : disp === "rejected"
+    ? "#fef2f2"
+    : disp === "parked"
+    ? "#fffbeb"
+    : "#fff";
+
+  const borderColour = disp === "accepted" || disp === "modified"
+    ? "#86efac"
+    : disp === "rejected"
+    ? "#fca5a5"
+    : disp === "parked"
+    ? "#fcd34d"
+    : "#e5e7eb";
+
+  const effectiveRationale = suggestion.editedRationale ?? suggestion.rationale;
+  const effectiveIntensity = suggestion.editedIntensity ?? suggestion.intensity;
+
+  return (
+    <div
+      className="rounded-lg border transition-all"
+      style={{
+        background: bgColour,
+        borderColor: borderColour,
+        opacity: disp === "rejected" ? 0.5 : 1,
+      }}
+    >
+      <div className="flex items-start gap-3 px-4 py-3">
+        {/* Intensity */}
+        <div className="flex flex-col items-center gap-1 pt-0.5">
+          <div
+            className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white"
+            style={{ background: effectiveIntensity >= 8 ? "#ef4444" : effectiveIntensity >= 6 ? "#f59e0b" : effectiveIntensity >= 4 ? "#eab308" : "#9ca3af" }}
+          >
+            {effectiveIntensity}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            {/* Category label */}
+            <span className="rounded-full px-2 py-0.5 text-[9px] font-semibold" style={{ background: typeMeta.colour.bg, color: typeMeta.colour.text }}>
+              {categoryLabel(suggestion.category)}
+            </span>
+            {/* Anchor */}
+            <span className="text-[10px] text-gray-400">
+              {suggestion.anchorName}
+            </span>
+            {/* Disposition badge */}
+            {disp === "accepted" && (
+              <span className="rounded-full px-2 py-0.5 text-[9px] font-bold" style={{ background: "#dcfce7", color: "#166534" }}>✓ Accepted</span>
+            )}
+            {disp === "modified" && (
+              <span className="rounded-full px-2 py-0.5 text-[9px] font-bold" style={{ background: "#dbeafe", color: "#1e40af" }}>✎ Modified</span>
+            )}
+            {disp === "rejected" && (
+              <span className="rounded-full px-2 py-0.5 text-[9px] font-bold" style={{ background: "#fef2f2", color: "#991b1b" }}>✗ Rejected</span>
+            )}
+            {disp === "parked" && (
+              <span className="rounded-full px-2 py-0.5 text-[9px] font-bold" style={{ background: "#fef3c7", color: "#92400e" }}>⏸ Parked</span>
+            )}
+          </div>
+
+          {/* Rationale */}
+          {isEditing ? (
+            <div className="mt-1 space-y-2">
+              <textarea
+                value={effectiveRationale}
+                onChange={(e) => onEdit({ editedRationale: e.target.value })}
+                rows={2}
+                className="block w-full rounded border border-gray-200 px-2 py-1.5 text-[11px] leading-relaxed outline-none resize-y"
+                style={{ background: "#fff" }}
+              />
+              <div className="flex items-center gap-2">
+                <label className="text-[10px] font-medium text-gray-500">Intensity:</label>
+                <input
+                  type="range"
+                  min={0}
+                  max={10}
+                  value={effectiveIntensity}
+                  onChange={(e) => onEdit({ editedIntensity: Number(e.target.value) })}
+                  className="w-32"
+                />
+                <span className="text-[10px] font-bold text-gray-700">{effectiveIntensity}/10</span>
+              </div>
+              <button
+                onClick={() => { onDispose("modified"); onToggleEdit(); }}
+                className="rounded px-2.5 py-1 text-[10px] font-semibold text-white"
+                style={{ background: "#6366f1", cursor: "pointer" }}
+              >
+                Save Modification
+              </button>
+            </div>
+          ) : (
+            <p className="text-[11px] leading-relaxed text-gray-600 mt-0.5">{effectiveRationale}</p>
+          )}
+        </div>
+
+        {/* Action buttons */}
+        {!isEditing && (
+          <div className="flex items-center gap-1 flex-shrink-0 pt-0.5">
+            {(disp === "pending" || isParked) && (
+              <>
+                <button
+                  onClick={() => onDispose("accepted")}
+                  className="rounded px-2 py-1 text-[10px] font-semibold transition-colors"
+                  style={{ background: "#dcfce7", color: "#166534", cursor: "pointer", border: "1px solid #86efac" }}
+                  title="Accept this suggestion — it will be committed to your model"
+                >
+                  ✓ Accept
+                </button>
+                <button
+                  onClick={onToggleEdit}
+                  className="rounded px-2 py-1 text-[10px] font-medium transition-colors"
+                  style={{ background: "#dbeafe", color: "#1e40af", cursor: "pointer", border: "1px solid #93c5fd" }}
+                  title="Edit this suggestion before accepting it"
+                >
+                  ✎ Modify
+                </button>
+                {disp === "pending" && (
+                  <button
+                    onClick={() => onDispose("parked")}
+                    className="rounded px-2 py-1 text-[10px] font-medium transition-colors"
+                    style={{ background: "#fef3c7", color: "#92400e", cursor: "pointer", border: "1px solid #fcd34d" }}
+                    title="Park for later review — keeps the suggestion visible but doesn't commit it"
+                  >
+                    ⏸ Park
+                  </button>
+                )}
+                <button
+                  onClick={() => onDispose("rejected")}
+                  className="rounded px-2 py-1 text-[10px] font-medium transition-colors"
+                  style={{ background: "#fef2f2", color: "#991b1b", cursor: "pointer", border: "1px solid #fca5a5" }}
+                  title="Reject this suggestion — it will not be added to your model"
+                >
+                  ✗ Reject
+                </button>
+              </>
+            )}
+            {(disp === "accepted" || disp === "modified" || disp === "rejected") && (
+              <button
+                onClick={() => onDispose("pending")}
+                className="rounded px-2 py-1 text-[10px] font-medium transition-colors"
+                style={{ background: "#f3f4f6", color: "#6b7280", cursor: "pointer", border: "1px solid #d1d5db" }}
+                title="Undo this decision and return to pending"
+              >
+                ↩ Undo
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
