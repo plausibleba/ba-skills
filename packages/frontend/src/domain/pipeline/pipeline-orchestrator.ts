@@ -161,7 +161,7 @@ function injectCapabilityHierarchy(scaffold: any, ir: DiscoveryIR): void {
 // ── Post-Pass-B enrichment: derive concepts from scaffold + DiscoveryIR ──────
 // Uses DiscoveryIR for Resources (tech) since scaffold often doesn't have them.
 // Selective about Records — only key business objects, not every IO.
-function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): void {
+export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): void {
   if (!scaffold?.elements) return;
   const concepts: Record<string, any> = scaffold.elements.concepts ?? {};
 

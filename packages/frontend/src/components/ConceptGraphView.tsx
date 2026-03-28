@@ -1,6 +1,8 @@
 // @ts-nocheck
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
+import { useDiscoverySessionStore } from "../store/discovery-session-store.ts";
+import { deriveConceptsFromScaffold } from "../domain/pipeline/pipeline-orchestrator.ts";
 import { tv } from "../theme.ts";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -352,6 +354,19 @@ function TreeSidebar({
    ═══════════════════════════════════════════════════════════════ */
 export function ConceptGraphView() {
   const scaffoldData = useCanvasStore((s) => s.scaffoldData);
+
+  // Re-derive concept relationships on mount so existing scaffolds pick up
+  // improved logic (e.g. Record→Resource via capability businessObject context)
+  // without requiring a full pipeline re-run.
+  useEffect(() => {
+    if (!scaffoldData?.elements) return;
+    const discoveryIR = useDiscoverySessionStore.getState().discoveryIR;
+    deriveConceptsFromScaffold(scaffoldData, discoveryIR ?? undefined);
+    // Trigger re-render by updating scaffoldData reference
+    useCanvasStore.setState({ scaffoldData: { ...scaffoldData } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only on mount — not on every scaffoldData change (would infinite-loop)
+
   const [focusId, setFocusId] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 

@@ -38,7 +38,8 @@ export function buildPPITByCapId(scaffoldData: any): Map<string, PPITEntry> {
     const capIds: string[] = a.enabledByCapabilityIds ?? a.requiresCapabilityIds ?? [];
     for (const capId of capIds) {
       const entry = ensure(capId);
-      addUnique(entry.activityNames, a.name ?? "");
+      // Do NOT add activityNames here — those are structural links, not PPIT process data.
+      // Activity names only belong in the PPIT view after Pass C enrichment (Source 2).
       if (vsName) addUnique(entry.vsNames, vsName);
       if (vsName && a.name) {
         const pair = { vs: vsName, activity: a.name };
