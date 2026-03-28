@@ -31,27 +31,14 @@ export function buildPPITByCapId(scaffoldData: any): Map<string, PPITEntry> {
     const vsName = vsId ? ((vsLookup as any)[vsId]?.name ?? "") : "";
 
     // Source 1: activity→capability links from Pass B (always present)
+    // Only record the activity/VS relationship here — do NOT pull activity-level
+    // roles, info objects, sub-activities, or tech into per-capability PPIT.
+    // Those are shared across all capabilities in the stage and are misleading.
+    // Fine-grained per-capability PPIT only comes from Source 2 (Pass C).
     const capIds: string[] = a.enabledByCapabilityIds ?? a.requiresCapabilityIds ?? [];
     for (const capId of capIds) {
       const entry = ensure(capId);
-      // Roles from the activity
-      for (const rId of (a.performedByRoleIds ?? [])) {
-        addUnique(entry.roles, (rolesLookup as any)[rId]?.name ?? rId);
-      }
       addUnique(entry.activityNames, a.name ?? "");
-      // Sub-activities (string array on the activity)
-      for (const sub of (a.subActivities ?? [])) {
-        if (typeof sub === "string") addUnique(entry.subActivities, sub);
-        else if (sub?.name) addUnique(entry.subActivities, sub.name);
-      }
-      // Info objects from the activity
-      for (const iId of (a.informationObjectIds ?? [])) {
-        addUnique(entry.infoObjects, (infoObjs as any)[iId]?.name ?? iId);
-      }
-      // Tech from the activity
-      for (const tId of (a.technologyAppIds ?? [])) {
-        addUnique(entry.techApps, (techAppsLookup as any)[tId]?.name ?? tId);
-      }
       if (vsName) addUnique(entry.vsNames, vsName);
       if (vsName && a.name) {
         const pair = { vs: vsName, activity: a.name };

@@ -344,16 +344,78 @@ function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): void {
       if (!recordSubject[recId]) recordSubject[recId] = partyId;
     }
   }
-  // Assign object: prefer a Resource; fall back to a second Party
+  // Assign object: prefer a Resource linked via capability context or party; fall back to name heuristic
   const allResources = Object.keys(concepts).filter(id => (concepts[id] as any).type === "Resource");
-  for (const recId of Object.keys(concepts).filter(id => (concepts[id] as any).type === "Record")) {
-    if (!recordObject[recId] && allResources.length > 0) {
-      // Find a resource related to any party that touches this record
-      const subjectParty = recordSubject[recId];
-      const partyResources = subjectParty ? partyToResources[subjectParty] : undefined;
-      if (partyResources?.size) {
-        recordObject[recId] = [...partyResources][0];
+
+  // Build capability→resource map from businessObject field on capabilities
+  const capToResource: Record<string, string> = {};
+  for (const [capId, cap] of Object.entries(caps)) {
+    const bo = (cap as any).businessObject;
+    if (!bo) continue;
+    // Find the resource concept whose name matches this businessObject
+    for (const resId of allResources) {
+      if ((concepts[resId].name ?? "").toLowerCase() === bo.toLowerCase()) {
+        capToResource[capId] = resId;
+        break;
       }
+    }
+  }
+
+  // Build record→capabilities map: which capabilities does each IO appear in?
+  const recordToCaps: Record<string, Set<string>> = {};
+  for (const act of Object.values(activities)) {
+    const a = act as any;
+    const actCapIds: string[] = a.enabledByCapabilityIds ?? a.requiresCapabilityIds ?? [];
+    const infoIds: string[] = a.informationObjectIds ?? [];
+    for (const iId of infoIds) {
+      const rCId = `concept_record_${iId}`;
+      if (!concepts[rCId]) continue;
+      if (!recordToCaps[rCId]) recordToCaps[rCId] = new Set();
+      for (const cId of actCapIds) recordToCaps[rCId].add(cId);
+    }
+    // Also check capabilityPPIT for finer-grained links
+    const ppit = a.capabilityPPIT;
+    if (ppit) {
+      for (const [cId, decomp] of Object.entries(ppit) as [string, any][]) {
+        for (const iId of decomp?.informationObjectIds ?? []) {
+          const rCId = `concept_record_${iId}`;
+          if (!concepts[rCId]) continue;
+          if (!recordToCaps[rCId]) recordToCaps[rCId] = new Set();
+          recordToCaps[rCId].add(cId);
+        }
+      }
+    }
+  }
+
+  for (const recId of Object.keys(concepts).filter(id => (concepts[id] as any).type === "Record")) {
+    if (recordObject[recId]) continue; // already assigned
+    if (allResources.length === 0) continue;
+
+    // Strategy 1: shared capability context — record and resource are on the same capability
+    const recCaps = recordToCaps[recId];
+    if (recCaps) {
+      for (const cId of recCaps) {
+        if (capToResource[cId]) {
+          recordObject[recId] = capToResource[cId];
+          break;
+        }
+      }
+    }
+    if (recordObject[recId]) continue;
+
+    // Strategy 2: party→resource — the party that created the record also uses a resource
+    const subjectParty = recordSubject[recId];
+    const partyResources = subjectParty ? partyToResources[subjectParty] : undefined;
+    if (partyResources?.size) {
+      recordObject[recId] = [...partyResources][0];
+      continue;
+    }
+
+    // Strategy 3: if there's only one product-type resource, assign it as the default object
+    // (common in simple models like pizza company where "Food Item" is the core resource)
+    const productResources = allResources.filter(id => (concepts[id] as any).subtype === "Product");
+    if (productResources.length === 1) {
+      recordObject[recId] = productResources[0];
     }
   }
 

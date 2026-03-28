@@ -3,10 +3,10 @@
 export type PPITLayer = "roles" | "activities" | "concepts" | "applications";
 
 export const PPIT_LABELS: Record<PPITLayer, { short: string }> = {
-  roles: { short: "Roles" },
-  activities: { short: "Activities" },
-  concepts: { short: "Info" },
-  applications: { short: "Tech" },
+  roles: { short: "People" },
+  activities: { short: "Process" },
+  concepts: { short: "Information" },
+  applications: { short: "Technology" },
 };
 
 export const PPIT_LAYERS: PPITLayer[] = [
