@@ -19,7 +19,7 @@ import {
 } from "../lib/catalog-configs";
 import { callLLM } from "../domain/pipeline/llm-client";
 import { buildRefinementAgentPrompt, parseAgentResponse } from "../domain/pipeline/prompts/refinement-agent";
-import { StructuredGraphExplorer } from "./StructuredGraphExplorer";
+import { StructuredGraphExplorer, type NextAction } from "./StructuredGraphExplorer";
 
 // ── Engine Room Theme Styles ──
 
@@ -1338,6 +1338,8 @@ export function WorkbenchView() {
   const [workbenchTab, setWorkbenchTab] = useState<"catalog" | "graph">("catalog");
   const [agentPanelOpen, setAgentPanelOpen] = useState(false);
   const [introVisible, setIntroVisible] = useState(true);
+  const [graphActions, setGraphActions] = useState<NextAction[]>([]);
+  const goToEnrich = useCanvasStore((s) => s.goToEnrich);
 
   // Global undo/redo keyboard shortcuts
   useEffect(() => {
@@ -1673,6 +1675,37 @@ export function WorkbenchView() {
             )}
 
             <div style={{ flex: 1 }} />
+
+            {/* Smart enrichment action buttons — from Graph Explorer context */}
+            {workbenchTab === "graph" && graphActions.length > 0 && graphActions.map((action, i) => (
+              <Tooltip key={i} text={action.tooltip}>
+                <button
+                  onClick={() => {
+                    exitWorkbench();
+                    goToEnrich(action.enrichSection);
+                  }}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 5,
+                    padding: "6px 12px",
+                    borderRadius: 4,
+                    fontSize: 12,
+                    color: theme.accent,
+                    background: theme.accentMuted,
+                    border: `1px solid ${theme.accentBorder}`,
+                    cursor: "pointer",
+                    fontWeight: 500,
+                    fontFamily: "inherit",
+                    transition: "all 0.15s",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(212, 160, 83, 0.2)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = theme.accentMuted; }}
+                >
+                  <span style={{ fontSize: 13 }}>{action.icon}</span>
+                  {action.buttonLabel}
+                </button>
+              </Tooltip>
+            ))}
+
             <Tooltip text="Chat with the AI refinement agent to propose structural changes to the active catalog. The agent sees only this catalog's data and proposes diffs you can accept or reject.">
               <button
                 onClick={() => setAgentPanelOpen(!agentPanelOpen)}
@@ -1720,7 +1753,7 @@ export function WorkbenchView() {
                 />
               )}
               {workbenchTab === "graph" && workingScaffold && (
-                <StructuredGraphExplorer scaffoldData={workingScaffold} />
+                <StructuredGraphExplorer scaffoldData={workingScaffold} onActionsChange={setGraphActions} />
               )}
             </div>
 

@@ -13,7 +13,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { InspectorPanel, type InspectorTarget } from "./canvas/InspectorPanel";
 import { useCanvasStore, type EnrichSection } from "../store/canvas-store.ts";
-import { useWorkbenchStore } from "../store/workbench-store.ts";
 
 // ── Theme (aligned with WorkbenchView dulled palette) ──
 
@@ -474,10 +473,13 @@ function detectEnrichmentStatus(scaffold: any): EnrichmentStatus {
 
 // ── Smart next-action recommendations ──
 
-interface NextAction {
+export interface NextAction {
   icon: string;
   title: string;
+  /** Short context-specific description for the inline banner */
   description: string;
+  /** Longer explanation from the enrichment card — used for (i) tooltip */
+  tooltip: string;
   enrichSection: EnrichSection;
   buttonLabel: string;
 }
@@ -490,76 +492,78 @@ function getNextActions(
 ): NextAction[] {
   const actions: NextAction[] = [];
 
+  // Tooltip text sourced from the enrichment card descriptions
+  const TOOLTIPS = {
+    ppit: "For every capability, this identifies the four foundational dimensions: People (roles, teams), Processes (workflows), Information (data, documents), and Technology (systems, platforms). Essential for impact analysis, transformation planning, and investment decisions.",
+    subactivities: "Breaks each stage down into detailed work steps, decision points, handoffs, and checkpoints. Reveals how work really flows through each stage — making it easier to spot inefficiencies, missing steps, or unclear responsibilities.",
+    friction: "Analyses every stage and handoff to identify where friction occurs — delays, errors, manual workarounds, and capacity mismatches. Results appear as a heatmap overlay on your value stream canvas.",
+    cards: "Generates Concept Cards (key business terms and definitions) and Policy Cards (business rules, governance constraints, regulatory requirements). Together they form a living glossary and rule book for your organisation.",
+    crossMap: "Builds explicit relationship maps between element types. Map Capabilities to Technology to see which systems support which capabilities, or Roles to Stages to clarify responsibilities at each step.",
+  };
+
   if (level === 2) {
-    // L2: Value Stream stages — check if PPIT is mapped
+    // L2: Value Stream stages
     if (!status.hasPPIT) {
       actions.push({
-        icon: "🧩",
-        title: "Map People, Process, Info & Tech",
-        description: "Run PPIT enrichment to decompose each capability into the roles, activities, information objects, and technology that support it.",
+        icon: "🧩", title: "Map PPIT", buttonLabel: "Map PPIT",
+        description: "Decompose capabilities into People, Process, Information & Technology.",
+        tooltip: TOOLTIPS.ppit,
         enrichSection: "structure",
-        buttonLabel: "Map PPIT",
       });
     }
     if (!status.hasSubactivities) {
       actions.push({
-        icon: "🔬",
-        title: "Deepen Structure",
-        description: "Generate sub-activity breakdowns for each stage to reveal the detailed process flow within each value stream stage.",
+        icon: "🔬", title: "Deepen Structure", buttonLabel: "Deepen Structure",
+        description: "Generate detailed sub-activity breakdowns for each stage.",
+        tooltip: TOOLTIPS.subactivities,
         enrichSection: "structure",
-        buttonLabel: "Deepen Structure",
       });
     }
     if (!status.hasFriction) {
       actions.push({
-        icon: "🔥",
-        title: "Assess Friction",
-        description: "Identify pain points, risks, and bottlenecks across this value stream's stages.",
+        icon: "⚡", title: "Assess Friction", buttonLabel: "Assess Friction",
+        description: "Identify pain points, risks, and bottlenecks across stages.",
+        tooltip: TOOLTIPS.friction,
         enrichSection: "friction",
-        buttonLabel: "Assess Friction",
       });
     }
   }
 
   if (level === 3 && activityId) {
-    // L3: Stage detail — check capabilities and PPIT
+    // L3: Stage detail
     if (!status.activityHasCaps(activityId)) {
       actions.push({
-        icon: "⬡",
-        title: "Map Capabilities",
-        description: "This stage has no capabilities mapped yet. Run cross-mapping to link business capabilities to this value stream stage.",
+        icon: "🔄", title: "Cross-Map Capabilities", buttonLabel: "Cross-Map",
+        description: "This stage has no capabilities mapped. Link business capabilities to this stage.",
+        tooltip: TOOLTIPS.crossMap,
         enrichSection: "mapping",
-        buttonLabel: "Cross-Map",
       });
     } else if (!status.hasPPIT) {
       actions.push({
-        icon: "🧩",
-        title: "Map PPIT",
-        description: "Capabilities are mapped but not yet decomposed. Run PPIT enrichment to see which people, processes, information, and technology support each capability.",
+        icon: "🧩", title: "Map PPIT", buttonLabel: "Map PPIT",
+        description: "Capabilities exist but aren't decomposed into People, Process, Info & Tech.",
+        tooltip: TOOLTIPS.ppit,
         enrichSection: "structure",
-        buttonLabel: "Map PPIT",
       });
     }
     if (!status.hasCards) {
       actions.push({
-        icon: "🃏",
-        title: "Generate Cards",
-        description: "Create concept cards and policy cards from the scaffold to document business rules and definitions.",
+        icon: "🃏", title: "Generate Cards", buttonLabel: "Generate Cards",
+        description: "Create concept and policy reference cards from the model.",
+        tooltip: TOOLTIPS.cards,
         enrichSection: "structure",
-        buttonLabel: "Generate Cards",
       });
     }
   }
 
   if (level === 4 && capabilityId) {
-    // L4: Capability PPIT — if no PPIT data for this capability
+    // L4: Capability PPIT
     if (!status.capHasPPIT(capabilityId, activityId)) {
       actions.push({
-        icon: "🧩",
-        title: "PPIT Not Yet Mapped",
-        description: "This capability has no People, Process, Information, or Technology breakdown. Run PPIT enrichment to populate this view.",
+        icon: "🧩", title: "Map PPIT", buttonLabel: "Run PPIT Enrichment",
+        description: "This capability has no PPIT breakdown yet.",
+        tooltip: TOOLTIPS.ppit,
         enrichSection: "structure",
-        buttonLabel: "Run PPIT Enrichment",
       });
     }
   }
@@ -567,117 +571,11 @@ function getNextActions(
   return actions;
 }
 
-function NextActionBanner({
-  actions,
-  compact = false,
-}: {
-  actions: NextAction[];
-  compact?: boolean;
-}) {
-  if (actions.length === 0) return null;
-
-  const handleNavigate = (section: EnrichSection) => {
-    // Exit workbench first, then navigate to enrichment
-    useWorkbenchStore.getState().exitWorkbench();
-    useCanvasStore.getState().goToEnrich(section);
-  };
-
-  // Show the top action prominently, rest as smaller suggestions
-  const primary = actions[0];
-  const secondary = actions.slice(1);
-
-  return (
-    <div style={{ padding: compact ? "6px 8px" : "10px 14px" }}>
-      {/* Primary recommendation */}
-      <div style={{
-        background: "linear-gradient(135deg, rgba(212, 160, 83, 0.08), rgba(212, 160, 83, 0.03))",
-        border: `1px solid rgba(212, 160, 83, 0.25)`,
-        borderRadius: 10,
-        padding: compact ? "10px 12px" : "14px 16px",
-        display: "flex", flexDirection: "column", gap: 8,
-      }}>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-          <span style={{ fontSize: compact ? 14 : 18, lineHeight: 1 }}>{primary.icon}</span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              fontSize: compact ? 10 : 12, fontWeight: 600,
-              color: theme.accent, letterSpacing: "0.01em",
-            }}>
-              {primary.title}
-            </div>
-            {!compact && (
-              <div style={{
-                fontSize: 10, color: theme.textDim, lineHeight: 1.5,
-                marginTop: 3,
-              }}>
-                {primary.description}
-              </div>
-            )}
-          </div>
-        </div>
-        <button
-          onClick={() => handleNavigate(primary.enrichSection)}
-          style={{
-            alignSelf: "flex-start",
-            background: "rgba(212, 160, 83, 0.15)",
-            border: "1px solid rgba(212, 160, 83, 0.35)",
-            color: theme.accent,
-            fontSize: 11, fontWeight: 600, fontFamily: "inherit",
-            padding: "5px 14px", borderRadius: 6,
-            cursor: "pointer",
-            transition: "all 0.15s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(212, 160, 83, 0.25)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(212, 160, 83, 0.15)";
-          }}
-        >
-          {primary.buttonLabel} →
-        </button>
-      </div>
-
-      {/* Secondary suggestions */}
-      {secondary.length > 0 && (
-        <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
-          {secondary.map((action, i) => (
-            <button
-              key={i}
-              onClick={() => handleNavigate(action.enrichSection)}
-              style={{
-                display: "flex", alignItems: "center", gap: 6,
-                background: "transparent",
-                border: `1px solid ${theme.borderSubtle}`,
-                borderRadius: 6, padding: "5px 10px",
-                cursor: "pointer", fontFamily: "inherit",
-                transition: "all 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(212, 160, 83, 0.06)";
-                e.currentTarget.style.borderColor = "rgba(212, 160, 83, 0.2)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.borderColor = theme.borderSubtle;
-              }}
-            >
-              <span style={{ fontSize: 11 }}>{action.icon}</span>
-              <span style={{ fontSize: 10, color: theme.textDim, fontWeight: 500 }}>
-                {action.title}
-              </span>
-              <span style={{ marginLeft: "auto", fontSize: 9, color: theme.textFaint }}>→</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+// NextActionBanner removed — actions now rendered in WorkbenchView toolbar header
 
 // ── Main Component ──
 
-export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any }) {
+export function StructuredGraphExplorer({ scaffoldData, onActionsChange }: { scaffoldData: any; onActionsChange?: (actions: NextAction[]) => void }) {
   const [drillStack, setDrillStack] = useState<DrillLevel[]>([{ level: 1, label: "Operating Model" }]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
@@ -693,6 +591,11 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
     current.activityId,
     current.capabilityId,
   ), [enrichStatus, current.level, current.activityId, current.capabilityId]);
+
+  // Report actions to parent (WorkbenchView toolbar)
+  useEffect(() => {
+    onActionsChange?.(nextActions);
+  }, [nextActions, onActionsChange]);
 
   const levelLabels: Record<number, string> = {
     1: "Operating Model", 2: "Value Stream", 3: "Stage Detail", 4: "Capability PPIT",
@@ -927,10 +830,6 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
                     highlightId={col.highlightId}
                     showFlowArrows={isActivityChain}
                   />
-                  {/* Smart enrichment recommendations — only on current (detail) column */}
-                  {col.isCurrent && nextActions.length > 0 && (
-                    <NextActionBanner actions={nextActions} compact={false} />
-                  )}
                 </div>
               </div>
             );
