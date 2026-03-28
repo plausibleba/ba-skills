@@ -12,6 +12,8 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { InspectorPanel, type InspectorTarget } from "./canvas/InspectorPanel";
+import { useCanvasStore, type EnrichSection } from "../store/canvas-store.ts";
+import { useWorkbenchStore } from "../store/workbench-store.ts";
 
 // ── Theme (aligned with WorkbenchView dulled palette) ──
 
@@ -416,6 +418,263 @@ function SectionCards({
   );
 }
 
+// ── Enrichment status detection ──
+
+interface EnrichmentStatus {
+  hasSubactivities: boolean;
+  hasPPIT: boolean;
+  hasCards: boolean;
+  hasFriction: boolean;
+  /** Per-activity: does each activity have capabilities mapped? */
+  activityHasCaps: (activityId: string) => boolean;
+  /** Per-capability on an activity: does it have PPIT data? */
+  capHasPPIT: (capabilityId: string, activityId?: string) => boolean;
+}
+
+function detectEnrichmentStatus(scaffold: any): EnrichmentStatus {
+  const els = scaffold?.elements ?? {};
+  const activities = els.activities ?? {};
+  const subGraphs = els.subActivityGraphs ?? {};
+
+  const hasSubactivities = Object.values(subGraphs).some(
+    (v: any) => v?.nodes?.length > 0,
+  );
+
+  const hasPPIT = Object.values(activities).some(
+    (a: any) => a.capabilityPPIT && Object.keys(a.capabilityPPIT).length > 0,
+  );
+
+  const cardRegistry = useCanvasStore.getState().cardRegistry;
+  const hasCards = !!(
+    cardRegistry &&
+    ((Object.keys(cardRegistry.conceptCards ?? {}).length > 0) ||
+     (Object.keys(cardRegistry.policyCards ?? {}).length > 0))
+  );
+
+  const hasFriction = useCanvasStore.getState().heatmapsByVs.size > 0;
+
+  const activityHasCaps = (activityId: string) => {
+    const act = activities[activityId];
+    if (!act) return false;
+    const ids = act.enabledByCapabilityIds ?? act.requiresCapabilityIds ?? [];
+    return ids.length > 0;
+  };
+
+  const capHasPPIT = (capabilityId: string, activityId?: string) => {
+    if (activityId) {
+      return !!activities[activityId]?.capabilityPPIT?.[capabilityId];
+    }
+    return Object.values(activities).some(
+      (a: any) => a.capabilityPPIT?.[capabilityId],
+    );
+  };
+
+  return { hasSubactivities, hasPPIT, hasCards, hasFriction, activityHasCaps, capHasPPIT };
+}
+
+// ── Smart next-action recommendations ──
+
+interface NextAction {
+  icon: string;
+  title: string;
+  description: string;
+  enrichSection: EnrichSection;
+  buttonLabel: string;
+}
+
+function getNextActions(
+  status: EnrichmentStatus,
+  level: number,
+  activityId?: string,
+  capabilityId?: string,
+): NextAction[] {
+  const actions: NextAction[] = [];
+
+  if (level === 2) {
+    // L2: Value Stream stages — check if PPIT is mapped
+    if (!status.hasPPIT) {
+      actions.push({
+        icon: "🧩",
+        title: "Map People, Process, Info & Tech",
+        description: "Run PPIT enrichment to decompose each capability into the roles, activities, information objects, and technology that support it.",
+        enrichSection: "structure",
+        buttonLabel: "Map PPIT",
+      });
+    }
+    if (!status.hasSubactivities) {
+      actions.push({
+        icon: "🔬",
+        title: "Deepen Structure",
+        description: "Generate sub-activity breakdowns for each stage to reveal the detailed process flow within each value stream stage.",
+        enrichSection: "structure",
+        buttonLabel: "Deepen Structure",
+      });
+    }
+    if (!status.hasFriction) {
+      actions.push({
+        icon: "🔥",
+        title: "Assess Friction",
+        description: "Identify pain points, risks, and bottlenecks across this value stream's stages.",
+        enrichSection: "friction",
+        buttonLabel: "Assess Friction",
+      });
+    }
+  }
+
+  if (level === 3 && activityId) {
+    // L3: Stage detail — check capabilities and PPIT
+    if (!status.activityHasCaps(activityId)) {
+      actions.push({
+        icon: "⬡",
+        title: "Map Capabilities",
+        description: "This stage has no capabilities mapped yet. Run cross-mapping to link business capabilities to this value stream stage.",
+        enrichSection: "mapping",
+        buttonLabel: "Cross-Map",
+      });
+    } else if (!status.hasPPIT) {
+      actions.push({
+        icon: "🧩",
+        title: "Map PPIT",
+        description: "Capabilities are mapped but not yet decomposed. Run PPIT enrichment to see which people, processes, information, and technology support each capability.",
+        enrichSection: "structure",
+        buttonLabel: "Map PPIT",
+      });
+    }
+    if (!status.hasCards) {
+      actions.push({
+        icon: "🃏",
+        title: "Generate Cards",
+        description: "Create concept cards and policy cards from the scaffold to document business rules and definitions.",
+        enrichSection: "structure",
+        buttonLabel: "Generate Cards",
+      });
+    }
+  }
+
+  if (level === 4 && capabilityId) {
+    // L4: Capability PPIT — if no PPIT data for this capability
+    if (!status.capHasPPIT(capabilityId, activityId)) {
+      actions.push({
+        icon: "🧩",
+        title: "PPIT Not Yet Mapped",
+        description: "This capability has no People, Process, Information, or Technology breakdown. Run PPIT enrichment to populate this view.",
+        enrichSection: "structure",
+        buttonLabel: "Run PPIT Enrichment",
+      });
+    }
+  }
+
+  return actions;
+}
+
+function NextActionBanner({
+  actions,
+  compact = false,
+}: {
+  actions: NextAction[];
+  compact?: boolean;
+}) {
+  if (actions.length === 0) return null;
+
+  const handleNavigate = (section: EnrichSection) => {
+    // Exit workbench first, then navigate to enrichment
+    useWorkbenchStore.getState().exitWorkbench();
+    useCanvasStore.getState().goToEnrich(section);
+  };
+
+  // Show the top action prominently, rest as smaller suggestions
+  const primary = actions[0];
+  const secondary = actions.slice(1);
+
+  return (
+    <div style={{ padding: compact ? "6px 8px" : "10px 14px" }}>
+      {/* Primary recommendation */}
+      <div style={{
+        background: "linear-gradient(135deg, rgba(212, 160, 83, 0.08), rgba(212, 160, 83, 0.03))",
+        border: `1px solid rgba(212, 160, 83, 0.25)`,
+        borderRadius: 10,
+        padding: compact ? "10px 12px" : "14px 16px",
+        display: "flex", flexDirection: "column", gap: 8,
+      }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+          <span style={{ fontSize: compact ? 14 : 18, lineHeight: 1 }}>{primary.icon}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              fontSize: compact ? 10 : 12, fontWeight: 600,
+              color: theme.accent, letterSpacing: "0.01em",
+            }}>
+              {primary.title}
+            </div>
+            {!compact && (
+              <div style={{
+                fontSize: 10, color: theme.textDim, lineHeight: 1.5,
+                marginTop: 3,
+              }}>
+                {primary.description}
+              </div>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={() => handleNavigate(primary.enrichSection)}
+          style={{
+            alignSelf: "flex-start",
+            background: "rgba(212, 160, 83, 0.15)",
+            border: "1px solid rgba(212, 160, 83, 0.35)",
+            color: theme.accent,
+            fontSize: 11, fontWeight: 600, fontFamily: "inherit",
+            padding: "5px 14px", borderRadius: 6,
+            cursor: "pointer",
+            transition: "all 0.15s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(212, 160, 83, 0.25)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(212, 160, 83, 0.15)";
+          }}
+        >
+          {primary.buttonLabel} →
+        </button>
+      </div>
+
+      {/* Secondary suggestions */}
+      {secondary.length > 0 && (
+        <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
+          {secondary.map((action, i) => (
+            <button
+              key={i}
+              onClick={() => handleNavigate(action.enrichSection)}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                background: "transparent",
+                border: `1px solid ${theme.borderSubtle}`,
+                borderRadius: 6, padding: "5px 10px",
+                cursor: "pointer", fontFamily: "inherit",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(212, 160, 83, 0.06)";
+                e.currentTarget.style.borderColor = "rgba(212, 160, 83, 0.2)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.borderColor = theme.borderSubtle;
+              }}
+            >
+              <span style={{ fontSize: 11 }}>{action.icon}</span>
+              <span style={{ fontSize: 10, color: theme.textDim, fontWeight: 500 }}>
+                {action.title}
+              </span>
+              <span style={{ marginLeft: "auto", fontSize: 9, color: theme.textFaint }}>→</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Component ──
 
 export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any }) {
@@ -425,6 +684,15 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const current = drillStack[drillStack.length - 1];
+
+  // Enrichment status for smart recommendations
+  const enrichStatus = useMemo(() => detectEnrichmentStatus(scaffoldData), [scaffoldData]);
+  const nextActions = useMemo(() => getNextActions(
+    enrichStatus,
+    current.level,
+    current.activityId,
+    current.capabilityId,
+  ), [enrichStatus, current.level, current.activityId, current.capabilityId]);
 
   const levelLabels: Record<number, string> = {
     1: "Operating Model", 2: "Value Stream", 3: "Stage Detail", 4: "Capability PPIT",
@@ -659,6 +927,10 @@ export function StructuredGraphExplorer({ scaffoldData }: { scaffoldData: any })
                     highlightId={col.highlightId}
                     showFlowArrows={isActivityChain}
                   />
+                  {/* Smart enrichment recommendations — only on current (detail) column */}
+                  {col.isCurrent && nextActions.length > 0 && (
+                    <NextActionBanner actions={nextActions} compact={false} />
+                  )}
                 </div>
               </div>
             );
