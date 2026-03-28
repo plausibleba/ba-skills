@@ -126,6 +126,11 @@ function buildL1Data(scaffold: any): SectionData[] {
   const vsEntries = Object.entries(el.valueStreams || {}) as [string, any][];
   const acts = el.activities || {};
 
+  // Stamp id onto each VS object if not already present (key IS the id)
+  for (const [key, vs] of vsEntries) {
+    if (!vs.id) vs.id = key;
+  }
+
   // Group by zone
   const zoneMap = new Map<string, any[]>();
   for (const [, vs] of vsEntries) {
