@@ -1343,9 +1343,11 @@ export function WorkbenchView() {
   const [graphActions, setGraphActions] = useState<NextAction[]>([]);
   const goToEnrich = useCanvasStore((s) => s.goToEnrich);
 
-  // Detect uncommitted enrichment results
-  const uncommittedEnrichments = useEnrichmentStore((s) =>
-    s.reviewResults.filter((r) => !r.committed)
+  // Detect uncommitted enrichment results (use stable selector to avoid infinite re-render)
+  const allReviewResults = useEnrichmentStore((s) => s.reviewResults);
+  const uncommittedEnrichments = useMemo(
+    () => allReviewResults.filter((r) => !r.committed),
+    [allReviewResults],
   );
 
   // Global undo/redo keyboard shortcuts
