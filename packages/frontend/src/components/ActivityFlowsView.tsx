@@ -4,8 +4,9 @@
 // Each activity's DAG is rendered as an SVG with:
 //   - Rounded rect nodes for work steps
 //   - Diamond nodes for decision gates
-//   - Elbow connectors with edge labels for branches
+//   - Curved connectors with edge labels for branches
 //   - Role annotations on each node
+//   - Proper sizing (capped at natural pixel width, not stretched)
 
 import { useState, useMemo } from "react";
 import type { SubActivity } from "../types";
@@ -26,17 +27,17 @@ const theme = {
   activity: "#22c55e",
   gate: "#f59e0b",
   role: "#ef4444",
-  connector: "#475569",
+  connector: "#64748b",
 };
 
 // ── Layout constants ──
 
-const NODE_W = 160;
-const NODE_H = 36;
-const GATE_R = 20;
-const GAP_X = 28;
-const GAP_Y = 28;
-const PAD = 20;
+const NODE_W = 130;
+const NODE_H = 32;
+const GATE_R = 16;
+const GAP_X = 24;
+const GAP_Y = 40; // taller gap for edge labels
+const PAD = 16;
 
 // ── DAG layout engine ──
 
@@ -88,7 +89,6 @@ function layoutDag(nodes: SubActivity[]): DagLayout {
     if (layer.length > 0) layers.push(layer);
     queue = next;
   }
-  // Catch unvisited
   for (const n of nodes) {
     if (!visited.has(n.id)) {
       layers.push([n]);
@@ -96,17 +96,15 @@ function layoutDag(nodes: SubActivity[]): DagLayout {
     }
   }
 
-  // Position nodes
-  const maxCols = Math.max(...layers.map(l => l.length), 1);
-
   // Detect upstream edges for extra margin
   const layerOf = new Map<string, number>();
   layers.forEach((layer, li) => layer.forEach(n => layerOf.set(n.id, li)));
   const hasUpstream = nodes.some(n =>
     (n.nextIds ?? []).some(nxt => (layerOf.get(nxt) ?? 999) <= (layerOf.get(n.id) ?? 0))
   );
-  const ROUTE_MARGIN = hasUpstream ? 24 : 0;
+  const ROUTE_MARGIN = hasUpstream ? 20 : 0;
 
+  const maxCols = Math.max(...layers.map(l => l.length), 1);
   const svgW = maxCols * (NODE_W + GAP_X) - GAP_X + PAD * 2 + ROUTE_MARGIN * 2;
   const svgH = layers.length * (NODE_H + GAP_Y) - GAP_Y + PAD * 2;
 
@@ -126,9 +124,68 @@ function layoutDag(nodes: SubActivity[]): DagLayout {
   return { nodes: layoutNodes, svgW, svgH };
 }
 
+// ── Edge path builder with bezier curves ──
+
+function buildEdgePath(
+  from: LayoutNode,
+  to: LayoutNode,
+): { d: string; labelX: number; labelY: number } {
+  const fromCx = from.x + from.w / 2;
+  const fromBot = from.y + from.h;
+  const toCx = to.x + to.w / 2;
+  const toTop = to.y;
+  const isUpstream = to.layer <= from.layer;
+
+  // For gates, exit from the diamond corners (left/right) instead of bottom center
+  // when going to nodes that aren't directly below
+  const isGate = from.node.nodeType === "gate";
+  const outCount = (from.node.nextIds ?? []).length;
+
+  if (isUpstream) {
+    // Upstream (loop-back): route around the outside
+    const goRight = toCx >= fromCx;
+    const exitX = goRight ? from.x + from.w : from.x;
+    const exitY = from.y + from.h / 2;
+    const MARGIN = 16;
+    const outerX = goRight
+      ? Math.max(from.x + from.w, to.x + to.w) + MARGIN
+      : Math.min(from.x, to.x) - MARGIN;
+    const d = `M${exitX},${exitY} C${outerX},${exitY} ${outerX},${toTop} ${toCx},${toTop}`;
+    return { d, labelX: outerX + (goRight ? 6 : -6), labelY: (exitY + toTop) / 2 };
+  }
+
+  // Downward edges
+  if (isGate && outCount > 1 && fromCx !== toCx) {
+    // Gate with multiple branches: exit from left/right diamond corner
+    const goRight = toCx > fromCx;
+    const exitX = goRight ? from.x + from.w : from.x;
+    const exitY = from.y + from.h / 2;
+    // Bezier curve from corner to target top-center
+    const cp1x = exitX + (goRight ? 12 : -12);
+    const cp1y = exitY + (toTop - exitY) * 0.3;
+    const cp2x = toCx;
+    const cp2y = toTop - (toTop - exitY) * 0.3;
+    const d = `M${exitX},${exitY} C${cp1x},${cp1y} ${cp2x},${cp2y} ${toCx},${toTop}`;
+    const labelX = (exitX + toCx) / 2 + (goRight ? 6 : -6);
+    const labelY = (exitY + toTop) / 2 - 2;
+    return { d, labelX, labelY };
+  }
+
+  if (fromCx === toCx) {
+    // Same column: straight vertical line
+    const d = `M${fromCx},${fromBot} L${toCx},${toTop}`;
+    return { d, labelX: fromCx + 8, labelY: (fromBot + toTop) / 2 };
+  }
+
+  // Different columns, downward: smooth S-curve
+  const midY = (fromBot + toTop) / 2;
+  const d = `M${fromCx},${fromBot} C${fromCx},${midY} ${toCx},${midY} ${toCx},${toTop}`;
+  return { d, labelX: (fromCx + toCx) / 2, labelY: midY - 4 };
+}
+
 // ── Single DAG SVG renderer ──
 
-function DagSvg({ dagNodes, roles }: { dagNodes: SubActivity[]; roles: Record<string, any> }) {
+function DagSvg({ dagNodes, roles, activityId }: { dagNodes: SubActivity[]; roles: Record<string, any>; activityId: string }) {
   const layout = useMemo(() => layoutDag(dagNodes), [dagNodes]);
   const { nodes: lnodes, svgW, svgH } = layout;
 
@@ -136,11 +193,23 @@ function DagSvg({ dagNodes, roles }: { dagNodes: SubActivity[]; roles: Record<st
 
   const posMap = new Map(lnodes.map(ln => [ln.node.id, ln]));
 
+  // Unique marker ID per DAG to avoid SVG id collisions
+  const markerId = `flowArrow-${activityId}`;
+
   return (
-    <svg width="100%" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="xMidYMin meet"
-      style={{ minWidth: Math.min(svgW, 300) }}>
+    <svg
+      viewBox={`0 0 ${svgW} ${svgH}`}
+      preserveAspectRatio="xMidYMin meet"
+      style={{
+        width: Math.min(svgW, 800),
+        maxWidth: "100%",
+        height: "auto",
+        display: "block",
+        margin: "0 auto",
+      }}
+    >
       <defs>
-        <marker id="flowArrow" viewBox="0 0 8 6" refX="8" refY="3" markerWidth="6" markerHeight="5" orient="auto">
+        <marker id={markerId} viewBox="0 0 8 6" refX="7" refY="3" markerWidth="5" markerHeight="4" orient="auto">
           <polygon points="0 0, 8 3, 0 6" fill={theme.connector} opacity={0.7} />
         </marker>
       </defs>
@@ -153,45 +222,14 @@ function DagSvg({ dagNodes, roles }: { dagNodes: SubActivity[]; roles: Record<st
           const to = posMap.get(nxtId);
           if (!to) return null;
           const edgeLabel = node.edgeLabels?.[nxtId];
-
-          const fromCx = from.x + from.w / 2;
-          const fromBot = from.y + from.h;
-          const toCx = to.x + to.w / 2;
-          const toTop = to.y;
-          const isUpstream = toTop <= fromBot + 4;
-
-          let d: string;
-          let labelX: number;
-          let labelY: number;
-
-          if (!isUpstream && fromCx === toCx) {
-            d = `M${fromCx},${fromBot} L${toCx},${toTop}`;
-            labelX = fromCx + 8;
-            labelY = (fromBot + toTop) / 2;
-          } else if (!isUpstream) {
-            const midY = (fromBot + toTop) / 2;
-            d = `M${fromCx},${fromBot} L${fromCx},${midY} L${toCx},${midY} L${toCx},${toTop}`;
-            labelX = (fromCx + toCx) / 2;
-            labelY = midY - 4;
-          } else {
-            const goRight = toCx >= fromCx;
-            const exitX = goRight ? from.x + from.w : from.x;
-            const exitY = from.y + from.h / 2;
-            const MARGIN = 18;
-            const outerX = goRight
-              ? Math.max(from.x + from.w, to.x + to.w) + MARGIN
-              : Math.min(from.x, to.x) - MARGIN;
-            d = `M${exitX},${exitY} L${outerX},${exitY} L${outerX},${toTop - MARGIN} L${toCx},${toTop - MARGIN} L${toCx},${toTop}`;
-            labelX = outerX + (goRight ? 4 : -4);
-            labelY = (exitY + (toTop - MARGIN)) / 2;
-          }
+          const { d, labelX, labelY } = buildEdgePath(from, to);
 
           return (
             <g key={`${node.id}-${nxtId}`}>
-              <path d={d} fill="none" stroke={theme.connector} strokeWidth={1.2} opacity={0.5}
-                markerEnd="url(#flowArrow)" />
+              <path d={d} fill="none" stroke={theme.connector} strokeWidth={1} opacity={0.5}
+                markerEnd={`url(#${markerId})`} />
               {edgeLabel && (
-                <text x={labelX} y={labelY} textAnchor="middle" fontSize={9}
+                <text x={labelX} y={labelY} textAnchor="middle" fontSize={8}
                   fill={theme.gate} fontWeight={600} opacity={0.9}>
                   {edgeLabel}
                 </text>
@@ -213,10 +251,10 @@ function DagSvg({ dagNodes, roles }: { dagNodes: SubActivity[]; roles: Record<st
             <g key={node.id}>
               <polygon
                 points={`${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}`}
-                fill={`${theme.gate}20`} stroke={theme.gate} strokeWidth={1} />
+                fill={`${theme.gate}18`} stroke={theme.gate} strokeWidth={0.8} />
               <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="central"
-                fill={theme.gate} fontSize={9} fontWeight={600}>
-                {node.label.length > 12 ? node.label.slice(0, 11) + "…" : node.label}
+                fill={theme.gate} fontSize={8} fontWeight={600}>
+                {node.label.length > 14 ? node.label.slice(0, 13) + "…" : node.label}
               </text>
             </g>
           );
@@ -224,16 +262,16 @@ function DagSvg({ dagNodes, roles }: { dagNodes: SubActivity[]; roles: Record<st
 
         return (
           <g key={node.id}>
-            <rect x={x} y={y} width={w} height={h} rx={8}
-              fill={`${theme.activity}12`} stroke={theme.activity} strokeWidth={0.8} opacity={0.9} />
-            <text x={x + w / 2} y={y + (roleName ? h / 2 - 4 : h / 2 + 1)}
+            <rect x={x} y={y} width={w} height={h} rx={6}
+              fill={`${theme.activity}10`} stroke={theme.activity} strokeWidth={0.6} opacity={0.9} />
+            <text x={x + w / 2} y={y + (roleName ? h / 2 - 3 : h / 2 + 1)}
               textAnchor="middle" dominantBaseline="central"
-              fill={theme.text} fontSize={10} fontWeight={500}>
-              {node.label.length > 22 ? node.label.slice(0, 20) + "…" : node.label}
+              fill={theme.text} fontSize={9} fontWeight={500}>
+              {node.label.length > 20 ? node.label.slice(0, 18) + "…" : node.label}
             </text>
             {roleName && (
-              <text x={x + w / 2} y={y + h / 2 + 8} textAnchor="middle" dominantBaseline="central"
-                fill={theme.role} fontSize={8} opacity={0.7}>
+              <text x={x + w / 2} y={y + h / 2 + 7} textAnchor="middle" dominantBaseline="central"
+                fill={theme.role} fontSize={7} opacity={0.6}>
                 {roleName}
               </text>
             )}
@@ -274,7 +312,6 @@ export function ActivityFlowsView({ scaffoldData }: { scaffoldData: any }) {
   const vsFlows = useMemo(() => {
     return vsEntries
       .map(([vsId, vs]) => {
-        // Resolve activity chain
         let actIds: string[] = [];
         if (Array.isArray(vs.activityIds) && vs.activityIds.length > 0) {
           actIds = vs.activityIds;
@@ -298,11 +335,7 @@ export function ActivityFlowsView({ scaffoldData }: { scaffoldData: any }) {
             nodes: subActivityGraphs[aId].nodes as SubActivity[],
           }));
 
-        return {
-          vsId,
-          vsName: vs.name ?? vsId,
-          actFlows,
-        };
+        return { vsId, vsName: vs.name ?? vsId, actFlows };
       })
       .filter(vs => vs.actFlows.length > 0);
   }, [vsEntries, activities, subActivityGraphs]);
@@ -318,7 +351,6 @@ export function ActivityFlowsView({ scaffoldData }: { scaffoldData: any }) {
     });
   };
 
-  // Total counts
   const totalDags = vsFlows.reduce((sum, vs) => sum + vs.actFlows.length, 0);
 
   if (totalDags === 0) return <EmptyState />;
@@ -338,16 +370,15 @@ export function ActivityFlowsView({ scaffoldData }: { scaffoldData: any }) {
           {totalDags} DAG{totalDags !== 1 ? "s" : ""} across {vsFlows.length} value stream{vsFlows.length !== 1 ? "s" : ""}
         </span>
         <div style={{ flex: 1 }} />
-        {/* Legend */}
         <div style={{ display: "flex", gap: 14, fontSize: 10, color: theme.textDim }}>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 3, border: `1px solid ${theme.activity}`, background: `${theme.activity}12`, display: "inline-block" }} />
+            <span style={{ width: 8, height: 8, borderRadius: 2, border: `1px solid ${theme.activity}`, background: `${theme.activity}12`, display: "inline-block" }} />
             Step
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <span style={{
-              width: 10, height: 10, transform: "rotate(45deg)",
-              border: `1px solid ${theme.gate}`, background: `${theme.gate}20`, display: "inline-block",
+              width: 8, height: 8, transform: "rotate(45deg)",
+              border: `1px solid ${theme.gate}`, background: `${theme.gate}18`, display: "inline-block",
             }} />
             Gate
           </span>
@@ -357,30 +388,36 @@ export function ActivityFlowsView({ scaffoldData }: { scaffoldData: any }) {
       {/* Scrollable swimlane body */}
       <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
         {vsFlows.map(vs => (
-          <div key={vs.vsId} style={{ marginBottom: 20 }}>
-            {/* VS header (collapsible) */}
+          <div key={vs.vsId} style={{ marginBottom: 16 }}>
+            {/* VS header */}
             <button
               onClick={() => toggleVs(vs.vsId)}
               style={{
                 display: "flex", alignItems: "center", gap: 8,
-                width: "100%", padding: "8px 12px",
+                width: "100%", padding: "6px 12px",
                 background: theme.accentDim, border: `1px solid ${theme.border}`,
                 borderRadius: 6, cursor: "pointer", color: theme.accent,
-                fontSize: 13, fontWeight: 600, fontFamily: "inherit",
+                fontSize: 12, fontWeight: 600, fontFamily: "inherit",
               }}
             >
-              <span style={{ fontSize: 11, transition: "transform 0.15s", transform: expandedVs.has(vs.vsId) ? "rotate(90deg)" : "rotate(0)" }}>
+              <span style={{ fontSize: 10, transition: "transform 0.15s", transform: expandedVs.has(vs.vsId) ? "rotate(90deg)" : "rotate(0)" }}>
                 ▸
               </span>
               {vs.vsName}
-              <span style={{ color: theme.textFaint, fontSize: 11, fontWeight: 400 }}>
+              <span style={{ color: theme.textFaint, fontSize: 10, fontWeight: 400 }}>
                 ({vs.actFlows.length} activit{vs.actFlows.length === 1 ? "y" : "ies"})
               </span>
             </button>
 
-            {/* Activity DAGs */}
+            {/* Activity DAGs in a responsive grid */}
             {expandedVs.has(vs.vsId) && (
-              <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 12, paddingLeft: 12 }}>
+              <div style={{
+                marginTop: 8,
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+                gap: 10,
+                paddingLeft: 8,
+              }}>
                 {vs.actFlows.map(af => {
                   const gateCount = af.nodes.filter(n => n.nodeType === "gate").length;
                   return (
@@ -388,20 +425,18 @@ export function ActivityFlowsView({ scaffoldData }: { scaffoldData: any }) {
                       background: theme.bgCard, border: `1px solid ${theme.borderSubtle}`,
                       borderRadius: 8, overflow: "hidden",
                     }}>
-                      {/* Activity label */}
                       <div style={{
-                        padding: "6px 12px", borderBottom: `1px solid ${theme.borderSubtle}`,
-                        display: "flex", alignItems: "center", gap: 8,
+                        padding: "5px 10px", borderBottom: `1px solid ${theme.borderSubtle}`,
+                        display: "flex", alignItems: "center", gap: 6,
                       }}>
-                        <span style={{ color: theme.activity, fontSize: 12 }}>◆</span>
-                        <span style={{ color: theme.text, fontSize: 12, fontWeight: 600 }}>{af.activityName}</span>
-                        <span style={{ color: theme.textFaint, fontSize: 10 }}>
+                        <span style={{ color: theme.activity, fontSize: 11 }}>◆</span>
+                        <span style={{ color: theme.text, fontSize: 11, fontWeight: 600 }}>{af.activityName}</span>
+                        <span style={{ color: theme.textFaint, fontSize: 9 }}>
                           {af.nodes.length} steps · {gateCount} gate{gateCount !== 1 ? "s" : ""}
                         </span>
                       </div>
-                      {/* DAG */}
-                      <div style={{ padding: "12px 8px", overflowX: "auto" }}>
-                        <DagSvg dagNodes={af.nodes} roles={roles} />
+                      <div style={{ padding: "10px 6px", overflowX: "auto" }}>
+                        <DagSvg dagNodes={af.nodes} roles={roles} activityId={af.activityId} />
                       </div>
                     </div>
                   );
