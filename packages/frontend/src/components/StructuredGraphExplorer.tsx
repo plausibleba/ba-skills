@@ -14,6 +14,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { InspectorPanel, type InspectorTarget } from "./canvas/InspectorPanel";
 import { useCanvasStore, type EnrichSection } from "../store/canvas-store.ts";
+import { useEnrichmentStore } from "../store/enrichment-store";
 
 // ── Theme (aligned with WorkbenchView dulled palette) ──
 
@@ -243,7 +244,9 @@ function buildL3Data(scaffold: any, activityId: string): SectionData[] {
   if (capItems.length) sections.push({ id: "capabilities", label: "Capabilities", items: capItems });
 
   // 5. Activity Flow (drillable into L5 if DAG exists)
-  const dag = el.subActivityGraphs?.[activityId];
+  // Check both the workbench scaffold and the canvas store's live scaffold (enrichment may have updated it)
+  const dag = el.subActivityGraphs?.[activityId]
+    ?? (useCanvasStore.getState().scaffoldData as any)?.elements?.subActivityGraphs?.[activityId];
   if (dag?.nodes?.length > 0) {
     const gateCount = dag.nodes.filter((n: any) => n.nodeType === "gate").length;
     sections.push({
@@ -304,7 +307,9 @@ function buildL4Data(scaffold: any, capabilityId: string, activityId?: string): 
 
 function buildL5Data(scaffold: any, activityId: string): SectionData[] {
   const el = scaffold.elements;
-  const dag = el.subActivityGraphs?.[activityId];
+  // Check both workbench scaffold and canvas store's live scaffold
+  const dag = el.subActivityGraphs?.[activityId]
+    ?? (useCanvasStore.getState().scaffoldData as any)?.elements?.subActivityGraphs?.[activityId];
   if (!dag?.nodes?.length) return [];
   const roles = el.roles || {};
 
@@ -525,16 +530,24 @@ function detectEnrichmentStatus(scaffold: any): EnrichmentStatus {
   const activities = els.activities ?? {};
   const subGraphs = els.subActivityGraphs ?? {};
 
-  const hasSubactivities = Object.values(subGraphs).some(
-    (v: any) => v?.nodes?.length > 0,
-  );
+  // Also check the canvas store's live scaffold in case the workbench copy is stale
+  const canvasScaffoldData = useCanvasStore.getState().scaffoldData as any;
+  const canvasSubGraphs = canvasScaffoldData?.elements?.subActivityGraphs ?? {};
+  const completed = useEnrichmentStore.getState().completedThisSession;
 
-  const hasPPIT = Object.values(activities).some(
-    (a: any) => a.capabilityPPIT && Object.keys(a.capabilityPPIT).length > 0,
-  );
+  const hasSubactivities =
+    completed.has("subactivities") ||
+    Object.values(subGraphs).some((v: any) => v?.nodes?.length > 0) ||
+    Object.values(canvasSubGraphs).some((v: any) => v?.nodes?.length > 0);
+
+  const hasPPIT =
+    completed.has("ppit") ||
+    Object.values(activities).some(
+      (a: any) => a.capabilityPPIT && Object.keys(a.capabilityPPIT).length > 0,
+    );
 
   const cardRegistry = useCanvasStore.getState().cardRegistry;
-  const hasCards = !!(
+  const hasCards = completed.has("cards") || !!(
     cardRegistry &&
     ((Object.keys(cardRegistry.conceptCards ?? {}).length > 0) ||
      (Object.keys(cardRegistry.policyCards ?? {}).length > 0))
@@ -674,7 +687,10 @@ export function StructuredGraphExplorer({ scaffoldData, onActionsChange }: { sca
   const current = drillStack[drillStack.length - 1];
 
   // Enrichment status for smart recommendations
-  const enrichStatus = useMemo(() => detectEnrichmentStatus(scaffoldData), [scaffoldData]);
+  // Subscribe to enrichment store's completed set so we detect when enrichments finish
+  const enrichCompleted = useEnrichmentStore((s) => s.completedThisSession);
+  const canvasScaffold = useCanvasStore((s) => s.scaffoldData);
+  const enrichStatus = useMemo(() => detectEnrichmentStatus(scaffoldData), [scaffoldData, enrichCompleted, canvasScaffold]);
   const nextActions = useMemo(() => getNextActions(
     enrichStatus,
     current.level,
@@ -694,9 +710,10 @@ export function StructuredGraphExplorer({ scaffoldData, onActionsChange }: { sca
   // Drill handlers
   // Check if an activity has a sub-activity DAG
   const activityHasDAG = useCallback((actId: string) => {
-    const dag = scaffoldData?.elements?.subActivityGraphs?.[actId];
+    const dag = scaffoldData?.elements?.subActivityGraphs?.[actId]
+      ?? (canvasScaffold as any)?.elements?.subActivityGraphs?.[actId];
     return dag?.nodes?.length > 0;
-  }, [scaffoldData]);
+  }, [scaffoldData, canvasScaffold]);
 
   const drillIn = useCallback((id: string, type: string) => {
     if (current.level === 1 && type === "valueStream") {
@@ -732,7 +749,7 @@ export function StructuredGraphExplorer({ scaffoldData, onActionsChange }: { sca
   const l3Data = useMemo(() => {
     const actId = drillStack.find(d => d.level === 3)?.activityId;
     return actId && scaffoldData?.elements ? buildL3Data(scaffoldData, actId) : null;
-  }, [scaffoldData, drillStack]);
+  }, [scaffoldData, drillStack, canvasScaffold]);
 
   const l4Data = useMemo(() => {
     const lvl4 = drillStack.find(d => d.level === 4);
@@ -744,7 +761,7 @@ export function StructuredGraphExplorer({ scaffoldData, onActionsChange }: { sca
     const lvl5 = drillStack.find(d => d.level === 5);
     return lvl5?.activityId && scaffoldData?.elements
       ? buildL5Data(scaffoldData, lvl5.activityId) : null;
-  }, [scaffoldData, drillStack]);
+  }, [scaffoldData, drillStack, canvasScaffold]);
 
   // What types are drillable at the current level?
   const drillableTypes = useMemo(() => {
