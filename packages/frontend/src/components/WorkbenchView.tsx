@@ -21,6 +21,7 @@ import { callLLM } from "../domain/pipeline/llm-client";
 import { buildRefinementAgentPrompt, parseAgentResponse } from "../domain/pipeline/prompts/refinement-agent";
 import { StructuredGraphExplorer, type NextAction } from "./StructuredGraphExplorer";
 import { ActivityFlowsView } from "./ActivityFlowsView";
+import { useEnrichmentStore } from "../store/enrichment-store";
 
 // ── Engine Room Theme Styles ──
 
@@ -1342,6 +1343,11 @@ export function WorkbenchView() {
   const [graphActions, setGraphActions] = useState<NextAction[]>([]);
   const goToEnrich = useCanvasStore((s) => s.goToEnrich);
 
+  // Detect uncommitted enrichment results
+  const uncommittedEnrichments = useEnrichmentStore((s) =>
+    s.reviewResults.filter((r) => !r.committed)
+  );
+
   // Global undo/redo keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -1688,6 +1694,38 @@ export function WorkbenchView() {
               >
                 {dirtyCountByCatalog[activeCatalog]} edit{dirtyCountByCatalog[activeCatalog] !== 1 ? "s" : ""}
               </span>
+            )}
+
+            {/* Uncommitted enrichment banner */}
+            {uncommittedEnrichments.length > 0 && (
+              <button
+                onClick={() => {
+                  exitWorkbench();
+                  goToEnrich("structure");
+                }}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "5px 12px", borderRadius: 5,
+                  fontSize: 11, fontWeight: 500, fontFamily: "inherit",
+                  color: "#f59e0b",
+                  background: "rgba(245, 158, 11, 0.1)",
+                  border: "1px solid rgba(245, 158, 11, 0.3)",
+                  cursor: "pointer",
+                  transition: "all 0.15s",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(245, 158, 11, 0.18)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(245, 158, 11, 0.1)"; }}
+              >
+                <span style={{
+                  width: 7, height: 7, borderRadius: "50%", background: "#f59e0b",
+                  animation: "pulse 2s ease-in-out infinite",
+                  flexShrink: 0,
+                }} />
+                {uncommittedEnrichments.length === 1
+                  ? `${uncommittedEnrichments[0].label} — commit pending`
+                  : `${uncommittedEnrichments.length} enrichments — commit pending`
+                }
+              </button>
             )}
 
             <div style={{ flex: 1 }} />
