@@ -8,8 +8,8 @@
 // LEAN SCAFFOLD: Pass B focuses on the structural skeleton only.
 // Heavy enrichments are deferred to opt-in passes that run AFTER the user
 // sees the initial scaffold, so they get faster time-to-value:
-//   - Sub-activity DAGs → Pass C1 (Deepen Structure)
-//   - capabilityPPIT    → Pass C2 (Map PPIT)
+//   - capabilityPPIT    → Pass C1 (Map PPIT)
+//   - Sub-activity DAGs → Pass C2 (Derive Activity Flows — requires PPIT)
 //   - Concept/Policy Cards → Pass D
 //
 // DECISION LOG:

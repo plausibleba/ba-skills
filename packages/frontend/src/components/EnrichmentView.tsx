@@ -3,7 +3,7 @@
  *
  * Accessible from SideNav at any time after a scaffold is loaded.
  * Contains five sections:
- *   1. Built-in enrichment passes (Deepen Structure, Map PPIT, Generate Cards)
+ *   1. Built-in enrichment passes (Map PPIT, Derive Activity Flows, Generate Cards)
  *   2. Cross-Mapping (build relationships between model elements)
  *   3. Friction & Bottleneck Analysis (elevated from Assessment — full FrictionView embedded)
  *   4. Assessment & analysis actions (Metrics, Dependencies, Maturity, etc.)
@@ -154,6 +154,8 @@ interface EnrichmentCardDef {
   comingSoon?: boolean;
   /** If true, this card uses a custom UI instead of the standard Run button */
   customUI?: boolean;
+  /** IDs of enrichment cards that must be completed before this one can run */
+  requires?: string[];
 }
 
 // ─── Cross-Mapping Types ────────────────────────────────────────────────────
@@ -215,23 +217,7 @@ interface MappingPair {
 // ─── Built-in Enrichment Definitions ─────────────────────────────────────────
 
 const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
-  // ── Structure & Depth ──
-  {
-    id: "subactivities",
-    label: "Deepen Structure",
-    description:
-      "Each stage in your value streams currently shows a high-level step (e.g. \"Review Application\" or \"Onboard Customer\"). " +
-      "This enrichment looks inside each stage and breaks it down into the detailed work steps, decision points, handoffs, and checkpoints that actually happen within it. " +
-      "The result is a richer, more granular view of how work really flows through each stage — making it easier to spot inefficiencies, missing steps, or unclear responsibilities.",
-    icon: "🔀",
-    category: "structure",
-    enrichmentStep: "subactivities",
-    contentHint: "Paste process steps, standard operating procedures, workflow descriptions, or any documentation that describes how work is done within your stages...",
-    checkDone: (scaffold) =>
-      scaffold?.elements?.subActivityGraphs &&
-      Object.keys(scaffold.elements.subActivityGraphs).length > 0 &&
-      Object.values(scaffold.elements.subActivityGraphs).some((v: any) => v?.nodes?.length > 0),
-  },
+  // ── Structure & Depth (PPIT first — prerequisite for Activity Flows) ──
   {
     id: "ppit",
     label: "Map People, Process, Information & Technology",
@@ -247,6 +233,23 @@ const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
     checkDone: (scaffold) =>
       scaffold?.elements?.activities &&
       Object.values(scaffold.elements.activities).some((a: any) => a.capabilityPPIT && Object.keys(a.capabilityPPIT).length > 0),
+  },
+  {
+    id: "subactivities",
+    label: "Derive Activity Flows",
+    description:
+      "Using the activities identified during PPIT Mapping, this enrichment generates a detailed activity flow for each stage — " +
+      "showing the sequence of work steps, decision gates, handoffs, and checkpoints that actually happen within it. " +
+      "The result is a richer, more granular view of how work really flows through each stage — making it easier to spot inefficiencies, missing steps, or unclear responsibilities.",
+    icon: "🔀",
+    category: "structure",
+    enrichmentStep: "subactivities",
+    requires: ["ppit"],
+    contentHint: "Paste process steps, standard operating procedures, workflow descriptions, or any documentation that describes how work is done within your stages...",
+    checkDone: (scaffold) =>
+      scaffold?.elements?.subActivityGraphs &&
+      Object.keys(scaffold.elements.subActivityGraphs).length > 0 &&
+      Object.values(scaffold.elements.subActivityGraphs).some((v: any) => v?.nodes?.length > 0),
   },
   {
     id: "cards",
@@ -518,6 +521,22 @@ export function EnrichmentView() {
   const runBuiltIn = useCallback(async (card: EnrichmentCardDef) => {
     if (!card.enrichmentStep || !scaffoldData) return;
 
+    // Block if prerequisites not met
+    if (card.requires?.length) {
+      const prereqsMet = card.requires.every((reqId) => {
+        const reqCard = ENRICHMENT_CARDS.find((c) => c.id === reqId);
+        if (!reqCard) return true;
+        if (completedThisSession.has(reqId)) return true;
+        if (reqCard.checkDone?.(scaffoldData, cardRegistry)) return true;
+        return false;
+      });
+      if (!prereqsMet) {
+        const names = card.requires.map((r) => ENRICHMENT_CARDS.find((c) => c.id === r)?.label ?? r).join(", ");
+        setError(`Please run ${names} first — it provides the activity data that ${card.label} builds on.`);
+        return;
+      }
+    }
+
     // Snapshot current state before enrichment for rollback
     const store = useCanvasStore.getState();
     const snapshot: EnrichmentSnapshot = {
@@ -622,11 +641,23 @@ export function EnrichmentView() {
   }, []);
 
   // ── Card status ──
-  const getStatus = useCallback((card: EnrichmentCardDef): "done" | "running" | "available" | "coming-soon" => {
+  const getStatus = useCallback((card: EnrichmentCardDef): "done" | "running" | "available" | "coming-soon" | "requires-prereq" => {
     if (card.comingSoon) return "coming-soon";
     if (running === card.id) return "running";
     if (completedThisSession.has(card.id)) return "done";
     if (card.checkDone?.(scaffoldData, cardRegistry)) return "done";
+    // Check prerequisites — all required enrichments must be done
+    if (card.requires?.length) {
+      const allCards = ENRICHMENT_CARDS;
+      const prereqsMet = card.requires.every((reqId) => {
+        const reqCard = allCards.find((c) => c.id === reqId);
+        if (!reqCard) return true; // unknown prereq — don't block
+        if (completedThisSession.has(reqId)) return true;
+        if (reqCard.checkDone?.(scaffoldData, cardRegistry)) return true;
+        return false;
+      });
+      if (!prereqsMet) return "requires-prereq";
+    }
     return "available";
   }, [running, completedThisSession, scaffoldData, cardRegistry]);
 
@@ -1070,7 +1101,7 @@ function EnrichmentCard({
   onViewImpact,
 }: {
   card: EnrichmentCardDef;
-  status: "done" | "running" | "available" | "coming-soon";
+  status: "done" | "running" | "available" | "coming-soon" | "requires-prereq";
   onRun: () => void;
   onNavigate: () => void;
   disabled: boolean;
@@ -1092,6 +1123,7 @@ function EnrichmentCard({
   const [expanded, setExpanded] = useState(false);
   const isDone = status === "done";
   const isComingSoon = status === "coming-soon";
+  const isBlocked = status === "requires-prereq";
   const hasContent = (userContent?.text ?? "").trim().length > 0;
   const influence = userContent?.influence ?? "indicative";
 
@@ -1101,7 +1133,7 @@ function EnrichmentCard({
       style={{
         background: isDone ? "rgba(16,185,129,0.06)" : tv.bgCard,
         border: `1px solid ${isDone ? "rgba(16,185,129,0.25)" : tv.borderSubtle}`,
-        opacity: isComingSoon ? 0.5 : 1,
+        opacity: isComingSoon || isBlocked ? 0.55 : 1,
       }}
     >
       {/* Main row */}
@@ -1170,6 +1202,12 @@ function EnrichmentCard({
                 <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
                   style={{ background: tv.bgSurface, color: tv.textDim }}>
                   Soon
+                </span>
+              ) : isBlocked ? (
+                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
+                  style={{ background: "rgba(245,158,11,0.12)", color: "#f59e0b" }}
+                  title={`Requires: ${(card.requires ?? []).map((r) => ENRICHMENT_CARDS.find((c) => c.id === r)?.label ?? r).join(", ")}`}>
+                  Requires PPIT
                 </span>
               ) : card.navigateTo ? (
                 <button

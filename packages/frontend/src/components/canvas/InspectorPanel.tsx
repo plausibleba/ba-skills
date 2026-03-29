@@ -236,17 +236,15 @@ function DagGraph({ nodes, pal }: { nodes: SubActivity[]; pal: Pal }) {
             labelX = (fromCx + toCx) / 2;
             labelY = midY - 3;
           } else {
-            // Upstream or same-level: exit from outer side, route around
-            const goRight = toCx >= fromCx;
-            // Exit from the outer side (AWAY from target) so the path goes wide
+            // Upstream or same-level: exit from OUTER side (toward nearest SVG edge),
+            // route along the SVG perimeter so path never crosses intermediate nodes.
+            const fromMidX = from.x + from.w / 2;
+            const svgMidX = svgW / 2;
+            const goRight = fromMidX >= svgMidX;
             const exitX = goRight ? from.x + from.w : from.x;
             const exitY = from.y + from.h / 2;
-            // Enter target from top
-            const MARGIN = 14;
-            // Route wide around the nodes
-            const outerX = goRight
-              ? Math.max(from.x + from.w, to.x + to.w) + MARGIN
-              : Math.min(from.x, to.x) - MARGIN;
+            const MARGIN = 18;
+            const outerX = goRight ? svgW - 8 : 8;
             d = `M${exitX},${exitY} L${outerX},${exitY} L${outerX},${toTop - MARGIN} L${toCx},${toTop - MARGIN} L${toCx},${toTop}`;
             labelX = outerX + (goRight ? 4 : -4);
             labelY = (exitY + (toTop - MARGIN)) / 2;
@@ -398,14 +396,14 @@ function LifecycleStateDiagram({ states, pal }: { states: LifecycleState[]; pal:
             const midY = (fromBot + toTop) / 2;
             d = `M${fromCx},${fromBot} L${fromCx},${midY} L${toCx},${midY} L${toCx},${toTop}`;
           } else {
-            // Upstream or same-level: exit from outer side, route around
-            const goRight = toCx >= fromCx;
+            // Upstream or same-level: exit from OUTER side (toward nearest SVG edge)
+            const fromMidX = from.x + NODE_W / 2;
+            const svgMidX = svgW / 2;
+            const goRight = fromMidX >= svgMidX;
             const exitX = goRight ? from.x + NODE_W : from.x;
             const exitY = from.y + NODE_H / 2;
-            const MARGIN = 14;
-            const outerX = goRight
-              ? Math.max(from.x + NODE_W, to.x + NODE_W) + MARGIN
-              : Math.min(from.x, to.x) - MARGIN;
+            const MARGIN = 18;
+            const outerX = goRight ? svgW - 8 : 8;
             d = `M${exitX},${exitY} L${outerX},${exitY} L${outerX},${toTop - MARGIN} L${toCx},${toTop - MARGIN} L${toCx},${toTop}`;
           }
 

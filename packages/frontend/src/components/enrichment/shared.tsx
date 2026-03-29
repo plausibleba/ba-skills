@@ -38,6 +38,8 @@ export interface EnrichmentCardDef {
   comingSoon?: boolean;
   /** If true, this card uses a custom UI instead of the standard Run button */
   customUI?: boolean;
+  /** IDs of enrichment cards that must be completed before this one can run */
+  requires?: string[];
 }
 
 // ─── Cross-Mapping Types ────────────────────────────────────────────────────
@@ -151,23 +153,7 @@ export const IMPACT_DESTINATIONS: Record<string, {
 // ─── Built-in Enrichment Definitions ─────────────────────────────────────────
 
 export const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
-  // ── Structure & Depth ──
-  {
-    id: "subactivities",
-    label: "Deepen Structure",
-    description:
-      "Each stage in your value streams currently shows a high-level step (e.g. \"Review Application\" or \"Onboard Customer\"). " +
-      "This enrichment looks inside each stage and breaks it down into the detailed work steps, decision points, handoffs, and checkpoints that actually happen within it. " +
-      "The result is a richer, more granular view of how work really flows through each stage — making it easier to spot inefficiencies, missing steps, or unclear responsibilities.",
-    icon: "🔀",
-    category: "structure",
-    enrichmentStep: "subactivities",
-    contentHint: "Paste process steps, standard operating procedures, workflow descriptions, or any documentation that describes how work is done within your stages...",
-    checkDone: (scaffold) =>
-      scaffold?.elements?.subActivityGraphs &&
-      Object.keys(scaffold.elements.subActivityGraphs).length > 0 &&
-      Object.values(scaffold.elements.subActivityGraphs).some((v: any) => v?.nodes?.length > 0),
-  },
+  // ── Structure & Depth (PPIT first — it's a prerequisite for Activity Flows) ──
   {
     id: "ppit",
     label: "Map People, Process, Information & Technology",
@@ -183,6 +169,23 @@ export const ENRICHMENT_CARDS: EnrichmentCardDef[] = [
     checkDone: (scaffold) =>
       scaffold?.elements?.activities &&
       Object.values(scaffold.elements.activities).some((a: any) => a.capabilityPPIT && Object.keys(a.capabilityPPIT).length > 0),
+  },
+  {
+    id: "subactivities",
+    label: "Derive Activity Flows",
+    description:
+      "Using the activities identified during PPIT Mapping, this enrichment generates a detailed activity flow for each stage — " +
+      "showing the sequence of work steps, decision gates, handoffs, and checkpoints that actually happen within it. " +
+      "The result is a richer, more granular view of how work really flows through each stage — making it easier to spot inefficiencies, missing steps, or unclear responsibilities.",
+    icon: "🔀",
+    category: "structure",
+    enrichmentStep: "subactivities",
+    requires: ["ppit"],
+    contentHint: "Paste process steps, standard operating procedures, workflow descriptions, or any documentation that describes how work is done within your stages...",
+    checkDone: (scaffold) =>
+      scaffold?.elements?.subActivityGraphs &&
+      Object.keys(scaffold.elements.subActivityGraphs).length > 0 &&
+      Object.values(scaffold.elements.subActivityGraphs).some((v: any) => v?.nodes?.length > 0),
   },
   {
     id: "cards",

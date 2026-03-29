@@ -616,7 +616,7 @@ function getNextActions(
     }
     if (!status.hasSubactivities) {
       actions.push({
-        icon: "🔬", title: "Deepen Structure", buttonLabel: "Deepen Structure",
+        icon: "🔬", title: "Derive Activity Flows", buttonLabel: "Derive Activity Flows",
         description: "Generate detailed sub-activity breakdowns for each stage.",
         tooltip: TOOLTIPS.subactivities,
         enrichSection: "structure",

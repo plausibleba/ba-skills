@@ -547,7 +547,7 @@ export type PipelineStatus =
   | "done"             // lean scaffold delivered — user can browse immediately
   | "error"
   // Enrichment statuses (opt-in, run after scaffold is delivered)
-  | "enriching-subactivities" // Deepen Structure
+  | "enriching-subactivities" // Derive Activity Flows
   | "enriching-ppit"          // Map PPIT
   | "enriching-cards"         // Generate Cards
   | "enrichment-done";        // enrichment step completed

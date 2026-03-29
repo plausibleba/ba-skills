@@ -17,19 +17,19 @@ interface StepDef {
 
 const ENRICHMENT_STEPS: StepDef[] = [
   {
-    id: "subactivities",
-    label: "Deepen Structure",
-    description: "Generate sub-activity DAGs showing the internal breakdown of each stage — decision gates, handoffs, and work steps.",
-    icon: "🔀",
-    puzzleStep: "subactivities",
-    order: 1,
-  },
-  {
     id: "ppit",
     label: "Map PPIT",
     description: "Decompose each capability into People, Process, Information, and Technology dimensions per stage.",
     icon: "🧩",
     puzzleStep: "ppit",
+    order: 1,
+  },
+  {
+    id: "subactivities",
+    label: "Derive Activity Flows",
+    description: "Using PPIT activities, generate activity flow DAGs showing the internal breakdown of each stage — decision gates, handoffs, and work steps.",
+    icon: "🔀",
+    puzzleStep: "subactivities",
     order: 2,
   },
   {

@@ -129,6 +129,7 @@ function layoutDag(nodes: SubActivity[]): DagLayout {
 function buildEdgePath(
   from: LayoutNode,
   to: LayoutNode,
+  svgW: number,
 ): { d: string; labelX: number; labelY: number } {
   const fromCx = from.x + from.w / 2;
   const fromBot = from.y + from.h;
@@ -149,14 +150,17 @@ function buildEdgePath(
     return { d, labelX: (fromCx + toCx) / 2, labelY: midY - 3 };
   }
 
-  // Upstream or same-level: exit from outer side, route around
-  const goRight = toCx >= fromCx;
+  // Upstream or same-level: exit from the OUTER side (toward nearest SVG edge),
+  // route along the SVG perimeter so the path never crosses intermediate nodes.
+  const fromMidX = from.x + from.w / 2;
+  const svgMidX = svgW / 2;
+  // Choose the side closest to the SVG boundary — pushes the loop outward
+  const goRight = fromMidX >= svgMidX;
   const exitX = goRight ? from.x + from.w : from.x;
   const exitY = from.y + from.h / 2;
-  const MARGIN = 14;
-  const outerX = goRight
-    ? Math.max(from.x + from.w, to.x + to.w) + MARGIN
-    : Math.min(from.x, to.x) - MARGIN;
+  const MARGIN = 18;
+  // Route to the SVG boundary edge (well outside all nodes)
+  const outerX = goRight ? svgW - PAD / 2 : PAD / 2;
   const d = `M${exitX},${exitY} L${outerX},${exitY} L${outerX},${toTop - MARGIN} L${toCx},${toTop - MARGIN} L${toCx},${toTop}`;
   return { d, labelX: outerX + (goRight ? 4 : -4), labelY: (exitY + (toTop - MARGIN)) / 2 };
 }
@@ -200,7 +204,7 @@ function DagSvg({ dagNodes, roles, activityId }: { dagNodes: SubActivity[]; role
           const to = posMap.get(nxtId);
           if (!to) return null;
           const edgeLabel = node.edgeLabels?.[nxtId];
-          const { d, labelX, labelY } = buildEdgePath(from, to);
+          const { d, labelX, labelY } = buildEdgePath(from, to, layout.svgW);
 
           return (
             <g key={`${node.id}-${nxtId}`}>
@@ -270,7 +274,7 @@ function EmptyState() {
     }}>
       <span style={{ fontSize: 32, opacity: 0.4 }}>🔬</span>
       <p style={{ fontSize: 13, textAlign: "center", maxWidth: 360, lineHeight: 1.5 }}>
-        No sub-activity flows yet. Run <strong style={{ color: theme.accent }}>Deepen Structure</strong> enrichment
+        No sub-activity flows yet. Run <strong style={{ color: theme.accent }}>Derive Activity Flows</strong> enrichment
         to generate detailed step-by-step breakdowns with decision gates for each activity.
       </p>
     </div>
