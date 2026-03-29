@@ -20,6 +20,7 @@ import {
 import { callLLM } from "../domain/pipeline/llm-client";
 import { buildRefinementAgentPrompt, parseAgentResponse } from "../domain/pipeline/prompts/refinement-agent";
 import { StructuredGraphExplorer, type NextAction } from "./StructuredGraphExplorer";
+import { ActivityFlowsView } from "./ActivityFlowsView";
 
 // ── Engine Room Theme Styles ──
 
@@ -1335,7 +1336,7 @@ export function WorkbenchView() {
   } = useWorkbenchStore();
 
   const backToNetwork = useCanvasStore((s) => s.backToNetwork);
-  const [workbenchTab, setWorkbenchTab] = useState<"catalog" | "graph">("catalog");
+  const [workbenchTab, setWorkbenchTab] = useState<"catalog" | "graph" | "flows">("catalog");
   const [agentPanelOpen, setAgentPanelOpen] = useState(false);
   const [introVisible, setIntroVisible] = useState(true);
   const [graphActions, setGraphActions] = useState<NextAction[]>([]);
@@ -1592,7 +1593,7 @@ export function WorkbenchView() {
             }}
           >
             {/* View mode toggle */}
-            <Tooltip text="Switch between the tabular catalog editor and the force-directed graph explorer showing cross-catalog relationships.">
+            <Tooltip text="Switch between the tabular catalog editor, the graph explorer for cross-catalog drill-in, and the flows view for sub-activity DAGs.">
             <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", border: `1px solid ${theme.border}` }}>
               <button
                 onClick={() => setWorkbenchTab("catalog")}
@@ -1622,6 +1623,21 @@ export function WorkbenchView() {
                 }}
               >
                 Graph Explorer
+              </button>
+              <button
+                onClick={() => setWorkbenchTab("flows")}
+                style={{
+                  padding: "5px 12px",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  border: "none",
+                  borderLeft: `1px solid ${theme.border}`,
+                  color: workbenchTab === "flows" ? theme.accent : theme.textDim,
+                  background: workbenchTab === "flows" ? theme.accentMuted : "transparent",
+                }}
+              >
+                Flows
               </button>
             </div>
             </Tooltip>
@@ -1754,6 +1770,9 @@ export function WorkbenchView() {
               )}
               {workbenchTab === "graph" && workingScaffold && (
                 <StructuredGraphExplorer scaffoldData={workingScaffold} onActionsChange={setGraphActions} />
+              )}
+              {workbenchTab === "flows" && workingScaffold && (
+                <ActivityFlowsView scaffoldData={workingScaffold} />
               )}
             </div>
 

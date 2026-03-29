@@ -9,6 +9,7 @@
 //   L2  Value Stream — stage chain (vertical) with transition labels
 //   L3  Stage Detail — entry/exit, stakeholders, metrics, capabilities (vertical)
 //   L4  Capability PPIT — roles, sub-activities, info objects, technology
+//   L5  Activity Flow — sub-activity DAG with decision gates & branch labels
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { InspectorPanel, type InspectorTarget } from "./canvas/InspectorPanel";
@@ -38,6 +39,7 @@ const theme = {
   infoObject: "#a855f7",
   appFunction: "#6366f1",
   subActivity: "#22c55e",
+  gate: "#f59e0b",
   zone: "rgba(212, 160, 83, 0.04)",
   zoneBorder: "rgba(212, 160, 83, 0.2)",
 };
@@ -45,7 +47,7 @@ const theme = {
 // ── Types ──
 
 interface DrillLevel {
-  level: 1 | 2 | 3 | 4;
+  level: 1 | 2 | 3 | 4 | 5;
   label: string;
   vsId?: string;
   activityId?: string;
@@ -115,7 +117,7 @@ function typeIcon(type: string): string {
   const m: Record<string, string> = {
     valueStream: "⟶", activity: "◆", capability: "⬡", role: "👤",
     metric: "📊", outcome: "○", infoObject: "◇", appFunction: "⚙",
-    subActivity: "▸",
+    subActivity: "▸", gate: "◇",
   };
   return m[type] || "•";
 }
@@ -240,6 +242,22 @@ function buildL3Data(scaffold: any, activityId: string): SectionData[] {
     .map((cId: string) => ({ id: cId, label: caps[cId].name || cId, type: "capability", data: caps[cId] }));
   if (capItems.length) sections.push({ id: "capabilities", label: "Capabilities", items: capItems });
 
+  // 5. Activity Flow (drillable into L5 if DAG exists)
+  const dag = el.subActivityGraphs?.[activityId];
+  if (dag?.nodes?.length > 0) {
+    const gateCount = dag.nodes.filter((n: any) => n.nodeType === "gate").length;
+    sections.push({
+      id: "activityFlow",
+      label: "Activity Flow",
+      items: [{
+        id: activityId,
+        label: `${dag.nodes.length} steps · ${gateCount} decision gate${gateCount !== 1 ? "s" : ""}`,
+        type: "activity",
+        subtitle: "Double-click to view sub-activity DAG",
+      }],
+    });
+  }
+
   return sections;
 }
 
@@ -282,6 +300,78 @@ function buildL4Data(scaffold: any, capabilityId: string, activityId?: string): 
     sections.push({ id: "empty", label: "No PPIT Data", items: [{ id: "none", label: "No PPIT breakdown available for this capability", type: "outcome" }] });
   }
   return sections;
+}
+
+function buildL5Data(scaffold: any, activityId: string): SectionData[] {
+  const el = scaffold.elements;
+  const dag = el.subActivityGraphs?.[activityId];
+  if (!dag?.nodes?.length) return [];
+  const roles = el.roles || {};
+
+  // BFS layer ordering for display
+  const nodes: any[] = dag.nodes;
+  const nodeMap = new Map(nodes.map(n => [n.id, n]));
+  const hasIncoming = new Set<string>();
+  for (const n of nodes) for (const nxt of n.nextIds ?? []) hasIncoming.add(nxt);
+  const roots = nodes.filter(n => !hasIncoming.has(n.id));
+  if (roots.length === 0 && nodes.length > 0) roots.push(nodes[0]);
+
+  const ordered: any[] = [];
+  const visited = new Set<string>();
+  let queue = roots.map(r => r.id);
+  while (queue.length > 0) {
+    const next: string[] = [];
+    for (const id of queue) {
+      if (visited.has(id)) continue;
+      visited.add(id);
+      const node = nodeMap.get(id);
+      if (node) {
+        ordered.push(node);
+        for (const nxt of node.nextIds ?? []) {
+          if (!visited.has(nxt)) next.push(nxt);
+        }
+      }
+    }
+    queue = next;
+  }
+  // Catch unvisited
+  for (const n of nodes) if (!visited.has(n.id)) ordered.push(n);
+
+  const items: SimpleNode[] = ordered.map((node: any) => {
+    const roleName = node.roleId && roles[node.roleId] ? roles[node.roleId].name : undefined;
+    const branchCount = (node.nextIds ?? []).length;
+    const isGate = node.nodeType === "gate";
+    const edgeLabels = node.edgeLabels ?? {};
+    const branchNames = Object.values(edgeLabels).join(" / ");
+
+    // Build subtitle
+    const parts: string[] = [];
+    if (isGate && branchNames) parts.push(`→ ${branchNames}`);
+    else if (isGate && branchCount > 1) parts.push(`${branchCount} branches`);
+    if (roleName) parts.push(roleName);
+    if (node.outcome && !isGate) parts.push(node.outcome);
+
+    // Transition label: for non-root nodes, show the edge label from parent
+    let transitionLabel: string | undefined;
+    // Find a parent that points to this node and has an edgeLabel for it
+    for (const parent of dag.nodes) {
+      if ((parent.nextIds ?? []).includes(node.id) && parent.edgeLabels?.[node.id]) {
+        transitionLabel = parent.edgeLabels[node.id];
+        break;
+      }
+    }
+
+    return {
+      id: node.id,
+      label: `${isGate ? "◇ " : ""}${node.label}`,
+      type: isGate ? "gate" : "subActivity",
+      subtitle: parts.join(" · ") || undefined,
+      transitionLabel,
+      data: node,
+    };
+  });
+
+  return [{ id: "dag", label: "Activity Flow", items }];
 }
 
 // ── Flow arrow connector with optional transition label ──
@@ -598,10 +688,16 @@ export function StructuredGraphExplorer({ scaffoldData, onActionsChange }: { sca
   }, [nextActions, onActionsChange]);
 
   const levelLabels: Record<number, string> = {
-    1: "Operating Model", 2: "Value Stream", 3: "Stage Detail", 4: "Capability PPIT",
+    1: "Operating Model", 2: "Value Stream", 3: "Stage Detail", 4: "Capability PPIT", 5: "Activity Flow",
   };
 
   // Drill handlers
+  // Check if an activity has a sub-activity DAG
+  const activityHasDAG = useCallback((actId: string) => {
+    const dag = scaffoldData?.elements?.subActivityGraphs?.[actId];
+    return dag?.nodes?.length > 0;
+  }, [scaffoldData]);
+
   const drillIn = useCallback((id: string, type: string) => {
     if (current.level === 1 && type === "valueStream") {
       setDrillStack(prev => [...prev, { level: 2, label: scaffoldData?.elements?.valueStreams?.[id]?.name || id, vsId: id }]);
@@ -612,8 +708,13 @@ export function StructuredGraphExplorer({ scaffoldData, onActionsChange }: { sca
     } else if (current.level === 3 && type === "capability") {
       setDrillStack(prev => [...prev, { level: 4, label: scaffoldData?.elements?.capabilities?.[id]?.name || id, vsId: current.vsId, activityId: current.activityId, capabilityId: id }]);
       setSelectedId(null); setSelectedType(null);
+    } else if (current.level === 3 && type === "activity" && current.activityId && activityHasDAG(current.activityId)) {
+      // Drill from L3 stage detail into L5 activity flow DAG
+      const actName = scaffoldData?.elements?.activities?.[current.activityId]?.name || current.activityId;
+      setDrillStack(prev => [...prev, { level: 5, label: `${actName} Flow`, vsId: current.vsId, activityId: current.activityId }]);
+      setSelectedId(null); setSelectedType(null);
     }
-  }, [current, scaffoldData]);
+  }, [current, scaffoldData, activityHasDAG]);
 
   const drillOut = useCallback((toIndex: number) => {
     setDrillStack(prev => prev.slice(0, toIndex + 1));
@@ -637,6 +738,12 @@ export function StructuredGraphExplorer({ scaffoldData, onActionsChange }: { sca
     const lvl4 = drillStack.find(d => d.level === 4);
     return lvl4?.capabilityId && scaffoldData?.elements
       ? buildL4Data(scaffoldData, lvl4.capabilityId, lvl4.activityId) : null;
+  }, [scaffoldData, drillStack]);
+
+  const l5Data = useMemo(() => {
+    const lvl5 = drillStack.find(d => d.level === 5);
+    return lvl5?.activityId && scaffoldData?.elements
+      ? buildL5Data(scaffoldData, lvl5.activityId) : null;
   }, [scaffoldData, drillStack]);
 
   // What types are drillable at the current level?
@@ -684,17 +791,19 @@ export function StructuredGraphExplorer({ scaffoldData, onActionsChange }: { sca
       else if (dl.level === 2 && l2Data) sections = l2Data;
       else if (dl.level === 3 && l3Data) sections = l3Data;
       else if (dl.level === 4 && l4Data) sections = l4Data;
+      else if (dl.level === 5 && l5Data) sections = l5Data;
 
       cols.push({ level: dl, sections, isCurrent, highlightId });
     }
 
     return cols;
-  }, [drillStack, l1Data, l2Data, l3Data, l4Data]);
+  }, [drillStack, l1Data, l2Data, l3Data, l4Data, l5Data]);
 
   // Hint text
   const drillHint = current.level === 1 ? "Double-click a value stream to drill in"
     : current.level === 2 ? "Double-click a stage to see detail"
-    : current.level === 3 ? "Double-click a capability to see PPIT" : "";
+    : current.level === 3 ? "Double-click a capability for PPIT, or Activity Flow for the DAG"
+    : current.level === 5 ? "Sub-activity DAG with decision gates" : "";
 
   // Track drill transitions for animation
   const [drillAnimKey, setDrillAnimKey] = useState(0);
@@ -771,7 +880,7 @@ export function StructuredGraphExplorer({ scaffoldData, onActionsChange }: { sca
               new Set<string>()
             );
 
-            const isActivityChain = col.level.level === 2;
+            const isActivityChain = col.level.level === 2 || col.level.level === 5;
 
             return (
               <div key={i} style={{
