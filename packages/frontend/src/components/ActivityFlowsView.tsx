@@ -124,7 +124,7 @@ function layoutDag(nodes: SubActivity[]): DagLayout {
   return { nodes: layoutNodes, svgW, svgH };
 }
 
-// ── Edge path builder with bezier curves ──
+// ── Edge path builder — elbow connectors (matches Inspector DagGraph) ──
 
 function buildEdgePath(
   from: LayoutNode,
@@ -134,53 +134,31 @@ function buildEdgePath(
   const fromBot = from.y + from.h;
   const toCx = to.x + to.w / 2;
   const toTop = to.y;
-  const isUpstream = to.layer <= from.layer;
+  const isUpstream = toTop <= fromBot + 4;
 
-  // For gates, exit from the diamond corners (left/right) instead of bottom center
-  // when going to nodes that aren't directly below
-  const isGate = from.node.nodeType === "gate";
-  const outCount = (from.node.nextIds ?? []).length;
-
-  if (isUpstream) {
-    // Upstream (loop-back): route around the outside
-    const goRight = toCx >= fromCx;
-    const exitX = goRight ? from.x + from.w : from.x;
-    const exitY = from.y + from.h / 2;
-    const MARGIN = 16;
-    const outerX = goRight
-      ? Math.max(from.x + from.w, to.x + to.w) + MARGIN
-      : Math.min(from.x, to.x) - MARGIN;
-    const d = `M${exitX},${exitY} C${outerX},${exitY} ${outerX},${toTop} ${toCx},${toTop}`;
-    return { d, labelX: outerX + (goRight ? 6 : -6), labelY: (exitY + toTop) / 2 };
-  }
-
-  // Downward edges
-  if (isGate && outCount > 1 && fromCx !== toCx) {
-    // Gate with multiple branches: exit from left/right diamond corner
-    const goRight = toCx > fromCx;
-    const exitX = goRight ? from.x + from.w : from.x;
-    const exitY = from.y + from.h / 2;
-    // Bezier curve from corner to target top-center
-    const cp1x = exitX + (goRight ? 12 : -12);
-    const cp1y = exitY + (toTop - exitY) * 0.3;
-    const cp2x = toCx;
-    const cp2y = toTop - (toTop - exitY) * 0.3;
-    const d = `M${exitX},${exitY} C${cp1x},${cp1y} ${cp2x},${cp2y} ${toCx},${toTop}`;
-    const labelX = (exitX + toCx) / 2 + (goRight ? 6 : -6);
-    const labelY = (exitY + toTop) / 2 - 2;
-    return { d, labelX, labelY };
-  }
-
-  if (fromCx === toCx) {
-    // Same column: straight vertical line
+  if (!isUpstream && fromCx === toCx) {
+    // Same column, downward: straight line
     const d = `M${fromCx},${fromBot} L${toCx},${toTop}`;
-    return { d, labelX: fromCx + 8, labelY: (fromBot + toTop) / 2 };
+    return { d, labelX: fromCx + 6, labelY: (fromBot + toTop) / 2 };
   }
 
-  // Different columns, downward: smooth S-curve
-  const midY = (fromBot + toTop) / 2;
-  const d = `M${fromCx},${fromBot} C${fromCx},${midY} ${toCx},${midY} ${toCx},${toTop}`;
-  return { d, labelX: (fromCx + toCx) / 2, labelY: midY - 4 };
+  if (!isUpstream) {
+    // Normal downward with horizontal offset: elbow from bottom
+    const midY = (fromBot + toTop) / 2;
+    const d = `M${fromCx},${fromBot} L${fromCx},${midY} L${toCx},${midY} L${toCx},${toTop}`;
+    return { d, labelX: (fromCx + toCx) / 2, labelY: midY - 3 };
+  }
+
+  // Upstream or same-level: exit from outer side, route around
+  const goRight = toCx >= fromCx;
+  const exitX = goRight ? from.x + from.w : from.x;
+  const exitY = from.y + from.h / 2;
+  const MARGIN = 14;
+  const outerX = goRight
+    ? Math.max(from.x + from.w, to.x + to.w) + MARGIN
+    : Math.min(from.x, to.x) - MARGIN;
+  const d = `M${exitX},${exitY} L${outerX},${exitY} L${outerX},${toTop - MARGIN} L${toCx},${toTop - MARGIN} L${toCx},${toTop}`;
+  return { d, labelX: outerX + (goRight ? 4 : -4), labelY: (exitY + (toTop - MARGIN)) / 2 };
 }
 
 // ── Single DAG SVG renderer ──
