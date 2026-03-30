@@ -137,28 +137,41 @@ VCC adds: frictionObservations, solutions, controls, userStories, throughputProj
 
 ## PlausibleBA Canvas (plausibleba.com/canvas)
 
-Live page that accepts a `ba-skills-bundle.json` drop and renders all three artefacts inline.
+**Deployed on Vercel** (moved from GitHub Pages on 19 March 2026). Connected to `plausibleba/website` repo.
+
+**Two entry paths:**
+1. **Direct intake (NEW):** Paste meeting notes / upload files → email gate → 3-pass LLM pipeline → full operating model rendered
+2. **Bundle drop:** Drop `ba-skills-bundle.json` or VCC bundle → renders immediately
 
 **What it renders:**
-- Capability map (treemap, dark mode)
-- Concept model (graph view)
-- Value streams (stage view)
+- Capability map (treemap with L1/L2/L3 hierarchy)
+- Concept model (Capsicum Triad: Party/Record/Resource columns)
+- Value streams (stage view with outcomes, capabilities, metrics)
 - Metrics
+- JSON download button
 
-**Entry flow:**
-1. User installs PlausibleBA skills in Cowork
-2. Runs `/plausibleba` or `/value-stream` and exports bundle JSON
-3. Drops bundle at plausibleba.com/canvas
-4. Full operating model renders immediately
+**Direct intake pipeline:**
+- Pass A1: Value stream extraction (8K tokens)
+- Pass A2: Capability mapping + roles (12K tokens)
+- Pass B: Scaffold formalisation (32K tokens)
+- Post-processing: Capability hierarchy injection + selective concept derivation
+- Prompts aligned with VCC pipeline (identical)
+- API: `/api/generate` Edge Runtime proxy on Vercel, `ANTHROPIC_API_KEY` env var
 
-**Demo path:** "Load PortfolioProp demo" link on the canvas page — confirmed working.
+**Email gate:**
+- First name, last name, email required before generation
+- 3 free generations per email address
+- Rate limiting via Vercel KV (in-memory fallback until KV provisioned)
+- File uploads: .txt, .md, .csv, .xlsx, .docx, .pdf (binary parsing via CDN libs)
+
+**Demo path:** "Load PortfolioProp demo" link — confirmed working.
 
 **Current status:**
+- Direct intake: deployed and working ✅
 - PortfolioProp bundle renders correctly ✅
-- Old separated Dough-to-Door JSONs do not render (pre-bundle format) ✅ expected
-- Needs testing with a v1.5.0 bundle from the new `/plausibleba` orchestrator — pending
-
-**Next step for canvas:** Produce a fresh Dough-to-Door bundle using v1.5.0 skills and confirm it renders on canvas. If that works, explore seamless transfer (auto-redirect or deep link from skill output to canvas URL).
+- TradieBot PDF tested through Canvas — produces 5 VS, 26 capabilities, 26 concepts ✅
+- Prompt alignment with VCC confirmed ✅
+- "Open in VCC" button not yet wired up — pending
 
 ---
 
