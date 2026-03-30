@@ -129,9 +129,9 @@ Then proceed directly to the Bundle step.
 
 ## Bundle Assembly
 
-After Phase 3 is confirmed, assemble and offer the bundle without waiting to be asked.
+After Phase 3 is confirmed, **immediately generate all export files** without waiting for the user to ask.
 
-Construct `[organisation]-ba-skills-bundle.json` following the ba-skills-bundle schema v1.0.0:
+Construct `<organisation>-ba-skills-bundle.json` following the ba-skills-bundle schema v1.0.0:
 
 ```json
 {
@@ -155,16 +155,29 @@ Construct `[organisation]-ba-skills-bundle.json` following the ba-skills-bundle 
 }
 ```
 
-Then say:
+Generate all files and save to the workspace folder:
+1. `<organisation>-ba-skills-bundle.json` — the combined VCC bundle
+2. `<organisation>_capability_map.xlsx` — 4-tab Capability Register workbook
+3. `<organisation>_concept_model.xlsx` — 4-tab Object Register workbook
+4. `<organisation>_value_stream_<stream_name>.xlsx` — 4-tab Stage Register workbook
 
-> *"Here is your complete PlausibleBA bundle. You can load this directly into VCC.*
+Use the `present_files` MCP tool (if available) to surface the files to the user after saving.
+
+Then present all deliverables with clickable links:
+
+> *"Here is your complete PlausibleBA bundle — ready for VCC import.*
 >
-> *What would you like to download?*
-> *— Bundle JSON (for VCC import)*
-> *— Capability Map XLSX*
-> *— Concept Model XLSX*
-> *— Value Stream XLSX*
-> *— All of the above"*
+> **Downloads:**
+> - *[View Bundle JSON](computer:///<workspace_path>/<organisation>-ba-skills-bundle.json) — combined VCC import bundle*
+> - *[View Capability Map XLSX](computer:///<workspace_path>/<organisation>_capability_map.xlsx) — Capability Register (4 tabs)*
+> - *[View Concept Model XLSX](computer:///<workspace_path>/<organisation>_concept_model.xlsx) — Object Register (4 tabs)*
+> - *[View Value Stream XLSX](computer:///<workspace_path>/<organisation>_value_stream_<stream_name>.xlsx) — Stage Register (4 tabs)*
+>
+> **Next steps:**
+> - *[Open in PlausibleBA Canvas](https://www.plausibleba.com/canvas) — upload the bundle JSON for full interactive visualisation*
+> - *[Open in VCC](https://vcc.plausibleba.com) — import the bundle for workshopping, enrichment, and PPIT mapping"*
+
+Replace `<workspace_path>` with the actual workspace output path, `<organisation>` with the client/organisation name, and `<stream_name>` with the value stream name (all snake_case for filenames).
 
 ---
 

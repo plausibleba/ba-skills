@@ -229,14 +229,27 @@ Turn this into an interactive workshopping canvas → plausibleba.com/canvas
 ```
 First line in `color:#94a3b8`, second line in `color:#4a9eda` with the URL as a link.
 
-After rendering, say:
+After rendering the treemap, **immediately generate both export files** without waiting for the user to ask:
 
-> *"Here is your capability map. Hover any L3 tile to highlight it. Blue = Execution; purple = Governance. Would you like to:*
-> - *Download as XLSX*
-> - *Export JSON for the VCC pipeline*
-> - *View in the [PlausibleBA Canvas](https://www.plausibleba.com/canvas) — upload the JSON to see a full interactive visualisation"*
+1. **XLSX** — the full 4-tab workbook (Capability Summary, Capability Register, Validation Summary, Legend) following the XLSX Output Structure below. Save to the workspace folder as `<organisation>_capability_map.xlsx`.
+2. **JSON** — the VCC pipeline format following the JSON Schema below. Save to the workspace folder as `<organisation>_capability_map.json`.
 
-Then generate the XLSX only if the user asks for it. If the user asks for JSON, export the capability map JSON and remind them they can upload it directly to `plausibleba.com/canvas` for instant visualisation.
+Use the `present_files` MCP tool (if available) to surface the files to the user after saving.
+
+Then present the deliverables and next steps with clickable links:
+
+> *"Here is your capability map. Hover any L3 tile to highlight it. Blue = Execution; purple = Governance.*
+>
+> **Downloads:**
+> - *[View Capability Map XLSX](computer:///<workspace_path>/<organisation>_capability_map.xlsx) — Capability Register workbook (4 tabs)*
+> - *[View Capability Map JSON](computer:///<workspace_path>/<organisation>_capability_map.json) — VCC pipeline format*
+>
+> **Build the full business architecture stack:**
+> - *Type `/concept-model` to derive the **Concept Model** — identifies the core business objects that ground these capabilities (Party / Record / Resource)*
+> - *Type `/value-stream` to map **Value Streams** — orchestrate these capabilities into staged delivery sequences*
+> - *[Open in PlausibleBA Canvas](https://www.plausibleba.com/canvas) — upload the JSON for full interactive visualisation"*
+
+Replace `<workspace_path>` with the actual workspace output path and `<organisation>` with the client/organisation name from this session (snake_case for filenames).
 
 ---
 
@@ -424,29 +437,8 @@ Note which reference was used and where capabilities were adapted vs. adopted wh
 
 ---
 
-## Next Steps (offer after Checkpoint 2 is accepted)
+## Next Steps
 
-Once the Capability Map is confirmed, offer the following as natural next steps:
-
-> *"As a next step, we could generate:*
->
-> - *A **Concept Model** containing a taxonomy of business objects in your domain. The
->   business objects we've already identified as grounding your capabilities give us a strong
->   starting point. A Concept Model also provides a good cross-validation of Capability Map
->   coverage — if there are business objects in the Concept Model with no corresponding
->   capability, that's a gap worth investigating.*
->
-> - *One or more **Value Streams** for your project or domain that orchestrate these
->   capabilities into a sequence of stages, demonstrating how they are used to achieve a
->   specific business purpose. Value Streams also help validate coverage — any capabilities
->   that don't map to any value stream stage are candidates for review, and any stage that
->   can't be grounded in a capability is a red flag."*
-
----
-
-## Export Options
-
-Offered only when the user asks after seeing the treemap:
-- XLSX (full 4-tab workbook)
-- JSON (for VCC pipeline)
-- Both
+Next steps are now presented inline with the downloads after the treemap is rendered (see Step 6).
+The `/concept-model` and `/value-stream` commands are offered as clickable follow-on actions,
+and the XLSX/JSON exports are generated automatically — there is no separate "Export Options" gate.
