@@ -202,14 +202,28 @@ Turn this into an interactive workshopping canvas → plausibleba.com/canvas
 ```
 First line in `color:#94a3b8`, second line in `color:#4a9eda` with the URL as a link.
 
-After rendering, say:
+After rendering the stage view, **immediately generate both export files** without waiting for the user to ask:
 
-> *"Here is your value stream. Click any stage card to open the inspector. Would you like to:*
-> - *Download as XLSX*
-> - *Export JSON for the VCC pipeline*
-> - *View in the [PlausibleBA Canvas](https://www.plausibleba.com/canvas) — upload the JSON to see a full interactive visualisation"*
+1. **XLSX** — the full 4-tab workbook (Value Stream Summary, Stage Register, Validation Summary, Legend) following the XLSX Output Structure below. Save to the workspace folder as `<organisation>_value_stream_<stream_name>.xlsx`.
+2. **JSON** — the VCC pipeline format following the JSON Schema below. Save to the workspace folder as `<organisation>_value_stream_<stream_name>.json`.
 
-Then generate the XLSX only if the user asks for it. If the user asks for JSON, export the value stream JSON and remind them they can upload it directly to `plausibleba.com/canvas` for instant visualisation.
+Use the `present_files` MCP tool (if available) to surface the files to the user after saving.
+
+Then present the deliverables and next steps with clickable links:
+
+> *"Here is your value stream. Click any stage card to open the inspector.*
+>
+> **Downloads:**
+> - *[View Value Stream XLSX](computer:///<workspace_path>/<organisation>_value_stream_<stream_name>.xlsx) — Stage Register workbook (4 tabs)*
+> - *[View Value Stream JSON](computer:///<workspace_path>/<organisation>_value_stream_<stream_name>.json) — VCC pipeline format*
+>
+> **Build the full business architecture stack:**
+> - *Type `/capability-map` to produce or refine the **Capability Map** — cross-validates that every stage has grounding capabilities*
+> - *Type `/concept-model` to derive the **Concept Model** — identifies the business objects that flow through these stages (Party / Record / Resource)*
+> - *Type `/value-stream` again to map **additional Value Streams** — identify shared capabilities across streams*
+> - *[Open in PlausibleBA Canvas](https://www.plausibleba.com/canvas) — upload the JSON for full interactive visualisation"*
+
+Replace `<workspace_path>` with the actual workspace output path, `<organisation>` with the client/organisation name, and `<stream_name>` with the value stream name (all snake_case for filenames).
 
 ---
 
@@ -369,10 +383,9 @@ which capabilities serve multiple streams (high-reuse capabilities are strategic
 
 ---
 
-## Next Steps (offer after the stage view is delivered)
+## Next Steps
 
-After the Value Stream is accepted:
-- **Additional value streams** — map remaining streams; identify shared capabilities
-- **Capability heat map** — show which capabilities are used across multiple streams
-- **VCC integration** — export JSON for full pipeline feed
-- **Gap analysis report** — capabilities implied by the stream but missing from the map
+Next steps are now presented inline with the downloads after the stage view is rendered (see Step 7).
+The `/capability-map`, `/concept-model`, and `/value-stream` commands are offered as clickable
+follow-on actions, and the XLSX/JSON exports are generated automatically — there is no separate
+export gate.
