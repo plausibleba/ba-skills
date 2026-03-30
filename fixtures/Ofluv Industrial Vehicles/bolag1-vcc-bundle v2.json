@@ -1,0 +1,3408 @@
+{
+  "bundleVersion": "2.0",
+  "createdAt": "2026-03-17T22:28:16.300Z",
+  "scaffold": {
+    "schemaVersion": "1.0.0",
+    "scaffoldId": "scaffold_automotive_manufacturer",
+    "name": "Automotive Manufacturer — Operating Model",
+    "description": "Value stream model for automotive manufacturing and SAP transformation operations",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "elements": {
+      "valueStreams": {
+        "vs_lead_to_customer": {
+          "name": "Lead to Customer",
+          "description": "End-to-end flow from dealer portal order configuration through production and delivery to customer receipt",
+          "activityIds": [
+            "act_configure_order",
+            "act_validate_order",
+            "act_schedule_production",
+            "act_produce_vehicle",
+            "act_deliver_vehicle",
+            "act_complete_transaction"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_dealer",
+          "elementType": "ValueStream"
+        },
+        "vs_vehicle_delivery_order_lifecycle": {
+          "name": "Vehicle Delivery Order Lifecycle",
+          "description": "End-to-end flow from customer vehicle sales order through VDO creation, VIN assignment, and production commitment",
+          "activityIds": [
+            "act_register_customer",
+            "act_create_vdo",
+            "act_assign_vin",
+            "act_configure_product",
+            "act_commit_order"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_order_administrator",
+          "elementType": "ValueStream"
+        },
+        "vs_change_request_to_resolution": {
+          "name": "Change Request to Resolution",
+          "description": "End-to-end flow from customer change request through VDO modification and confirmation",
+          "activityIds": [
+            "act_request_change",
+            "act_assess_impact",
+            "act_approve_change",
+            "act_update_vdo"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_change_manager",
+          "elementType": "ValueStream"
+        },
+        "vs_strategic_requirement_to_implementation": {
+          "name": "Strategic Requirement to Implementation",
+          "description": "End-to-end flow from strategic business requirement identification through packet implementation and deployment",
+          "activityIds": [
+            "act_define_requirement",
+            "act_approve_requirement",
+            "act_design_solution",
+            "act_implement_solution",
+            "act_deliver_value"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "role_solution_architect",
+          "elementType": "ValueStream"
+        },
+        "vs_sap_transformation_wave_delivery": {
+          "name": "SAP Transformation Wave Delivery",
+          "description": "End-to-end flow from wave planning through deployment and hypercare for SAP S/4HANA implementation",
+          "activityIds": [
+            "act_initiate_wave",
+            "act_prepare_wave",
+            "act_define_scope",
+            "act_realize_solution",
+            "act_deploy_wave",
+            "act_complete_hypercare"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "role_wave_manager",
+          "elementType": "ValueStream"
+        }
+      },
+      "activities": {
+        "act_configure_order": {
+          "name": "Configure Order",
+          "preOutcomeId": "outcome_order_initiated",
+          "postOutcomeId": "outcome_order_configured",
+          "nextActivityId": "act_validate_order",
+          "requiresCapabilityIds": [
+            "cap_order_management",
+            "cap_product_configuration",
+            "cap_customer_relationship_management"
+          ],
+          "performedByRoleIds": [
+            "role_dealer"
+          ],
+          "informationObjectIds": [
+            "io_customer_order",
+            "io_product_specification",
+            "io_dealer_portal_session"
+          ],
+          "metricIds": [
+            "metric_order_processing_time"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_order_management": {
+              "roleIds": [
+                "role_dealer"
+              ],
+              "activities": [
+                "Capture customer requirements",
+                "Validate order completeness",
+                "Initialize order workflow"
+              ],
+              "informationObjectIds": [
+                "io_customer_order"
+              ],
+              "technologyAppIds": [
+                "tech_dealer_portal"
+              ]
+            },
+            "cap_product_configuration": {
+              "roleIds": [
+                "role_dealer"
+              ],
+              "activities": [
+                "Select vehicle model and options",
+                "Validate configuration compatibility",
+                "Generate product specification"
+              ],
+              "informationObjectIds": [
+                "io_product_specification"
+              ],
+              "technologyAppIds": [
+                "tech_dealer_portal"
+              ]
+            },
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_dealer"
+              ],
+              "activities": [
+                "Review customer history",
+                "Update customer preferences",
+                "Document interaction"
+              ],
+              "informationObjectIds": [
+                "io_dealer_portal_session"
+              ],
+              "technologyAppIds": [
+                "tech_dealer_portal"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_validate_order": {
+          "name": "Validate Order",
+          "preOutcomeId": "outcome_order_configured",
+          "postOutcomeId": "outcome_order_validated",
+          "nextActivityId": "act_schedule_production",
+          "requiresCapabilityIds": [
+            "cap_order_management",
+            "cap_data_management",
+            "cap_compliance_management"
+          ],
+          "performedByRoleIds": [
+            "role_order_administrator",
+            "role_regional_manager"
+          ],
+          "informationObjectIds": [
+            "io_validation_report",
+            "io_credit_assessment",
+            "io_order_confirmation"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_order_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Verify order data integrity",
+                "Check inventory availability",
+                "Confirm pricing accuracy"
+              ],
+              "informationObjectIds": [
+                "io_validation_report",
+                "io_order_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_sub_region_sap_r_3"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Consolidate order information",
+                "Validate data against master records",
+                "Update order status"
+              ],
+              "informationObjectIds": [
+                "io_validation_report"
+              ],
+              "technologyAppIds": [
+                "tech_sub_region_sap_r_3"
+              ]
+            },
+            "cap_compliance_management": {
+              "roleIds": [
+                "role_regional_manager"
+              ],
+              "activities": [
+                "Assess credit requirements",
+                "Verify regulatory compliance",
+                "Approve order authorization"
+              ],
+              "informationObjectIds": [
+                "io_credit_assessment"
+              ],
+              "technologyAppIds": [
+                "tech_sub_region_sap_r_3"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_schedule_production": {
+          "name": "Schedule Production",
+          "preOutcomeId": "outcome_order_validated",
+          "postOutcomeId": "outcome_production_scheduled",
+          "nextActivityId": "act_produce_vehicle",
+          "requiresCapabilityIds": [
+            "cap_production_planning",
+            "cap_resource_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_production_planner"
+          ],
+          "informationObjectIds": [
+            "io_production_schedule",
+            "io_material_requirements",
+            "io_capacity_plan"
+          ],
+          "metricIds": [
+            "metric_production_schedule_accuracy"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_production_planning": {
+              "roleIds": [
+                "role_production_planner"
+              ],
+              "activities": [
+                "Analyze production capacity",
+                "Sequence manufacturing orders",
+                "Optimize production flow"
+              ],
+              "informationObjectIds": [
+                "io_production_schedule",
+                "io_capacity_plan"
+              ],
+              "technologyAppIds": [
+                "tech_production_company_sap"
+              ]
+            },
+            "cap_resource_management": {
+              "roleIds": [
+                "role_production_planner"
+              ],
+              "activities": [
+                "Allocate manufacturing resources",
+                "Schedule material procurement",
+                "Coordinate labor assignments"
+              ],
+              "informationObjectIds": [
+                "io_material_requirements",
+                "io_capacity_plan"
+              ],
+              "technologyAppIds": [
+                "tech_production_company_sap"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_production_planner"
+              ],
+              "activities": [
+                "Update production master data",
+                "Synchronize schedule information",
+                "Generate planning reports"
+              ],
+              "informationObjectIds": [
+                "io_production_schedule"
+              ],
+              "technologyAppIds": [
+                "tech_production_company_sap"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_produce_vehicle": {
+          "name": "Produce Vehicle",
+          "preOutcomeId": "outcome_production_scheduled",
+          "postOutcomeId": "outcome_vehicle_produced",
+          "nextActivityId": "act_deliver_vehicle",
+          "requiresCapabilityIds": [
+            "cap_manufacturing_execution",
+            "cap_quality_management",
+            "cap_resource_management"
+          ],
+          "performedByRoleIds": [
+            "role_production_planner"
+          ],
+          "informationObjectIds": [
+            "io_production_order",
+            "io_quality_record",
+            "io_manufacturing_report"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_manufacturing_execution": {
+              "roleIds": [
+                "role_production_planner"
+              ],
+              "activities": [
+                "Execute production workflow",
+                "Monitor manufacturing progress",
+                "Coordinate assembly operations"
+              ],
+              "informationObjectIds": [
+                "io_production_order",
+                "io_manufacturing_report"
+              ],
+              "technologyAppIds": [
+                "tech_factory_system_sap_r_3"
+              ]
+            },
+            "cap_quality_management": {
+              "roleIds": [
+                "role_production_planner"
+              ],
+              "activities": [
+                "Perform quality inspections",
+                "Document quality metrics",
+                "Ensure compliance standards"
+              ],
+              "informationObjectIds": [
+                "io_quality_record"
+              ],
+              "technologyAppIds": [
+                "tech_factory_system_sap_r_3"
+              ]
+            },
+            "cap_resource_management": {
+              "roleIds": [
+                "role_production_planner"
+              ],
+              "activities": [
+                "Monitor resource utilization",
+                "Adjust capacity allocation",
+                "Track material consumption"
+              ],
+              "informationObjectIds": [
+                "io_manufacturing_report"
+              ],
+              "technologyAppIds": [
+                "tech_factory_system_sap_r_3"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_deliver_vehicle": {
+          "name": "Deliver Vehicle",
+          "preOutcomeId": "outcome_vehicle_produced",
+          "postOutcomeId": "outcome_vehicle_delivered",
+          "nextActivityId": "act_complete_transaction",
+          "requiresCapabilityIds": [
+            "cap_logistics_management",
+            "cap_customer_relationship_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_dealer"
+          ],
+          "informationObjectIds": [
+            "io_delivery_receipt",
+            "io_shipping_documentation",
+            "io_customer_handover"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_logistics_management": {
+              "roleIds": [
+                "role_dealer"
+              ],
+              "activities": [
+                "Coordinate vehicle transportation",
+                "Track delivery status",
+                "Manage delivery scheduling"
+              ],
+              "informationObjectIds": [
+                "io_shipping_documentation"
+              ],
+              "technologyAppIds": [
+                "tech_dealer_portal"
+              ]
+            },
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_dealer"
+              ],
+              "activities": [
+                "Prepare customer handover",
+                "Conduct delivery ceremony",
+                "Capture customer feedback"
+              ],
+              "informationObjectIds": [
+                "io_customer_handover"
+              ],
+              "technologyAppIds": [
+                "tech_dealer_portal"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_dealer"
+              ],
+              "activities": [
+                "Update delivery records",
+                "Process delivery confirmation",
+                "Archive transaction documents"
+              ],
+              "informationObjectIds": [
+                "io_delivery_receipt"
+              ],
+              "technologyAppIds": [
+                "tech_dealer_portal"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_complete_transaction": {
+          "name": "Complete Transaction",
+          "preOutcomeId": "outcome_vehicle_delivered",
+          "postOutcomeId": "outcome_transaction_completed",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_financial_management",
+            "cap_customer_relationship_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_dealer"
+          ],
+          "informationObjectIds": [
+            "io_invoice",
+            "io_payment_record",
+            "io_warranty_documentation"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_financial_management": {
+              "roleIds": [
+                "role_dealer"
+              ],
+              "activities": [
+                "Generate customer invoice",
+                "Process payment transaction",
+                "Reconcile financial records"
+              ],
+              "informationObjectIds": [
+                "io_invoice",
+                "io_payment_record"
+              ],
+              "technologyAppIds": [
+                "tech_dealer_portal"
+              ]
+            },
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_dealer"
+              ],
+              "activities": [
+                "Finalize customer relationship",
+                "Provide warranty information",
+                "Schedule follow-up activities"
+              ],
+              "informationObjectIds": [
+                "io_warranty_documentation"
+              ],
+              "technologyAppIds": [
+                "tech_dealer_portal"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_dealer"
+              ],
+              "activities": [
+                "Complete transaction records",
+                "Update customer database",
+                "Archive completed order"
+              ],
+              "informationObjectIds": [
+                "io_payment_record"
+              ],
+              "technologyAppIds": [
+                "tech_dealer_portal"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_register_customer": {
+          "name": "Register Customer",
+          "preOutcomeId": "outcome_sales_order_received",
+          "postOutcomeId": "outcome_customer_registered",
+          "nextActivityId": "act_create_vdo",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_data_management",
+            "cap_compliance_management"
+          ],
+          "performedByRoleIds": [
+            "role_order_administrator"
+          ],
+          "informationObjectIds": [
+            "io_customer_profile",
+            "io_sales_order",
+            "io_registration_record"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Capture customer information",
+                "Validate customer identity",
+                "Establish customer account"
+              ],
+              "informationObjectIds": [
+                "io_customer_profile"
+              ],
+              "technologyAppIds": [
+                "tech_post"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Process sales order data",
+                "Update customer master records",
+                "Synchronize system information"
+              ],
+              "informationObjectIds": [
+                "io_sales_order",
+                "io_registration_record"
+              ],
+              "technologyAppIds": [
+                "tech_post"
+              ]
+            },
+            "cap_compliance_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Verify regulatory requirements",
+                "Check customer eligibility",
+                "Document compliance status"
+              ],
+              "informationObjectIds": [
+                "io_registration_record"
+              ],
+              "technologyAppIds": [
+                "tech_post"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_create_vdo": {
+          "name": "Create VDO",
+          "preOutcomeId": "outcome_customer_registered",
+          "postOutcomeId": "outcome_vdo_created",
+          "nextActivityId": "act_assign_vin",
+          "requiresCapabilityIds": [
+            "cap_order_management",
+            "cap_data_management",
+            "cap_product_configuration"
+          ],
+          "performedByRoleIds": [
+            "role_order_administrator"
+          ],
+          "informationObjectIds": [
+            "io_vehicle_delivery_order",
+            "io_order_specification",
+            "io_vdo_template"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_order_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Initialize VDO workflow",
+                "Structure order requirements",
+                "Establish order tracking"
+              ],
+              "informationObjectIds": [
+                "io_vehicle_delivery_order"
+              ],
+              "technologyAppIds": [
+                "tech_bm_busmaster"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Transform sales order data",
+                "Populate VDO template",
+                "Validate data completeness"
+              ],
+              "informationObjectIds": [
+                "io_vdo_template",
+                "io_order_specification"
+              ],
+              "technologyAppIds": [
+                "tech_bm_busmaster"
+              ]
+            },
+            "cap_product_configuration": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Map product specifications",
+                "Configure vehicle options",
+                "Validate configuration rules"
+              ],
+              "informationObjectIds": [
+                "io_order_specification"
+              ],
+              "technologyAppIds": [
+                "tech_bm_busmaster"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_assign_vin": {
+          "name": "Assign VIN",
+          "preOutcomeId": "outcome_vdo_created",
+          "postOutcomeId": "outcome_vin_assigned",
+          "nextActivityId": "act_configure_product",
+          "requiresCapabilityIds": [
+            "cap_data_management",
+            "cap_compliance_management",
+            "cap_order_management"
+          ],
+          "performedByRoleIds": [
+            "role_order_administrator"
+          ],
+          "informationObjectIds": [
+            "io_vin_record",
+            "io_vehicle_identification",
+            "io_regulatory_documentation"
+          ],
+          "metricIds": [
+            "metric_vin_assignment_cycle_time"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_data_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Generate unique VIN identifier",
+                "Update vehicle master data",
+                "Link VIN to VDO"
+              ],
+              "informationObjectIds": [
+                "io_vin_record",
+                "io_vehicle_identification"
+              ],
+              "technologyAppIds": [
+                "tech_bm_busmaster"
+              ]
+            },
+            "cap_compliance_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Verify VIN format compliance",
+                "Register regulatory requirements",
+                "Document certification status"
+              ],
+              "informationObjectIds": [
+                "io_regulatory_documentation"
+              ],
+              "technologyAppIds": [
+                "tech_bm_busmaster"
+              ]
+            },
+            "cap_order_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Update order status",
+                "Trigger downstream processes",
+                "Notify stakeholders"
+              ],
+              "informationObjectIds": [
+                "io_vin_record"
+              ],
+              "technologyAppIds": [
+                "tech_bm_busmaster"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_configure_product": {
+          "name": "Configure Product",
+          "preOutcomeId": "outcome_vin_assigned",
+          "postOutcomeId": "outcome_product_configured",
+          "nextActivityId": "act_commit_order",
+          "requiresCapabilityIds": [
+            "cap_product_configuration",
+            "cap_data_management",
+            "cap_order_management"
+          ],
+          "performedByRoleIds": [
+            "role_order_administrator"
+          ],
+          "informationObjectIds": [
+            "io_product_configuration",
+            "io_bill_of_materials",
+            "io_configuration_validation"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_product_configuration": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Finalize product specifications",
+                "Validate configuration constraints",
+                "Generate bill of materials"
+              ],
+              "informationObjectIds": [
+                "io_product_configuration",
+                "io_bill_of_materials"
+              ],
+              "technologyAppIds": [
+                "tech_bm_busmaster"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Update configuration records",
+                "Synchronize product data",
+                "Archive configuration history"
+              ],
+              "informationObjectIds": [
+                "io_configuration_validation"
+              ],
+              "technologyAppIds": [
+                "tech_bm_busmaster"
+              ]
+            },
+            "cap_order_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Prepare order commitment",
+                "Validate order readiness",
+                "Update order milestone"
+              ],
+              "informationObjectIds": [
+                "io_product_configuration"
+              ],
+              "technologyAppIds": [
+                "tech_bm_busmaster"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_commit_order": {
+          "name": "Commit Order",
+          "preOutcomeId": "outcome_product_configured",
+          "postOutcomeId": "outcome_order_committed",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_order_management",
+            "cap_production_planning",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_production_planner"
+          ],
+          "informationObjectIds": [
+            "io_order_commitment",
+            "io_production_authorization",
+            "io_committed_vdo"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_order_management": {
+              "roleIds": [
+                "role_production_planner"
+              ],
+              "activities": [
+                "Finalize order commitment",
+                "Lock order configuration",
+                "Authorize production release"
+              ],
+              "informationObjectIds": [
+                "io_order_commitment",
+                "io_committed_vdo"
+              ],
+              "technologyAppIds": [
+                "tech_production_company_sap"
+              ]
+            },
+            "cap_production_planning": {
+              "roleIds": [
+                "role_production_planner"
+              ],
+              "activities": [
+                "Reserve production capacity",
+                "Schedule manufacturing slot",
+                "Coordinate resource allocation"
+              ],
+              "informationObjectIds": [
+                "io_production_authorization"
+              ],
+              "technologyAppIds": [
+                "tech_production_company_sap"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_production_planner"
+              ],
+              "activities": [
+                "Update commitment records",
+                "Synchronize production systems",
+                "Generate commitment confirmation"
+              ],
+              "informationObjectIds": [
+                "io_committed_vdo"
+              ],
+              "technologyAppIds": [
+                "tech_production_company_sap"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_request_change": {
+          "name": "Request Change",
+          "preOutcomeId": "outcome_change_initiated",
+          "postOutcomeId": "outcome_change_requested",
+          "nextActivityId": "act_assess_impact",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_change_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer"
+          ],
+          "informationObjectIds": [
+            "io_change_request",
+            "io_original_order",
+            "io_change_documentation"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_customer"
+              ],
+              "activities": [
+                "Submit change requirements",
+                "Provide change justification",
+                "Specify desired modifications"
+              ],
+              "informationObjectIds": [
+                "io_change_request"
+              ],
+              "technologyAppIds": [
+                "tech_dealer_portal"
+              ]
+            },
+            "cap_change_management": {
+              "roleIds": [
+                "role_customer"
+              ],
+              "activities": [
+                "Document change scope",
+                "Identify affected components",
+                "Establish change timeline"
+              ],
+              "informationObjectIds": [
+                "io_change_documentation"
+              ],
+              "technologyAppIds": [
+                "tech_dealer_portal"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_customer"
+              ],
+              "activities": [
+                "Reference original order",
+                "Capture change details",
+                "Submit formal request"
+              ],
+              "informationObjectIds": [
+                "io_original_order"
+              ],
+              "technologyAppIds": [
+                "tech_dealer_portal"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_assess_impact": {
+          "name": "Assess Impact",
+          "preOutcomeId": "outcome_change_requested",
+          "postOutcomeId": "outcome_impact_assessed",
+          "nextActivityId": "act_approve_change",
+          "requiresCapabilityIds": [
+            "cap_change_management",
+            "cap_production_planning",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_change_manager"
+          ],
+          "informationObjectIds": [
+            "io_impact_assessment",
+            "io_cost_analysis",
+            "io_timeline_impact"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_change_management": {
+              "roleIds": [
+                "role_change_manager"
+              ],
+              "activities": [
+                "Analyze change complexity",
+                "Evaluate business impact",
+                "Assess risk factors"
+              ],
+              "informationObjectIds": [
+                "io_impact_assessment"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            },
+            "cap_production_planning": {
+              "roleIds": [
+                "role_change_manager"
+              ],
+              "activities": [
+                "Review production implications",
+                "Calculate schedule impact",
+                "Assess resource requirements"
+              ],
+              "informationObjectIds": [
+                "io_timeline_impact"
+              ],
+              "technologyAppIds": [
+                "tech_production_company_sap"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_change_manager"
+              ],
+              "activities": [
+                "Compile assessment data",
+                "Generate cost analysis",
+                "Document impact findings"
+              ],
+              "informationObjectIds": [
+                "io_cost_analysis"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_approve_change": {
+          "name": "Approve Change",
+          "preOutcomeId": "outcome_impact_assessed",
+          "postOutcomeId": "outcome_change_approved",
+          "nextActivityId": "act_update_vdo",
+          "requiresCapabilityIds": [
+            "cap_change_management",
+            "cap_compliance_management",
+            "cap_stakeholder_communication"
+          ],
+          "performedByRoleIds": [
+            "role_change_manager"
+          ],
+          "informationObjectIds": [
+            "io_change_approval",
+            "io_approval_documentation",
+            "io_stakeholder_notification"
+          ],
+          "metricIds": [
+            "metric_change_request_resolution_time"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_change_management": {
+              "roleIds": [
+                "role_change_manager"
+              ],
+              "activities": [
+                "Review change justification",
+                "Make approval decision",
+                "Authorize change implementation"
+              ],
+              "informationObjectIds": [
+                "io_change_approval"
+              ],
+              "technologyAppIds": [
+                "tech_dms"
+              ]
+            },
+            "cap_compliance_management": {
+              "roleIds": [
+                "role_change_manager"
+              ],
+              "activities": [
+                "Verify approval authority",
+                "Check compliance requirements",
+                "Document approval rationale"
+              ],
+              "informationObjectIds": [
+                "io_approval_documentation"
+              ],
+              "technologyAppIds": [
+                "tech_dms"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_change_manager"
+              ],
+              "activities": [
+                "Notify affected stakeholders",
+                "Communicate approval decision",
+                "Coordinate implementation planning"
+              ],
+              "informationObjectIds": [
+                "io_stakeholder_notification"
+              ],
+              "technologyAppIds": [
+                "tech_dms"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_update_vdo": {
+          "name": "Update VDO",
+          "preOutcomeId": "outcome_change_approved",
+          "postOutcomeId": "outcome_vdo_updated",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_order_management",
+            "cap_data_management",
+            "cap_change_management"
+          ],
+          "performedByRoleIds": [
+            "role_order_administrator"
+          ],
+          "informationObjectIds": [
+            "io_updated_vdo",
+            "io_change_log",
+            "io_revised_configuration"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_order_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Modify VDO specifications",
+                "Update order status",
+                "Trigger downstream updates"
+              ],
+              "informationObjectIds": [
+                "io_updated_vdo"
+              ],
+              "technologyAppIds": [
+                "tech_bm_busmaster"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Apply configuration changes",
+                "Update master records",
+                "Synchronize system data"
+              ],
+              "informationObjectIds": [
+                "io_revised_configuration"
+              ],
+              "technologyAppIds": [
+                "tech_bm_busmaster"
+              ]
+            },
+            "cap_change_management": {
+              "roleIds": [
+                "role_order_administrator"
+              ],
+              "activities": [
+                "Document change implementation",
+                "Track change history",
+                "Confirm change completion"
+              ],
+              "informationObjectIds": [
+                "io_change_log"
+              ],
+              "technologyAppIds": [
+                "tech_bm_busmaster"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_define_requirement": {
+          "name": "Define Requirement",
+          "preOutcomeId": "outcome_requirement_identified",
+          "postOutcomeId": "outcome_requirement_defined",
+          "nextActivityId": "act_approve_requirement",
+          "requiresCapabilityIds": [
+            "cap_requirements_management",
+            "cap_stakeholder_communication",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_solution_architect"
+          ],
+          "informationObjectIds": [
+            "io_requirement_specification",
+            "io_business_case",
+            "io_stakeholder_input"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_requirements_management": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Capture business requirements",
+                "Define functional specifications",
+                "Establish acceptance criteria"
+              ],
+              "informationObjectIds": [
+                "io_requirement_specification"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Engage business stakeholders",
+                "Facilitate requirement workshops",
+                "Validate requirement understanding"
+              ],
+              "informationObjectIds": [
+                "io_stakeholder_input"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Document requirement details",
+                "Structure business case",
+                "Maintain requirement traceability"
+              ],
+              "informationObjectIds": [
+                "io_business_case"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_approve_requirement": {
+          "name": "Approve Requirement",
+          "preOutcomeId": "outcome_requirement_defined",
+          "postOutcomeId": "outcome_requirement_approved",
+          "nextActivityId": "act_design_solution",
+          "requiresCapabilityIds": [
+            "cap_governance_management",
+            "cap_stakeholder_communication",
+            "cap_compliance_management"
+          ],
+          "performedByRoleIds": [
+            "role_solution_architect"
+          ],
+          "informationObjectIds": [
+            "io_approval_record",
+            "io_governance_documentation",
+            "io_approval_notification"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_governance_management": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Present to governance board",
+                "Facilitate approval process",
+                "Secure formal authorization"
+              ],
+              "informationObjectIds": [
+                "io_approval_record"
+              ],
+              "technologyAppIds": [
+                "tech_dms"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Communicate approval decision",
+                "Notify project stakeholders",
+                "Coordinate next steps"
+              ],
+              "informationObjectIds": [
+                "io_approval_notification"
+              ],
+              "technologyAppIds": [
+                "tech_dms"
+              ]
+            },
+            "cap_compliance_management": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Verify approval authority",
+                "Document compliance status",
+                "Maintain audit trail"
+              ],
+              "informationObjectIds": [
+                "io_governance_documentation"
+              ],
+              "technologyAppIds": [
+                "tech_dms"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_design_solution": {
+          "name": "Design Solution",
+          "preOutcomeId": "outcome_requirement_approved",
+          "postOutcomeId": "outcome_solution_designed",
+          "nextActivityId": "act_implement_solution",
+          "requiresCapabilityIds": [
+            "cap_solution_architecture",
+            "cap_technical_design",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_solution_architect"
+          ],
+          "informationObjectIds": [
+            "io_solution_design",
+            "io_technical_specification",
+            "io_architecture_blueprint"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_solution_architecture": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Define solution architecture",
+                "Design system integration",
+                "Establish technical framework"
+              ],
+              "informationObjectIds": [
+                "io_architecture_blueprint"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            },
+            "cap_technical_design": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Create detailed specifications",
+                "Design system components",
+                "Define implementation approach"
+              ],
+              "informationObjectIds": [
+                "io_technical_specification"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Document design decisions",
+                "Maintain design repository",
+                "Version control specifications"
+              ],
+              "informationObjectIds": [
+                "io_solution_design"
+              ],
+              "technologyAppIds": [
+                "tech_dms"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_implement_solution": {
+          "name": "Implement Solution",
+          "preOutcomeId": "outcome_solution_designed",
+          "postOutcomeId": "outcome_solution_implemented",
+          "nextActivityId": "act_deliver_value",
+          "requiresCapabilityIds": [
+            "cap_solution_delivery",
+            "cap_technical_implementation",
+            "cap_quality_management"
+          ],
+          "performedByRoleIds": [
+            "role_solution_architect"
+          ],
+          "informationObjectIds": [
+            "io_implementation_plan",
+            "io_deployment_package",
+            "io_test_results"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_solution_delivery": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Execute implementation plan",
+                "Coordinate delivery activities",
+                "Manage implementation timeline"
+              ],
+              "informationObjectIds": [
+                "io_implementation_plan"
+              ],
+              "technologyAppIds": [
+                "tech_dms"
+              ]
+            },
+            "cap_technical_implementation": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Build solution components",
+                "Configure system settings",
+                "Deploy technical solution"
+              ],
+              "informationObjectIds": [
+                "io_deployment_package"
+              ],
+              "technologyAppIds": [
+                "tech_sub_region_sap_r_3"
+              ]
+            },
+            "cap_quality_management": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Execute testing procedures",
+                "Validate solution quality",
+                "Ensure compliance standards"
+              ],
+              "informationObjectIds": [
+                "io_test_results"
+              ],
+              "technologyAppIds": [
+                "tech_sub_region_sap_r_3"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_deliver_value": {
+          "name": "Deliver Value",
+          "preOutcomeId": "outcome_solution_implemented",
+          "postOutcomeId": "outcome_value_delivered",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_value_realization",
+            "cap_performance_monitoring",
+            "cap_stakeholder_communication"
+          ],
+          "performedByRoleIds": [
+            "role_solution_architect"
+          ],
+          "informationObjectIds": [
+            "io_value_assessment",
+            "io_performance_metrics",
+            "io_delivery_confirmation"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_value_realization": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Measure business value",
+                "Track benefit realization",
+                "Validate value delivery"
+              ],
+              "informationObjectIds": [
+                "io_value_assessment"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            },
+            "cap_performance_monitoring": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Monitor solution performance",
+                "Track key metrics",
+                "Generate performance reports"
+              ],
+              "informationObjectIds": [
+                "io_performance_metrics"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_solution_architect"
+              ],
+              "activities": [
+                "Communicate value delivery",
+                "Report implementation success",
+                "Facilitate knowledge transfer"
+              ],
+              "informationObjectIds": [
+                "io_delivery_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_dms"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_initiate_wave": {
+          "name": "Initiate Wave",
+          "preOutcomeId": "outcome_wave_planned",
+          "postOutcomeId": "outcome_wave_initiated",
+          "nextActivityId": "act_prepare_wave",
+          "requiresCapabilityIds": [
+            "cap_program_management",
+            "cap_stakeholder_communication",
+            "cap_governance_management"
+          ],
+          "performedByRoleIds": [
+            "role_wave_manager"
+          ],
+          "informationObjectIds": [
+            "io_wave_charter",
+            "io_stakeholder_matrix",
+            "io_governance_framework"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_program_management": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Establish wave governance",
+                "Define wave objectives",
+                "Initialize program structure"
+              ],
+              "informationObjectIds": [
+                "io_wave_charter"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Engage wave stakeholders",
+                "Communicate wave vision",
+                "Establish communication channels"
+              ],
+              "informationObjectIds": [
+                "io_stakeholder_matrix"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            },
+            "cap_governance_management": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Set up governance structure",
+                "Define decision processes",
+                "Establish oversight mechanisms"
+              ],
+              "informationObjectIds": [
+                "io_governance_framework"
+              ],
+              "technologyAppIds": [
+                "tech_dms"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_prepare_wave": {
+          "name": "Prepare Wave",
+          "preOutcomeId": "outcome_wave_initiated",
+          "postOutcomeId": "outcome_wave_prepared",
+          "nextActivityId": "act_define_scope",
+          "requiresCapabilityIds": [
+            "cap_program_management",
+            "cap_resource_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_wave_manager"
+          ],
+          "informationObjectIds": [
+            "io_wave_plan",
+            "io_resource_allocation",
+            "io_preparation_checklist"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_program_management": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Develop wave plan",
+                "Coordinate preparation activities",
+                "Establish wave timeline"
+              ],
+              "informationObjectIds": [
+                "io_wave_plan"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            },
+            "cap_resource_management": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Allocate wave resources",
+                "Secure team assignments",
+                "Plan capacity requirements"
+              ],
+              "informationObjectIds": [
+                "io_resource_allocation"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Document preparation status",
+                "Track readiness metrics",
+                "Maintain preparation records"
+              ],
+              "informationObjectIds": [
+                "io_preparation_checklist"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_define_scope": {
+          "name": "Define Scope",
+          "preOutcomeId": "outcome_wave_prepared",
+          "postOutcomeId": "outcome_scope_defined",
+          "nextActivityId": "act_realize_solution",
+          "requiresCapabilityIds": [
+            "cap_requirements_management",
+            "cap_solution_architecture",
+            "cap_stakeholder_communication"
+          ],
+          "performedByRoleIds": [
+            "role_wave_manager"
+          ],
+          "informationObjectIds": [
+            "io_scope_definition",
+            "io_functional_requirements",
+            "io_scope_approval"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_requirements_management": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Define wave scope boundaries",
+                "Capture functional requirements",
+                "Establish scope baseline"
+              ],
+              "informationObjectIds": [
+                "io_scope_definition",
+                "io_functional_requirements"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            },
+            "cap_solution_architecture": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Map scope to architecture",
+                "Define solution boundaries",
+                "Validate technical feasibility"
+              ],
+              "informationObjectIds": [
+                "io_scope_definition"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Present scope to stakeholders",
+                "Facilitate scope approval",
+                "Communicate scope decisions"
+              ],
+              "informationObjectIds": [
+                "io_scope_approval"
+              ],
+              "technologyAppIds": [
+                "tech_dms"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_realize_solution": {
+          "name": "Realize Solution",
+          "preOutcomeId": "outcome_scope_defined",
+          "postOutcomeId": "outcome_solution_realized",
+          "nextActivityId": "act_deploy_wave",
+          "requiresCapabilityIds": [
+            "cap_solution_delivery",
+            "cap_technical_implementation",
+            "cap_quality_management"
+          ],
+          "performedByRoleIds": [
+            "role_wave_manager"
+          ],
+          "informationObjectIds": [
+            "io_solution_package",
+            "io_implementation_artifacts",
+            "io_quality_validation"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_solution_delivery": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Execute solution realization",
+                "Coordinate development activities",
+                "Manage delivery timeline"
+              ],
+              "informationObjectIds": [
+                "io_solution_package"
+              ],
+              "technologyAppIds": [
+                "tech_sub_region_sap_r_3"
+              ]
+            },
+            "cap_technical_implementation": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Build SAP components",
+                "Configure system functionality",
+                "Integrate solution elements"
+              ],
+              "informationObjectIds": [
+                "io_implementation_artifacts"
+              ],
+              "technologyAppIds": [
+                "tech_sub_region_sap_r_3"
+              ]
+            },
+            "cap_quality_management": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Execute quality assurance",
+                "Validate solution readiness",
+                "Ensure deployment standards"
+              ],
+              "informationObjectIds": [
+                "io_quality_validation"
+              ],
+              "technologyAppIds": [
+                "tech_sub_region_sap_r_3"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_deploy_wave": {
+          "name": "Deploy Wave",
+          "preOutcomeId": "outcome_solution_realized",
+          "postOutcomeId": "outcome_wave_deployed",
+          "nextActivityId": "act_complete_hypercare",
+          "requiresCapabilityIds": [
+            "cap_deployment_management",
+            "cap_change_management",
+            "cap_stakeholder_communication"
+          ],
+          "performedByRoleIds": [
+            "role_wave_manager"
+          ],
+          "informationObjectIds": [
+            "io_deployment_plan",
+            "io_cutover_documentation",
+            "io_deployment_confirmation"
+          ],
+          "metricIds": [
+            "metric_wave_deployment_success_rate"
+          ],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_deployment_management": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Execute deployment plan",
+                "Coordinate cutover activities",
+                "Manage go-live process"
+              ],
+              "informationObjectIds": [
+                "io_deployment_plan",
+                "io_deployment_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_sub_region_sap_r_3"
+              ]
+            },
+            "cap_change_management": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Manage organizational change",
+                "Support user transition",
+                "Facilitate adoption"
+              ],
+              "informationObjectIds": [
+                "io_cutover_documentation"
+              ],
+              "technologyAppIds": [
+                "tech_dms"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Communicate deployment status",
+                "Coordinate stakeholder activities",
+                "Report deployment success"
+              ],
+              "informationObjectIds": [
+                "io_deployment_confirmation"
+              ],
+              "technologyAppIds": [
+                "tech_dms"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        },
+        "act_complete_hypercare": {
+          "name": "Complete Hypercare",
+          "preOutcomeId": "outcome_wave_deployed",
+          "postOutcomeId": "outcome_hypercare_completed",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_support_management",
+            "cap_performance_monitoring",
+            "cap_stakeholder_communication"
+          ],
+          "performedByRoleIds": [
+            "role_wave_manager"
+          ],
+          "informationObjectIds": [
+            "io_hypercare_report",
+            "io_support_metrics",
+            "io_transition_documentation"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "capabilityPPIT": {
+            "cap_support_management": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Provide intensive support",
+                "Resolve deployment issues",
+                "Stabilize system operations"
+              ],
+              "informationObjectIds": [
+                "io_hypercare_report"
+              ],
+              "technologyAppIds": [
+                "tech_sub_region_sap_r_3"
+              ]
+            },
+            "cap_performance_monitoring": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Monitor system performance",
+                "Track support metrics",
+                "Assess deployment success"
+              ],
+              "informationObjectIds": [
+                "io_support_metrics"
+              ],
+              "technologyAppIds": [
+                "tech_excel"
+              ]
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_wave_manager"
+              ],
+              "activities": [
+                "Report hypercare completion",
+                "Transition to steady state",
+                "Document lessons learned"
+              ],
+              "informationObjectIds": [
+                "io_transition_documentation"
+              ],
+              "technologyAppIds": [
+                "tech_dms"
+              ]
+            }
+          },
+          "elementType": "Activity"
+        }
+      },
+      "outcomes": {
+        "outcome_order_initiated": {
+          "name": "Order Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_order_configured": {
+          "name": "Order Configured",
+          "elementType": "Outcome"
+        },
+        "outcome_order_validated": {
+          "name": "Order Validated",
+          "elementType": "Outcome"
+        },
+        "outcome_production_scheduled": {
+          "name": "Production Scheduled",
+          "elementType": "Outcome"
+        },
+        "outcome_vehicle_produced": {
+          "name": "Vehicle Produced",
+          "elementType": "Outcome"
+        },
+        "outcome_vehicle_delivered": {
+          "name": "Vehicle Delivered",
+          "elementType": "Outcome"
+        },
+        "outcome_transaction_completed": {
+          "name": "Transaction Completed",
+          "elementType": "Outcome"
+        },
+        "outcome_sales_order_received": {
+          "name": "Sales Order Received",
+          "elementType": "Outcome"
+        },
+        "outcome_customer_registered": {
+          "name": "Customer Registered",
+          "elementType": "Outcome"
+        },
+        "outcome_vdo_created": {
+          "name": "VDO Created",
+          "elementType": "Outcome"
+        },
+        "outcome_vin_assigned": {
+          "name": "VIN Assigned",
+          "elementType": "Outcome"
+        },
+        "outcome_product_configured": {
+          "name": "Product Configured",
+          "elementType": "Outcome"
+        },
+        "outcome_order_committed": {
+          "name": "Order Committed",
+          "elementType": "Outcome"
+        },
+        "outcome_change_initiated": {
+          "name": "Change Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_change_requested": {
+          "name": "Change Requested",
+          "elementType": "Outcome"
+        },
+        "outcome_impact_assessed": {
+          "name": "Impact Assessed",
+          "elementType": "Outcome"
+        },
+        "outcome_change_approved": {
+          "name": "Change Approved",
+          "elementType": "Outcome"
+        },
+        "outcome_vdo_updated": {
+          "name": "VDO Updated",
+          "elementType": "Outcome"
+        },
+        "outcome_requirement_identified": {
+          "name": "Requirement Identified",
+          "elementType": "Outcome"
+        },
+        "outcome_requirement_defined": {
+          "name": "Requirement Defined",
+          "elementType": "Outcome"
+        },
+        "outcome_requirement_approved": {
+          "name": "Requirement Approved",
+          "elementType": "Outcome"
+        },
+        "outcome_solution_designed": {
+          "name": "Solution Designed",
+          "elementType": "Outcome"
+        },
+        "outcome_solution_implemented": {
+          "name": "Solution Implemented",
+          "elementType": "Outcome"
+        },
+        "outcome_value_delivered": {
+          "name": "Value Delivered",
+          "elementType": "Outcome"
+        },
+        "outcome_wave_planned": {
+          "name": "Wave Planned",
+          "elementType": "Outcome"
+        },
+        "outcome_wave_initiated": {
+          "name": "Wave Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_wave_prepared": {
+          "name": "Wave Prepared",
+          "elementType": "Outcome"
+        },
+        "outcome_scope_defined": {
+          "name": "Scope Defined",
+          "elementType": "Outcome"
+        },
+        "outcome_solution_realized": {
+          "name": "Solution Realized",
+          "elementType": "Outcome"
+        },
+        "outcome_wave_deployed": {
+          "name": "Wave Deployed",
+          "elementType": "Outcome"
+        },
+        "outcome_hypercare_completed": {
+          "name": "Hypercare Completed",
+          "elementType": "Outcome"
+        }
+      },
+      "roles": {
+        "role_dealer": {
+          "name": "Dealer",
+          "description": "Responsible for customer interface, order placement and delivery receipt",
+          "elementType": "Role"
+        },
+        "role_regional_manager": {
+          "name": "Regional Manager",
+          "description": "Responsible for regional order management and credit oversight",
+          "elementType": "Role"
+        },
+        "role_order_administrator": {
+          "name": "Order Administrator",
+          "description": "Responsible for order processing, validation and production coordination",
+          "elementType": "Role"
+        },
+        "role_production_planner": {
+          "name": "Production Planner",
+          "description": "Responsible for production scheduling, MRP execution and manufacturing coordination",
+          "elementType": "Role"
+        },
+        "role_customer": {
+          "name": "Customer",
+          "description": "End customer requesting vehicle configuration and delivery",
+          "elementType": "Role"
+        },
+        "role_change_manager": {
+          "name": "Change Manager",
+          "description": "Responsible for assessing and approving order changes and VDO updates",
+          "elementType": "Role"
+        },
+        "role_solution_architect": {
+          "name": "Solution Architect",
+          "description": "Responsible for designing technical solutions and transformation implementations",
+          "elementType": "Role"
+        },
+        "role_wave_manager": {
+          "name": "Wave Manager",
+          "description": "Responsible for managing SAP transformation wave delivery and deployment coordination",
+          "elementType": "Role"
+        }
+      },
+      "capabilities": {
+        "cap_order_management": {
+          "name": "Order Management",
+          "description": "Capability to manage customer orders throughout their lifecycle",
+          "elementType": "Capability"
+        },
+        "cap_product_configuration": {
+          "name": "Product Configuration",
+          "description": "Capability to configure products according to customer specifications",
+          "elementType": "Capability"
+        },
+        "cap_customer_relationship_management": {
+          "name": "Customer Relationship Management",
+          "description": "Capability to manage customer interactions and relationships",
+          "elementType": "Capability"
+        },
+        "cap_data_management": {
+          "name": "Data Management",
+          "description": "Capability to manage, validate and synchronize business data",
+          "elementType": "Capability"
+        },
+        "cap_compliance_management": {
+          "name": "Compliance Management",
+          "description": "Capability to ensure regulatory and business compliance",
+          "elementType": "Capability"
+        },
+        "cap_production_planning": {
+          "name": "Production Planning",
+          "description": "Capability to plan and schedule manufacturing operations",
+          "elementType": "Capability"
+        },
+        "cap_resource_management": {
+          "name": "Resource Management",
+          "description": "Capability to allocate and manage business resources",
+          "elementType": "Capability"
+        },
+        "cap_manufacturing_execution": {
+          "name": "Manufacturing Execution",
+          "description": "Capability to execute manufacturing processes and operations",
+          "elementType": "Capability"
+        },
+        "cap_quality_management": {
+          "name": "Quality Management",
+          "description": "Capability to ensure quality standards and compliance",
+          "elementType": "Capability"
+        },
+        "cap_logistics_management": {
+          "name": "Logistics Management",
+          "description": "Capability to manage transportation and delivery operations",
+          "elementType": "Capability"
+        },
+        "cap_financial_management": {
+          "name": "Financial Management",
+          "description": "Capability to manage financial transactions and processes",
+          "elementType": "Capability"
+        },
+        "cap_change_management": {
+          "name": "Change Management",
+          "description": "Capability to manage organizational and process changes",
+          "elementType": "Capability"
+        },
+        "cap_stakeholder_communication": {
+          "name": "Stakeholder Communication",
+          "description": "Capability to communicate effectively with stakeholders",
+          "elementType": "Capability"
+        },
+        "cap_requirements_management": {
+          "name": "Requirements Management",
+          "description": "Capability to capture, analyze and manage business requirements",
+          "elementType": "Capability"
+        },
+        "cap_governance_management": {
+          "name": "Governance Management",
+          "description": "Capability to establish and maintain governance processes",
+          "elementType": "Capability"
+        },
+        "cap_solution_architecture": {
+          "name": "Solution Architecture",
+          "description": "Capability to design and architect technical solutions",
+          "elementType": "Capability"
+        },
+        "cap_technical_design": {
+          "name": "Technical Design",
+          "description": "Capability to create detailed technical designs and specifications",
+          "elementType": "Capability"
+        },
+        "cap_solution_delivery": {
+          "name": "Solution Delivery",
+          "description": "Capability to deliver technical solutions and implementations",
+          "elementType": "Capability"
+        },
+        "cap_technical_implementation": {
+          "name": "Technical Implementation",
+          "description": "Capability to implement technical solutions and systems",
+          "elementType": "Capability"
+        },
+        "cap_value_realization": {
+          "name": "Value Realization",
+          "description": "Capability to measure and realize business value",
+          "elementType": "Capability"
+        },
+        "cap_performance_monitoring": {
+          "name": "Performance Monitoring",
+          "description": "Capability to monitor and track performance metrics",
+          "elementType": "Capability"
+        },
+        "cap_program_management": {
+          "name": "Program Management",
+          "description": "Capability to manage complex programs and initiatives",
+          "elementType": "Capability"
+        },
+        "cap_deployment_management": {
+          "name": "Deployment Management",
+          "description": "Capability to manage system deployments and go-live activities",
+          "elementType": "Capability"
+        },
+        "cap_support_management": {
+          "name": "Support Management",
+          "description": "Capability to provide system support and maintenance",
+          "elementType": "Capability"
+        }
+      },
+      "informationObjects": {
+        "io_customer_order": {
+          "name": "Customer Order",
+          "elementType": "InformationObject"
+        },
+        "io_product_specification": {
+          "name": "Product Specification",
+          "elementType": "InformationObject"
+        },
+        "io_dealer_portal_session": {
+          "name": "Dealer Portal Session",
+          "elementType": "InformationObject"
+        },
+        "io_validation_report": {
+          "name": "Validation Report",
+          "elementType": "InformationObject"
+        },
+        "io_credit_assessment": {
+          "name": "Credit Assessment",
+          "elementType": "InformationObject"
+        },
+        "io_order_confirmation": {
+          "name": "Order Confirmation",
+          "elementType": "InformationObject"
+        },
+        "io_production_schedule": {
+          "name": "Production Schedule",
+          "elementType": "InformationObject"
+        },
+        "io_material_requirements": {
+          "name": "Material Requirements",
+          "elementType": "InformationObject"
+        },
+        "io_capacity_plan": {
+          "name": "Capacity Plan",
+          "elementType": "InformationObject"
+        },
+        "io_production_order": {
+          "name": "Production Order",
+          "elementType": "InformationObject"
+        },
+        "io_quality_record": {
+          "name": "Quality Record",
+          "elementType": "InformationObject"
+        },
+        "io_manufacturing_report": {
+          "name": "Manufacturing Report",
+          "elementType": "InformationObject"
+        },
+        "io_delivery_receipt": {
+          "name": "Delivery Receipt",
+          "elementType": "InformationObject"
+        },
+        "io_shipping_documentation": {
+          "name": "Shipping Documentation",
+          "elementType": "InformationObject"
+        },
+        "io_customer_handover": {
+          "name": "Customer Handover",
+          "elementType": "InformationObject"
+        },
+        "io_invoice": {
+          "name": "Invoice",
+          "elementType": "InformationObject"
+        },
+        "io_payment_record": {
+          "name": "Payment Record",
+          "elementType": "InformationObject"
+        },
+        "io_warranty_documentation": {
+          "name": "Warranty Documentation",
+          "elementType": "InformationObject"
+        },
+        "io_customer_profile": {
+          "name": "Customer Profile",
+          "elementType": "InformationObject"
+        },
+        "io_sales_order": {
+          "name": "Sales Order",
+          "elementType": "InformationObject"
+        },
+        "io_registration_record": {
+          "name": "Registration Record",
+          "elementType": "InformationObject"
+        },
+        "io_vehicle_delivery_order": {
+          "name": "Vehicle Delivery Order",
+          "elementType": "InformationObject"
+        },
+        "io_order_specification": {
+          "name": "Order Specification",
+          "elementType": "InformationObject"
+        },
+        "io_vdo_template": {
+          "name": "VDO Template",
+          "elementType": "InformationObject"
+        },
+        "io_vin_record": {
+          "name": "VIN Record",
+          "elementType": "InformationObject"
+        },
+        "io_vehicle_identification": {
+          "name": "Vehicle Identification",
+          "elementType": "InformationObject"
+        },
+        "io_regulatory_documentation": {
+          "name": "Regulatory Documentation",
+          "elementType": "InformationObject"
+        },
+        "io_product_configuration": {
+          "name": "Product Configuration",
+          "elementType": "InformationObject"
+        },
+        "io_bill_of_materials": {
+          "name": "Bill of Materials",
+          "elementType": "InformationObject"
+        },
+        "io_configuration_validation": {
+          "name": "Configuration Validation",
+          "elementType": "InformationObject"
+        },
+        "io_order_commitment": {
+          "name": "Order Commitment",
+          "elementType": "InformationObject"
+        },
+        "io_production_authorization": {
+          "name": "Production Authorization",
+          "elementType": "InformationObject"
+        },
+        "io_committed_vdo": {
+          "name": "Committed VDO",
+          "elementType": "InformationObject"
+        },
+        "io_change_request": {
+          "name": "Change Request",
+          "elementType": "InformationObject"
+        },
+        "io_original_order": {
+          "name": "Original Order",
+          "elementType": "InformationObject"
+        },
+        "io_change_documentation": {
+          "name": "Change Documentation",
+          "elementType": "InformationObject"
+        },
+        "io_impact_assessment": {
+          "name": "Impact Assessment",
+          "elementType": "InformationObject"
+        },
+        "io_cost_analysis": {
+          "name": "Cost Analysis",
+          "elementType": "InformationObject"
+        },
+        "io_timeline_impact": {
+          "name": "Timeline Impact",
+          "elementType": "InformationObject"
+        },
+        "io_change_approval": {
+          "name": "Change Approval",
+          "elementType": "InformationObject"
+        },
+        "io_approval_documentation": {
+          "name": "Approval Documentation",
+          "elementType": "InformationObject"
+        },
+        "io_stakeholder_notification": {
+          "name": "Stakeholder Notification",
+          "elementType": "InformationObject"
+        },
+        "io_updated_vdo": {
+          "name": "Updated VDO",
+          "elementType": "InformationObject"
+        },
+        "io_change_log": {
+          "name": "Change Log",
+          "elementType": "InformationObject"
+        },
+        "io_revised_configuration": {
+          "name": "Revised Configuration",
+          "elementType": "InformationObject"
+        },
+        "io_requirement_specification": {
+          "name": "Requirement Specification",
+          "elementType": "InformationObject"
+        },
+        "io_business_case": {
+          "name": "Business Case",
+          "elementType": "InformationObject"
+        },
+        "io_stakeholder_input": {
+          "name": "Stakeholder Input",
+          "elementType": "InformationObject"
+        },
+        "io_approval_record": {
+          "name": "Approval Record",
+          "elementType": "InformationObject"
+        },
+        "io_governance_documentation": {
+          "name": "Governance Documentation",
+          "elementType": "InformationObject"
+        },
+        "io_approval_notification": {
+          "name": "Approval Notification",
+          "elementType": "InformationObject"
+        },
+        "io_solution_design": {
+          "name": "Solution Design",
+          "elementType": "InformationObject"
+        },
+        "io_technical_specification": {
+          "name": "Technical Specification",
+          "elementType": "InformationObject"
+        },
+        "io_architecture_blueprint": {
+          "name": "Architecture Blueprint",
+          "elementType": "InformationObject"
+        },
+        "io_implementation_plan": {
+          "name": "Implementation Plan",
+          "elementType": "InformationObject"
+        },
+        "io_deployment_package": {
+          "name": "Deployment Package",
+          "elementType": "InformationObject"
+        },
+        "io_test_results": {
+          "name": "Test Results",
+          "elementType": "InformationObject"
+        },
+        "io_value_assessment": {
+          "name": "Value Assessment",
+          "elementType": "InformationObject"
+        },
+        "io_performance_metrics": {
+          "name": "Performance Metrics",
+          "elementType": "InformationObject"
+        },
+        "io_delivery_confirmation": {
+          "name": "Delivery Confirmation",
+          "elementType": "InformationObject"
+        },
+        "io_wave_charter": {
+          "name": "Wave Charter",
+          "elementType": "InformationObject"
+        },
+        "io_stakeholder_matrix": {
+          "name": "Stakeholder Matrix",
+          "elementType": "InformationObject"
+        },
+        "io_governance_framework": {
+          "name": "Governance Framework",
+          "elementType": "InformationObject"
+        },
+        "io_wave_plan": {
+          "name": "Wave Plan",
+          "elementType": "InformationObject"
+        },
+        "io_resource_allocation": {
+          "name": "Resource Allocation",
+          "elementType": "InformationObject"
+        },
+        "io_preparation_checklist": {
+          "name": "Preparation Checklist",
+          "elementType": "InformationObject"
+        },
+        "io_scope_definition": {
+          "name": "Scope Definition",
+          "elementType": "InformationObject"
+        },
+        "io_functional_requirements": {
+          "name": "Functional Requirements",
+          "elementType": "InformationObject"
+        },
+        "io_scope_approval": {
+          "name": "Scope Approval",
+          "elementType": "InformationObject"
+        },
+        "io_solution_package": {
+          "name": "Solution Package",
+          "elementType": "InformationObject"
+        },
+        "io_implementation_artifacts": {
+          "name": "Implementation Artifacts",
+          "elementType": "InformationObject"
+        },
+        "io_quality_validation": {
+          "name": "Quality Validation",
+          "elementType": "InformationObject"
+        },
+        "io_deployment_plan": {
+          "name": "Deployment Plan",
+          "elementType": "InformationObject"
+        },
+        "io_cutover_documentation": {
+          "name": "Cutover Documentation",
+          "elementType": "InformationObject"
+        },
+        "io_deployment_confirmation": {
+          "name": "Deployment Confirmation",
+          "elementType": "InformationObject"
+        },
+        "io_hypercare_report": {
+          "name": "Hypercare Report",
+          "elementType": "InformationObject"
+        },
+        "io_support_metrics": {
+          "name": "Support Metrics",
+          "elementType": "InformationObject"
+        },
+        "io_transition_documentation": {
+          "name": "Transition Documentation",
+          "elementType": "InformationObject"
+        }
+      },
+      "controls": {},
+      "constraints": {},
+      "directives": {},
+      "deonticLogic": {},
+      "flowLogic": {},
+      "concepts": {},
+      "properties": {},
+      "metrics": {
+        "metric_order_processing_time": {
+          "name": "Order Processing Time",
+          "elementType": "Metric"
+        },
+        "metric_vin_assignment_cycle_time": {
+          "name": "VIN Assignment Cycle Time",
+          "elementType": "Metric"
+        },
+        "metric_production_schedule_accuracy": {
+          "name": "Production Schedule Accuracy",
+          "elementType": "Metric"
+        },
+        "metric_change_request_resolution_time": {
+          "name": "Change Request Resolution Time",
+          "elementType": "Metric"
+        },
+        "metric_wave_deployment_success_rate": {
+          "name": "Wave Deployment Success Rate",
+          "elementType": "Metric"
+        }
+      },
+      "measures": {},
+      "conditions": {}
+    },
+    "_discoveryPainPoints": "1. [ProcessHandoffFriction] Manual VIN creation using Excel creates bottlenecks and error risk (intensity 8/10, stage: VIN Assigned) ← flagged as binding\n2. [TechnologyIntegrationFriction] Multiple SAP R/3 instances require complex integration and data synchronization (intensity 7/10, stage: Order Validated) ← flagged as binding\n3. [TechnologyIntegrationFriction] Phantom parts handling not supported by SAP coding affects dynamic production planning (intensity 6/10, stage: Production Scheduled)\n4. [ProcessHandoffFriction] Retrofit parts taken directly from shelf without system tracking creates inventory blind spots (intensity 5/10, stage: Vehicle Produced)\n5. [DataSignalFriction] Customer data synchronization between Post, BM and SAP Prevost creates data quality issues (intensity 6/10, stage: Customer Registered) ← flagged as binding"
+  },
+  "heatmaps": [],
+  "cardRegistry": {
+    "conceptCards": {
+      "cc_vehicle_delivery_order": {
+        "cardId": "cc_vehicle_delivery_order",
+        "canonicalName": "Vehicle Delivery Order",
+        "description": "A formal order document that captures customer requirements and vehicle specifications throughout the manufacturing and delivery process",
+        "owner": "role_order_administrator",
+        "senses": [
+          {
+            "senseName": "Initial Order",
+            "description": "Customer order as first configured by dealer with basic specifications",
+            "systemOfRecord": "Order Management System",
+            "disambiguationCues": [
+              "draft",
+              "configured",
+              "pending validation"
+            ]
+          },
+          {
+            "senseName": "Committed Order",
+            "description": "Validated and committed order ready for production scheduling",
+            "systemOfRecord": "Production Planning System",
+            "disambiguationCues": [
+              "committed",
+              "scheduled",
+              "production ready"
+            ]
+          },
+          {
+            "senseName": "Active VDO",
+            "description": "Order with assigned VIN actively being manufactured",
+            "systemOfRecord": "Manufacturing Execution System",
+            "disambiguationCues": [
+              "VIN assigned",
+              "in production",
+              "manufacturing"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "has-a",
+            "targetCardId": "cc_vehicle_identification_number",
+            "label": "assigned VIN"
+          },
+          {
+            "type": "has-a",
+            "targetCardId": "cc_customer",
+            "label": "ordered by"
+          },
+          {
+            "type": "has-a",
+            "targetCardId": "cc_product_configuration",
+            "label": "specifies"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_order_management",
+            "cap_production_planning",
+            "cap_data_management"
+          ],
+          "roleIds": [
+            "role_order_administrator",
+            "role_production_planner",
+            "role_dealer"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query Order Management System for order records, join with Production Planning for status updates",
+        "tokenBudget": 450
+      },
+      "cc_customer": {
+        "cardId": "cc_customer",
+        "canonicalName": "Customer",
+        "description": "Individual or entity purchasing or interested in purchasing vehicles",
+        "owner": "role_order_administrator",
+        "senses": [
+          {
+            "senseName": "Prospect",
+            "description": "Potential customer showing interest but not yet committed to purchase",
+            "systemOfRecord": "CRM System",
+            "disambiguationCues": [
+              "lead",
+              "prospect",
+              "inquiry"
+            ]
+          },
+          {
+            "senseName": "Active Buyer",
+            "description": "Customer with confirmed order and financial commitment",
+            "systemOfRecord": "Order Management System",
+            "disambiguationCues": [
+              "order placed",
+              "committed",
+              "purchasing"
+            ]
+          },
+          {
+            "senseName": "Registered Owner",
+            "description": "Customer who has completed purchase and taken delivery",
+            "systemOfRecord": "Customer Registry",
+            "disambiguationCues": [
+              "owner",
+              "delivered",
+              "registered"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "has-a",
+            "targetCardId": "cc_vehicle_delivery_order",
+            "label": "places"
+          },
+          {
+            "type": "has-a",
+            "targetCardId": "cc_change_request",
+            "label": "submits"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_data_management",
+            "cap_compliance_management"
+          ],
+          "roleIds": [
+            "role_dealer",
+            "role_order_administrator",
+            "role_customer"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query CRM system for customer records, cross-reference with order and delivery systems",
+        "tokenBudget": 350
+      },
+      "cc_vehicle_identification_number": {
+        "cardId": "cc_vehicle_identification_number",
+        "canonicalName": "Vehicle Identification Number",
+        "description": "Unique identifier assigned to each vehicle for tracking and compliance purposes",
+        "owner": "role_order_administrator",
+        "senses": [
+          {
+            "senseName": "Allocated VIN",
+            "description": "VIN reserved from available pool but not yet assigned to specific order",
+            "systemOfRecord": "VIN Management System",
+            "disambiguationCues": [
+              "allocated",
+              "reserved",
+              "available"
+            ]
+          },
+          {
+            "senseName": "Assigned VIN",
+            "description": "VIN formally linked to specific vehicle delivery order",
+            "systemOfRecord": "Order Management System",
+            "disambiguationCues": [
+              "assigned",
+              "linked",
+              "order specific"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "part-of",
+            "targetCardId": "cc_vehicle_delivery_order",
+            "label": "identifies"
+          },
+          {
+            "type": "governs",
+            "targetCardId": "cc_vehicle",
+            "label": "uniquely identifies"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_data_management",
+            "cap_compliance_management",
+            "cap_order_management"
+          ],
+          "roleIds": [
+            "role_order_administrator"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query VIN registry and order management systems for VIN allocation and assignment records",
+        "tokenBudget": 300
+      },
+      "cc_product_configuration": {
+        "cardId": "cc_product_configuration",
+        "canonicalName": "Product Configuration",
+        "description": "Detailed specification of vehicle features, options, and components",
+        "owner": "role_dealer",
+        "senses": [
+          {
+            "senseName": "Base Configuration",
+            "description": "Standard vehicle configuration with default options",
+            "systemOfRecord": "Product Catalog",
+            "disambiguationCues": [
+              "standard",
+              "base model",
+              "default"
+            ]
+          },
+          {
+            "senseName": "Custom Configuration",
+            "description": "Personalized vehicle specification with customer-selected options",
+            "systemOfRecord": "Configuration Management System",
+            "disambiguationCues": [
+              "customized",
+              "personalized",
+              "options selected"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "part-of",
+            "targetCardId": "cc_vehicle_delivery_order",
+            "label": "specifies"
+          },
+          {
+            "type": "produces",
+            "targetCardId": "cc_vehicle",
+            "label": "defines build for"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_product_configuration",
+            "cap_data_management",
+            "cap_order_management"
+          ],
+          "roleIds": [
+            "role_dealer",
+            "role_order_administrator"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query product catalog and configuration systems for available options and customer selections",
+        "tokenBudget": 320
+      },
+      "cc_vehicle": {
+        "cardId": "cc_vehicle",
+        "canonicalName": "Vehicle",
+        "description": "Physical automotive product being manufactured and delivered to customer",
+        "owner": "role_production_planner",
+        "senses": [
+          {
+            "senseName": "Planned Vehicle",
+            "description": "Vehicle scheduled for production but not yet started",
+            "systemOfRecord": "Production Planning System",
+            "disambiguationCues": [
+              "scheduled",
+              "planned",
+              "pre-production"
+            ]
+          },
+          {
+            "senseName": "Work in Progress",
+            "description": "Vehicle currently being manufactured on production line",
+            "systemOfRecord": "Manufacturing Execution System",
+            "disambiguationCues": [
+              "in production",
+              "manufacturing",
+              "assembly line"
+            ]
+          },
+          {
+            "senseName": "Finished Vehicle",
+            "description": "Completed vehicle ready for quality inspection and delivery",
+            "systemOfRecord": "Quality Management System",
+            "disambiguationCues": [
+              "completed",
+              "finished",
+              "ready for delivery"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "is-a",
+            "targetCardId": "cc_product_configuration",
+            "label": "built according to"
+          },
+          {
+            "type": "has-a",
+            "targetCardId": "cc_vehicle_identification_number",
+            "label": "identified by"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_manufacturing_execution",
+            "cap_quality_management",
+            "cap_production_planning"
+          ],
+          "roleIds": [
+            "role_production_planner"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query manufacturing and quality systems for vehicle production status and completion records",
+        "tokenBudget": 380
+      },
+      "cc_change_request": {
+        "cardId": "cc_change_request",
+        "canonicalName": "Change Request",
+        "description": "Formal request to modify existing vehicle delivery order or configuration",
+        "owner": "role_change_manager",
+        "senses": [
+          {
+            "senseName": "Customer Change Request",
+            "description": "Change requested by customer to modify their order",
+            "systemOfRecord": "Change Management System",
+            "disambiguationCues": [
+              "customer initiated",
+              "order modification",
+              "customer request"
+            ]
+          },
+          {
+            "senseName": "System Change Request",
+            "description": "Change required due to system or process constraints",
+            "systemOfRecord": "Change Management System",
+            "disambiguationCues": [
+              "system initiated",
+              "process driven",
+              "constraint based"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_vehicle_delivery_order",
+            "label": "modifies"
+          },
+          {
+            "type": "consumes",
+            "targetCardId": "cc_customer",
+            "label": "requested by"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_change_management",
+            "cap_customer_relationship_management",
+            "cap_data_management"
+          ],
+          "roleIds": [
+            "role_change_manager",
+            "role_customer"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query change management system for change requests and their approval status",
+        "tokenBudget": 300
+      },
+      "cc_solution_requirement": {
+        "cardId": "cc_solution_requirement",
+        "canonicalName": "Solution Requirement",
+        "description": "Documented need or specification for system or process solution",
+        "owner": "role_solution_architect",
+        "senses": [
+          {
+            "senseName": "Business Requirement",
+            "description": "High-level business need driving solution development",
+            "systemOfRecord": "Requirements Management System",
+            "disambiguationCues": [
+              "business need",
+              "strategic",
+              "high level"
+            ]
+          },
+          {
+            "senseName": "Technical Requirement",
+            "description": "Specific technical specification for solution implementation",
+            "systemOfRecord": "Technical Design System",
+            "disambiguationCues": [
+              "technical spec",
+              "implementation detail",
+              "system requirement"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "produces",
+            "targetCardId": "cc_solution_design",
+            "label": "drives creation of"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_requirements_management",
+            "cap_stakeholder_communication",
+            "cap_governance_management"
+          ],
+          "roleIds": [
+            "role_solution_architect"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query requirements management tools and stakeholder documentation for requirement specifications",
+        "tokenBudget": 280
+      },
+      "cc_solution_design": {
+        "cardId": "cc_solution_design",
+        "canonicalName": "Solution Design",
+        "description": "Architectural blueprint and technical design for system solution",
+        "owner": "role_solution_architect",
+        "senses": [
+          {
+            "senseName": "Conceptual Design",
+            "description": "High-level architectural approach and design principles",
+            "systemOfRecord": "Architecture Repository",
+            "disambiguationCues": [
+              "conceptual",
+              "architectural",
+              "high level design"
+            ]
+          },
+          {
+            "senseName": "Detailed Design",
+            "description": "Specific technical implementation design ready for development",
+            "systemOfRecord": "Technical Design System",
+            "disambiguationCues": [
+              "detailed",
+              "implementation ready",
+              "technical specification"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "consumes",
+            "targetCardId": "cc_solution_requirement",
+            "label": "addresses"
+          },
+          {
+            "type": "produces",
+            "targetCardId": "cc_transformation_wave",
+            "label": "implemented through"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_solution_architecture",
+            "cap_technical_design",
+            "cap_data_management"
+          ],
+          "roleIds": [
+            "role_solution_architect"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query architecture repository and design documentation systems for solution blueprints",
+        "tokenBudget": 320
+      },
+      "cc_transformation_wave": {
+        "cardId": "cc_transformation_wave",
+        "canonicalName": "Transformation Wave",
+        "description": "Structured delivery phase for implementing SAP transformation solutions",
+        "owner": "role_wave_manager",
+        "senses": [
+          {
+            "senseName": "Planned Wave",
+            "description": "Wave defined and scoped but not yet initiated",
+            "systemOfRecord": "Program Management System",
+            "disambiguationCues": [
+              "planned",
+              "scoped",
+              "pre-initiation"
+            ]
+          },
+          {
+            "senseName": "Active Wave",
+            "description": "Wave currently being executed with active development and deployment",
+            "systemOfRecord": "Project Management System",
+            "disambiguationCues": [
+              "active",
+              "in progress",
+              "executing"
+            ]
+          },
+          {
+            "senseName": "Completed Wave",
+            "description": "Wave successfully deployed with hypercare support completed",
+            "systemOfRecord": "Program Management System",
+            "disambiguationCues": [
+              "completed",
+              "deployed",
+              "hypercare finished"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "consumes",
+            "targetCardId": "cc_solution_design",
+            "label": "implements"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_program_management",
+            "cap_solution_delivery",
+            "cap_deployment_management"
+          ],
+          "roleIds": [
+            "role_wave_manager"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query program management systems for wave planning, execution status, and completion metrics",
+        "tokenBudget": 350
+      }
+    },
+    "policyCards": {
+      "pc_order_validation_compliance": {
+        "cardId": "pc_order_validation_compliance",
+        "name": "Order Validation Compliance Policy",
+        "description": "All vehicle delivery orders must undergo validation before production commitment to ensure regulatory compliance and data accuracy",
+        "authorityTier": "procedure",
+        "scope": {
+          "lifecycleStages": [
+            "act_validate_order",
+            "act_commit_order"
+          ],
+          "roles": [
+            "role_order_administrator",
+            "role_regional_manager",
+            "role_production_planner"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_vehicle_delivery_order:Initial Order is created",
+            "referencedSenses": [
+              "cc_vehicle_delivery_order:Initial Order"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must validate order data completeness and regulatory compliance before production commitment"
+          },
+          {
+            "obligationType": "prohibit",
+            "description": "Cannot commit order to production without completed validation"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_regional_manager",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_order_management",
+            "cap_compliance_management",
+            "cap_data_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_order_administrator",
+            "role_regional_manager"
+          ]
+        }
+      },
+      "pc_vin_assignment_governance": {
+        "cardId": "pc_vin_assignment_governance",
+        "name": "VIN Assignment Governance Policy",
+        "description": "Vehicle Identification Numbers must be assigned according to regulatory requirements and maintained with full traceability",
+        "authorityTier": "policy",
+        "scope": {
+          "lifecycleStages": [
+            "act_assign_vin"
+          ],
+          "roles": [
+            "role_order_administrator"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_vehicle_delivery_order:Committed Order exists",
+            "referencedSenses": [
+              "cc_vehicle_delivery_order:Committed Order"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must assign unique VIN from authorized pool with full audit trail"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must maintain VIN-to-order traceability throughout lifecycle"
+          },
+          {
+            "obligationType": "prohibit",
+            "description": "Cannot reuse or duplicate VIN assignments"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_order_administrator",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_data_management",
+            "cap_compliance_management",
+            "cap_order_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_order_administrator"
+          ]
+        }
+      },
+      "pc_change_request_approval": {
+        "cardId": "pc_change_request_approval",
+        "name": "Change Request Approval Policy",
+        "description": "All changes to committed orders must undergo impact assessment and formal approval before implementation",
+        "authorityTier": "procedure",
+        "scope": {
+          "lifecycleStages": [
+            "act_assess_impact",
+            "act_approve_change",
+            "act_update_vdo"
+          ],
+          "roles": [
+            "role_change_manager",
+            "role_customer"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_change_request:Customer Change Request is submitted",
+            "referencedSenses": [
+              "cc_change_request:Customer Change Request"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must assess production and cost impact before approval decision"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must obtain formal approval from change manager before VDO update"
+          },
+          {
+            "obligationType": "permit",
+            "description": "May reject changes that exceed feasibility thresholds"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_change_manager",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_change_management",
+            "cap_production_planning",
+            "cap_compliance_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_change_manager"
+          ]
+        }
+      },
+      "pc_customer_data_protection": {
+        "cardId": "pc_customer_data_protection",
+        "name": "Customer Data Protection Policy",
+        "description": "Customer personal and financial information must be protected according to privacy regulations and access controls",
+        "authorityTier": "policy",
+        "scope": {
+          "lifecycleStages": [
+            "act_register_customer",
+            "act_complete_transaction"
+          ],
+          "roles": [
+            "role_order_administrator",
+            "role_dealer"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_customer:Active Buyer data is processed",
+            "referencedSenses": [
+              "cc_customer:Active Buyer"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must encrypt and secure all customer personal and financial data"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must implement role-based access controls for customer information"
+          },
+          {
+            "obligationType": "prohibit",
+            "description": "Cannot share customer data without explicit consent and business justification"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_order_administrator",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_data_management",
+            "cap_compliance_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_order_administrator",
+            "role_dealer"
+          ]
+        }
+      },
+      "pc_solution_governance": {
+        "cardId": "pc_solution_governance",
+        "name": "Solution Development Governance Policy",
+        "description": "All solution requirements and designs must follow approved governance processes and stakeholder approval gates",
+        "authorityTier": "procedure",
+        "scope": {
+          "lifecycleStages": [
+            "act_define_requirement",
+            "act_approve_requirement",
+            "act_design_solution"
+          ],
+          "roles": [
+            "role_solution_architect"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_solution_requirement:Business Requirement is defined",
+            "referencedSenses": [
+              "cc_solution_requirement:Business Requirement"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must obtain stakeholder approval before proceeding to solution design"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must document requirements traceability through design and implementation"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must validate solution design against approved requirements"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_solution_architect",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_governance_management",
+            "cap_requirements_management",
+            "cap_solution_architecture"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_solution_architect"
+          ]
+        }
+      }
+    }
+  }
+}
