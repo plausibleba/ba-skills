@@ -410,28 +410,37 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
               )}
               {item.sectionHeader ? (
                 /* Section header — small uppercase label, only visible when expanded.
-                   If the header has an onClick (e.g. ENRICH), it becomes clickable and navigates to the section overview. */
+                   Clickable: navigates to the section's overview page. */
                 <div
-                  className={`flex h-6 items-center px-2.5 ${!item.disabled ? "cursor-pointer" : ""}`}
-                  style={{ opacity: expanded ? 1 : 0 }}
+                  className={`flex h-7 items-center px-2.5 rounded-md transition-colors duration-100 ${!item.disabled ? "cursor-pointer" : ""}`}
+                  style={{
+                    opacity: expanded ? 1 : 0,
+                    pointerEvents: expanded ? "auto" : "none",
+                  }}
                   onClick={item.disabled ? undefined : item.onClick}
+                  onMouseEnter={(e) => {
+                    if (!item.disabled) e.currentTarget.style.backgroundColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 >
                   <span
                     className="whitespace-nowrap text-[9px] font-bold uppercase tracking-widest transition-opacity duration-200"
-                    style={{ color: isDark ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.35)" }}
+                    style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.55)" }}
                   >
                     {item.label}
                   </span>
                   {!item.disabled && (
                     <span
                       style={{
-                        marginLeft: 4,
-                        fontSize: 10,
-                        opacity: 0.45,
+                        marginLeft: 5,
+                        fontSize: 11,
+                        color: isDark ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.55)",
                       }}
                       title={`${item.label} overview`}
                     >
-                      ⓘ
+                      &#9432;
                     </span>
                   )}
                 </div>
