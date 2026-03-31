@@ -60,66 +60,76 @@ function ReadinessStepper({ currentReadiness, nextHint }: ReadinessStepperProps)
   const currentIndex = currentReadiness ? READINESS_ORDER.indexOf(currentReadiness) : -1;
 
   return (
-    <div style={{ padding: "1.5rem" }}>
-      <div style={{ marginBottom: "1rem", fontSize: "0.875rem", fontWeight: "500", color: tv.textSecondary }}>
-        Model Readiness Journey
-      </div>
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 0,
+      padding: "12px 16px",
+      backgroundColor: tv.bgCard,
+      border: `1px solid ${tv.borderSubtle}`,
+      borderRadius: "10px",
+    }}>
+      {/* Stepper Pills with Dots & Connectors */}
+      {READINESS_ORDER.map((state, idx) => {
+        const isCompleted = idx < currentIndex;
+        const isCurrent = idx === currentIndex;
+        const isFuture = idx > currentIndex;
 
-      {/* Stepper Pills */}
-      <div style={{
-        display: "flex",
-        gap: "0.75rem",
-        flexWrap: "wrap",
-        alignItems: "center",
-        marginBottom: "1rem",
-      }}>
-        {READINESS_ORDER.map((state, idx) => {
-          const isCompleted = idx < currentIndex;
-          const isCurrent = idx === currentIndex;
-          const isFuture = idx > currentIndex;
+        return (
+          <div key={state} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {/* Dot */}
+            <div style={{
+              width: "8px",
+              height: "8px",
+              borderRadius: "50%",
+              backgroundColor: isCurrent ? tv.accent : isCompleted ? "#10b981" : tv.textDim,
+              flexShrink: 0,
+              boxShadow: isCurrent ? `0 0 8px rgba(99,102,241,0.4)` : "none",
+            }} />
 
-          return (
+            {/* Step Label Pill */}
             <div
-              key={state}
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
+                padding: "6px 14px",
+                borderRadius: "8px",
+                fontSize: "11px",
+                fontWeight: "600",
+                textTransform: "uppercase",
+                backgroundColor: isCurrent ? "rgba(99,102,241,0.12)" : "transparent",
+                color: isCurrent ? tv.accent : isCompleted ? "#10b981" : isFuture ? tv.textDim : tv.textDim,
+                transition: "all 0.2s ease",
+                cursor: "pointer",
+                border: isCurrent ? "1px solid rgba(99,102,241,0.25)" : "none",
+                opacity: isFuture ? 0.5 : 1,
               }}
             >
-              <div
-                style={{
-                  padding: "0.5rem 1rem",
-                  borderRadius: "9999px",
-                  fontSize: "0.875rem",
-                  fontWeight: "500",
-                  backgroundColor: isCurrent ? tv.accent : isCompleted ? "#10b981" : tv.bgCard,
-                  color: isCurrent || isCompleted ? "white" : isFuture ? tv.textDim : tv.textPrimary,
-                  transition: "all 0.2s ease",
-                }}
-              >
-                {isCompleted ? "✓" : ""} {READINESS_LABELS[state]}
-              </div>
-              {idx < READINESS_ORDER.length - 1 && (
-                <div style={{ fontSize: "1.25rem", color: tv.borderSubtle }}>→</div>
-              )}
+              {isCompleted ? "✓ " : ""}{READINESS_LABELS[state]}
             </div>
-          );
-        })}
-      </div>
 
-      {/* Next-Hint Callout */}
+            {/* Connector */}
+            {idx < READINESS_ORDER.length - 1 && (
+              <div style={{
+                width: "20px",
+                height: "2px",
+                backgroundColor: isCompleted ? "#10b981" : tv.borderSubtle,
+                flexShrink: 0,
+              }} />
+            )}
+          </div>
+        );
+      })}
+
+      {/* Readiness Hint on the right */}
       {nextHint && currentIndex >= 0 && currentIndex < READINESS_ORDER.length - 1 && (
         <div style={{
-          padding: "0.75rem 1rem",
-          backgroundColor: tv.bgCard,
-          borderLeftColor: tv.accent,
-          borderLeftWidth: "3px",
-          borderRadius: "0.375rem",
-          fontSize: "0.875rem",
+          marginLeft: "auto",
+          fontSize: "11px",
           color: tv.textSecondary,
+          paddingLeft: "16px",
+          maxWidth: "300px",
+          textAlign: "right",
         }}>
-          <strong>Next step:</strong> {nextHint}
+          <strong style={{ color: tv.accent }}>Next:</strong> {nextHint}
         </div>
       )}
     </div>
@@ -146,58 +156,69 @@ function NBACard({ recommendation, onGo, isDisabled }: NBACardProps) {
 
   return (
     <div style={{
-      padding: "1.5rem",
-      backgroundColor: tv.bgCard,
-      borderLeftColor: tv.accent,
-      borderLeftWidth: "4px",
-      borderRadius: "0.375rem",
-      marginBottom: "1.5rem",
+      marginBottom: "24px",
+      padding: "16px 20px",
+      background: "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.06))",
+      border: "1px solid rgba(99,102,241,0.2)",
+      borderRadius: "12px",
+      display: "flex",
+      alignItems: "center",
+      gap: "16px",
     }}>
       <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        gap: "1rem",
+        fontSize: "28px",
+        flexShrink: 0,
       }}>
-        <div style={{ flex: 1 }}>
-          <div style={{
-            fontSize: "1rem",
-            fontWeight: "600",
-            color: tv.textPrimary,
-            marginBottom: "0.25rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-          }}>
-            <span>{icon}</span>
-            <span>Recommended: {opDef.label}</span>
-          </div>
-          <div style={{
-            fontSize: "0.875rem",
-            color: tv.textSecondary,
-          }}>
-            {recommendation.why || "This operation will help progress your model."}
-          </div>
-        </div>
-        <button
-          onClick={() => onGo(recommendation.operationId)}
-          disabled={isDisabled}
-          style={{
-            padding: "0.5rem 1rem",
-            backgroundColor: isDisabled ? tv.bgCard : tv.accent,
-            color: "white",
-            border: "none",
-            borderRadius: "0.375rem",
-            cursor: isDisabled ? "not-allowed" : "pointer",
-            fontSize: "0.875rem",
-            fontWeight: "500",
-            opacity: isDisabled ? 0.5 : 1,
-            whiteSpace: "nowrap",
-          }}
-        >
-          Go
-        </button>
+        {icon}
       </div>
+      <div style={{ flex: 1 }}>
+        <div style={{
+          fontSize: "10px",
+          fontWeight: "700",
+          textTransform: "uppercase",
+          letterSpacing: "1px",
+          color: tv.accent,
+          marginBottom: "2px",
+        }}>
+          Recommended Next Action
+        </div>
+        <div style={{
+          fontSize: "14px",
+          fontWeight: "700",
+          color: tv.textPrimary,
+          marginBottom: "4px",
+        }}>
+          {opDef.label}
+        </div>
+        <div style={{
+          fontSize: "11px",
+          color: tv.textSecondary,
+        }}>
+          {recommendation.why || "This operation will help progress your model."}
+        </div>
+      </div>
+      <button
+        onClick={() => onGo(recommendation.operationId)}
+        disabled={isDisabled}
+        style={{
+          padding: "8px 20px",
+          backgroundColor: tv.accent,
+          color: "#fff",
+          border: "none",
+          borderRadius: "8px",
+          cursor: isDisabled ? "not-allowed" : "pointer",
+          fontSize: "12px",
+          fontWeight: "600",
+          opacity: isDisabled ? 0.5 : 1,
+          whiteSpace: "nowrap",
+          transition: "all 0.15s ease",
+          filter: isDisabled ? "none" : "brightness(1.15)",
+        }}
+        onMouseEnter={(e) => !isDisabled && (e.currentTarget.style.filter = "brightness(1.15) translateY(-1px)")}
+        onMouseLeave={(e) => !isDisabled && (e.currentTarget.style.filter = "brightness(1.15)")}
+      >
+        Go
+      </button>
     </div>
   );
 }
@@ -230,36 +251,75 @@ function ExternalInputsPanel({
     "custom",
   ];
 
+  // Count provided and generated inputs
+  const providedCount = inputTypes.filter(type => {
+    const inp = inputs[type];
+    return inp && inp.provenance === "provided";
+  }).length;
+
+  const generatedCount = inputTypes.filter(type => {
+    const inp = inputs[type];
+    return inp && inp.provenance === "generated";
+  }).length;
+
   return (
     <div style={{
-      padding: "1.5rem",
-      backgroundColor: tv.bgCard,
-      borderRadius: "0.375rem",
-      marginBottom: "1.5rem",
+      marginBottom: "24px",
+      border: `1px solid ${tv.borderSubtle}`,
+      borderRadius: "10px",
+      overflow: "hidden",
     }}>
       {/* Header with toggle */}
       <div
         onClick={() => setIsOpen(!isOpen)}
         style={{
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
+          justifyContent: "space-between",
+          padding: "12px 16px",
+          backgroundColor: tv.bgCard,
           cursor: "pointer",
-          marginBottom: isOpen ? "1rem" : 0,
+          userSelect: "none",
         }}
       >
-        <div style={{
-          fontSize: "1rem",
-          fontWeight: "600",
-          color: tv.textPrimary,
-        }}>
-          External Inputs
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{
+            fontSize: "12px",
+            fontWeight: "600",
+            color: tv.textPrimary,
+          }}>
+            External Inputs
+          </div>
+          {providedCount > 0 && (
+            <div style={{
+              fontSize: "10px",
+              fontWeight: "600",
+              padding: "2px 8px",
+              borderRadius: "10px",
+              backgroundColor: "rgba(16,185,129,0.12)",
+              color: "#10b981",
+            }}>
+              {providedCount}
+            </div>
+          )}
+          {generatedCount > 0 && (
+            <div style={{
+              fontSize: "10px",
+              fontWeight: "600",
+              padding: "2px 8px",
+              borderRadius: "10px",
+              backgroundColor: "rgba(20,184,166,0.12)",
+              color: "#14b8a6",
+            }}>
+              {generatedCount}
+            </div>
+          )}
         </div>
         <div style={{
-          fontSize: "1.25rem",
-          color: tv.textSecondary,
-          transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+          fontSize: "12px",
+          color: tv.textDim,
           transition: "transform 0.2s ease",
+          transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
         }}>
           ▼
         </div>
@@ -267,19 +327,20 @@ function ExternalInputsPanel({
 
       {/* Content */}
       {isOpen && (
-        <div>
+        <div style={{
+          padding: "12px 16px",
+          backgroundColor: tv.bgSurface,
+        }}>
           <div style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-            gap: "1rem",
-            marginBottom: "1rem",
+            gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+            gap: "8px",
+            marginBottom: "10px",
           }}>
             {inputTypes.map((type) => {
               const inputArtefact = inputs[type] ?? null;
               const hasInput = inputArtefact !== null;
               const canGenerate = isGenerable(type);
-
-              // Determine provenance for this type
               const provenance: InputProvenance | null = hasInput ? inputArtefact.provenance : null;
 
               const icon = EXTERNAL_INPUT_ICONS[type] || "📋";
@@ -289,61 +350,103 @@ function ExternalInputsPanel({
                 <div
                   key={type}
                   style={{
-                    padding: "1rem",
-                    backgroundColor: tv.bgPrimary,
-                    borderRadius: "0.375rem",
-                    border: `1px solid ${tv.borderSubtle}`,
                     display: "flex",
-                    flexDirection: "column",
-                    gap: "0.5rem",
                     alignItems: "center",
-                    textAlign: "center",
+                    gap: "8px",
+                    padding: "10px 12px",
+                    backgroundColor: tv.bgCard,
+                    border: `1px solid ${tv.borderSubtle}`,
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                    borderColor: provenance === "provided" ? "rgba(16,185,129,0.3)" : provenance === "generated" ? "rgba(20,184,166,0.3)" : tv.borderSubtle,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = tv.borderDefault;
+                    e.currentTarget.style.backgroundColor = tv.bgCardHover;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = provenance === "provided" ? "rgba(16,185,129,0.3)" : provenance === "generated" ? "rgba(20,184,166,0.3)" : tv.borderSubtle;
+                    e.currentTarget.style.backgroundColor = tv.bgCard;
                   }}
                 >
-                  <div style={{ fontSize: "1.5rem" }}>{icon}</div>
-                  <div style={{
-                    fontSize: "0.75rem",
-                    fontWeight: "500",
-                    color: tv.textPrimary,
-                  }}>
-                    {label}
+                  {/* Icon */}
+                  <div style={{ fontSize: "16px", flexShrink: 0 }}>{icon}</div>
+
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: "11px",
+                      fontWeight: "600",
+                      color: tv.textPrimary,
+                    }}>
+                      {label}
+                    </div>
+                    {hasInput && provenance && (
+                      <div style={{
+                        fontSize: "10px",
+                        color: provenance === "provided" ? "#10b981" : "#14b8a6",
+                      }}>
+                        {provenance === "provided" ? "✓ Provided" : "⚡ Generated"}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Provenance Badge */}
-                  {hasInput && provenance && (
-                    <div style={{
-                      fontSize: "0.625rem",
-                      padding: "0.25rem 0.5rem",
-                      borderRadius: "9999px",
-                      backgroundColor: provenance === "provided" ? "#d1fae5" : "#f3e8ff",
-                      color: provenance === "provided" ? "#065f46" : "#6b21a8",
-                      fontWeight: "600",
-                    }}>
-                      {provenance === "provided" ? "✓ Provided" : "⚡ Generated"}
-                    </div>
-                  )}
-
-                  {/* Generate Button */}
-                  {canGenerate && !hasInput && (
-                    <button
-                      onClick={() => onGenerate(type)}
-                      disabled={isGenerating}
-                      style={{
-                        width: "100%",
-                        padding: "0.5rem 0.75rem",
-                        backgroundColor: tv.accent,
-                        color: "white",
-                        border: "none",
-                        borderRadius: "0.375rem",
-                        cursor: isGenerating ? "not-allowed" : "pointer",
-                        fontSize: "0.75rem",
-                        fontWeight: "500",
-                        opacity: isGenerating ? 0.5 : 1,
-                      }}
-                    >
-                      ✦ Generate
-                    </button>
-                  )}
+                  {/* Actions */}
+                  <div style={{ display: "flex", gap: "4px", flexShrink: 0 }}>
+                    {canGenerate && !hasInput && (
+                      <button
+                        onClick={() => onGenerate(type)}
+                        disabled={isGenerating}
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          border: "1px dashed rgba(20,184,166,0.4)",
+                          background: "transparent",
+                          color: "#14b8a6",
+                          fontSize: "10px",
+                          fontWeight: "600",
+                          cursor: isGenerating ? "not-allowed" : "pointer",
+                          transition: "all 0.15s ease",
+                          opacity: isGenerating ? 0.5 : 1,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "rgba(20,184,166,0.12)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                        }}
+                      >
+                        Generate
+                      </button>
+                    )}
+                    {hasInput && (
+                      <button
+                        onClick={() => {/* stub */}}
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          border: `1px dashed ${tv.borderDefault}`,
+                          background: "transparent",
+                          color: tv.textDim,
+                          fontSize: "10px",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = tv.accent;
+                          e.currentTarget.style.color = tv.accent;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = tv.borderDefault;
+                          e.currentTarget.style.color = tv.textDim;
+                        }}
+                      >
+                        Upload
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -352,18 +455,29 @@ function ExternalInputsPanel({
           <button
             onClick={onViewAll}
             style={{
-              width: "100%",
-              padding: "0.625rem 1rem",
-              backgroundColor: tv.bgPrimary,
-              color: tv.textPrimary,
-              border: `1px solid ${tv.borderSubtle}`,
-              borderRadius: "0.375rem",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              padding: "6px 14px",
+              borderRadius: "7px",
+              border: `1px solid ${tv.borderDefault}`,
+              background: "transparent",
+              color: tv.textSecondary,
+              fontSize: "11px",
+              fontWeight: "600",
               cursor: "pointer",
-              fontSize: "0.875rem",
-              fontWeight: "500",
+              transition: "all 0.15s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = tv.accent;
+              e.currentTarget.style.color = tv.accent;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = tv.borderDefault;
+              e.currentTarget.style.color = tv.textSecondary;
             }}
           >
-            View All
+            View All →
           </button>
         </div>
       )}
@@ -469,23 +583,39 @@ export function EnrichmentView() {
   const modelName = canvasStore.scaffoldData?.name || "Model";
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "1400px", margin: "0 auto" }}>
+    <div style={{ maxWidth: "920px", margin: "0 auto", padding: "24px" }}>
       {/* Header */}
-      <div style={{ marginBottom: "2rem" }}>
-        <h1 style={{ fontSize: "2rem", fontWeight: "700", color: tv.textPrimary, marginBottom: "0.5rem" }}>
+      <div style={{ marginBottom: "24px" }}>
+        <div style={{
+          fontSize: "10px",
+          fontWeight: "700",
+          textTransform: "uppercase",
+          letterSpacing: "1.2px",
+          color: tv.textDim,
+          marginBottom: "4px",
+        }}>
+          Model Management
+        </div>
+        <h1 style={{
+          fontSize: "18px",
+          fontWeight: "700",
+          color: tv.textPrimary,
+          marginBottom: "4px",
+        }}>
           Model Enrichment
         </h1>
-        <p style={{ fontSize: "1rem", color: tv.textSecondary }}>
+        <p style={{
+          fontSize: "12px",
+          color: tv.textSecondary,
+          lineHeight: 1.6,
+          maxWidth: "700px",
+        }}>
           {modelName} — Progressively enrich your operating model from skeleton to governed
         </p>
       </div>
 
       {/* Readiness Stepper */}
-      <div style={{
-        backgroundColor: tv.bgCard,
-        borderRadius: "0.375rem",
-        marginBottom: "2rem",
-      }}>
+      <div style={{ marginBottom: "24px" }}>
         <ReadinessStepper currentReadiness={currentReadiness} nextHint={nextHint ?? readinessHintText} />
       </div>
 
@@ -511,7 +641,7 @@ export function EnrichmentView() {
       />
 
       {/* Enrichments Zone */}
-      <div style={{ marginBottom: "3rem" }}>
+      <div style={{ marginBottom: "48px" }}>
         <SectionHeader
           title="Enrichments"
           subtitle="Operations that structurally enhance your model"
@@ -520,8 +650,8 @@ export function EnrichmentView() {
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-          gap: "1.5rem",
-          marginBottom: "2rem",
+          gap: "24px",
+          marginBottom: "32px",
         }}>
           {enrichmentCards.map((card) => {
             const status = getStatus(card);
@@ -552,12 +682,13 @@ export function EnrichmentView() {
         {/* Cross-Mapping Builder (within enrichments) */}
         {showMappingEditor && (
           <div style={{
-            padding: "1.5rem",
+            padding: "24px",
             backgroundColor: tv.bgCard,
-            borderRadius: "0.375rem",
-            marginBottom: "2rem",
+            border: `1px solid ${tv.borderSubtle}`,
+            borderRadius: "10px",
+            marginBottom: "32px",
           }}>
-            <h3 style={{ fontSize: "1.125rem", fontWeight: "600", marginBottom: "1rem", color: tv.textPrimary }}>
+            <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "16px", color: tv.textPrimary }}>
               Cross-Map Relationships
             </h3>
             <CrossMappingBuilder
@@ -570,7 +701,7 @@ export function EnrichmentView() {
       </div>
 
       {/* Diagnostics Zone */}
-      <div style={{ marginBottom: "3rem" }}>
+      <div style={{ marginBottom: "48px" }}>
         <SectionHeader
           title="Diagnostics"
           subtitle="Analytical observations that reference your current model state"
@@ -579,8 +710,8 @@ export function EnrichmentView() {
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-          gap: "1.5rem",
-          marginBottom: "2rem",
+          gap: "24px",
+          marginBottom: "32px",
         }}>
           {diagnosticCards.map((card) => {
             const diagnostic = diagnosticArtefacts[card.id];
@@ -661,27 +792,28 @@ export function EnrichmentView() {
         {/* Friction Workspace Toggle (within diagnostics) */}
         {showFrictionWorkspace && (
           <div style={{
-            padding: "1.5rem",
+            padding: "24px",
             backgroundColor: tv.bgCard,
-            borderRadius: "0.375rem",
-            marginBottom: "2rem",
+            border: `1px solid ${tv.borderSubtle}`,
+            borderRadius: "10px",
+            marginBottom: "32px",
           }}>
-            <h3 style={{ fontSize: "1.125rem", fontWeight: "600", marginBottom: "1rem", color: tv.textPrimary }}>
+            <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "16px", color: tv.textPrimary }}>
               Friction Analysis Workspace
             </h3>
             <FrictionView />
             <button
               onClick={() => setShowFrictionWorkspace(false)}
               style={{
-                marginTop: "1rem",
-                padding: "0.625rem 1rem",
+                marginTop: "16px",
+                padding: "10px 16px",
                 backgroundColor: tv.bgPrimary,
                 color: tv.textPrimary,
                 border: `1px solid ${tv.borderSubtle}`,
-                borderRadius: "0.375rem",
+                borderRadius: "8px",
                 cursor: "pointer",
-                fontSize: "0.875rem",
-                fontWeight: "500",
+                fontSize: "12px",
+                fontWeight: "600",
               }}
             >
               Close Workspace
@@ -691,7 +823,7 @@ export function EnrichmentView() {
       </div>
 
       {/* Custom Enrichments */}
-      <div style={{ marginBottom: "3rem" }}>
+      <div style={{ marginBottom: "48px" }}>
         <SectionHeader
           title="Custom Enrichments"
           subtitle="User-defined skills that apply custom prompts to your model"

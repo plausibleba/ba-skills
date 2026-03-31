@@ -211,7 +211,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
   }
 
   // ── ELABORATE ──
-  items.push({ id: "sh-elaborate", label: "Elaborate", sectionHeader: true, icon: null, onClick: () => {}, divider: true });
+  items.push({ id: "sh-elaborate", label: "Elaborate", sectionHeader: true, icon: null, onClick: goToIntake, divider: true });
 
   items.push({
     id: "discovery",
@@ -242,7 +242,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
   });
 
   // ── EXPLORE ──
-  items.push({ id: "sh-explore", label: "Explore", sectionHeader: true, icon: null, onClick: () => {}, divider: true });
+  items.push({ id: "sh-explore", label: "Explore", sectionHeader: true, icon: null, onClick: backToNetwork, divider: true, disabled: !isLoaded });
 
   items.push({
     id: "network",
@@ -422,6 +422,18 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
                   >
                     {item.label}
                   </span>
+                  {!item.disabled && (
+                    <span
+                      style={{
+                        marginLeft: 4,
+                        fontSize: 10,
+                        opacity: 0.45,
+                      }}
+                      title={`${item.label} overview`}
+                    >
+                      ⓘ
+                    </span>
+                  )}
                 </div>
               ) : (
                 <button

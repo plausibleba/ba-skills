@@ -56,7 +56,7 @@ export const LAYER_SCHEMES: LayerScheme[] = [
   },
 ];
 
-export const DEFAULT_SCHEME = LAYER_SCHEMES[0];
+export const DEFAULT_SCHEME = LAYER_SCHEMES[1]; // Front Office / Back Office
 
 /**
  * Detect which preset scheme the scaffold is currently using by matching

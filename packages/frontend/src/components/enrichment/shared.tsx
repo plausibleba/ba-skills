@@ -518,11 +518,33 @@ export function useEnrichmentActions() {
 
 export function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="mb-3">
-      <h3 className="text-[11px] font-bold uppercase tracking-wider" style={{ color: tv.accent }}>
-        {title}
-      </h3>
-      <p className="mt-0.5 text-[11px] leading-relaxed" style={{ color: tv.textDim }}>{subtitle}</p>
+    <div style={{ marginTop: "8px", marginBottom: "12px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+        <h3 style={{
+          fontSize: "13px",
+          fontWeight: "700",
+          color: tv.textPrimary,
+        }}>
+          {title}
+        </h3>
+        <span style={{
+          fontSize: "9px",
+          fontWeight: "700",
+          padding: "2px 8px",
+          borderRadius: "10px",
+          textTransform: "uppercase",
+          letterSpacing: "0.5px",
+          backgroundColor: title === "Enrichments" ? "rgba(99,102,241,0.12)" : title === "Diagnostics" ? "rgba(139,92,246,0.12)" : "transparent",
+          color: title === "Enrichments" ? "var(--vcc-accent)" : title === "Diagnostics" ? "#8b5cf6" : tv.textDim,
+        }}>
+          {title === "Enrichments" ? "MODIFIES SCAFFOLD" : title === "Diagnostics" ? "READ-ONLY OVERLAY" : ""}
+        </span>
+      </div>
+      <p style={{
+        fontSize: "11px",
+        color: tv.textDim,
+        maxWidth: "600px",
+      }}>{subtitle}</p>
     </div>
   );
 }
@@ -573,25 +595,52 @@ export function EnrichmentCard({
 
   return (
     <div
-      className="rounded-lg transition-all"
       style={{
         background: isDone ? "rgba(16,185,129,0.06)" : tv.bgCard,
         border: `1px solid ${isDone ? "rgba(16,185,129,0.25)" : tv.borderSubtle}`,
+        borderRadius: "10px",
         opacity: isComingSoon ? 0.5 : 1,
+        transition: "all 0.15s ease",
       }}
     >
       {/* Main row */}
-      <div className="flex items-start gap-3 px-4 py-3">
-        <span className="flex-shrink-0 text-lg mt-0.5">{card.icon}</span>
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-medium" style={{ color: isDone ? "#10b981" : tv.textPrimary }}>
+      <div style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: "14px",
+        padding: "14px 16px",
+      }}>
+        <span style={{
+          flexShrink: 0,
+          fontSize: "22px",
+          marginTop: "2px",
+        }}>{card.icon}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{
+            fontSize: "13px",
+            fontWeight: "600",
+            color: isDone ? "#10b981" : tv.textPrimary,
+            margin: 0,
+          }}>
             {card.label}
           </p>
-          <p className="text-[11px] leading-relaxed mt-0.5" style={{ color: tv.textDim }}>
+          <p style={{
+            fontSize: "11px",
+            lineHeight: 1.5,
+            marginTop: "3px",
+            color: tv.textDim,
+            margin: 0,
+          }}>
             {card.description}
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          flexShrink: 0,
+          marginTop: "2px",
+        }}>
           {/* Add Content toggle — only for non-coming-soon cards */}
           {!isComingSoon && (
             <button
