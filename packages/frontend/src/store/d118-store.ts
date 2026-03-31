@@ -106,10 +106,22 @@ export const useD118Store = create<D118State>((set, get) => ({
     }
     const hash = computeScaffoldHash(scaffold);
     const counts = countScaffoldElements(scaffold);
-    set({ currentScaffoldHash: hash, currentElementCounts: counts });
 
-    // Refresh staleness on all diagnostic artefacts
-    get().refreshStaleness();
+    // Batch hash update + staleness refresh into a single set() to avoid
+    // triggering subscriber re-renders between the two updates (React #185).
+    const diagnosticArtefacts = get().diagnosticArtefacts;
+    const updatedDiagnostics: DiagnosticArtefactStore = {};
+    for (const [id, artefact] of Object.entries(diagnosticArtefacts)) {
+      const isStale = artefact.scaffoldHash !== hash;
+      updatedDiagnostics[id] = { ...artefact, stale: isStale };
+    }
+    set({
+      currentScaffoldHash: hash,
+      currentElementCounts: counts,
+      diagnosticArtefacts: Object.keys(updatedDiagnostics).length > 0
+        ? updatedDiagnostics
+        : diagnosticArtefacts,
+    });
   },
 
   // ── Diagnostic Artefacts ──
