@@ -19,16 +19,13 @@
 import type {
   OperationDefinition,
   ReadinessState,
-  OperationType,
   DependencyType,
   DiagnosticArtefactStore,
   ExternalInputStore,
-  InputProvenance,
 } from "./enrichment-taxonomy";
 import {
   OPERATION_REGISTRY,
   OPERATIONS_BY_ID,
-  READINESS_ORDER,
 } from "./enrichment-taxonomy";
 import { computeReadiness, meetsReadiness, nextReadinessHint } from "./readiness-engine";
 

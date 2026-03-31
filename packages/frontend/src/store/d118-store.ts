@@ -24,22 +24,16 @@ import type {
   ExternalInputArtefact,
   ExternalInputStore,
   ExternalInputType,
-  InputProvenance,
   ReadinessState,
   StalenessDelta,
-  DiagnosticConfidence,
 } from "../domain/enrichment-taxonomy";
 import {
-  GENERABLE_INPUT_TYPES,
   countScaffoldElements,
-  computeStalenessDelta,
-  computeDerivedConfidence,
-  isGenerable,
 } from "../domain/enrichment-taxonomy";
 import { computeScaffoldHash } from "../domain/scaffold-hash";
-import { computeReadiness, meetsReadiness, nextReadinessHint } from "../domain/readiness-engine";
+import { computeReadiness, nextReadinessHint } from "../domain/readiness-engine";
 import { computeNBA } from "../domain/nba-engine";
-import type { NBARecommendation, OperationStatus } from "../domain/nba-engine";
+import type { NBARecommendation } from "../domain/nba-engine";
 import {
   createCheckpoint,
   listCheckpoints,
@@ -172,10 +166,10 @@ export const useD118Store = create<D118State>((set, get) => ({
     const readiness = get().getReadiness();
     try {
       const id = await createCheckpoint(
-        hash,
         scaffold,
         beforeOperation,
-        readiness ?? "skeleton"
+        readiness ?? "skeleton",
+        hash ?? "main"
       );
       await get().refreshCheckpoints();
       return id;
