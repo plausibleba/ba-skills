@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VCC Enrichment Page — D-118 UX Prototype</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg-card: #1a1c25;
+    --bg-card-hover: #22242f;
+    --bg-surface: #14161e;
+    --border: #2a2d3a;
+    --border-subtle: #1f2130;
+    --text-primary: #e8e9ed;
+    --text-secondary: #a0a3b1;
+    --text-dim: #6b6f80;
+    --accent: #6366f1;
+    --accent-muted: rgba(99,102,241,0.12);
+    --green: #10b981;
+    --green-muted: rgba(16,185,129,0.12);
+    --amber: #f59e0b;
+    --amber-muted: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --red-muted: rgba(239,68,68,0.12);
+    --purple: #8b5cf6;
+    --purple-muted: rgba(139,92,246,0.12);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  .page { max-width: 920px; margin: 0 auto; padding: 24px; }
+
+  /* ── Header ── */
+  .page-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-dim); margin-bottom: 4px; }
+  .page-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .page-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; max-width: 700px; }
+
+  /* ── Readiness Stepper ── */
+  .readiness-bar {
+    display: flex; align-items: center; gap: 0;
+    margin: 20px 0 24px; padding: 12px 16px;
+    background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px;
+  }
+  .readiness-step {
+    display: flex; align-items: center; gap: 8px; padding: 6px 14px;
+    border-radius: 8px; font-size: 11px; font-weight: 600;
+    color: var(--text-dim); transition: all 0.2s;
+    cursor: pointer; position: relative;
+  }
+  .readiness-step.current {
+    background: var(--accent-muted); color: var(--accent);
+    border: 1px solid rgba(99,102,241,0.25);
+  }
+  .readiness-step.passed { color: var(--green); }
+  .readiness-step.future { color: var(--text-dim); opacity: 0.5; }
+  .readiness-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--text-dim); flex-shrink: 0;
+  }
+  .readiness-step.current .readiness-dot { background: var(--accent); box-shadow: 0 0 8px rgba(99,102,241,0.4); }
+  .readiness-step.passed .readiness-dot { background: var(--green); }
+  .readiness-connector { width: 20px; height: 2px; background: var(--border); flex-shrink: 0; }
+  .readiness-connector.passed { background: var(--green); }
+  .readiness-hint {
+    margin-left: auto; font-size: 11px; color: var(--text-secondary);
+    padding-left: 16px; max-width: 300px; text-align: right;
+  }
+  .readiness-hint strong { color: var(--accent); font-weight: 600; }
+
+  /* ── Readiness Tooltip ── */
+  .readiness-step .tooltip {
+    display: none; position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+    background: #252838; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px;
+    font-size: 11px; font-weight: 400; color: var(--text-secondary); width: 260px;
+    z-index: 10; line-height: 1.5; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .readiness-step:hover .tooltip { display: block; }
+
+  /* ── NBA Recommendation ── */
+  .nba-card {
+    margin-bottom: 24px; padding: 16px 20px;
+    background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.06));
+    border: 1px solid rgba(99,102,241,0.2); border-radius: 12px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .nba-icon { font-size: 28px; flex-shrink: 0; }
+  .nba-content { flex: 1; }
+  .nba-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 2px; }
+  .nba-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .nba-reason { font-size: 11px; color: var(--text-secondary); }
+  .nba-btn {
+    padding: 8px 20px; border-radius: 8px; border: none;
+    background: var(--accent); color: #fff; font-size: 12px; font-weight: 600;
+    cursor: pointer; white-space: nowrap; transition: all 0.15s;
+  }
+  .nba-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+  /* ── External Inputs Panel ── */
+  .ext-panel {
+    margin-bottom: 24px; border: 1px solid var(--border-subtle); border-radius: 10px;
+    overflow: hidden;
+  }
+  .ext-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; background: var(--bg-card); cursor: pointer;
+    user-select: none;
+  }
+  .ext-header-left { display: flex; align-items: center; gap: 8px; }
+  .ext-header-title { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+  .ext-header-count {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+    background: var(--green-muted); color: var(--green);
+  }
+  .ext-chevron { font-size: 12px; color: var(--text-dim); transition: transform 0.2s; }
+  .ext-chevron.open { transform: rotate(180deg); }
+  .ext-body { padding: 12px 16px; background: var(--bg-surface); display: none; }
+  .ext-body.open { display: block; }
+  .ext-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+  .ext-chip {
+    display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+    background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px;
+  }
+  .ext-chip.provided { border-color: rgba(16,185,129,0.3); }
+  .ext-chip-icon { font-size: 16px; }
+  .ext-chip-info { flex: 1; }
+  .ext-chip-label { font-size: 11px; font-weight: 600; color: var(--text-primary); }
+  .ext-chip-status { font-size: 10px; }
+  .ext-chip-status.provided { color: var(--green); }
+  .ext-chip-status.empty { color: var(--text-dim); }
+  .ext-upload-btn {
+    padding: 4px 10px; border-radius: 6px; border: 1px dashed var(--border);
+    background: transparent; color: var(--text-dim); font-size: 10px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .ext-upload-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Section Headers ── */
+  .section-header { margin-top: 8px; margin-bottom: 12px; }
+  .section-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+  .section-badge {
+    font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .section-badge.enrichment { background: var(--accent-muted); color: var(--accent); }
+  .section-badge.diagnostic { background: var(--purple-muted); color: var(--purple); }
+  .section-desc { font-size: 11px; color: var(--text-dim); max-width: 600px; }
+
+  /* ── Operation Cards ── */
+  .op-card {
+    padding: 14px 16px; margin-bottom: 8px;
+    background: var(--bg-card); border: 1px solid var(--border-subtle);
+    border-radius: 10px; transition: all 0.15s;
+    display: flex; gap: 14px; align-items: flex-start;
+    cursor: default;
+  }
+  .op-card:hover { background: var(--bg-card-hover); border-color: var(--border); }
+  .op-card.stale {
+    opacity: 0.55; filter: saturate(0.3);
+    border-color: rgba(245,158,11,0.25);
+  }
+  .op-card.stale:hover { opacity: 0.75; filter: saturate(0.5); }
+  .op-card.blocked { opacity: 0.6; }
+  .op-card.not-implemented { opacity: 0.4; }
+  .op-card.completed { border-color: rgba(16,185,129,0.25); }
+  .op-card.recommended-next {
+    border-color: rgba(99,102,241,0.3);
+    box-shadow: 0 0 0 1px rgba(99,102,241,0.08);
+  }
+
+  .op-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .op-body { flex: 1; min-width: 0; }
+  .op-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; flex-wrap: wrap; }
+  .op-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .op-tag {
+    font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 6px;
+    text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .op-tag.available { background: var(--accent-muted); color: var(--accent); }
+  .op-tag.completed { background: var(--green-muted); color: var(--green); }
+  .op-tag.blocked { background: var(--red-muted); color: var(--red); }
+  .op-tag.not-ready { background: var(--amber-muted); color: var(--amber); }
+  .op-tag.not-implemented { background: rgba(107,111,128,0.15); color: var(--text-dim); }
+  .op-tag.stale { background: var(--amber-muted); color: var(--amber); }
+  .op-tag.recommended { background: var(--purple-muted); color: var(--purple); }
+
+  .op-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 6px; }
+  .op-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 10px; }
+  .op-meta-chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 8px; border-radius: 6px; font-weight: 500;
+  }
+  .op-meta-chip.dep-met { background: var(--green-muted); color: var(--green); }
+  .op-meta-chip.dep-unmet { background: var(--amber-muted); color: var(--amber); }
+  .op-meta-chip.dep-blocked { background: var(--red-muted); color: var(--red); }
+  .op-meta-chip.ext-present { background: var(--green-muted); color: var(--green); }
+  .op-meta-chip.ext-absent { background: rgba(107,111,128,0.1); color: var(--text-dim); }
+  .op-meta-chip.layer { background: rgba(107,111,128,0.1); color: var(--text-dim); }
+
+  .op-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+  .op-run-btn {
+    padding: 6px 16px; border-radius: 7px; border: none;
+    font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .op-run-btn.primary { background: var(--accent); color: #fff; }
+  .op-run-btn.primary:hover { filter: brightness(1.15); }
+  .op-run-btn.override {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-dim); font-size: 10px;
+  }
+  .op-run-btn.override:hover { border-color: var(--amber); color: var(--amber); }
+  .op-run-btn.rerun {
+    background: var(--amber-muted); color: var(--amber); border: 1px solid rgba(245,158,11,0.2);
+  }
+  .op-run-btn.rerun:hover { border-color: var(--amber); }
+  .op-run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── Stale Banner inside card ── */
+  .stale-banner {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 8px; padding: 6px 10px;
+    background: var(--amber-muted); border-radius: 6px;
+    font-size: 10px; color: var(--amber);
+  }
+  .stale-banner strong { font-weight: 600; }
+
+  /* ── Completed Review Panel ── */
+  .review-panel {
+    margin-top: 8px; padding: 10px 12px;
+    background: var(--green-muted); border-radius: 8px;
+    border: 1px solid rgba(16,185,129,0.15);
+  }
+  .review-summary { font-size: 11px; color: var(--green); margin-bottom: 6px; }
+  .review-actions { display: flex; gap: 8px; }
+  .review-btn {
+    padding: 4px 12px; border-radius: 6px; font-size: 10px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; border: none;
+  }
+  .review-btn.commit { background: var(--green); color: #fff; }
+  .review-btn.view-impact {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff;
+  }
+  .review-btn.undo { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
+
+  /* ── Separator ── */
+  .section-sep { height: 1px; background: var(--border-subtle); margin: 24px 0; }
+
+  /* ── Footer note ── */
+  .proto-note {
+    margin-top: 40px; padding: 16px;
+    background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px;
+    font-size: 11px; color: var(--text-dim); line-height: 1.6;
+  }
+  .proto-note strong { color: var(--text-secondary); }
+
+  /* Interactions */
+  .clickable { cursor: pointer; }
+  .clickable:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── Page Header ── -->
+  <div style="margin-bottom: 4px;">
+    <div class="page-label">Model Enrichment & Diagnostics</div>
+    <div class="page-title">Residential Conveyancing Operating Model</div>
+    <div class="page-desc">
+      Build depth into your scaffold with enrichments, then assess it with diagnostics. Each step is guided by your model's current readiness state.
+    </div>
+  </div>
+
+  <!-- ── Readiness Stepper ── -->
+  <div class="readiness-bar">
+    <div class="readiness-step passed">
+      <div class="readiness-dot"></div>
+      Skeleton
+      <div class="tooltip">Initial scaffold from discovery. Stages, capabilities, roles, and IOs exist as IDs and names.</div>
+    </div>
+    <div class="readiness-connector passed"></div>
+    <div class="readiness-step current">
+      <div class="readiness-dot"></div>
+      Grounded
+      <div class="tooltip">PPIT mapped. Each activity has People, Process, Information, Technology decomposition. Model has operational depth.</div>
+    </div>
+    <div class="readiness-connector"></div>
+    <div class="readiness-step future">
+      <div class="readiness-dot"></div>
+      Detailed
+      <div class="tooltip">Activity flow DAGs derived. Sub-activity sequences, decision gates, and handoffs documented. Cross-maps and metrics populated.</div>
+    </div>
+    <div class="readiness-connector"></div>
+    <div class="readiness-step future">
+      <div class="readiness-dot"></div>
+      Assessed
+      <div class="tooltip">Diagnostics applied. Friction heatmap, maturity scores, and metrics baselines exist as overlay artefacts.</div>
+    </div>
+    <div class="readiness-connector"></div>
+    <div class="readiness-step future">
+      <div class="readiness-dot"></div>
+      Governed
+      <div class="tooltip">Gap register and risk register complete. Full current-state picture with target-state comparison and risk overlay.</div>
+    </div>
+    <div class="readiness-hint">
+      <strong>Next:</strong> Run Derive Activity Flows to reach <strong>Detailed</strong>
+    </div>
+  </div>
+
+  <!-- ── NBA Recommendation ── -->
+  <div class="nba-card">
+    <div class="nba-icon">🔀</div>
+    <div class="nba-content">
+      <div class="nba-label">Suggested Next Step</div>
+      <div class="nba-title">Derive Activity Flows</div>
+      <div class="nba-reason">All prerequisites met. Unlocks 3 downstream operations and advances model to Detailed readiness.</div>
+    </div>
+    <button class="nba-btn">Run</button>
+  </div>
+
+  <!-- ── External Inputs Panel (collapsed by default) ── -->
+  <div class="ext-panel" id="extPanel">
+    <div class="ext-header" onclick="toggleExtPanel()">
+      <div class="ext-header-left">
+        <span style="font-size: 14px;">📎</span>
+        <span class="ext-header-title">External Inputs</span>
+        <span class="ext-header-count">1 provided</span>
+      </div>
+      <span class="ext-chevron" id="extChevron">▼</span>
+    </div>
+    <div class="ext-body" id="extBody">
+      <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 10px;">
+        External inputs are documents you bring — strategic plans, SWOT analyses, risk registers — that make enrichments and diagnostics richer and more grounded. They persist across scaffold versions.
+      </p>
+      <div class="ext-grid">
+        <div class="ext-chip provided">
+          <span class="ext-chip-icon">📋</span>
+          <div class="ext-chip-info">
+            <div class="ext-chip-label">SWOT Analysis</div>
+            <div class="ext-chip-status provided">Provided · Informed confidence</div>
+          </div>
+        </div>
+        <div class="ext-chip">
+          <span class="ext-chip-icon">🎯</span>
+          <div class="ext-chip-info">
+            <div class="ext-chip-label">Strategic Plan</div>
+            <div class="ext-chip-status empty">Not provided</div>
+          </div>
+          <button class="ext-upload-btn">+ Add</button>
+        </div>
+        <div class="ext-chip">
+          <span class="ext-chip-icon">📑</span>
+          <div class="ext-chip-info">
+            <div class="ext-chip-label">Initiative Charter</div>
+            <div class="ext-chip-status empty">Not provided</div>
+          </div>
+          <button class="ext-upload-btn">+ Add</button>
+        </div>
+        <div class="ext-chip">
+          <span class="ext-chip-icon">⚠️</span>
+          <div class="ext-chip-info">
+            <div class="ext-chip-label">Risk Register</div>
+            <div class="ext-chip-status empty">Not provided</div>
+          </div>
+          <button class="ext-upload-btn">+ Add</button>
+        </div>
+        <div class="ext-chip">
+          <span class="ext-chip-icon">📏</span>
+          <div class="ext-chip-info">
+            <div class="ext-chip-label">Regulatory Framework</div>
+            <div class="ext-chip-status empty">Not provided</div>
+          </div>
+          <button class="ext-upload-btn">+ Add</button>
+        </div>
+        <div class="ext-chip">
+          <span class="ext-chip-icon">📊</span>
+          <div class="ext-chip-info">
+            <div class="ext-chip-label">Metrics Library</div>
+            <div class="ext-chip-status empty">Not provided</div>
+          </div>
+          <button class="ext-upload-btn">+ Add</button>
+        </div>
+        <div class="ext-chip">
+          <span class="ext-chip-icon">📈</span>
+          <div class="ext-chip-info">
+            <div class="ext-chip-label">Maturity Assessment</div>
+            <div class="ext-chip-status empty">Not provided</div>
+          </div>
+          <button class="ext-upload-btn">+ Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- ENRICHMENTS SECTION                                                     -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+  <div class="section-header">
+    <div class="section-title-row">
+      <span class="section-title">Enrichments</span>
+      <span class="section-badge enrichment">Modifies Scaffold</span>
+    </div>
+    <div class="section-desc">Enrichments add structural depth to your model — PPIT dimensions, activity flows, concept cards, relationships, and metrics. Each one writes directly to the canonical scaffold.</div>
+  </div>
+
+  <!-- PPIT — Completed -->
+  <div class="op-card completed">
+    <div class="op-icon">🧩</div>
+    <div class="op-body">
+      <div class="op-title-row">
+        <span class="op-title">Map People, Process, Information & Technology</span>
+        <span class="op-tag completed">Completed</span>
+      </div>
+      <div class="op-desc">Decomposes each capability into People, Process, Information, and Technology dimensions. Provides the operational depth that downstream operations depend on.</div>
+      <div class="op-meta">
+        <span class="op-meta-chip layer">Structural</span>
+        <span class="op-meta-chip dep-met">Skeleton → Grounded</span>
+      </div>
+      <!-- Review Panel — already committed -->
+      <div class="review-panel" style="background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.1);">
+        <div class="review-summary">Added 23 roles, 18 information objects, 14 application functions. Model advanced to <strong>Grounded</strong>.</div>
+        <div class="review-actions">
+          <button class="review-btn view-impact">View in Capability Map</button>
+          <button class="review-btn undo">↩ Undo</button>
+        </div>
+      </div>
+    </div>
+    <div class="op-actions">
+      <button class="op-run-btn primary" style="background: var(--bg-surface); color: var(--text-dim); border: 1px solid var(--border);">Re-run</button>
+    </div>
+  </div>
+
+  <!-- Cards — Completed -->
+  <div class="op-card completed">
+    <div class="op-icon">🃏</div>
+    <div class="op-body">
+      <div class="op-title-row">
+        <span class="op-title">Generate Concept & Policy Cards</span>
+        <span class="op-tag completed">Completed</span>
+      </div>
+      <div class="op-desc">Scans the model and generates Concept Cards (business term definitions) and Policy Cards (governance rules and constraints).</div>
+      <div class="op-meta">
+        <span class="op-meta-chip layer">Structural</span>
+      </div>
+    </div>
+    <div class="op-actions">
+      <button class="op-run-btn primary" style="background: var(--bg-surface); color: var(--text-dim); border: 1px solid var(--border);">Re-run</button>
+    </div>
+  </div>
+
+  <!-- Subactivities — Available (NBA recommended) -->
+  <div class="op-card recommended-next">
+    <div class="op-icon">🔀</div>
+    <div class="op-body">
+      <div class="op-title-row">
+        <span class="op-title">Derive Activity Flows</span>
+        <span class="op-tag available">Available</span>
+      </div>
+      <div class="op-desc">Generates detailed activity flow DAGs for each stage — showing work steps, decision gates, handoffs, and checkpoints.</div>
+      <div class="op-meta">
+        <span class="op-meta-chip layer">Structural</span>
+        <span class="op-meta-chip dep-met">Requires Map PPIT ✓</span>
+        <span class="op-meta-chip" style="background: var(--accent-muted); color: var(--accent);">Advances to Detailed</span>
+      </div>
+    </div>
+    <div class="op-actions">
+      <button class="op-run-btn primary">Run</button>
+    </div>
+  </div>
+
+  <!-- Cross-Mapping — Available with advisory -->
+  <div class="op-card">
+    <div class="op-icon">🔄</div>
+    <div class="op-body">
+      <div class="op-title-row">
+        <span class="op-title">Cross-Map Relationships</span>
+        <span class="op-tag recommended">Available</span>
+      </div>
+      <div class="op-desc">Builds explicit relationship maps between element types — Capabilities ↔ Technology, Roles ↔ Stages, etc.</div>
+      <div class="op-meta">
+        <span class="op-meta-chip layer">Structural</span>
+        <span class="op-meta-chip dep-unmet">Tip: Run Map PPIT first for richer maps</span>
+      </div>
+    </div>
+    <div class="op-actions">
+      <button class="op-run-btn primary">Run</button>
+    </div>
+  </div>
+
+  <!-- Metrics — Not implemented -->
+  <div class="op-card not-implemented">
+    <div class="op-icon">📊</div>
+    <div class="op-body">
+      <div class="op-title-row">
+        <span class="op-title">Generate Performance Metrics</span>
+        <span class="op-tag not-implemented">Coming Soon</span>
+      </div>
+      <div class="op-desc">Derives KPIs and performance metrics for each stage and capability, aligned to business outcomes.</div>
+      <div class="op-meta">
+        <span class="op-meta-chip layer">Structural</span>
+        <span class="op-meta-chip ext-absent">Enhanced by: Metrics Library</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-sep"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- DIAGNOSTICS SECTION                                                     -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+  <div class="section-header">
+    <div class="section-title-row">
+      <span class="section-title">Diagnostics</span>
+      <span class="section-badge diagnostic">Overlay Artefacts</span>
+    </div>
+    <div class="section-desc">Diagnostics assess your model without modifying the scaffold. Results are stored as overlay artefacts linked to the scaffold version they were generated from. If the scaffold changes, diagnostics become stale.</div>
+  </div>
+
+  <!-- Friction — Completed but STALE -->
+  <div class="op-card stale">
+    <div class="op-icon">⚡</div>
+    <div class="op-body">
+      <div class="op-title-row">
+        <span class="op-title">Assess Friction & Bottlenecks</span>
+        <span class="op-tag stale">Stale</span>
+        <span class="op-tag completed" style="opacity: 0.5;">Was Completed</span>
+      </div>
+      <div class="op-desc">Identifies friction, binding constraints, and bottlenecks across your value stream stages and handoffs.</div>
+      <div class="op-meta">
+        <span class="op-meta-chip layer">Diagnostic</span>
+        <span class="op-meta-chip ext-present">Using: SWOT Analysis</span>
+      </div>
+      <!-- Stale Banner -->
+      <div class="stale-banner">
+        <span>⚠</span>
+        <span><strong>Model changed since this was run.</strong> The scaffold was enriched after this diagnostic was generated. Results may not reflect current model state. Re-run to update.</span>
+      </div>
+    </div>
+    <div class="op-actions">
+      <button class="op-run-btn rerun">Re-run</button>
+    </div>
+  </div>
+
+  <!-- Dependencies — Blocked -->
+  <div class="op-card blocked">
+    <div class="op-icon">🔗</div>
+    <div class="op-body">
+      <div class="op-title-row">
+        <span class="op-title">Map Cross-Stream Dependencies</span>
+        <span class="op-tag not-ready">Not Ready</span>
+      </div>
+      <div class="op-desc">Identifies shared capabilities, cross-stream handoffs, and system dependencies between value streams.</div>
+      <div class="op-meta">
+        <span class="op-meta-chip layer">Diagnostic</span>
+        <span class="op-meta-chip dep-blocked">Requires: Detailed readiness</span>
+        <span class="op-meta-chip dep-blocked">Requires: Map PPIT</span>
+      </div>
+    </div>
+    <div class="op-actions">
+      <button class="op-run-btn override">Run Anyway</button>
+    </div>
+  </div>
+
+  <!-- Maturity — Blocked -->
+  <div class="op-card blocked">
+    <div class="op-icon">📈</div>
+    <div class="op-body">
+      <div class="op-title-row">
+        <span class="op-title">Capability Maturity Assessment</span>
+        <span class="op-tag not-ready">Not Ready</span>
+      </div>
+      <div class="op-desc">Evaluates each capability against a maturity scale (Level 1–5) based on process standardisation, automation, and governance.</div>
+      <div class="op-meta">
+        <span class="op-meta-chip layer">Diagnostic</span>
+        <span class="op-meta-chip dep-blocked">Requires: Detailed readiness</span>
+        <span class="op-meta-chip ext-present">Using: SWOT Analysis</span>
+        <span class="op-meta-chip ext-absent">Tip: Add a Maturity Assessment</span>
+      </div>
+    </div>
+    <div class="op-actions">
+      <button class="op-run-btn override">Run Anyway</button>
+    </div>
+  </div>
+
+  <!-- Gap Analysis — Blocked (further away) -->
+  <div class="op-card blocked" style="opacity: 0.45;">
+    <div class="op-icon">🎯</div>
+    <div class="op-body">
+      <div class="op-title-row">
+        <span class="op-title">Current vs Target Gap Analysis</span>
+        <span class="op-tag not-ready">Not Ready</span>
+      </div>
+      <div class="op-desc">Compares current capabilities against target state to identify transformation gaps.</div>
+      <div class="op-meta">
+        <span class="op-meta-chip layer">Interpretive</span>
+        <span class="op-meta-chip dep-blocked">Requires: Assessed readiness</span>
+        <span class="op-meta-chip ext-present">Using: SWOT Analysis</span>
+        <span class="op-meta-chip ext-absent">Tip: Add a Strategic Plan</span>
+      </div>
+    </div>
+    <div class="op-actions">
+      <button class="op-run-btn override">Run Anyway</button>
+    </div>
+  </div>
+
+  <!-- Risk — Blocked -->
+  <div class="op-card blocked" style="opacity: 0.45;">
+    <div class="op-icon">🛡️</div>
+    <div class="op-body">
+      <div class="op-title-row">
+        <span class="op-title">Operational Risk Assessment</span>
+        <span class="op-tag not-ready">Not Ready</span>
+      </div>
+      <div class="op-desc">Identifies operational risks, single points of failure, and governance gaps across your model.</div>
+      <div class="op-meta">
+        <span class="op-meta-chip layer">Interpretive</span>
+        <span class="op-meta-chip dep-blocked">Requires: Assessed readiness + Friction</span>
+        <span class="op-meta-chip ext-present">Using: SWOT Analysis</span>
+        <span class="op-meta-chip ext-absent">Tip: Add a Risk Register</span>
+      </div>
+    </div>
+    <div class="op-actions">
+      <button class="op-run-btn override">Run Anyway</button>
+    </div>
+  </div>
+
+  <!-- Strategic Alignment — Not implemented -->
+  <div class="op-card not-implemented" style="opacity: 0.35;">
+    <div class="op-icon">🧭</div>
+    <div class="op-body">
+      <div class="op-title-row">
+        <span class="op-title">Strategic Alignment Assessment</span>
+        <span class="op-tag not-implemented">Coming Soon</span>
+      </div>
+      <div class="op-desc">Assesses alignment between operational friction, capability gaps, and strategic objectives.</div>
+      <div class="op-meta">
+        <span class="op-meta-chip layer">Interpretive</span>
+        <span class="op-meta-chip ext-absent">Needs: Strategic Plan, SWOT</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Initiative Impact — Not implemented -->
+  <div class="op-card not-implemented" style="opacity: 0.35;">
+    <div class="op-icon">🚀</div>
+    <div class="op-body">
+      <div class="op-title-row">
+        <span class="op-title">Initiative Impact Analysis</span>
+        <span class="op-tag not-implemented">Coming Soon</span>
+      </div>
+      <div class="op-desc">Traces value stream impacts from a scoped initiative charter to identify affected capabilities and stages.</div>
+      <div class="op-meta">
+        <span class="op-meta-chip layer">Interpretive</span>
+        <span class="op-meta-chip ext-absent">Needs: Initiative Charter, SWOT</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compliance — Not implemented -->
+  <div class="op-card not-implemented" style="opacity: 0.35;">
+    <div class="op-icon">📋</div>
+    <div class="op-body">
+      <div class="op-title-row">
+        <span class="op-title">Compliance Assessment</span>
+        <span class="op-tag not-implemented">Coming Soon</span>
+      </div>
+      <div class="op-desc">Maps regulatory controls to capabilities and assesses compliance coverage across the operating model.</div>
+      <div class="op-meta">
+        <span class="op-meta-chip layer">Interpretive</span>
+        <span class="op-meta-chip ext-absent">Needs: Regulatory Framework, SWOT</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Prototype Notes ── -->
+  <div class="proto-note">
+    <strong>D-118 UX Prototype — Design Notes</strong><br><br>
+    <strong>1. Readiness Stepper</strong> replaces the old "3/7 enrichments applied" progress bar. It shows the model's actual maturity state computed from content, with tooltips explaining each level and a hint for advancing.<br><br>
+    <strong>2. NBA Recommendation</strong> sits above both sections as a gentle suggestion, never a gate. The user can ignore it and run any available operation.<br><br>
+    <strong>3. Two-zone layout</strong> (Enrichments / Diagnostics) replaces the old five-category grouping. The semantic split matches D-118's fundamental distinction: enrichments modify, diagnostics assess.<br><br>
+    <strong>4. Staleness</strong> is shown by desaturating the entire card (CSS opacity + saturate filter) with an amber banner explaining what happened and offering Re-run. This is the "visible-but-desaturated" compromise from D-118 — not hidden, not full-fidelity.<br><br>
+    <strong>5. Soft blocks</strong> show "Run Anyway" as a subtle secondary button. Never hard-blocked. Plausible Over Perfect.<br><br>
+    <strong>6. External Inputs</strong> panel is collapsible at the top — project-level assets that persist across scaffold versions. Individual cards show "Using: SWOT Analysis" when inputs are present, or "Tip: Add a Strategic Plan" as a gentle nudge.<br><br>
+    <strong>7. Layer badges</strong> (Structural / Diagnostic / Interpretive) give advanced users ontological context without cluttering the UI for beginners.<br><br>
+    <strong>8. Progressive disclosure</strong> — operations further from readiness are more dimmed. "Coming Soon" operations are visible but clearly deferred. The page tells a story of where you are and where you're heading.
+  </div>
+
+</div>
+
+<script>
+function toggleExtPanel() {
+  const body = document.getElementById('extBody');
+  const chevron = document.getElementById('extChevron');
+  body.classList.toggle('open');
+  chevron.classList.toggle('open');
+}
+</script>
+</body>
+</html>

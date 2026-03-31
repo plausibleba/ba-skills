@@ -1,6 +1,6 @@
 # Current State — VCC Frontend
 
-_Last updated: 2026-03-31 — Session 27 (D-118 Steps 11-12: EnrichmentView restructure + staleness overlay) — v0.5.0 DRAFT_
+_Last updated: 2026-03-31 — Session 28 (D-118 polish: dark mode, Network default, SideNav info icons) — v0.5.0 DRAFT_
 
 ---
 
@@ -89,9 +89,10 @@ The canvas is now a **living document**, not a read-only output:
 - Entry/exit states, friction observations, binding constraint display
 - User story generation via TransformationPane
 
-### Network View ✅ (MAJOR UPDATE — Session 23)
+### Network View ✅ (MAJOR UPDATE — Session 23, default scheme fix Session 28)
 
 - **Layer Scheme Selector**: toggle pills for Ecosystem/Knowledge, Front/Back Office, Strategic/Core/Enabling, Wardley Zones — redistributes VS across layers on each switch using journey order
+- **Default scheme migration**: Existing scaffolds on "ecosystem-knowledge" auto-migrate to Front Office / Back Office on first load (one-time, via `hasMigrated` ref guard)
 - **Graph View**: draggable node-edge coupling visualisation with purple dashed coupling edges and blue flow edges
 - **VS Editor Modal**: edit pencil on each card opens modal to change name, description, layer, stakeholder
 - **Journey-Ordered Layout**: topological sort (Kahn's algorithm) replaces alphabetical within each zone row
@@ -295,6 +296,12 @@ SPAR design review completed with Technical Architect (GPT-4o) and Functional De
 - Diagnostic cards: CSS desaturation (opacity 0.55, saturate 0.3) when stale
 - Amber staleness banner with quantified delta summary and Re-run button
 - NBABanner integrated into 4 canvas views with view-specific staleDiagnosticId
+
+**Session 28 polish:**
+- `EnrichmentView.tsx` — full-width dark mode background wrapper (`tv.bgPrimary`)
+- `NetworkView.tsx` — auto-migrate existing scaffolds from ecosystem-knowledge to front-back default scheme on first load
+- `SideNav.tsx` — section header info icons (ⓘ) now visible at 50% white opacity (was ~13% effective opacity due to stacked opacity), hover highlight on headers, `pointer-events: none` when collapsed
+- `layer-schemes.ts` — `DEFAULT_SCHEME` changed to Front Office / Back Office (Session 27)
 
 **UX prototypes (`docs/`):**
 - `ux-prototype-enrichment-v2.html` — initial two-zone layout, readiness stepper, staleness desaturation
