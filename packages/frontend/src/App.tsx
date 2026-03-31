@@ -21,7 +21,7 @@ import { UpsellModalProvider, useUpsellModal } from "./components/UpsellModal.ts
 import { RefinementExportModal } from "./components/RefinementExport.tsx";
 import { ImportView } from "./components/ImportView.tsx";
 import { WorkbenchView } from "./components/WorkbenchView.tsx";
-import { EnrichOverview } from "./components/enrichment/EnrichOverview";
+import { EnrichmentView } from "./components/EnrichmentView";
 import { EnrichStructureView } from "./components/enrichment/EnrichStructureView";
 import { EnrichMappingView } from "./components/enrichment/EnrichMappingView";
 import { EnrichFrictionView } from "./components/enrichment/EnrichFrictionView";
@@ -471,7 +471,7 @@ export default function App() {
           enrichSection === "friction" ? <EnrichFrictionView /> :
           enrichSection === "assessment" ? <EnrichAssessmentView /> :
           enrichSection === "custom" ? <EnrichCustomView /> :
-          <EnrichOverview />
+          <EnrichmentView />
         )}
         {isWorkbench && workbenchActive && <WorkbenchView />}
       </main>
