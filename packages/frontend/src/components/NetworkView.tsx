@@ -6,7 +6,7 @@ import { useGateCheck } from "../hooks/useGateCheck.ts";
 import { useWorkbenchStore } from "../store/workbench-store.ts";
 import { tv } from "../theme.ts";
 import type { NetworkNode, NetworkEdge } from "../types.ts";
-import { LAYER_SCHEMES, detectSchemeId } from "../lib/layer-schemes.ts";
+import { LAYER_SCHEMES, DEFAULT_SCHEME, detectSchemeId } from "../lib/layer-schemes.ts";
 import { NBABanner } from "./NBABanner";
 
 /* ── VS Editor Modal ──────────────────────────────────────────────── */
@@ -615,6 +615,20 @@ export function NetworkView() {
     };
     useCanvasStore.getState().loadScaffold(updatedScaffold);
   }, [scaffoldData, networkNodes]);
+
+  // Auto-apply DEFAULT_SCHEME for scaffolds still on the old default.
+  // Runs once on mount — migrates "ecosystem-knowledge" → DEFAULT_SCHEME.
+  const hasMigrated = useRef(false);
+  useEffect(() => {
+    if (hasMigrated.current) return;
+    if (!scaffoldData || networkNodes.length === 0) return;
+    const detected = detectSchemeId(scaffoldData?.layoutZones as Array<{ id: string }> | undefined);
+    if (detected === "ecosystem-knowledge" && DEFAULT_SCHEME.id !== "ecosystem-knowledge") {
+      hasMigrated.current = true;
+      // Defer to avoid calling loadScaffold during render
+      setTimeout(() => applyLayerScheme(DEFAULT_SCHEME.id), 0);
+    }
+  }, [scaffoldData, networkNodes, applyLayerScheme]);
 
   if (!scaffoldData || networkNodes.length === 0) return null;
 

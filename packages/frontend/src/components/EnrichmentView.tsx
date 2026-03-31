@@ -583,6 +583,7 @@ export function EnrichmentView() {
   const modelName = canvasStore.scaffoldData?.name || "Model";
 
   return (
+    <div style={{ minHeight: "100%", backgroundColor: tv.bgPrimary }}>
     <div style={{ maxWidth: "920px", margin: "0 auto", padding: "24px" }}>
       {/* Header */}
       <div style={{ marginBottom: "24px" }}>
@@ -882,6 +883,7 @@ export function EnrichmentView() {
           <WaitPuzzle step={enrichmentStore.running} />
         </div>
       )}
+    </div>
     </div>
   );
 }
