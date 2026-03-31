@@ -158,7 +158,7 @@ export function CanvasView() {
   return (
     <div className="flex h-full gap-0" style={{ background: tv.bgSurface, fontFamily: "'DM Sans', system-ui, sans-serif", position: "relative" }}>
       {/* D-118: NBA Banner for canvas view */}
-      <NBABanner />
+      <NBABanner style={{ top: 56 }} />
 
       <div className="flex h-full flex-1 flex-col gap-4 overflow-hidden pl-6 pt-4">
         {/* Conflict banner — optimistic lock failure */}
