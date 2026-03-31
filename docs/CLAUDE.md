@@ -173,6 +173,10 @@ Key files: `website/api/claim-bundle.ts` (edge function), `utils/bundle-claim.ts
 
 **Explicitly deferred**: Runtime workflow execution, telemetry ingestion, automated metric calculation, simulation engine, multi-tenant SaaS, Throughput Impact Panel (see `POSTURE_non_prescriptive.md`), activity-level PPIT anchoring (currently capability-level).
 
+## PlausibleBA Skills (in this repo)
+
+Source lives at `packages/frontend/ba-skills/`. Four skills (`/plausibleba`, `/capability-map`, `/concept-model`, `/value-stream`) that auto-generate XLSX + JSON exports after rendering and recommend companion skills. Distributed as `.skill` files (Cowork) and `.zip` files (Claude Code) via `plausibleba.com/install`. See `CURRENT-STATE.md` § "PlausibleBA BA Skills Library" for full details.
+
 ## Current Stats (IIBA Operating Model)
 
 | Element | Count |

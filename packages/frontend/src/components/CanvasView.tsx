@@ -20,6 +20,7 @@ import { ConflictBanner } from "./ConflictBanner.tsx";
 import { InspectorPanel, type InspectorTarget } from "./canvas/InspectorPanel.tsx";
 import { useCanvasControls } from "./canvas/useCanvasControls.ts";
 import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
+import { NBABanner } from "./NBABanner";
 
 /* ── Canvas View — orchestrator ────────────────────────────────────── */
 
@@ -155,7 +156,10 @@ export function CanvasView() {
   }, [dragIdx, dropIdx, canvasViewModel, moveActivity]);
 
   return (
-    <div className="flex h-full gap-0" style={{ background: tv.bgSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+    <div className="flex h-full gap-0" style={{ background: tv.bgSurface, fontFamily: "'DM Sans', system-ui, sans-serif", position: "relative" }}>
+      {/* D-118: NBA Banner for canvas view */}
+      <NBABanner />
+
       <div className="flex h-full flex-1 flex-col gap-4 overflow-hidden pl-6 pt-4">
         {/* Conflict banner — optimistic lock failure */}
         <ConflictBanner />

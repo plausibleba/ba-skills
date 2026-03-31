@@ -671,3 +671,95 @@ Additional lenses can be defined without modifying the foundation. Simulations c
 2. Project sharing — invite by email using `project_access` table
 3. Module-specific panel visibility — show/hide UI sections based on selected module
 4. Vercel deployment — env vars, edge function, production build
+
+---
+
+## D-118: Enrichment & Diagnostic Refactoring — SPAR Decision Record
+**Date:** 2026-03-31
+**Status:** Locked (Phase 1), Deferred (Phases 2–4)
+**SPAR Participants:** Terry Roach (Product Owner / Architect), GPT-4o (Technical Architect — Cautious), Gemini (Functional Design Architect — Creative/Innovative), Claude (Implementer)
+
+**Context:** The VCC enrichment system has ten model operations grouped into four UI categories (Structure, Mapping, Friction, Assessment). Five are active, five planned. The current design conflates operations that add structural depth to the scaffold (enrichments) with operations that assess the model without modifying it (diagnostics). This violates the spirit of Invariant 2 (Layer Separation in Reasoning), creates implicit dependencies between operations, provides no mechanism for contextual user inputs with confidence levels, and offers no model versioning or scenario branching.
+
+A design specification was prepared (DESIGN-SPEC-enrichment-diagnostic-refactoring.docx) and circulated with briefing notes (SPAR-BRIEFING-enrichment-refactoring.docx) to both architects. Both returned substantive responses. This decision record captures the consensus and contested points.
+
+**Decided (Locked):**
+
+1. **Enrichment / Diagnostic taxonomy is approved.** Operations are classified into two types: Enrichments modify the canonical scaffold (Structural layer). Diagnostics produce separate overlay artefacts that reference the scaffold by hash but never alter it (Diagnostic/Interpretive layers). Naming: "Enrichment" and "Diagnostic" (not "Insight" or "Probe"). Classification per the design spec taxonomy table: PPIT, Activity Flows, Concept/Policy Cards, Cross-Map, and Performance Metrics are Enrichments. Friction, Cross-Stream Dependencies, Maturity, Gap Analysis, and Risk Assessment are Diagnostics.
+
+2. **Diagnostic artefact separation is approved.** Diagnostic outputs are stored in a separate `scaffoldDiagnostics` collection in the canvas store, keyed by diagnostic type, tagged with `scaffoldHash`. They are never merged into the scaffold JSON. When the scaffold hash changes, diagnostics are marked stale but not deleted.
+
+3. **Staleness UX: visible-but-desaturated.** Stale diagnostics are shown with desaturated visual treatment (muted colours, dashed borders, and a clear "derived from earlier version" banner with a re-run prompt). They are not suppressed by default and not shown at full fidelity. This preserves context while preventing false confidence. (Compromise between Technical Architect's "suppress by default" and the design spec's "amber badge".)
+
+4. **Readiness is computed, not stored.** Model readiness states (Skeleton → Grounded → Detailed → Assessed → Governed) are derived from actual scaffold content. No readiness field is persisted. The system inspects which element collections are populated and which diagnostic artefacts exist. Readiness is displayed as a progress indicator in the Enrichment/Diagnostic UI.
+
+5. **Dependency graph is approved (keep simple).** Each operation declares dependencies as Required (blocks execution) or Recommended (advisory warning). Optional hints are deferred. Required dependencies use soft blocks: a warning dialog with "I understand, proceed anyway" rather than a greyed-out button. This respects Plausible Over Perfect.
+
+6. **Pre-enrichment checkpointing is approved.** Before each enrichment runs, the system automatically creates a checkpoint: serialised scaffold JSON plus metadata (timestamp, operation, readiness state, input parameters). Stored in IndexedDB. Diagnostics do not trigger checkpoints (they don't modify the scaffold). Diagnostic artefacts are tagged with scaffold hash so they can be matched to any checkpoint.
+
+7. **Six non-negotiables (from Technical Architect) are locked:**
+   - The scaffold remains the only canonical structural artefact.
+   - No diagnostic may silently mutate the scaffold or any structural readiness marker.
+   - Every diagnostic artefact must record the scaffold hash it was derived from.
+   - Staleness rules must be machine-detectable, not purely visual convention.
+   - Inputs carry provenance and confidence metadata from day one.
+   - No ambiguous merge semantics in the first iteration.
+
+**Deferred:**
+
+1. **Scenario branching (Phase 3).** Named branches, branch compare, and "Scenario Ghost" visualisation (Functional Architect's proposal to show original scaffold as a faint background layer). Create-branch and switch-branch supported. Merge automation explicitly deferred until real user behaviour demonstrates demand. Trigger: Phase 1 complete and checkpointing proven in use.
+
+2. **Branch merge (Phase 3+).** Per-element conflict resolution, last-write-wins, and layer-independent merge strategies all deferred. Trigger: branch usage patterns observed in production.
+
+3. **Contextual input registry (Phase 2).** Smart questions with confidence levels (Accurate/Informed/Estimate/Unknown). Input registry stored at project level with scaffold-scoped applicability metadata (hybrid of Technical Architect's and Functional Architect's positions). Prefill logic for reused answers. Trigger: Phase 1 infrastructure stable.
+
+4. **Use case lifecycle expansion (Phase 2).** Progressive activation of additional use cases mid-project. Tier-gated. Recomputes recommended journey immediately but presents the change as an explicit journey shift. Architecture remains operation-centric, not use-case-centric (per Technical Architect). Trigger: Phase 1 complete.
+
+5. **Governance Health Report / Board Slide Deck (Phase 2 prototype).** Auto-generated natural language summary from the Interpretive layer, exportable as a board-ready slide deck. Functional Architect's "One Big Idea." To be prototyped once diagnostic artefact separation is stable.
+
+6. **"Friction as Narrative" / Alignment Inquiries (Phase 2+).** Functional Architect's proposal for diagnostics to surface contextual prompts that pre-scope the next operation (e.g., "High governing friction in Order Fulfilment — would you like to run Gap Analysis on these two specifically?"). Extends the Next-Best-Action engine. Trigger: NBA engine operational in Phase 1.
+
+7. **Maturity Heatmap HUD (Phase 2+).** Functional Architect's proposal to visualise the CAPSICUM 3×3 matrix as a progress indicator where cells glow/saturate as they are grounded. Trigger: readiness computation stable.
+
+**Tensions:**
+
+1. **Ambition vs Discipline.** The Functional Architect brings expansive UX innovation (Maturity HUD, Scenario Ghosts, Alignment Inquiries, Board Slide Deck). The Technical Architect counsels modest, infrastructural first implementation. Resolution: Phase 1 is infrastructure-first per Technical Architect; Functional Architect innovations are explicitly scheduled in Phases 2–4, not discarded.
+
+2. **Rigour vs Speed.** Smart questions and confidence metadata improve analytical quality but could slow down the "wow moment" of seeing the first network view. Resolution: inputs are never required — operations always run with defaults. Questions surface only in a pre-flight panel for users who want to invest in accuracy.
+
+3. **Readiness as signal vs authority.** The Technical Architect warns that readiness states could be mistaken for quality endorsement. Resolution: readiness is framed as "model maturity" (depth of structural coverage), never as "model quality" or "correctness." UI language must reflect this distinction.
+
+4. **Input portability vs simplicity.** The Functional Architect wants inputs to travel with elements across projects. The Technical Architect wants project-scoped storage with applicability metadata. Resolution: hybrid approach in Phase 2, deferred to detailed design.
+
+**Rationale:** Both architects endorsed the core proposal. The enrichment/diagnostic split operationalises Invariant 2, which has been a design principle since Session 10 but was never enforced in the enrichment codebase. The Technical Architect's phasing provides a disciplined implementation path that delivers the most important architectural corrections first. The Functional Architect's innovations provide a compelling product vision for Phases 2–4. The "Plausible Over Perfect" principle (D-010) governs the soft-block decision. The "Ontology Without Repository" principle (D-095/D-097) governs the client-side checkpointing decision.
+
+**Implementation Phasing:**
+
+- **Phase 1 — Make the boundary real:** Operation classification in code, diagnostic artefact separation with scaffold-hash linkage, readiness computation, minimal dependency model with NBA recommendation, pre-enrichment checkpoints, staleness detection with desaturated UX.
+- **Phase 2 — Improve operator discipline:** Contextual input registry with provenance/confidence, prefill logic, operation audit metadata, use case lifecycle expansion, Board Slide Deck prototype.
+- **Phase 3 — Scenario infrastructure:** Named branches, branch compare, Scenario Ghost visualisation. No merge automation.
+- **Phase 4 — UX innovation:** Maturity Heatmap HUD, Friction-as-Narrative / Alignment Inquiries, full Board Slide Deck generation.
+
+---
+
+## D-118a: FA SPAR Review — Provenance, Confidence Propagation, Staleness Delta
+**Date:** 2026-03-31
+**Status:** Locked (accepted into Phase 1 scope)
+**SPAR Participant:** Gemini (Functional Design Architect — Creative/Innovative)
+
+**Context:** Following the D-118 UX prototype review (v2/v3), the Functional Architect provided a structured SPAR response with five design innovations. Three were accepted into Phase 1, two deferred.
+
+**Decided (Locked):**
+
+1. **External Input Provenance (Provided vs Generated):** ExternalInputArtefact gains a `provenance` field ("provided" | "generated"). Three input types are generable: Risk Register (from friction analysis), Metrics Library (from industry benchmarks), Maturity Assessment (from PPIT depth). Generated inputs track `generatedFrom` and `generatedAtScaffoldHash` for staleness. UI shows distinct badges: green "Provided", teal "Generated". The ✦ Generate button appears alongside + Add for generable types.
+
+2. **Confidence Propagation to Diagnostic Results:** DiagnosticArtefactBase gains `derivedConfidence` ("high" | "moderate" | "low" | "indicative") and `inputSnapshot` (frozen record of which inputs were consumed at run time, with their provenance and confidence). This creates an audit trail — a board-facing diagnostic carries visible evidence quality. NBA scoring: provided inputs +5 bonus, generated inputs +3 bonus.
+
+3. **Staleness as Quantified Curiosity Trigger:** When a diagnostic goes stale, the UI shows a computed delta instead of a generic message. E.g., "Model changed: 5 new capabilities, 2 new activity flow graphs" rather than "Model changed since this was run." StalenessDelta type captures element counts at production vs current. Computed on demand, not stored.
+
+**Deferred:**
+
+- **Background textures for layer differentiation:** Blueprint grid (structural) vs parchment (interpretive). Declined for Phase 1 — existing colour-coded layer badges are sufficient and adding textures increases design surface area across themes. Revisit if user testing shows layer confusion.
+- **Branch mini-sparklines (friction delta per branch):** Already deferred to Phase 3 in D-118.
+
+**Tension:** UI density vs executive aesthetic. As layer badges, NBA, external input chips, and provenance badges accumulate, card visual weight increases. The aggressive desaturation on blocked/stale/future cards is the primary density valve — keep it aggressive.

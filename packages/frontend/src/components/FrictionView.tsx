@@ -12,6 +12,7 @@ import type {
 } from "../types.ts";
 import { classifyCategory, categoryLabel, buildActivityFrictionMap } from "./FrictionOverlay.tsx";
 import { useVendorLibraryStore, type CustomerStory, type CustomerStoryCatalogue } from "../store/vendor-library-store.ts";
+import { NBABanner } from "./NBABanner";
 import type { VendorFeatureLibrary } from "../types.ts";
 import { useGateCheck } from "../hooks/useGateCheck.ts";
 import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforce.json";
@@ -128,7 +129,10 @@ export function FrictionView() {
   ];
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" style={{ position: "relative" }}>
+      {/* D-118: NBA Banner for stale friction diagnostic */}
+      <NBABanner staleDiagnosticId="friction" />
+
       {/* Tab bar */}
       <div className="flex items-center gap-1 border-b border-gray-200 bg-white px-6 pt-3">
         {tabs.map((tab) => (

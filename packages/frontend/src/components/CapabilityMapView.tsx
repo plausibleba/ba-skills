@@ -5,6 +5,7 @@ import { buildPPITByCapId } from "../domain/ppit-enrichment.ts";
 import { CapNode, L1Block, LayoutMode, LayoutMap } from "./capability-map-types.ts";
 import { CapabilityTable } from "./CapabilityTable.tsx";
 import { CapabilityInspectorPanel } from "./CapabilityInspector.tsx";
+import { NBABanner } from "./NBABanner";
 
 /* ── Governance detection ─────────────────────────────────── */
 const GOV_WORDS = [
@@ -272,8 +273,12 @@ export function CapabilityMapView() {
       style={{
         background: tv.bgPrimary,
         fontFamily: "'DM Sans', system-ui, sans-serif",
+        position: "relative",
       }}
     >
+      {/* D-118: NBA Banner for capability map view */}
+      <NBABanner staleDiagnosticId="maturity" />
+
       {/* Main scrollable content */}
       <div className="flex-1 overflow-auto">
       <div className="mx-auto max-w-[1400px] p-5">

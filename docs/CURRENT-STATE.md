@@ -1,6 +1,6 @@
 # Current State — VCC Frontend
 
-_Last updated: 2026-03-22 — Session 24 (Canvas→VCC handoff & commercial tier system) — v0.5.0 DRAFT_
+_Last updated: 2026-03-31 — Session 27 (D-118 Steps 11-12: EnrichmentView restructure + staleness overlay) — v0.5.0 DRAFT_
 
 ---
 
@@ -200,14 +200,51 @@ Decisions numbered D-001 through D-097. Single source of truth: `docs/DECISIONS.
 
 ---
 
+## PlausibleBA BA Skills Library
+
+_Last updated: 2026-03-31_
+
+### Source of Truth
+- **Development**: `vcc/packages/frontend/ba-skills/` (in VCC repo)
+- **Distribution**: `plausibleba/ba-skills` on GitHub (marketplace repo — needs manual sync from VCC)
+- **Website downloads**: `vcc/website/downloads/` (`.skill` + `.zip` formats)
+
+### Skills (4)
+| Skill | Command | Description |
+|-------|---------|-------------|
+| ba-plausibleba | `/plausibleba` | Orchestrator — all three in one guided flow |
+| ba-capability-mapping | `/capability-map` | BIZBOK-grounded MECE capability hierarchy (L1-L3) |
+| ba-concept-model | `/concept-model` | Business object taxonomy (Capsicum Triad) |
+| ba-value-streams | `/value-stream` | Staged value delivery with outcome chains |
+
+### Post-Delivery Behaviour (updated Session 25)
+All four skills now auto-generate exports after rendering (no user prompt needed):
+- XLSX workbook + JSON bundle with clickable `computer://` download links
+- Companion skill recommendations (e.g. Capability Map → Concept Model → Value Stream)
+
+### Distribution Formats
+| Format | Audience | Structure |
+|--------|----------|-----------|
+| `.skill` | Cowork upload (primary) | Single folder + single SKILL.md |
+| `.zip` | Claude Code (`~/.claude/skills/`) | Folder + SKILL.md + `commands/` subfolder |
+
+### Marketplace Status
+- **Claude Plugin Marketplace**: Resubmitted 31 March 2026. Pending review. Previous submission (16 March) rejected with no feedback.
+- **License**: CC BY-SA 4.0 (LICENSE file in ba-skills repo)
+
+### Sync Status
+All four SKILL.md files in the `plausibleba/ba-skills` repo are now in sync with the VCC source (commit `c6cabfa`, 31 March 2026).
+
+---
+
 ## PlausibleBA Website (plausibleba.com)
 
-_Last updated: 2026-03-19_
+_Last updated: 2026-03-31_
 
 ### Deployment
 - Repo: `plausibleba/website` on GitHub → auto-deploys to Vercel
 - Local working copy: `vcc/website/` (has own `.git` pointing at plausibleba/website remote)
-- Push from laptop: `cd vcc/website && git push origin main`
+- Push from Mac Mini: `cd ~/projects/vcc/website && git push origin main`
 
 ### Lead Capture (fully operational as of 19 March)
 - **Email gate**: Name + email collected before first canvas generation
@@ -217,12 +254,51 @@ _Last updated: 2026-03-19_
 - **Leads API**: `GET /api/leads?key=PBA-LEADS-2026` returns all leads as JSON
 - **Env vars**: ANTHROPIC_API_KEY, KV_REST_API_URL, KV_REST_API_TOKEN, LEADS_API_KEY, GSHEET_WEBHOOK_URL
 
+### Install Page (updated Session 25)
+- Primary download: `.skill` files for Cowork upload
+- Secondary: `.zip` files linked as Claude Code fallback
+- Step 4 updated to describe auto-generated exports and companion skill recommendations
+
 ### API Endpoints
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
 | `/api/generate` | POST | LLM proxy — rate-limited, streams SSE from Anthropic |
 | `/api/leads` | GET | Lead list — protected by LEADS_API_KEY query param |
 | `/api/claim-bundle` | POST/GET | Bundle handoff — POST stores bundle in KV (returns token), GET retrieves+deletes by token |
+
+---
+
+### D-118 Enrichment/Diagnostic Refactoring — Phase 1 COMPLETE ✅ (Sessions 26-27)
+
+SPAR design review completed with Technical Architect (GPT-4o) and Functional Design Architect (Gemini). Decision Record D-118 + D-118a locked. Full Phase 1 built and compiling.
+
+**Domain modules (all new, `src/domain/`):**
+- `enrichment-taxonomy.ts` — canonical registry of 13 operations (5 enrichments, 8 diagnostics), ExternalInputArtefact with provenance ("provided"|"generated"), DiagnosticConfidence propagation, StalenessDelta computation, SWOT/Metrics Library types
+- `scaffold-hash.ts` — deterministic content hash (cyrb53, `sh_` prefix), replaces `Date.now()` hash
+- `readiness-engine.ts` — computed readiness states: Skeleton → Grounded → Detailed → Assessed → Governed
+- `nba-engine.ts` — Next-Best-Action recommendation with provenance-weighted scoring (+5 provided, +3 generated)
+- `model-checkpoints.ts` — IndexedDB checkpointing with auto-prune (50/branch), pin, label
+
+**Store integration (new + modified, `src/store/`):**
+- `d118-store.ts` — NEW Zustand store bridging domain modules: diagnostic artefacts, external inputs, scaffold hash, checkpoints, derived readiness/NBA
+- `canvas-store.ts` — MODIFIED: now uses deterministic `computeScaffoldHash()` instead of `Date.now()` hash
+
+**Components (new + restructured, `src/components/`):**
+- `NBABanner.tsx` — floating banner for cross-view NBA surface (standard recommendation + stale diagnostic warning)
+- `EnrichmentView.tsx` — RESTRUCTURED (Session 27): replaced 5-category layout with 2-zone Enrichment/Diagnostic layout. New sub-components: ReadinessStepper (horizontal pill chain Skeleton→Governed), NBACard (recommended next action), ExternalInputsPanel (collapsible, provenance badges, ✦ Generate buttons), CrossMappingBuilder, CustomSkillsManager, SkillEditorModal. Wired to d118-store for readiness, NBA, diagnostic artefacts, external inputs.
+- `FrictionView.tsx` — MODIFIED: NBABanner with `staleDiagnosticId="friction"`
+- `CanvasView.tsx` — MODIFIED: NBABanner (general NBA recommendation)
+- `CapabilityMapView.tsx` — MODIFIED: NBABanner with `staleDiagnosticId="maturity"`
+- `NetworkView.tsx` — MODIFIED: NBABanner with `staleDiagnosticId="dependencies"`
+
+**Staleness UX (Session 27):**
+- Diagnostic cards: CSS desaturation (opacity 0.55, saturate 0.3) when stale
+- Amber staleness banner with quantified delta summary and Re-run button
+- NBABanner integrated into 4 canvas views with view-specific staleDiagnosticId
+
+**UX prototypes (`docs/`):**
+- `ux-prototype-enrichment-v2.html` — initial two-zone layout, readiness stepper, staleness desaturation
+- `ux-prototype-enrichment-v3.html` — adds provenance badges, ✦ Generate buttons, cross-view NBA banners, View All external input detail modal with SWOT grid
 
 ---
 

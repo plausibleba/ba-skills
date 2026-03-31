@@ -21,6 +21,7 @@ import {
   deriveCapabilityInstances,
   deriveTopologyView,
 } from "./network-derivation.ts";
+import { computeScaffoldHash } from "../domain/scaffold-hash";
 
 type ViewMode = "network" | "stage" | "intake" | "import" | "enrich" | "capabilityMap" | "conceptGraph" | "friction" | "workbench";
 
@@ -201,7 +202,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const nodes = buildNetworkNodes(resolved, get().heatmapsByVs, positions);
 
     // Derive topology mesh (D-052) — activity-level coupling edges
-    const scaffoldHash = `${resolved.name ?? "scaffold"}-${Date.now()}`;
+    // D-118: deterministic content hash replaces Date.now()-based hash.
+    // Two identical scaffolds now produce the same hash regardless of load time.
+    const scaffoldHash = computeScaffoldHash(resolved);
     const capabilityInstanceView = deriveCapabilityInstances(resolved, scaffoldHash);
     const topologyView = deriveTopologyView(resolved, capabilityInstanceView, scaffoldHash);
 

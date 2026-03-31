@@ -7,6 +7,7 @@ import { useWorkbenchStore } from "../store/workbench-store.ts";
 import { tv } from "../theme.ts";
 import type { NetworkNode, NetworkEdge } from "../types.ts";
 import { LAYER_SCHEMES, detectSchemeId } from "../lib/layer-schemes.ts";
+import { NBABanner } from "./NBABanner";
 
 /* ── VS Editor Modal ──────────────────────────────────────────────── */
 
@@ -659,7 +660,10 @@ export function NetworkView() {
   );
 
   return (
-    <div className="flex h-full flex-col" style={{ background: tv.bgSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+    <div className="flex h-full flex-col" style={{ background: tv.bgSurface, fontFamily: "'DM Sans', system-ui, sans-serif", position: "relative" }}>
+      {/* D-118: NBA Banner for network view */}
+      <NBABanner staleDiagnosticId="dependencies" />
+
       {/* Header */}
       <div className="flex items-start justify-between gap-4 px-5 pb-4 pt-5">
         <div className="space-y-2">
