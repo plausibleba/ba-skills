@@ -390,9 +390,12 @@ export function EnrichmentView() {
   // Diagnostic artefacts for staleness checks
   const diagnosticArtefacts = useD118Store((s) => s.diagnosticArtefacts);
 
-  // Initialize store hashes on mount
+  // Initialize store hashes on mount / scaffold change.
+  // Deferred via setTimeout to avoid Zustand's synchronous subscriber
+  // notification triggering React re-renders mid-effect (React #185).
   useEffect(() => {
-    d118Store.refreshScaffoldHash();
+    const t = setTimeout(() => d118Store.refreshScaffoldHash(), 0);
+    return () => clearTimeout(t);
   }, [d118Store, canvasStore.scaffoldData]);
 
   // Compute readiness (convenience hooks from d118-store)
