@@ -1337,6 +1337,7 @@ export function WorkbenchView() {
   } = useWorkbenchStore();
 
   const backToNetwork = useCanvasStore((s) => s.backToNetwork);
+  const canvasScaffold = useCanvasStore((s) => s.scaffoldData);
   const [workbenchTab, setWorkbenchTab] = useState<"catalog" | "graph" | "flows">("catalog");
   const [agentPanelOpen, setAgentPanelOpen] = useState(false);
   const [introVisible, setIntroVisible] = useState(true);
@@ -1811,8 +1812,8 @@ export function WorkbenchView() {
               {workbenchTab === "graph" && workingScaffold && (
                 <StructuredGraphExplorer scaffoldData={workingScaffold} onActionsChange={setGraphActions} />
               )}
-              {workbenchTab === "flows" && workingScaffold && (
-                <ActivityFlowsView scaffoldData={workingScaffold} />
+              {workbenchTab === "flows" && (canvasScaffold || workingScaffold) && (
+                <ActivityFlowsView scaffoldData={canvasScaffold ?? workingScaffold} />
               )}
             </div>
 
