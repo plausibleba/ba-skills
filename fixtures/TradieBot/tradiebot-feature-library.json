@@ -1,0 +1,71 @@
+{
+  "vendorId": "tradiebot",
+  "vendorName": "TradieBot",
+  "version": "1.0",
+  "categories": [
+    {
+      "categoryId": "financial-intelligence",
+      "categoryName": "Financial Intelligence",
+      "features": [
+        { "featureId": "tb-overdue-invoice-alert", "name": "Overdue Invoice Alerting", "description": "Automatically detects invoices overdue by more than 7 days from Xero data and surfaces them in the Morning Brief with specific client name, amount, and days overdue. Pre-drafts a personalised follow-up message for one-tap approval.", "customerStoryIds": ["plumber-mark-cashflow", "sparky-jess-overdue"] },
+        { "featureId": "tb-payment-follow-up", "name": "Automated Payment Follow-Up", "description": "Drafts and sends personalised payment reminders at configurable intervals (7, 14, 21 days). References specific job and invoice details. Escalates tone progressively. Tradie approves each message before sending.", "customerStoryIds": ["plumber-mark-cashflow", "chippy-dave-late-payers"] },
+        { "featureId": "tb-cashflow-forecast", "name": "Cash Flow Gap Prediction", "description": "Analyses incoming invoice payments, known expenses, and historical patterns to forecast cash position 14–30 days ahead. Alerts the tradie to projected shortfalls before they become critical.", "customerStoryIds": ["plumber-mark-cashflow", "painter-sam-seasonal"] },
+        { "featureId": "tb-bas-estimator", "name": "BAS Liability Estimator", "description": "Continuously estimates quarterly BAS liability based on Xero transaction data. Surfaces the estimate at least 28 days before the due date so the tradie can set funds aside progressively rather than facing a quarterly shock.", "customerStoryIds": ["sparky-jess-overdue", "tiler-ricky-tax"] },
+        { "featureId": "tb-job-profitability", "name": "Job Profitability Tracker", "description": "Compares actual invoiced amount against estimated materials cost and imputed labour time for each completed job. Identifies which job types and clients are consistently profitable or loss-making.", "customerStoryIds": ["chippy-dave-late-payers", "plumber-mark-cashflow"] },
+        { "featureId": "tb-expense-capture", "name": "Passive Expense Capture", "description": "Reads bank feed and Xero transactions to automatically categorise business expenses (fuel, materials, tools, insurance) without manual entry. Flags uncategorised transactions for quick one-tap classification.", "customerStoryIds": ["tiler-ricky-tax", "painter-sam-seasonal"] }
+      ]
+    },
+    {
+      "categoryId": "quote-intelligence",
+      "categoryName": "Quote Intelligence",
+      "features": [
+        { "featureId": "tb-quote-request-detect", "name": "Quote Request Detection", "description": "Scans incoming email for quote requests and surfaces them in the Morning Brief within 2 hours of receipt. Extracts job type, location, and scope from the email text so the tradie can respond faster.", "customerStoryIds": ["sparky-jess-overdue", "chippy-dave-late-payers"] },
+        { "featureId": "tb-quote-draft", "name": "AI Quote Drafting", "description": "Generates a draft quote response based on the tradie's historical pricing patterns for similar job types and locations. Displays context: 'Your last N similar jobs averaged $X–$Y'. Always draft-and-approve — never sent without tradie confirmation.", "customerStoryIds": ["plumber-mark-cashflow", "painter-sam-seasonal"] },
+        { "featureId": "tb-pricing-intelligence", "name": "Pricing Intelligence Engine", "description": "Builds a personal pricing model from the tradie's quote and invoice history. Identifies under-quoting patterns by job type and geography. Falls back to industry benchmarks when personal data is sparse.", "customerStoryIds": ["chippy-dave-late-payers", "sparky-jess-overdue"] },
+        { "featureId": "tb-quote-follow-up", "name": "Quote Follow-Up Agent", "description": "Tracks open quotes and alerts the tradie when a quote has been open beyond their typical acceptance window. Drafts a follow-up message for one-tap approval.", "customerStoryIds": ["painter-sam-seasonal", "plumber-mark-cashflow"] },
+        { "featureId": "tb-win-rate-tracking", "name": "Quote Win Rate Analytics", "description": "Tracks quote outcomes (won/lost) by job type, value, and location after one-tap capture. Surfaces patterns: 'You win 70% of bathroom jobs under $5K but only 20% over $8K'.", "customerStoryIds": ["chippy-dave-late-payers", "tiler-ricky-tax"] }
+      ]
+    },
+    {
+      "categoryId": "schedule-intelligence",
+      "categoryName": "Schedule Intelligence",
+      "features": [
+        { "featureId": "tb-schedule-conflicts", "name": "Schedule Conflict Detection", "description": "Analyses calendar entries against job commitments to identify double-bookings, unrealistic travel times between sites, and over-commitment. Surfaces conflicts in the Morning Brief.", "customerStoryIds": ["plumber-mark-cashflow", "sparky-jess-overdue"] },
+        { "featureId": "tb-gap-detection", "name": "Pipeline Gap Detection", "description": "Identifies periods with no scheduled work 7–14 days ahead. Alerts the tradie to pipeline gaps so they can pursue quotes or accept jobs to fill empty days.", "customerStoryIds": ["painter-sam-seasonal", "chippy-dave-late-payers"] },
+        { "featureId": "tb-client-confirmation", "name": "Job Confirmation Agent", "description": "Sends pre-drafted confirmation messages to clients the day before scheduled work, confirming time, access arrangements, and scope. Tradie approves the batch with one tap.", "customerStoryIds": ["plumber-mark-cashflow", "tiler-ricky-tax"] },
+        { "featureId": "tb-next-day-prep", "name": "Next-Day Preparation Brief", "description": "Compiles tomorrow's jobs into a preparation checklist: materials needed, site access confirmed/unconfirmed, client contact details, and driving directions optimised for route efficiency.", "customerStoryIds": ["sparky-jess-overdue", "painter-sam-seasonal"] }
+      ]
+    },
+    {
+      "categoryId": "client-intelligence",
+      "categoryName": "Client Intelligence",
+      "features": [
+        { "featureId": "tb-client-profile", "name": "Automatic Client Profiling", "description": "Builds client profiles from email threads, invoice history, and job records without manual data entry. Tracks job history, payment behaviour, communication preferences, and total spend.", "customerStoryIds": ["chippy-dave-late-payers", "plumber-mark-cashflow"] },
+        { "featureId": "tb-unanswered-comms", "name": "Unanswered Communication Alert", "description": "Detects emails, texts, or enquiries from clients that haven't been responded to. Surfaces them in the Morning Brief with draft replies for quick response.", "customerStoryIds": ["sparky-jess-overdue", "painter-sam-seasonal"] },
+        { "featureId": "tb-relationship-flags", "name": "Client Relationship Flags", "description": "Identifies at-risk client relationships based on signals: slow payment trends, reduced job frequency, unanswered communications. Surfaces proactive outreach suggestions.", "customerStoryIds": ["plumber-mark-cashflow", "chippy-dave-late-payers"] },
+        { "featureId": "tb-repeat-client-nurture", "name": "Repeat Client Nurture", "description": "Identifies high-value repeat clients and suggests periodic check-in messages (e.g., 'How's the bathroom going 6 months on?'). Drafts messages for one-tap approval to maintain relationships proactively.", "customerStoryIds": ["tiler-ricky-tax", "plumber-mark-cashflow"] },
+        { "featureId": "tb-review-prompt", "name": "Google Review Prompt Agent", "description": "After job completion and payment received, drafts a personalised request for a Google review and sends it to satisfied clients (based on positive signals). Builds the tradie's online reputation passively.", "customerStoryIds": ["sparky-jess-overdue", "chippy-dave-late-payers"] }
+      ]
+    },
+    {
+      "categoryId": "morning-brief",
+      "categoryName": "Morning Brief & Proactive Intelligence",
+      "features": [
+        { "featureId": "tb-morning-brief", "name": "Daily Morning Brief", "description": "Compiled overnight and delivered before 6:30am. Maximum 5 items ranked by urgency and financial impact. Every item references specific data — a job name, client name, or dollar amount. Pre-drafted one-tap actions on every actionable item.", "customerStoryIds": ["plumber-mark-cashflow", "sparky-jess-overdue", "chippy-dave-late-payers", "painter-sam-seasonal", "tiler-ricky-tax"] },
+        { "featureId": "tb-health-diagnosis", "name": "Business Health Diagnosis", "description": "First-run experience: within 60 seconds of connecting data sources, delivers an initial business health assessment covering cash flow status, overdue invoices, and at least one personalised insight. Uses industry benchmarks where personal data is sparse, clearly labelled.", "customerStoryIds": ["plumber-mark-cashflow", "sparky-jess-overdue"] },
+        { "featureId": "tb-confidence-labels", "name": "Confidence Auditor", "description": "Every Morning Brief item is labelled with its data source: 'Based on your data' vs 'Industry benchmark for plumbers in Western Sydney'. The tradie always knows the basis for each insight, building trust through transparency.", "customerStoryIds": ["painter-sam-seasonal", "tiler-ricky-tax"] },
+        { "featureId": "tb-feedback-loop", "name": "Lightweight Feedback Loop", "description": "Thumbs up/down on every Brief item. One-tap corrections when the AI gets something wrong. Each interaction makes the AI more accurate. Under 3 seconds per feedback action — no forms, no typing required.", "customerStoryIds": ["plumber-mark-cashflow", "chippy-dave-late-payers"] }
+      ]
+    },
+    {
+      "categoryId": "data-ingestion",
+      "categoryName": "Passive Data Ingestion",
+      "features": [
+        { "featureId": "tb-email-ingestion", "name": "Email Intelligence (Gmail/Outlook)", "description": "OAuth read-only connection to the tradie's email. Extracts quote requests, client communications, supplier invoices, payment confirmations, and action items without the tradie doing anything differently.", "customerStoryIds": ["sparky-jess-overdue", "plumber-mark-cashflow"] },
+        { "featureId": "tb-xero-integration", "name": "Xero Accounting Integration", "description": "Read-only OAuth connection to Xero. Provides real-time invoice status, payment history, expense records, and cash position. Primary data source for all financial intelligence features.", "customerStoryIds": ["plumber-mark-cashflow", "tiler-ricky-tax"] },
+        { "featureId": "tb-calendar-sync", "name": "Calendar Sync", "description": "Reads the tradie's calendar to understand scheduled jobs, appointments, and availability. Powers scheduling intelligence, conflict detection, and next-day preparation.", "customerStoryIds": ["sparky-jess-overdue", "painter-sam-seasonal"] },
+        { "featureId": "tb-bank-feed", "name": "Bank Feed Monitor (Optional)", "description": "Read-only open banking connection for tradies not on Xero. Monitors transactions to build financial picture from bank data alone.", "customerStoryIds": ["chippy-dave-late-payers", "painter-sam-seasonal"] }
+      ]
+    }
+  ]
+}

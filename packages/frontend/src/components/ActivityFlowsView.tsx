@@ -292,7 +292,10 @@ export function ActivityFlowsView({ scaffoldData }: { scaffoldData: any }) {
 
   // Build structure: VS → activities → DAGs
   const vsFlows = useMemo(() => {
-    return vsEntries
+    // Track which activity IDs are claimed by a value stream
+    const claimedActivityIds = new Set<string>();
+
+    const flows = vsEntries
       .map(([vsId, vs]) => {
         let actIds: string[] = [];
         if (Array.isArray(vs.activityIds) && vs.activityIds.length > 0) {
@@ -307,7 +310,14 @@ export function ActivityFlowsView({ scaffoldData }: { scaffoldData: any }) {
             cur = activities[cur]?.nextActivityId ?? null;
           }
           actIds = chain;
+        } else {
+          // Fallback: find activities that reference this value stream
+          actIds = Object.entries(activities)
+            .filter(([, act]: [string, any]) => act.valueStreamId === vsId)
+            .map(([id]) => id);
         }
+
+        for (const aId of actIds) claimedActivityIds.add(aId);
 
         const actFlows = actIds
           .filter(aId => subActivityGraphs[aId]?.nodes?.length > 0)
@@ -320,6 +330,20 @@ export function ActivityFlowsView({ scaffoldData }: { scaffoldData: any }) {
         return { vsId, vsName: vs.name ?? vsId, actFlows };
       })
       .filter(vs => vs.actFlows.length > 0);
+
+    // Catch any orphaned DAGs not claimed by a value stream
+    const orphanFlows = Object.keys(subActivityGraphs)
+      .filter(aId => !claimedActivityIds.has(aId) && subActivityGraphs[aId]?.nodes?.length > 0)
+      .map(aId => ({
+        activityId: aId,
+        activityName: activities[aId]?.name ?? aId,
+        nodes: subActivityGraphs[aId].nodes as SubActivity[],
+      }));
+    if (orphanFlows.length > 0) {
+      flows.push({ vsId: "__uncategorised__", vsName: "Other Activities", actFlows: orphanFlows });
+    }
+
+    return flows;
   }, [vsEntries, activities, subActivityGraphs]);
 
   const [expandedVs, setExpandedVs] = useState<Set<string>>(() => new Set(vsFlows.map(v => v.vsId)));

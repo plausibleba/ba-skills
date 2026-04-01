@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Op Model Workbench — Engine Room Concept</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Engine Room Border ── */
+  .engine-border {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .engine-border svg {
+    width: 100%;
+    height: 100%;
+    opacity: 0.06;
+  }
+
+  /* ── Main Layout ── */
+  .workbench {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* ── Header ── */
+  .wb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: rgba(15, 23, 42, 0.95);
+    border-bottom: 1px solid rgba(245, 158, 11, 0.15);
+    backdrop-filter: blur(8px);
+  }
+
+  .wb-header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #f59e0b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .wb-header h1 .gear {
+    display: inline-block;
+    animation: spin 8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .wb-header .project-name {
+    font-size: 14px;
+    color: #94a3b8;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  /* ── Step Indicator ── */
+  .steps {
+    display: flex;
+    gap: 2px;
+    padding: 12px 24px;
+    background: rgba(15, 23, 42, 0.8);
+    border-bottom: 1px solid rgba(245, 158, 11, 0.08);
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #64748b;
+    transition: all 0.2s;
+  }
+
+  .step.active {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+
+  .step.completed {
+    color: #22c55e;
+  }
+
+  .step .num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1.5px solid currentColor;
+  }
+
+  .step.active .num {
+    background: rgba(245, 158, 11, 0.2);
+  }
+
+  .step.completed .num {
+    background: rgba(34, 197, 94, 0.2);
+  }
+
+  .step-connector {
+    width: 20px;
+    height: 1px;
+    background: #334155;
+    align-self: center;
+  }
+
+  /* ── Catalog Tabs ── */
+  .catalog-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 8px 24px;
+    background: rgba(15, 23, 42, 0.6);
+    border-bottom: 1px solid rgba(245, 158, 11, 0.08);
+  }
+
+  .cat-tab {
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    background: none;
+    font-family: inherit;
+  }
+
+  .cat-tab:hover {
+    color: #e2e8f0;
+    background: rgba(245, 158, 11, 0.05);
+  }
+
+  .cat-tab.active {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.2);
+  }
+
+  .cat-tab .badge {
+    display: inline-block;
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-left: 6px;
+  }
+
+  /* ── Content Area ── */
+  .content-area {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── Grid ── */
+  .grid-panel {
+    flex: 1;
+    overflow: auto;
+    padding: 16px 24px;
+  }
+
+  .grid-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .grid-toolbar input {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    width: 240px;
+  }
+
+  .grid-toolbar input::placeholder { color: #64748b; }
+
+  .grid-toolbar button {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid #334155;
+    background: rgba(30, 41, 59, 0.6);
+    color: #94a3b8;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  .grid-toolbar button:hover {
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #f59e0b;
+  }
+
+  .view-toggle {
+    margin-left: auto;
+    display: flex;
+    gap: 2px;
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 4px;
+    padding: 2px;
+  }
+
+  .view-toggle button.active {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.2);
+  }
+
+  /* ── Data Table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    text-align: left;
+    padding: 8px 12px;
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(245, 158, 11, 0.12);
+    background: rgba(15, 23, 42, 0.5);
+    position: sticky;
+    top: 0;
+    cursor: grab;
+    user-select: none;
+  }
+
+  thead th:hover {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.05);
+  }
+
+  thead th.pinned {
+    background: rgba(15, 23, 42, 0.9);
+    border-right: 2px solid rgba(245, 158, 11, 0.2);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+    transition: background 0.1s;
+  }
+
+  tbody tr:hover {
+    background: rgba(245, 158, 11, 0.03);
+  }
+
+  tbody td {
+    padding: 10px 12px;
+    color: #cbd5e1;
+  }
+
+  tbody td.monospace {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    color: #94a3b8;
+  }
+
+  /* Level indentation for capability tree */
+  .level-indent {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .level-indent .pipe {
+    color: #334155;
+    font-family: monospace;
+  }
+
+  .level-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  .level-badge.l1 { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+  .level-badge.l2 { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+  .level-badge.l3 { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+  .level-badge.l4 { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+
+  .type-chip {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .type-chip.exec { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
+  .type-chip.gov { background: rgba(245, 158, 11, 0.12); color: #fbbf24; }
+
+  .link-count {
+    color: #64748b;
+    font-size: 12px;
+  }
+
+  .dirty-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: #f59e0b;
+    border-radius: 50%;
+    margin-left: 6px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── Agent Panel ── */
+  .agent-panel {
+    width: 360px;
+    border-left: 1px solid rgba(245, 158, 11, 0.1);
+    display: flex;
+    flex-direction: column;
+    background: rgba(15, 23, 42, 0.4);
+  }
+
+  .agent-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(245, 158, 11, 0.08);
+    font-size: 13px;
+    font-weight: 600;
+    color: #f59e0b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .agent-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .msg {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    max-width: 95%;
+  }
+
+  .msg.user {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    align-self: flex-end;
+  }
+
+  .msg.agent {
+    background: rgba(245, 158, 11, 0.06);
+    border: 1px solid rgba(245, 158, 11, 0.1);
+    color: #e2e8f0;
+  }
+
+  .diff-table {
+    width: 100%;
+    margin: 8px 0;
+    font-size: 11px;
+  }
+
+  .diff-table th {
+    text-align: left;
+    color: #94a3b8;
+    padding: 4px 8px;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(245, 158, 11, 0.08);
+  }
+
+  .diff-table td {
+    padding: 4px 8px;
+    color: #cbd5e1;
+  }
+
+  .diff-table .before { color: #ef4444; text-decoration: line-through; }
+  .diff-table .after { color: #22c55e; }
+
+  .diff-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .diff-actions button {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+  }
+
+  .diff-actions .accept { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+  .diff-actions .modify { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+  .diff-actions .reject { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+  .agent-input {
+    padding: 12px 16px;
+    border-top: 1px solid rgba(245, 158, 11, 0.08);
+    display: flex;
+    gap: 8px;
+  }
+
+  .agent-input input {
+    flex: 1;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+
+  .agent-input input::placeholder { color: #475569; }
+
+  .agent-input button {
+    padding: 8px 14px;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    color: #f59e0b;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+  }
+
+  /* ── Steam Animation ── */
+  .steam-container {
+    position: fixed;
+    bottom: 80px;
+    right: 200px;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .steam-puff {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: steam-rise 1.8s ease-out forwards;
+  }
+
+  .steam-puff:nth-child(1) { left: 0; animation-delay: 0s; }
+  .steam-puff:nth-child(2) { left: 15px; animation-delay: 0.2s; }
+  .steam-puff:nth-child(3) { left: -10px; animation-delay: 0.4s; }
+
+  @keyframes steam-rise {
+    0% {
+      transform: translateY(0) scale(0.5);
+      opacity: 0.6;
+    }
+    50% {
+      transform: translateY(-40px) scale(1.2);
+      opacity: 0.3;
+    }
+    100% {
+      transform: translateY(-80px) scale(1.8);
+      opacity: 0;
+    }
+  }
+
+  .steam-demo-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #f59e0b;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    z-index: 101;
+  }
+</style>
+</head>
+<body>
+
+<!-- Engine Room Border SVG -->
+<div class="engine-border">
+  <svg viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Horizontal pipes along top -->
+    <rect x="0" y="8" width="1440" height="6" rx="3" fill="#d97706"/>
+    <rect x="0" y="20" width="1440" height="3" rx="1.5" fill="#d97706"/>
+    <!-- Pipe joints/flanges top -->
+    <rect x="180" y="2" width="20" height="18" rx="3" fill="#d97706"/>
+    <rect x="460" y="2" width="20" height="18" rx="3" fill="#d97706"/>
+    <rect x="740" y="2" width="20" height="18" rx="3" fill="#d97706"/>
+    <rect x="1020" y="2" width="20" height="18" rx="3" fill="#d97706"/>
+    <rect x="1300" y="2" width="20" height="18" rx="3" fill="#d97706"/>
+
+    <!-- Vertical pipes left side -->
+    <rect x="8" y="0" width="5" height="900" rx="2.5" fill="#d97706"/>
+    <rect x="18" y="0" width="3" height="900" rx="1.5" fill="#d97706"/>
+    <!-- Pipe joints left -->
+    <rect x="2" y="120" width="18" height="16" rx="3" fill="#d97706"/>
+    <rect x="2" y="320" width="18" height="16" rx="3" fill="#d97706"/>
+    <rect x="2" y="520" width="18" height="16" rx="3" fill="#d97706"/>
+    <rect x="2" y="720" width="18" height="16" rx="3" fill="#d97706"/>
+
+    <!-- Vertical pipes right side -->
+    <rect x="1427" y="0" width="5" height="900" rx="2.5" fill="#d97706"/>
+    <rect x="1419" y="0" width="3" height="900" rx="1.5" fill="#d97706"/>
+    <!-- Pipe joints right -->
+    <rect x="1420" y="200" width="18" height="16" rx="3" fill="#d97706"/>
+    <rect x="1420" y="450" width="18" height="16" rx="3" fill="#d97706"/>
+    <rect x="1420" y="700" width="18" height="16" rx="3" fill="#d97706"/>
+
+    <!-- Bottom pipes -->
+    <rect x="0" y="886" width="1440" height="6" rx="3" fill="#d97706"/>
+    <rect x="0" y="877" width="1440" height="3" rx="1.5" fill="#d97706"/>
+
+    <!-- Pressure gauges (top-left, top-right corners) -->
+    <!-- Top-left gauge -->
+    <circle cx="50" cy="50" r="22" stroke="#d97706" stroke-width="2.5" fill="none"/>
+    <circle cx="50" cy="50" r="18" stroke="#d97706" stroke-width="1" fill="none"/>
+    <line x1="50" y1="50" x2="60" y2="38" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="50" cy="50" r="2.5" fill="#d97706"/>
+    <!-- Gauge ticks -->
+    <line x1="50" y1="30" x2="50" y2="34" stroke="#d97706" stroke-width="1.5"/>
+    <line x1="68" y1="50" x2="64" y2="50" stroke="#d97706" stroke-width="1.5"/>
+    <line x1="32" y1="50" x2="36" y2="50" stroke="#d97706" stroke-width="1.5"/>
+
+    <!-- Top-right gauge -->
+    <circle cx="1390" cy="50" r="22" stroke="#d97706" stroke-width="2.5" fill="none"/>
+    <circle cx="1390" cy="50" r="18" stroke="#d97706" stroke-width="1" fill="none"/>
+    <line x1="1390" y1="50" x2="1378" y2="40" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="1390" cy="50" r="2.5" fill="#d97706"/>
+    <line x1="1390" y1="30" x2="1390" y2="34" stroke="#d97706" stroke-width="1.5"/>
+    <line x1="1408" y1="50" x2="1404" y2="50" stroke="#d97706" stroke-width="1.5"/>
+    <line x1="1372" y1="50" x2="1376" y2="50" stroke="#d97706" stroke-width="1.5"/>
+
+    <!-- Valve wheels (left side) -->
+    <!-- Valve at y=320 -->
+    <circle cx="11" cy="328" r="14" stroke="#d97706" stroke-width="2" fill="none"/>
+    <line x1="11" y1="316" x2="11" y2="340" stroke="#d97706" stroke-width="1.5"/>
+    <line x1="0" y1="328" x2="22" y2="328" stroke="#d97706" stroke-width="1.5"/>
+    <circle cx="11" cy="328" r="3" fill="#d97706"/>
+
+    <!-- Valve at y=520 -->
+    <circle cx="11" cy="528" r="14" stroke="#d97706" stroke-width="2" fill="none"/>
+    <line x1="11" y1="516" x2="11" y2="540" stroke="#d97706" stroke-width="1.5"/>
+    <line x1="0" y1="528" x2="22" y2="528" stroke="#d97706" stroke-width="1.5"/>
+    <circle cx="11" cy="528" r="3" fill="#d97706"/>
+
+    <!-- Sprinkler heads along top -->
+    <g transform="translate(300, 0)">
+      <rect x="-3" y="22" width="6" height="10" rx="1" fill="#d97706"/>
+      <circle cx="0" cy="36" r="4" stroke="#d97706" stroke-width="1.5" fill="none"/>
+    </g>
+    <g transform="translate(600, 0)">
+      <rect x="-3" y="22" width="6" height="10" rx="1" fill="#d97706"/>
+      <circle cx="0" cy="36" r="4" stroke="#d97706" stroke-width="1.5" fill="none"/>
+    </g>
+    <g transform="translate(900, 0)">
+      <rect x="-3" y="22" width="6" height="10" rx="1" fill="#d97706"/>
+      <circle cx="0" cy="36" r="4" stroke="#d97706" stroke-width="1.5" fill="none"/>
+    </g>
+    <g transform="translate(1200, 0)">
+      <rect x="-3" y="22" width="6" height="10" rx="1" fill="#d97706"/>
+      <circle cx="0" cy="36" r="4" stroke="#d97706" stroke-width="1.5" fill="none"/>
+    </g>
+
+    <!-- Bottom-left gauge -->
+    <circle cx="50" cy="850" r="18" stroke="#d97706" stroke-width="2" fill="none"/>
+    <circle cx="50" cy="850" r="14" stroke="#d97706" stroke-width="1" fill="none"/>
+    <line x1="50" y1="850" x2="42" y2="840" stroke="#d97706" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="50" cy="850" r="2" fill="#d97706"/>
+
+    <!-- Small T-junction pipes -->
+    <rect x="180" y="18" width="5" height="30" rx="2" fill="#d97706"/>
+    <rect x="740" y="18" width="5" height="25" rx="2" fill="#d97706"/>
+    <rect x="1300" y="18" width="5" height="35" rx="2" fill="#d97706"/>
+
+    <!-- Right side small branch pipes -->
+    <rect x="1410" y="200" width="25" height="4" rx="2" fill="#d97706"/>
+    <rect x="1410" y="450" width="25" height="4" rx="2" fill="#d97706"/>
+  </svg>
+</div>
+
+<!-- Workbench UI -->
+<div class="workbench">
+
+  <!-- Header -->
+  <div class="wb-header">
+    <h1>
+      <span class="gear">⚙</span> Op Model Workbench
+    </h1>
+    <span class="project-name">PureTec Water Filtration — scaffold_v5_20260322</span>
+  </div>
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step completed">
+      <span class="num">✓</span> Orientation
+    </div>
+    <div class="step-connector"></div>
+    <div class="step active">
+      <span class="num">2</span> Catalog Review
+    </div>
+    <div class="step-connector"></div>
+    <div class="step">
+      <span class="num">3</span> Agent
+    </div>
+    <div class="step-connector"></div>
+    <div class="step">
+      <span class="num">4</span> Reconcile
+    </div>
+    <div class="step-connector"></div>
+    <div class="step">
+      <span class="num">5</span> Regenerate
+    </div>
+  </div>
+
+  <!-- Catalog Tabs -->
+  <div class="catalog-tabs">
+    <button class="cat-tab active">🏛 Capabilities <span class="badge">3</span></button>
+    <button class="cat-tab">🔷 Concepts</button>
+    <button class="cat-tab">🔄 Value Streams</button>
+    <button class="cat-tab">👤 Roles</button>
+    <button class="cat-tab">📊 Metrics</button>
+  </div>
+
+  <!-- Content -->
+  <div class="content-area">
+
+    <!-- Grid Panel -->
+    <div class="grid-panel">
+      <div class="grid-toolbar">
+        <input type="text" placeholder="Filter capabilities..." />
+        <button>+ Add Row</button>
+        <button>Undo</button>
+        <button>Redo</button>
+        <div class="view-toggle">
+          <button class="active">Grid</button>
+          <button>Cards</button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th class="pinned" style="width: 30%">Name</th>
+            <th style="width: 6%">Level</th>
+            <th style="width: 18%">Parent</th>
+            <th style="width: 10%">Type</th>
+            <th style="width: 14%">Business Object</th>
+            <th style="width: 10%">Stages</th>
+            <th style="width: 12%">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- L1 -->
+          <tr>
+            <td class="pinned"><span class="level-badge l1">L1</span> <strong>Customer Management</strong></td>
+            <td class="monospace">1</td>
+            <td class="monospace">—</td>
+            <td><span class="type-chip exec">Execution</span></td>
+            <td>—</td>
+            <td class="link-count">—</td>
+            <td class="monospace">...</td>
+          </tr>
+          <!-- L2 -->
+          <tr>
+            <td class="pinned"><div class="level-indent"><span class="pipe">├─</span> <span class="level-badge l2">L2</span> Customer Onboarding</div></td>
+            <td class="monospace">2</td>
+            <td class="monospace">Customer Management</td>
+            <td><span class="type-chip exec">Execution</span></td>
+            <td>—</td>
+            <td class="link-count">—</td>
+            <td class="monospace">...</td>
+          </tr>
+          <!-- L3 -->
+          <tr>
+            <td class="pinned"><div class="level-indent"><span class="pipe">│ ├─</span> <span class="level-badge l3">L3</span> Identity Verification</div></td>
+            <td class="monospace">3</td>
+            <td class="monospace">Customer Onboarding</td>
+            <td><span class="type-chip exec">Execution</span></td>
+            <td>—</td>
+            <td class="link-count">—</td>
+            <td class="monospace">...</td>
+          </tr>
+          <!-- L4 -->
+          <tr>
+            <td class="pinned"><div class="level-indent"><span class="pipe">│ │ ├─</span> <span class="level-badge l4">L4</span> KYC Document Collection<span class="dirty-dot"></span></div></td>
+            <td class="monospace">4</td>
+            <td class="monospace">Identity Verification</td>
+            <td><span class="type-chip exec">Execution</span></td>
+            <td>Customer Record</td>
+            <td class="link-count">3 stages</td>
+            <td class="monospace">...</td>
+          </tr>
+          <tr>
+            <td class="pinned"><div class="level-indent"><span class="pipe">│ │ └─</span> <span class="level-badge l4">L4</span> Biometric Screening</div></td>
+            <td class="monospace">4</td>
+            <td class="monospace">Identity Verification</td>
+            <td><span class="type-chip exec">Execution</span></td>
+            <td>Customer Record</td>
+            <td class="link-count">1 stage</td>
+            <td class="monospace">...</td>
+          </tr>
+          <!-- L3 -->
+          <tr>
+            <td class="pinned"><div class="level-indent"><span class="pipe">│ └─</span> <span class="level-badge l3">L3</span> Account Provisioning</div></td>
+            <td class="monospace">3</td>
+            <td class="monospace">Customer Onboarding</td>
+            <td><span class="type-chip exec">Execution</span></td>
+            <td>—</td>
+            <td class="link-count">—</td>
+            <td class="monospace">...</td>
+          </tr>
+          <!-- L4 -->
+          <tr>
+            <td class="pinned"><div class="level-indent"><span class="pipe">│   ├─</span> <span class="level-badge l4">L4</span> Service Agreement Generation<span class="dirty-dot"></span></div></td>
+            <td class="monospace">4</td>
+            <td class="monospace">Account Provisioning</td>
+            <td><span class="type-chip exec">Execution</span></td>
+            <td>Service Agreement</td>
+            <td class="link-count">2 stages</td>
+            <td class="monospace">...</td>
+          </tr>
+          <tr>
+            <td class="pinned"><div class="level-indent"><span class="pipe">│   └─</span> <span class="level-badge l4">L4</span> Welcome Pack Dispatch</div></td>
+            <td class="monospace">4</td>
+            <td class="monospace">Account Provisioning</td>
+            <td><span class="type-chip exec">Execution</span></td>
+            <td>—</td>
+            <td class="link-count">1 stage</td>
+            <td class="monospace">...</td>
+          </tr>
+          <!-- L1 Governance -->
+          <tr>
+            <td class="pinned"><span class="level-badge l1">L1</span> <strong>Quality Assurance</strong></td>
+            <td class="monospace">1</td>
+            <td class="monospace">—</td>
+            <td><span class="type-chip gov">Governance</span></td>
+            <td>—</td>
+            <td class="link-count">—</td>
+            <td class="monospace">...</td>
+          </tr>
+          <tr>
+            <td class="pinned"><div class="level-indent"><span class="pipe">├─</span> <span class="level-badge l2">L2</span> Water Quality Testing</div></td>
+            <td class="monospace">2</td>
+            <td class="monospace">Quality Assurance</td>
+            <td><span class="type-chip gov">Governance</span></td>
+            <td>—</td>
+            <td class="link-count">—</td>
+            <td class="monospace">...</td>
+          </tr>
+          <tr>
+            <td class="pinned"><div class="level-indent"><span class="pipe">│ └─</span> <span class="level-badge l4">L4</span> Contaminant Analysis<span class="dirty-dot"></span></div></td>
+            <td class="monospace">4</td>
+            <td class="monospace">Water Quality Testing</td>
+            <td><span class="type-chip gov">Governance</span></td>
+            <td>Test Report</td>
+            <td class="link-count">4 stages</td>
+            <td class="monospace">...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Agent Panel -->
+    <div class="agent-panel">
+      <div class="agent-header">
+        🤖 Refinement Agent — Capabilities
+      </div>
+      <div class="agent-messages">
+        <div class="msg user">
+          KYC Document Collection and Service Agreement Generation should both fall under a new L3 called "Compliance Documentation" instead of being split across Identity Verification and Account Provisioning.
+        </div>
+        <div class="msg agent">
+          I see the logic — both capabilities deal with regulatory documentation rather than their parent processes. Here's the proposed change:
+
+          <table class="diff-table">
+            <thead>
+              <tr><th>Action</th><th>Element</th><th>Change</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Add</td>
+                <td>L3</td>
+                <td class="after">+ Compliance Documentation (under Customer Onboarding)</td>
+              </tr>
+              <tr>
+                <td>Move</td>
+                <td>KYC Document Collection</td>
+                <td><span class="before">Identity Verification</span> → <span class="after">Compliance Documentation</span></td>
+              </tr>
+              <tr>
+                <td>Move</td>
+                <td>Service Agreement Generation</td>
+                <td><span class="before">Account Provisioning</span> → <span class="after">Compliance Documentation</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          This preserves both capabilities and their stage linkages. 3 activities will update their cross-references automatically.
+
+          <div class="diff-actions">
+            <button class="accept">Accept</button>
+            <button class="modify">Modify</button>
+            <button class="reject">Reject</button>
+          </div>
+        </div>
+      </div>
+      <div class="agent-input">
+        <input type="text" placeholder="Describe what to refine..." />
+        <button>Send</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Steam demo button -->
+<button class="steam-demo-btn" onclick="triggerSteam()">💨 Demo Steam Puff</button>
+
+<div class="steam-container" id="steamContainer" style="display:none;">
+  <div class="steam-puff"></div>
+  <div class="steam-puff"></div>
+  <div class="steam-puff"></div>
+</div>
+
+<script>
+function triggerSteam() {
+  const container = document.getElementById('steamContainer');
+  container.style.display = 'block';
+  // Reset animation
+  container.innerHTML = container.innerHTML;
+  setTimeout(() => { container.style.display = 'none'; }, 2000);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 120" width="580" height="120">
+  <!--
+    PlausibleBA Full Logo — dark background version (white text)
+    Icon (chevron pentagon) + "PLAUSIBLE BA" text
+  -->
+
+  <!-- Icon: pentagon shape -->
+  <g transform="translate(0,0)">
+    <path d="
+      M 18,2
+      L 80,2
+      L 138,60
+      L 80,118
+      L 18,118
+      Q 2,118 2,102
+      L 2,18
+      Q 2,2 18,2
+      Z
+    " fill="#2F3652"/>
+
+    <!-- Thick bold chevron -->
+    <path d="
+      M 56,8
+      L 128,60
+      L 56,112
+      L 86,112
+      L 138,60
+      L 86,8
+      Z
+    " fill="#6AC3EE"/>
+
+    <!-- 2x2 grid -->
+    <rect x="15" y="22" width="22" height="22" rx="3.5" fill="#FFFFFF"/>
+    <rect x="41" y="22" width="22" height="22" rx="3.5" fill="#FFFFFF"/>
+    <rect x="15" y="48" width="22" height="22" rx="3.5" fill="#6AC3EE"/>
+    <rect x="41" y="48" width="22" height="22" rx="3.5" fill="#FFFFFF"/>
+
+    <!-- Label bar -->
+    <rect x="15" y="78" width="48" height="16" rx="4" fill="#FFFFFF" opacity="0.35"/>
+  </g>
+
+  <!-- PLAUSIBLE (White) BA (Accent Blue) — for dark backgrounds -->
+  <text x="158" y="74" font-family="'Montserrat', 'Segoe UI', Arial, sans-serif" font-weight="800" font-size="52" letter-spacing="1.5">
+    <tspan fill="#FFFFFF">PLAUSIBLE </tspan><tspan fill="#6AC3EE">BA</tspan>
+  </text>
+</svg>

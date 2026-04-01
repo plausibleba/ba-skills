@@ -436,6 +436,11 @@ export function useEnrichmentActions() {
             s.loadCards(progress.cardRegistry);
           }
 
+          // Mark scaffold dirty so auto-save persists enrichment results to Supabase.
+          // loadScaffold doesn't set scaffoldDirty (it's designed for initial load),
+          // so without this, enrichment data stays in memory but is never saved.
+          useCanvasStore.setState({ scaffoldDirty: true });
+
           // Create review result for the user to review and commit
           enrichmentStore.addReviewResult({
             cardId: card.id,

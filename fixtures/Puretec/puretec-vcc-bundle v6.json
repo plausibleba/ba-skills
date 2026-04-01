@@ -1,0 +1,1267 @@
+{
+  "bundleVersion": "1.0",
+  "createdAt": "2026-03-08T10:27:14.734Z",
+  "scaffold": {
+    "schemaVersion": "1.0.0",
+    "scaffoldId": "scaffold_puretec",
+    "name": "PureTec — Operating Model",
+    "description": "Water filtration company operating model with customer acquisition, partner management, product lifecycle, and technology integration value streams",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "elements": {
+      "valueStreams": {
+        "vs_customer_acquisition_lifecycle": {
+          "elementType": "valueStream",
+          "id": "vs_customer_acquisition_lifecycle",
+          "name": "Customer Acquisition Lifecycle",
+          "description": "End-to-end flow from prospect identification through customer onboarding across multiple segments",
+          "zone": "ecosystem",
+          "trigger": "Market opportunity identified or inbound inquiry received",
+          "terminalOutcome": "Customer actively purchasing and integrated into distribution network",
+          "stakeholder": "Customers, Plumbers, Distributors",
+          "firstActivityId": "act_identify_prospects",
+          "outcomeIds": [
+            "outcome_market_opportunity_identified",
+            "outcome_prospects_identified",
+            "outcome_customers_segmented",
+            "outcome_channels_assigned",
+            "outcome_sales_completed",
+            "outcome_orders_processed",
+            "outcome_customer_onboarded"
+          ],
+          "activityIds": [
+            "act_identify_prospects",
+            "act_segment_customers",
+            "act_assign_channels",
+            "act_engage_sales",
+            "act_process_orders",
+            "act_onboard_customer"
+          ]
+        },
+        "vs_partner_distribution_management": {
+          "elementType": "valueStream",
+          "id": "vs_partner_distribution_management",
+          "name": "Partner Distribution Management",
+          "description": "End-to-end flow managing trade partners and distributors from recruitment through performance optimization",
+          "zone": "ecosystem",
+          "trigger": "Partner recruitment need identified or partner application received",
+          "terminalOutcome": "Partner actively selling and supported with proactive sales capabilities",
+          "stakeholder": "Trade Partners, Plumbers, Distributors",
+          "firstActivityId": "act_recruit_partners",
+          "outcomeIds": [
+            "outcome_partner_need_identified",
+            "outcome_partners_recruited",
+            "outcome_partners_onboarded",
+            "outcome_territories_assigned",
+            "outcome_sales_support_provided",
+            "outcome_performance_monitored",
+            "outcome_relationships_optimized"
+          ],
+          "activityIds": [
+            "act_recruit_partners",
+            "act_onboard_partners",
+            "act_assign_territories",
+            "act_provide_sales_support",
+            "act_monitor_performance",
+            "act_optimize_relationships"
+          ]
+        },
+        "vs_product_lifecycle_management": {
+          "elementType": "valueStream",
+          "id": "vs_product_lifecycle_management",
+          "name": "Product Lifecycle Management",
+          "description": "End-to-end flow from product development through market delivery across 4000+ SKUs",
+          "zone": "ecosystem",
+          "trigger": "Product development initiative or market demand identified",
+          "terminalOutcome": "Product successfully launched and generating revenue in market",
+          "stakeholder": "Customers, Product Development Team",
+          "firstActivityId": "act_develop_products",
+          "outcomeIds": [
+            "outcome_product_initiative_identified",
+            "outcome_products_developed",
+            "outcome_skus_configured",
+            "outcome_inventory_planned",
+            "outcome_products_launched",
+            "outcome_performance_tracked"
+          ],
+          "activityIds": [
+            "act_develop_products",
+            "act_configure_skus",
+            "act_plan_inventory",
+            "act_launch_products",
+            "act_track_performance"
+          ]
+        },
+        "vs_maintenance_revenue_lifecycle": {
+          "elementType": "valueStream",
+          "id": "vs_maintenance_revenue_lifecycle",
+          "name": "Maintenance Revenue Lifecycle",
+          "description": "End-to-end flow managing recurring cartridge replacement revenue from installation through renewal",
+          "zone": "ecosystem",
+          "trigger": "Initial filtration system installed",
+          "terminalOutcome": "Ongoing annual cartridge replacement revenue secured",
+          "stakeholder": "Customers, Service Team",
+          "firstActivityId": "act_register_installation",
+          "outcomeIds": [
+            "outcome_system_installed",
+            "outcome_installation_registered",
+            "outcome_maintenance_scheduled",
+            "outcome_replacement_notified",
+            "outcome_orders_fulfilled",
+            "outcome_service_delivered",
+            "outcome_revenue_recognized"
+          ],
+          "activityIds": [
+            "act_register_installation",
+            "act_schedule_maintenance",
+            "act_notify_replacement",
+            "act_fulfill_orders",
+            "act_deliver_service",
+            "act_recognize_revenue"
+          ]
+        },
+        "vs_sales_territory_optimization": {
+          "elementType": "valueStream",
+          "id": "vs_sales_territory_optimization",
+          "name": "Sales Territory Optimization",
+          "description": "End-to-end flow from territory planning through sales performance measurement",
+          "zone": "knowledge",
+          "trigger": "Territory review cycle initiated or performance gap identified",
+          "terminalOutcome": "Optimized territory performance with reduced admin time and increased selling effectiveness",
+          "stakeholder": "Sales Teams, Sales Management",
+          "firstActivityId": "act_analyze_territories",
+          "outcomeIds": [
+            "outcome_territory_review_initiated",
+            "outcome_territories_analyzed",
+            "outcome_routes_planned",
+            "outcome_intelligence_prepared",
+            "outcome_sales_executed",
+            "outcome_activities_tracked",
+            "outcome_performance_assessed"
+          ],
+          "activityIds": [
+            "act_analyze_territories",
+            "act_plan_routes",
+            "act_prepare_intelligence",
+            "act_execute_sales",
+            "act_track_activities",
+            "act_assess_performance"
+          ]
+        },
+        "vs_technology_integration_foundation": {
+          "elementType": "valueStream",
+          "id": "vs_technology_integration_foundation",
+          "name": "Technology Integration Foundation",
+          "description": "End-to-end flow establishing integrated technology platform from system selection through operational stability",
+          "zone": "knowledge",
+          "trigger": "Technology integration requirement identified",
+          "terminalOutcome": "Stable integrated platform supporting business operations",
+          "stakeholder": "IT Team, Executive Team, Implementation Partners",
+          "firstActivityId": "act_design_architecture",
+          "outcomeIds": [
+            "outcome_integration_requirement_identified",
+            "outcome_architecture_designed",
+            "outcome_partners_selected",
+            "outcome_integration_developed",
+            "outcome_customizations_managed",
+            "outcome_testing_completed",
+            "outcome_production_deployed",
+            "outcome_stability_achieved"
+          ],
+          "activityIds": [
+            "act_design_architecture",
+            "act_select_partners",
+            "act_develop_integration",
+            "act_manage_customizations",
+            "act_test_validate",
+            "act_deploy_production",
+            "act_achieve_stability"
+          ]
+        }
+      },
+      "activities": {
+        "act_identify_prospects": {
+          "elementType": "activity",
+          "id": "act_identify_prospects",
+          "name": "Identify Prospects",
+          "description": "Identify and qualify potential customers across price-focused, health-conscious, and premium segments",
+          "preOutcomeId": "outcome_market_opportunity_identified",
+          "postOutcomeId": "outcome_prospects_identified",
+          "nextActivityId": "act_segment_customers",
+          "performedByRoleIds": [
+            "role_sales_rep",
+            "role_partner_manager"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_prospect_identification"
+          ]
+        },
+        "act_segment_customers": {
+          "elementType": "activity",
+          "id": "act_segment_customers",
+          "name": "Segment Customers",
+          "description": "Categorize customers by price focus, health consciousness, and premium aesthetic preferences",
+          "preOutcomeId": "outcome_prospects_identified",
+          "postOutcomeId": "outcome_customers_segmented",
+          "nextActivityId": "act_assign_channels",
+          "performedByRoleIds": [
+            "role_sales_rep",
+            "role_customer_care"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_customer_segmentation"
+          ]
+        },
+        "act_assign_channels": {
+          "elementType": "activity",
+          "id": "act_assign_channels",
+          "name": "Assign Channels",
+          "description": "Route customers through appropriate channels including plumbers and distributors",
+          "preOutcomeId": "outcome_customers_segmented",
+          "postOutcomeId": "outcome_channels_assigned",
+          "nextActivityId": "act_engage_sales",
+          "performedByRoleIds": [
+            "role_partner_manager",
+            "role_sales_rep"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_channel_assignment"
+          ]
+        },
+        "act_engage_sales": {
+          "elementType": "activity",
+          "id": "act_engage_sales",
+          "name": "Engage Sales",
+          "description": "Conduct effective sales interactions using WhatsApp and SMS as primary channels",
+          "preOutcomeId": "outcome_channels_assigned",
+          "postOutcomeId": "outcome_sales_completed",
+          "nextActivityId": "act_process_orders",
+          "performedByRoleIds": [
+            "role_sales_rep",
+            "role_plumber",
+            "role_distributor"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_sales_engagement"
+          ]
+        },
+        "act_process_orders": {
+          "elementType": "activity",
+          "id": "act_process_orders",
+          "name": "Process Orders",
+          "description": "Handle order intake and processing across multiple product SKUs",
+          "preOutcomeId": "outcome_sales_completed",
+          "postOutcomeId": "outcome_orders_processed",
+          "nextActivityId": "act_onboard_customer",
+          "performedByRoleIds": [
+            "role_customer_care",
+            "role_sales_rep"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_order_processing"
+          ]
+        },
+        "act_onboard_customer": {
+          "elementType": "activity",
+          "id": "act_onboard_customer",
+          "name": "Onboard Customer",
+          "description": "Complete customer onboarding and integration into distribution network",
+          "preOutcomeId": "outcome_orders_processed",
+          "postOutcomeId": "outcome_customer_onboarded",
+          "nextActivityId": null,
+          "performedByRoleIds": [
+            "role_customer_care",
+            "role_partner_manager"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_prospect_identification"
+          ]
+        },
+        "act_recruit_partners": {
+          "elementType": "activity",
+          "id": "act_recruit_partners",
+          "name": "Recruit Partners",
+          "description": "Identify and onboard plumbers and distributors as channel partners",
+          "preOutcomeId": "outcome_partner_need_identified",
+          "postOutcomeId": "outcome_partners_recruited",
+          "nextActivityId": "act_onboard_partners",
+          "performedByRoleIds": [
+            "role_partner_manager",
+            "role_sales_rep"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_partner_recruitment"
+          ]
+        },
+        "act_onboard_partners": {
+          "elementType": "activity",
+          "id": "act_onboard_partners",
+          "name": "Onboard Partners",
+          "description": "Complete partner onboarding process and initial setup",
+          "preOutcomeId": "outcome_partners_recruited",
+          "postOutcomeId": "outcome_partners_onboarded",
+          "nextActivityId": "act_assign_territories",
+          "performedByRoleIds": [
+            "role_partner_manager",
+            "role_customer_care"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_partner_support"
+          ]
+        },
+        "act_assign_territories": {
+          "elementType": "activity",
+          "id": "act_assign_territories",
+          "name": "Assign Territories",
+          "description": "Assign and optimize geographic territories for partner coverage",
+          "preOutcomeId": "outcome_partners_onboarded",
+          "postOutcomeId": "outcome_territories_assigned",
+          "nextActivityId": "act_provide_sales_support",
+          "performedByRoleIds": [
+            "role_partner_manager",
+            "role_sales_rep"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_territory_management"
+          ]
+        },
+        "act_provide_sales_support": {
+          "elementType": "activity",
+          "id": "act_provide_sales_support",
+          "name": "Provide Sales Support",
+          "description": "Deliver excellent support that differentiates PureTec from competitors",
+          "preOutcomeId": "outcome_territories_assigned",
+          "postOutcomeId": "outcome_sales_support_provided",
+          "nextActivityId": "act_monitor_performance",
+          "performedByRoleIds": [
+            "role_partner_manager",
+            "role_customer_care"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_partner_support"
+          ]
+        },
+        "act_monitor_performance": {
+          "elementType": "activity",
+          "id": "act_monitor_performance",
+          "name": "Monitor Performance",
+          "description": "Track and measure partner sales performance",
+          "preOutcomeId": "outcome_sales_support_provided",
+          "postOutcomeId": "outcome_performance_monitored",
+          "nextActivityId": "act_optimize_relationships",
+          "performedByRoleIds": [
+            "role_partner_manager",
+            "role_sales_rep"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_partner_support"
+          ]
+        },
+        "act_optimize_relationships": {
+          "elementType": "activity",
+          "id": "act_optimize_relationships",
+          "name": "Optimize Relationships",
+          "description": "Provide tools and support to help distributors move beyond order-taking to proactive selling",
+          "preOutcomeId": "outcome_performance_monitored",
+          "postOutcomeId": "outcome_relationships_optimized",
+          "nextActivityId": null,
+          "performedByRoleIds": [
+            "role_partner_manager",
+            "role_sales_rep"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_partner_enablement"
+          ]
+        },
+        "act_develop_products": {
+          "elementType": "activity",
+          "id": "act_develop_products",
+          "name": "Develop Products",
+          "description": "Create high-quality filtration systems with aesthetic appeal",
+          "preOutcomeId": "outcome_product_initiative_identified",
+          "postOutcomeId": "outcome_products_developed",
+          "nextActivityId": "act_configure_skus",
+          "performedByRoleIds": [
+            "role_product_manager"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_product_development"
+          ]
+        },
+        "act_configure_skus": {
+          "elementType": "activity",
+          "id": "act_configure_skus",
+          "name": "Configure SKUs",
+          "description": "Configure and maintain 4000+ product variations including systems, parts, and cartridges",
+          "preOutcomeId": "outcome_products_developed",
+          "postOutcomeId": "outcome_skus_configured",
+          "nextActivityId": "act_plan_inventory",
+          "performedByRoleIds": [
+            "role_product_manager",
+            "role_customer_care"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_sku_management"
+          ]
+        },
+        "act_plan_inventory": {
+          "elementType": "activity",
+          "id": "act_plan_inventory",
+          "name": "Plan Inventory",
+          "description": "Forecast and manage inventory across extensive product portfolio",
+          "preOutcomeId": "outcome_skus_configured",
+          "postOutcomeId": "outcome_inventory_planned",
+          "nextActivityId": "act_launch_products",
+          "performedByRoleIds": [
+            "role_product_manager",
+            "role_partner_manager"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_inventory_planning"
+          ]
+        },
+        "act_launch_products": {
+          "elementType": "activity",
+          "id": "act_launch_products",
+          "name": "Launch Products",
+          "description": "Introduce new products through partner channels effectively",
+          "preOutcomeId": "outcome_inventory_planned",
+          "postOutcomeId": "outcome_products_launched",
+          "nextActivityId": "act_track_performance",
+          "performedByRoleIds": [
+            "role_product_manager",
+            "role_partner_manager",
+            "role_sales_rep"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_market_launch"
+          ]
+        },
+        "act_track_performance": {
+          "elementType": "activity",
+          "id": "act_track_performance",
+          "name": "Track Performance",
+          "description": "Monitor product performance and market success",
+          "preOutcomeId": "outcome_products_launched",
+          "postOutcomeId": "outcome_performance_tracked",
+          "nextActivityId": null,
+          "performedByRoleIds": [
+            "role_product_manager",
+            "role_sales_rep"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_market_launch"
+          ]
+        },
+        "act_register_installation": {
+          "elementType": "activity",
+          "id": "act_register_installation",
+          "name": "Register Installation",
+          "description": "Register and monitor installed filtration systems for maintenance scheduling",
+          "preOutcomeId": "outcome_system_installed",
+          "postOutcomeId": "outcome_installation_registered",
+          "nextActivityId": "act_schedule_maintenance",
+          "performedByRoleIds": [
+            "role_customer_care",
+            "role_plumber"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_installation_tracking"
+          ]
+        },
+        "act_schedule_maintenance": {
+          "elementType": "activity",
+          "id": "act_schedule_maintenance",
+          "name": "Schedule Maintenance",
+          "description": "Plan and coordinate regular maintenance activities",
+          "preOutcomeId": "outcome_installation_registered",
+          "postOutcomeId": "outcome_maintenance_scheduled",
+          "nextActivityId": "act_notify_replacement",
+          "performedByRoleIds": [
+            "role_customer_care",
+            "role_partner_manager"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_maintenance_scheduling"
+          ]
+        },
+        "act_notify_replacement": {
+          "elementType": "activity",
+          "id": "act_notify_replacement",
+          "name": "Notify Replacement",
+          "description": "Notify customers and fulfill 12-month cartridge replacement cycles",
+          "preOutcomeId": "outcome_maintenance_scheduled",
+          "postOutcomeId": "outcome_replacement_notified",
+          "nextActivityId": "act_fulfill_orders",
+          "performedByRoleIds": [
+            "role_customer_care",
+            "role_sales_rep"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_replacement_management"
+          ]
+        },
+        "act_fulfill_orders": {
+          "elementType": "activity",
+          "id": "act_fulfill_orders",
+          "name": "Fulfill Orders",
+          "description": "Process and fulfill replacement cartridge orders",
+          "preOutcomeId": "outcome_replacement_notified",
+          "postOutcomeId": "outcome_orders_fulfilled",
+          "nextActivityId": "act_deliver_service",
+          "performedByRoleIds": [
+            "role_customer_care",
+            "role_distributor"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_replacement_management"
+          ]
+        },
+        "act_deliver_service": {
+          "elementType": "activity",
+          "id": "act_deliver_service",
+          "name": "Deliver Service",
+          "description": "Complete service delivery and cartridge replacement",
+          "preOutcomeId": "outcome_orders_fulfilled",
+          "postOutcomeId": "outcome_service_delivered",
+          "nextActivityId": "act_recognize_revenue",
+          "performedByRoleIds": [
+            "role_plumber",
+            "role_customer_care"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_replacement_management"
+          ]
+        },
+        "act_recognize_revenue": {
+          "elementType": "activity",
+          "id": "act_recognize_revenue",
+          "name": "Recognize Revenue",
+          "description": "Capture and optimize ongoing maintenance and replacement revenue streams",
+          "preOutcomeId": "outcome_service_delivered",
+          "postOutcomeId": "outcome_revenue_recognized",
+          "nextActivityId": null,
+          "performedByRoleIds": [
+            "role_customer_care",
+            "role_partner_manager"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_recurring_revenue"
+          ]
+        },
+        "act_analyze_territories": {
+          "elementType": "activity",
+          "id": "act_analyze_territories",
+          "name": "Analyze Territories",
+          "description": "Evaluate state-based, postcode-driven geographic territories for optimization",
+          "preOutcomeId": "outcome_territory_review_initiated",
+          "postOutcomeId": "outcome_territories_analyzed",
+          "nextActivityId": "act_plan_routes",
+          "performedByRoleIds": [
+            "role_sales_rep",
+            "role_partner_manager"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_territory_analysis"
+          ]
+        },
+        "act_plan_routes": {
+          "elementType": "activity",
+          "id": "act_plan_routes",
+          "name": "Plan Routes",
+          "description": "Optimize sales representative travel and customer visit scheduling",
+          "preOutcomeId": "outcome_territories_analyzed",
+          "postOutcomeId": "outcome_routes_planned",
+          "nextActivityId": "act_prepare_intelligence",
+          "performedByRoleIds": [
+            "role_sales_rep",
+            "role_customer_care"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_route_planning"
+          ]
+        },
+        "act_prepare_intelligence": {
+          "elementType": "activity",
+          "id": "act_prepare_intelligence",
+          "name": "Prepare Intelligence",
+          "description": "Compile historical orders, delivery issues, and opportunities for pre-visit briefings",
+          "preOutcomeId": "outcome_routes_planned",
+          "postOutcomeId": "outcome_intelligence_prepared",
+          "nextActivityId": "act_execute_sales",
+          "performedByRoleIds": [
+            "role_customer_care",
+            "role_sales_rep"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_customer_intelligence"
+          ]
+        },
+        "act_execute_sales": {
+          "elementType": "activity",
+          "id": "act_execute_sales",
+          "name": "Execute Sales",
+          "description": "Conduct sales activities with prepared customer intelligence",
+          "preOutcomeId": "outcome_intelligence_prepared",
+          "postOutcomeId": "outcome_sales_executed",
+          "nextActivityId": "act_track_activities",
+          "performedByRoleIds": [
+            "role_sales_rep",
+            "role_distributor"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_customer_intelligence"
+          ]
+        },
+        "act_track_activities": {
+          "elementType": "activity",
+          "id": "act_track_activities",
+          "name": "Track Activities",
+          "description": "Monitor and measure sales team performance and CRM usage",
+          "preOutcomeId": "outcome_sales_executed",
+          "postOutcomeId": "outcome_activities_tracked",
+          "nextActivityId": "act_assess_performance",
+          "performedByRoleIds": [
+            "role_sales_rep",
+            "role_partner_manager"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_activity_tracking"
+          ]
+        },
+        "act_assess_performance": {
+          "elementType": "activity",
+          "id": "act_assess_performance",
+          "name": "Assess Performance",
+          "description": "Evaluate territory performance and identify optimization opportunities",
+          "preOutcomeId": "outcome_activities_tracked",
+          "postOutcomeId": "outcome_performance_assessed",
+          "nextActivityId": null,
+          "performedByRoleIds": [
+            "role_partner_manager",
+            "role_sales_rep"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_activity_tracking"
+          ]
+        },
+        "act_design_architecture": {
+          "elementType": "activity",
+          "id": "act_design_architecture",
+          "name": "Design Architecture",
+          "description": "Design system architecture for integrated technology platform",
+          "preOutcomeId": "outcome_integration_requirement_identified",
+          "postOutcomeId": "outcome_architecture_designed",
+          "nextActivityId": "act_select_partners",
+          "performedByRoleIds": [
+            "role_head_of_tech",
+            "role_implementation_partner"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_system_integration"
+          ]
+        },
+        "act_select_partners": {
+          "elementType": "activity",
+          "id": "act_select_partners",
+          "name": "Select Partners",
+          "description": "Select implementation partners for system integration",
+          "preOutcomeId": "outcome_architecture_designed",
+          "postOutcomeId": "outcome_partners_selected",
+          "nextActivityId": "act_develop_integration",
+          "performedByRoleIds": [
+            "role_head_of_tech",
+            "role_implementation_partner"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_system_integration"
+          ]
+        },
+        "act_develop_integration": {
+          "elementType": "activity",
+          "id": "act_develop_integration",
+          "name": "Develop Integration",
+          "description": "Connect Salesforce with NetSuite ERP and other business systems",
+          "preOutcomeId": "outcome_partners_selected",
+          "postOutcomeId": "outcome_integration_developed",
+          "nextActivityId": "act_manage_customizations",
+          "performedByRoleIds": [
+            "role_implementation_partner",
+            "role_head_of_tech"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_system_integration"
+          ]
+        },
+        "act_manage_customizations": {
+          "elementType": "activity",
+          "id": "act_manage_customizations",
+          "name": "Manage Customizations",
+          "description": "Control and optimize 90+ Salesforce customizations for maintainability",
+          "preOutcomeId": "outcome_integration_developed",
+          "postOutcomeId": "outcome_customizations_managed",
+          "nextActivityId": "act_test_validate",
+          "performedByRoleIds": [
+            "role_implementation_partner",
+            "role_head_of_tech"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_customization_management"
+          ]
+        },
+        "act_test_validate": {
+          "elementType": "activity",
+          "id": "act_test_validate",
+          "name": "Test and Validate",
+          "description": "Ensure consistent data flow between CRM, ERP, and integration platforms",
+          "preOutcomeId": "outcome_customizations_managed",
+          "postOutcomeId": "outcome_testing_completed",
+          "nextActivityId": "act_deploy_production",
+          "performedByRoleIds": [
+            "role_implementation_partner",
+            "role_head_of_tech"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_data_synchronization"
+          ]
+        },
+        "act_deploy_production": {
+          "elementType": "activity",
+          "id": "act_deploy_production",
+          "name": "Deploy Production",
+          "description": "Deploy integrated platform to production environment",
+          "preOutcomeId": "outcome_testing_completed",
+          "postOutcomeId": "outcome_production_deployed",
+          "nextActivityId": "act_achieve_stability",
+          "performedByRoleIds": [
+            "role_head_of_tech",
+            "role_implementation_partner"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_platform_stability"
+          ]
+        },
+        "act_achieve_stability": {
+          "elementType": "activity",
+          "id": "act_achieve_stability",
+          "name": "Achieve Stability",
+          "description": "Ensure reliable system performance and minimize manual workarounds",
+          "preOutcomeId": "outcome_production_deployed",
+          "postOutcomeId": "outcome_stability_achieved",
+          "nextActivityId": null,
+          "performedByRoleIds": [
+            "role_head_of_tech",
+            "role_customer_care"
+          ],
+          "enabledByCapabilityIds": [
+            "cap_platform_stability"
+          ]
+        }
+      },
+      "outcomes": {
+        "outcome_market_opportunity_identified": {
+          "elementType": "outcome",
+          "id": "outcome_market_opportunity_identified",
+          "name": "Market Opportunity Identified",
+          "description": "Market opportunity or inbound inquiry has been identified"
+        },
+        "outcome_prospects_identified": {
+          "elementType": "outcome",
+          "id": "outcome_prospects_identified",
+          "name": "Prospects Identified",
+          "description": "Potential customers have been identified and qualified"
+        },
+        "outcome_customers_segmented": {
+          "elementType": "outcome",
+          "id": "outcome_customers_segmented",
+          "name": "Customers Segmented",
+          "description": "Customers have been categorized by preferences and needs"
+        },
+        "outcome_channels_assigned": {
+          "elementType": "outcome",
+          "id": "outcome_channels_assigned",
+          "name": "Channels Assigned",
+          "description": "Customers have been routed to appropriate sales channels"
+        },
+        "outcome_sales_completed": {
+          "elementType": "outcome",
+          "id": "outcome_sales_completed",
+          "name": "Sales Completed",
+          "description": "Sales interactions have been successfully completed"
+        },
+        "outcome_orders_processed": {
+          "elementType": "outcome",
+          "id": "outcome_orders_processed",
+          "name": "Orders Processed",
+          "description": "Customer orders have been processed and confirmed"
+        },
+        "outcome_customer_onboarded": {
+          "elementType": "outcome",
+          "id": "outcome_customer_onboarded",
+          "name": "Customer Onboarded",
+          "description": "Customer has been fully onboarded and integrated"
+        },
+        "outcome_partner_need_identified": {
+          "elementType": "outcome",
+          "id": "outcome_partner_need_identified",
+          "name": "Partner Need Identified",
+          "description": "Partner recruitment need has been identified"
+        },
+        "outcome_partners_recruited": {
+          "elementType": "outcome",
+          "id": "outcome_partners_recruited",
+          "name": "Partners Recruited",
+          "description": "Trade partners have been successfully recruited"
+        },
+        "outcome_partners_onboarded": {
+          "elementType": "outcome",
+          "id": "outcome_partners_onboarded",
+          "name": "Partners Onboarded",
+          "description": "Partners have completed onboarding process"
+        },
+        "outcome_territories_assigned": {
+          "elementType": "outcome",
+          "id": "outcome_territories_assigned",
+          "name": "Territories Assigned",
+          "description": "Geographic territories have been assigned to partners"
+        },
+        "outcome_sales_support_provided": {
+          "elementType": "outcome",
+          "id": "outcome_sales_support_provided",
+          "name": "Sales Support Provided",
+          "description": "Partners have received sales support and enablement"
+        },
+        "outcome_performance_monitored": {
+          "elementType": "outcome",
+          "id": "outcome_performance_monitored",
+          "name": "Performance Monitored",
+          "description": "Partner performance has been tracked and measured"
+        },
+        "outcome_relationships_optimized": {
+          "elementType": "outcome",
+          "id": "outcome_relationships_optimized",
+          "name": "Relationships Optimized",
+          "description": "Partner relationships have been optimized for proactive selling"
+        },
+        "outcome_product_initiative_identified": {
+          "elementType": "outcome",
+          "id": "outcome_product_initiative_identified",
+          "name": "Product Initiative Identified",
+          "description": "Product development initiative has been identified"
+        },
+        "outcome_products_developed": {
+          "elementType": "outcome",
+          "id": "outcome_products_developed",
+          "name": "Products Developed",
+          "description": "New products have been developed with quality and aesthetics"
+        },
+        "outcome_skus_configured": {
+          "elementType": "outcome",
+          "id": "outcome_skus_configured",
+          "name": "SKUs Configured",
+          "description": "Product SKUs have been configured and maintained"
+        },
+        "outcome_inventory_planned": {
+          "elementType": "outcome",
+          "id": "outcome_inventory_planned",
+          "name": "Inventory Planned",
+          "description": "Inventory has been forecasted and planned"
+        },
+        "outcome_products_launched": {
+          "elementType": "outcome",
+          "id": "outcome_products_launched",
+          "name": "Products Launched",
+          "description": "Products have been successfully launched to market"
+        },
+        "outcome_performance_tracked": {
+          "elementType": "outcome",
+          "id": "outcome_performance_tracked",
+          "name": "Performance Tracked",
+          "description": "Product performance has been monitored and tracked"
+        },
+        "outcome_system_installed": {
+          "elementType": "outcome",
+          "id": "outcome_system_installed",
+          "name": "System Installed",
+          "description": "Filtration system has been installed at customer location"
+        },
+        "outcome_installation_registered": {
+          "elementType": "outcome",
+          "id": "outcome_installation_registered",
+          "name": "Installation Registered",
+          "description": "Installation has been registered for maintenance tracking"
+        },
+        "outcome_maintenance_scheduled": {
+          "elementType": "outcome",
+          "id": "outcome_maintenance_scheduled",
+          "name": "Maintenance Scheduled",
+          "description": "Regular maintenance activities have been scheduled"
+        },
+        "outcome_replacement_notified": {
+          "elementType": "outcome",
+          "id": "outcome_replacement_notified",
+          "name": "Replacement Notified",
+          "description": "Customer has been notified of cartridge replacement needs"
+        },
+        "outcome_orders_fulfilled": {
+          "elementType": "outcome",
+          "id": "outcome_orders_fulfilled",
+          "name": "Orders Fulfilled",
+          "description": "Replacement orders have been processed and fulfilled"
+        },
+        "outcome_service_delivered": {
+          "elementType": "outcome",
+          "id": "outcome_service_delivered",
+          "name": "Service Delivered",
+          "description": "Maintenance service has been completed"
+        },
+        "outcome_revenue_recognized": {
+          "elementType": "outcome",
+          "id": "outcome_revenue_recognized",
+          "name": "Revenue Recognized",
+          "description": "Recurring revenue has been captured and recognized"
+        },
+        "outcome_territory_review_initiated": {
+          "elementType": "outcome",
+          "id": "outcome_territory_review_initiated",
+          "name": "Territory Review Initiated",
+          "description": "Territory review cycle has been initiated"
+        },
+        "outcome_territories_analyzed": {
+          "elementType": "outcome",
+          "id": "outcome_territories_analyzed",
+          "name": "Territories Analyzed",
+          "description": "Sales territories have been analyzed for optimization"
+        },
+        "outcome_routes_planned": {
+          "elementType": "outcome",
+          "id": "outcome_routes_planned",
+          "name": "Routes Planned",
+          "description": "Sales routes have been optimized and planned"
+        },
+        "outcome_intelligence_prepared": {
+          "elementType": "outcome",
+          "id": "outcome_intelligence_prepared",
+          "name": "Intelligence Prepared",
+          "description": "Customer intelligence has been compiled for sales visits"
+        },
+        "outcome_sales_executed": {
+          "elementType": "outcome",
+          "id": "outcome_sales_executed",
+          "name": "Sales Executed",
+          "description": "Sales activities have been executed with intelligence"
+        },
+        "outcome_activities_tracked": {
+          "elementType": "outcome",
+          "id": "outcome_activities_tracked",
+          "name": "Activities Tracked",
+          "description": "Sales activities have been tracked and measured"
+        },
+        "outcome_performance_assessed": {
+          "elementType": "outcome",
+          "id": "outcome_performance_assessed",
+          "name": "Performance Assessed",
+          "description": "Territory performance has been assessed and optimized"
+        },
+        "outcome_integration_requirement_identified": {
+          "elementType": "outcome",
+          "id": "outcome_integration_requirement_identified",
+          "name": "Integration Requirement Identified",
+          "description": "Technology integration requirement has been identified"
+        },
+        "outcome_architecture_designed": {
+          "elementType": "outcome",
+          "id": "outcome_architecture_designed",
+          "name": "Architecture Designed",
+          "description": "System architecture has been designed"
+        },
+        "outcome_partners_selected": {
+          "elementType": "outcome",
+          "id": "outcome_partners_selected",
+          "name": "Partners Selected",
+          "description": "Implementation partners have been selected"
+        },
+        "outcome_integration_developed": {
+          "elementType": "outcome",
+          "id": "outcome_integration_developed",
+          "name": "Integration Developed",
+          "description": "System integration has been developed"
+        },
+        "outcome_customizations_managed": {
+          "elementType": "outcome",
+          "id": "outcome_customizations_managed",
+          "name": "Customizations Managed",
+          "description": "System customizations have been controlled and optimized"
+        },
+        "outcome_testing_completed": {
+          "elementType": "outcome",
+          "id": "outcome_testing_completed",
+          "name": "Testing Completed",
+          "description": "System testing and validation has been completed"
+        },
+        "outcome_production_deployed": {
+          "elementType": "outcome",
+          "id": "outcome_production_deployed",
+          "name": "Production Deployed",
+          "description": "System has been deployed to production"
+        },
+        "outcome_stability_achieved": {
+          "elementType": "outcome",
+          "id": "outcome_stability_achieved",
+          "name": "Stability Achieved",
+          "description": "Platform stability has been achieved"
+        }
+      },
+      "roles": {
+        "role_sales_rep": {
+          "elementType": "role",
+          "id": "role_sales_rep",
+          "name": "Sales Representative",
+          "description": "Field-based sales professionals managing geographic territories and customer relationships"
+        },
+        "role_partner_manager": {
+          "elementType": "role",
+          "id": "role_partner_manager",
+          "name": "Partner Manager",
+          "description": "Manages relationships with trade partners, plumbers, and distributors"
+        },
+        "role_product_manager": {
+          "elementType": "role",
+          "id": "role_product_manager",
+          "name": "Product Manager",
+          "description": "Oversees product development and SKU configuration across 4000+ products"
+        },
+        "role_customer_care": {
+          "elementType": "role",
+          "id": "role_customer_care",
+          "name": "Customer Care Representative",
+          "description": "Provides customer support and maintains customer intelligence data"
+        },
+        "role_head_of_tech": {
+          "elementType": "role",
+          "id": "role_head_of_tech",
+          "name": "Head of Technology",
+          "description": "Leads technology strategy and system integration initiatives"
+        },
+        "role_implementation_partner": {
+          "elementType": "role",
+          "id": "role_implementation_partner",
+          "name": "Implementation Partner",
+          "description": "External consultants responsible for Salesforce customization and integration"
+        },
+        "role_plumber": {
+          "elementType": "role",
+          "id": "role_plumber",
+          "name": "Plumber",
+          "description": "Trade partners who install and recommend PureTec filtration systems"
+        },
+        "role_distributor": {
+          "elementType": "role",
+          "id": "role_distributor",
+          "name": "Distributor",
+          "description": "Channel partners who sell PureTec products to end customers"
+        }
+      },
+      "capabilities": {
+        "cap_prospect_identification": {
+          "elementType": "capability",
+          "id": "cap_prospect_identification",
+          "name": "Identify Customer Prospects",
+          "description": "Ability to identify and qualify potential customers across price-focused, health-conscious, and premium segments"
+        },
+        "cap_customer_segmentation": {
+          "elementType": "capability",
+          "id": "cap_customer_segmentation",
+          "name": "Segment Customer Base",
+          "description": "Ability to categorize customers by price focus, health consciousness, and premium aesthetic preferences"
+        },
+        "cap_channel_assignment": {
+          "elementType": "capability",
+          "id": "cap_channel_assignment",
+          "name": "Assign Sales Channels",
+          "description": "Ability to route customers through appropriate channels including plumbers and distributors"
+        },
+        "cap_sales_engagement": {
+          "elementType": "capability",
+          "id": "cap_sales_engagement",
+          "name": "Execute Sales Engagement",
+          "description": "Ability to conduct effective sales interactions using WhatsApp and SMS as primary channels"
+        },
+        "cap_order_processing": {
+          "elementType": "capability",
+          "id": "cap_order_processing",
+          "name": "Process Customer Orders",
+          "description": "Ability to handle order intake and processing across multiple product SKUs"
+        },
+        "cap_partner_recruitment": {
+          "elementType": "capability",
+          "id": "cap_partner_recruitment",
+          "name": "Recruit Trade Partners",
+          "description": "Ability to identify and onboard plumbers and distributors as channel partners"
+        },
+        "cap_partner_support": {
+          "elementType": "capability",
+          "id": "cap_partner_support",
+          "name": "Provide Partner Support",
+          "description": "Ability to deliver excellent support that differentiates PureTec from competitors"
+        },
+        "cap_territory_management": {
+          "elementType": "capability",
+          "id": "cap_territory_management",
+          "name": "Manage Partner Territories",
+          "description": "Ability to assign and optimize geographic territories for partner coverage"
+        },
+        "cap_partner_enablement": {
+          "elementType": "capability",
+          "id": "cap_partner_enablement",
+          "name": "Enable Proactive Selling",
+          "description": "Ability to provide tools and support to help distributors move beyond order-taking to proactive selling"
+        },
+        "cap_product_development": {
+          "elementType": "capability",
+          "id": "cap_product_development",
+          "name": "Develop Premium Products",
+          "description": "Ability to create high-quality filtration systems with aesthetic appeal"
+        },
+        "cap_sku_management": {
+          "elementType": "capability",
+          "id": "cap_sku_management",
+          "name": "Manage Product SKUs",
+          "description": "Ability to configure and maintain 4000+ product variations including systems, parts, and cartridges"
+        },
+        "cap_inventory_planning": {
+          "elementType": "capability",
+          "id": "cap_inventory_planning",
+          "name": "Plan Product Inventory",
+          "description": "Ability to forecast and manage inventory across extensive product portfolio"
+        },
+        "cap_market_launch": {
+          "elementType": "capability",
+          "id": "cap_market_launch",
+          "name": "Launch Products to Market",
+          "description": "Ability to introduce new products through partner channels effectively"
+        },
+        "cap_installation_tracking": {
+          "elementType": "capability",
+          "id": "cap_installation_tracking",
+          "name": "Track Product Installations",
+          "description": "Ability to register and monitor installed filtration systems for maintenance scheduling"
+        },
+        "cap_maintenance_scheduling": {
+          "elementType": "capability",
+          "id": "cap_maintenance_scheduling",
+          "name": "Schedule Maintenance Services",
+          "description": "Ability to plan and coordinate regular maintenance activities"
+        },
+        "cap_replacement_management": {
+          "elementType": "capability",
+          "id": "cap_replacement_management",
+          "name": "Manage Cartridge Replacements",
+          "description": "Ability to notify customers and fulfill 12-month cartridge replacement cycles"
+        },
+        "cap_recurring_revenue": {
+          "elementType": "capability",
+          "id": "cap_recurring_revenue",
+          "name": "Generate Recurring Revenue",
+          "description": "Ability to capture and optimize ongoing maintenance and replacement revenue streams"
+        },
+        "cap_territory_analysis": {
+          "elementType": "capability",
+          "id": "cap_territory_analysis",
+          "name": "Analyze Sales Territories",
+          "description": "Ability to evaluate state-based, postcode-driven geographic territories for optimization"
+        },
+        "cap_route_planning": {
+          "elementType": "capability",
+          "id": "cap_route_planning",
+          "name": "Plan Sales Routes",
+          "description": "Ability to optimize sales representative travel and customer visit scheduling"
+        },
+        "cap_customer_intelligence": {
+          "elementType": "capability",
+          "id": "cap_customer_intelligence",
+          "name": "Prepare Customer Intelligence",
+          "description": "Ability to compile historical orders, delivery issues, and opportunities for pre-visit briefings"
+        },
+        "cap_activity_tracking": {
+          "elementType": "capability",
+          "id": "cap_activity_tracking",
+          "name": "Track Sales Activities",
+          "description": "Ability to monitor and measure sales team performance and CRM usage"
+        },
+        "cap_system_integration": {
+          "elementType": "capability",
+          "id": "cap_system_integration",
+          "name": "Integrate Core Systems",
+          "description": "Ability to connect Salesforce with NetSuite ERP and other business systems"
+        },
+        "cap_customization_management": {
+          "elementType": "capability",
+          "id": "cap_customization_management",
+          "name": "Manage System Customizations",
+          "description": "Ability to control and optimize 90+ Salesforce customizations for maintainability"
+        },
+        "cap_data_synchronization": {
+          "elementType": "capability",
+          "id": "cap_data_synchronization",
+          "name": "Synchronize Business Data",
+          "description": "Ability to ensure consistent data flow between CRM, ERP, and integration platforms like MuleSoft"
+        },
+        "cap_platform_stability": {
+          "elementType": "capability",
+          "id": "cap_platform_stability",
+          "name": "Maintain Platform Stability",
+          "description": "Ability to ensure reliable system performance and minimize manual workarounds"
+        }
+      },
+      "controls": {},
+      "constraints": {},
+      "directives": {},
+      "deonticLogic": {},
+      "flowLogic": {},
+      "concepts": {},
+      "properties": {},
+      "metrics": {
+        "metric_sales_admin_time": {
+          "elementType": "metric",
+          "id": "metric_sales_admin_time",
+          "name": "Sales Admin Time",
+          "current": "3 days per week lost",
+          "target": "Minimize to <1 day"
+        },
+        "metric_integration_project_duration": {
+          "elementType": "metric",
+          "id": "metric_integration_project_duration",
+          "name": "Integration Project Duration",
+          "current": "9+ months (planned 3)",
+          "target": "Complete within planned timeframes"
+        },
+        "metric_system_customizations": {
+          "elementType": "metric",
+          "id": "metric_system_customizations",
+          "name": "System Customizations",
+          "current": "90+ customizations",
+          "target": "Reduce to essential customizations only"
+        },
+        "metric_annual_growth_rate": {
+          "elementType": "metric",
+          "id": "metric_annual_growth_rate",
+          "name": "Annual Growth Rate",
+          "current": "15% year-over-year",
+          "target": "Maintain or exceed 15%"
+        },
+        "metric_cartridge_replacement_rate": {
+          "elementType": "metric",
+          "id": "metric_cartridge_replacement_rate",
+          "name": "Cartridge Replacement Rate",
+          "current": "Unknown",
+          "target": "90%+ annual replacement"
+        }
+      },
+      "measures": {},
+      "conditions": {}
+    },
+    "_discoveryPainPoints": "1. [TechnologyIntegrationFriction] NetSuite integration project extended from 3 months to 9+ months with no resolution (intensity 9/10, stage: Technology Integration Foundation → Integration Development) ← flagged as binding\n2. [TechnologyIntegrationFriction] 90+ Salesforce customizations making standard implementations complex and unstable (intensity 8/10, stage: Technology Integration Foundation → Customization Management) ← flagged as binding\n3. [ProcessHandoffFriction] Sales team loses 3 days per week to admin and meetings instead of selling (intensity 8/10, stage: Sales Territory Optimization → Sales Execution)\n4. [DataSignalFriction] Lack of customer intelligence in route planning requires manual information gathering (intensity 7/10, stage: Sales Territory Optimization → Customer Intelligence Preparation)\n5. [TechnologyIntegrationFriction] Staff forced to use multiple disparate systems due to integration failures (intensity 7/10, stage: Technology Integration Foundation → Operational Stability)\n6. [IncentiveCapacityFriction] Distributors becoming order-takers rather than proactive sellers due to lack of tools (intensity 6/10, stage: Partner Distribution Management → Sales Support Provision)\n7. [GovernanceRiskFriction] Cannot enforce CRM activity metrics due to system reliability concerns (intensity 6/10, stage: Sales Territory Optimization → Activity Tracking)"
+  },
+  "heatmaps": []
+}

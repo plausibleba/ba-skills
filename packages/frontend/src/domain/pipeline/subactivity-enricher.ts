@@ -105,8 +105,9 @@ roles, and capabilities provided. These flows may be re-derived once PPIT Mappin
 
 ## Task
 For each activity in the scaffold, generate an activity flow DAG that shows the internal
-breakdown of that stage's work. Each DAG should capture the key steps, decision points,
-handoffs, and checkpoints within the activity.
+breakdown of that stage's work. Each DAG MUST capture the key steps, decision points,
+handoffs, and checkpoints within the activity. Every DAG MUST contain real branching —
+NOT just a linear sequence of steps.
 ${ppitGuidance}
 ## Output Format
 Return a JSON object keyed by activity ID. Each value has a "nodes" array:
@@ -114,11 +115,17 @@ Return a JSON object keyed by activity ID. Each value has a "nodes" array:
 {
   "<act_id>": {
     "nodes": [
-      { "id": "sa_<short>_step1", "label": "Step Name", "nodeType": "activity", "nextIds": ["sa_<short>_step2"], "roleId": "role_xxx", "outcome": "Step completed" },
-      { "id": "sa_<short>_gate", "label": "Decision Gate", "nodeType": "gate", "nextIds": ["sa_<short>_yes", "sa_<short>_no"], "edgeLabels": { "sa_<short>_yes": "Approved", "sa_<short>_no": "Rejected" } }
+      { "id": "sa_<short>_step1", "label": "Receive Request", "nodeType": "activity", "nextIds": ["sa_<short>_gate1"], "roleId": "role_xxx", "outcome": "Request logged" },
+      { "id": "sa_<short>_gate1", "label": "Meets Criteria?", "nodeType": "gate", "nextIds": ["sa_<short>_approve", "sa_<short>_reject"], "edgeLabels": { "sa_<short>_approve": "Yes — criteria met", "sa_<short>_reject": "No — incomplete" } },
+      { "id": "sa_<short>_approve", "label": "Process Approval", "nodeType": "activity", "nextIds": ["sa_<short>_done"], "roleId": "role_yyy", "outcome": "Approved" },
+      { "id": "sa_<short>_reject", "label": "Return for Rework", "nodeType": "activity", "nextIds": [], "roleId": "role_xxx", "outcome": "Sent back" },
+      { "id": "sa_<short>_done", "label": "Finalise Output", "nodeType": "activity", "nextIds": [], "roleId": "role_yyy", "outcome": "Complete" }
     ]
   }
 }
+
+Note how the gate above has TWO outgoing paths (approve and reject) that lead to DIFFERENT nodes.
+This is MANDATORY — every DAG must have at least one gate with 2+ diverging paths.
 
 ## Sub-Activity Node Rules
 Each node has:
@@ -130,14 +137,21 @@ Each node has:
 - roleId: which role performs this step (use role IDs from reference data)
 - outcome: short outcome description
 
-## DAG Rules
-- 3-6 nodes per activity (more if ppitActivities warrant it, up to 8)
-- Include at least one gate (decision point) per DAG where natural (qualification, approval, review, etc.)
-- Gates have 2+ nextIds with edgeLabels explaining branching conditions
-- Terminal nodes have empty nextIds
+## DAG Rules — CRITICAL
+- 4-8 nodes per activity (more if ppitActivities warrant it)
+- EVERY DAG MUST contain at least one gate with EXACTLY 2 or more nextIds pointing to DIFFERENT nodes
+- A gate with only 1 nextId is INVALID — that is just a sequential step, not a real decision
+- Think about what decisions, approvals, validations, or quality checks happen within each activity
+- Common gate patterns: approval/rejection, pass/fail, complete/incomplete, standard/exception, automated/manual
+- Gates MUST have edgeLabels explaining each branch condition
+- Terminal nodes have empty nextIds []
 - All nodes must be reachable from the first node
 - roleId should reference roles from the activity's performedByRoleIds or ppitRoleIds
 - Labels must be specific to the stage context — NOT generic
+
+## ANTI-PATTERN — DO NOT DO THIS:
+A purely sequential chain like step1 → step2 → step3 → step4 is WRONG.
+Every real business process has decisions. Find them and model them as gates with diverging paths.
 
 ## Reference Data
 

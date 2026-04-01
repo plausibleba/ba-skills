@@ -1,0 +1,4900 @@
+{
+  "bundleVersion": "2.0",
+  "createdAt": "2026-03-21T11:32:17.563Z",
+  "scaffold": {
+    "schemaVersion": "1.0.0",
+    "scaffoldId": "scaffold_puretec",
+    "name": "PureTec — Operating Model",
+    "description": "Water filtration systems business operating model covering customer acquisition, order fulfillment, service delivery, and partner management",
+    "createdAt": "2024-01-20T10:00:00.000Z",
+    "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "layoutZones": [
+      {
+        "id": "ecosystem",
+        "label": "Ecosystem (external-facing)",
+        "row": 0,
+        "description": "Value streams that serve customers, partners, or external stakeholders"
+      },
+      {
+        "id": "knowledge",
+        "label": "Knowledge (internal-facing)",
+        "row": 1,
+        "description": "Value streams that govern, manage, or enable internal operations"
+      }
+    ],
+    "elements": {
+      "valueStreams": {
+        "vs_lead_to_customer": {
+          "name": "Lead to Customer",
+          "description": "End-to-end flow from prospect identification through customer acquisition across different segments",
+          "activityIds": [
+            "act_identify_prospect",
+            "act_brief_customer",
+            "act_propose_solution",
+            "act_acquire_customer"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_sales_representative",
+          "elementType": "ValueStream"
+        },
+        "vs_order_to_delivery": {
+          "name": "Order to Delivery",
+          "description": "End-to-end flow from order placement through product delivery and installation support",
+          "activityIds": [
+            "act_receive_order",
+            "act_fulfill_order",
+            "act_deliver_product",
+            "act_support_installation"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_order_processor",
+          "elementType": "ValueStream"
+        },
+        "vs_install_to_maintenance": {
+          "name": "Install to Maintenance",
+          "description": "End-to-end flow from system installation through ongoing maintenance and cartridge replacement",
+          "activityIds": [
+            "act_commission_system",
+            "act_schedule_maintenance",
+            "act_replace_cartridge",
+            "act_renew_service"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_service_technician",
+          "elementType": "ValueStream"
+        },
+        "vs_partner_to_productive": {
+          "name": "Partner to Productive",
+          "description": "End-to-end flow from partner recruitment through productive selling relationship",
+          "activityIds": [
+            "act_recruit_partner",
+            "act_train_partner",
+            "act_equip_partner",
+            "act_activate_partner"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_partner_manager",
+          "elementType": "ValueStream"
+        }
+      },
+      "activities": {
+        "act_identify_prospect": {
+          "name": "Identify Prospect",
+          "preOutcomeId": "outcome_prospect_initiated",
+          "postOutcomeId": "outcome_prospect_identified",
+          "nextActivityId": "act_brief_customer",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_lead_generation",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative"
+          ],
+          "informationObjectIds": [
+            "io_prospect_record",
+            "io_territory_plan"
+          ],
+          "outcomeId": "outcome_prospect_identified",
+          "metricIds": [
+            "metric_annual_growth_rate"
+          ],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Research prospect company background",
+                "Track prospect interaction history",
+                "Assess prospect qualification criteria"
+              ],
+              "informationObjectIds": [
+                "io_prospect_record"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_lead_generation": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Source prospects from territory plan",
+                "Identify decision makers and influencers",
+                "Generate qualified lead records"
+              ],
+              "informationObjectIds": [
+                "io_prospect_record",
+                "io_territory_plan"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Capture prospect contact information",
+                "Update territory assignment records",
+                "Validate prospect data completeness"
+              ],
+              "informationObjectIds": [
+                "io_prospect_record",
+                "io_territory_plan"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_brief_customer": {
+          "name": "Brief Customer",
+          "preOutcomeId": "outcome_prospect_identified",
+          "postOutcomeId": "outcome_customer_briefed",
+          "nextActivityId": "act_propose_solution",
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_product_knowledge",
+            "cap_stakeholder_communication"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative"
+          ],
+          "informationObjectIds": [
+            "io_customer_brief",
+            "io_product_catalog"
+          ],
+          "outcomeId": "outcome_customer_briefed",
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Schedule customer briefing session",
+                "Document customer business context",
+                "Establish rapport with key stakeholders"
+              ],
+              "informationObjectIds": [
+                "io_customer_brief"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_product_knowledge": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Present relevant product features",
+                "Explain product benefits for customer use case",
+                "Reference product specifications from catalog"
+              ],
+              "informationObjectIds": [
+                "io_product_catalog",
+                "io_customer_brief"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Deliver customer presentation",
+                "Facilitate customer Q&A session",
+                "Document customer feedback and concerns"
+              ],
+              "informationObjectIds": [
+                "io_customer_brief"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_propose_solution": {
+          "name": "Propose Solution",
+          "preOutcomeId": "outcome_customer_briefed",
+          "postOutcomeId": "outcome_solution_proposed",
+          "nextActivityId": "act_acquire_customer",
+          "requiresCapabilityIds": [
+            "cap_solution_design",
+            "cap_product_knowledge",
+            "cap_stakeholder_communication"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative"
+          ],
+          "informationObjectIds": [
+            "io_solution_proposal",
+            "io_customer_requirements"
+          ],
+          "outcomeId": "outcome_solution_proposed",
+          "metricIds": [
+            "metric_sales_admin_time"
+          ],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_solution_design": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Analyze customer requirements",
+                "Configure solution components",
+                "Create customized solution proposal"
+              ],
+              "informationObjectIds": [
+                "io_solution_proposal",
+                "io_customer_requirements"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_product_knowledge": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Map products to customer requirements",
+                "Validate technical solution feasibility",
+                "Recommend optimal product configurations"
+              ],
+              "informationObjectIds": [
+                "io_solution_proposal",
+                "io_customer_requirements"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Present solution proposal to customer",
+                "Negotiate solution terms and pricing",
+                "Address customer objections and concerns"
+              ],
+              "informationObjectIds": [
+                "io_solution_proposal"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_acquire_customer": {
+          "name": "Acquire Customer",
+          "preOutcomeId": "outcome_solution_proposed",
+          "postOutcomeId": "outcome_customer_acquired",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_contract_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_sales_representative"
+          ],
+          "informationObjectIds": [
+            "io_customer_contract",
+            "io_first_order"
+          ],
+          "outcomeId": "outcome_customer_acquired",
+          "metricIds": [
+            "metric_annual_growth_rate"
+          ],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Finalize customer commitment",
+                "Establish ongoing relationship protocols",
+                "Transition customer to fulfillment team"
+              ],
+              "informationObjectIds": [
+                "io_customer_contract"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_contract_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Negotiate contract terms and conditions",
+                "Execute customer contract signing",
+                "Validate contract compliance requirements"
+              ],
+              "informationObjectIds": [
+                "io_customer_contract"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_sales_representative"
+              ],
+              "activities": [
+                "Create customer master record",
+                "Process first order information",
+                "Archive signed contract documents"
+              ],
+              "informationObjectIds": [
+                "io_customer_contract",
+                "io_first_order"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_receive_order": {
+          "name": "Receive Order",
+          "preOutcomeId": "outcome_order_initiated",
+          "postOutcomeId": "outcome_order_received",
+          "nextActivityId": "act_fulfill_order",
+          "requiresCapabilityIds": [
+            "cap_order_management",
+            "cap_data_management",
+            "cap_customer_relationship_management"
+          ],
+          "performedByRoleIds": [
+            "role_order_processor"
+          ],
+          "informationObjectIds": [
+            "io_customer_order",
+            "io_order_confirmation"
+          ],
+          "outcomeId": "outcome_order_received",
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_order_management": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Process incoming customer order",
+                "Validate order against contract terms",
+                "Generate order confirmation document"
+              ],
+              "informationObjectIds": [
+                "io_customer_order",
+                "io_order_confirmation"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Capture order details in system",
+                "Validate customer order data",
+                "Update order status records"
+              ],
+              "informationObjectIds": [
+                "io_customer_order",
+                "io_order_confirmation"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Confirm order receipt with customer",
+                "Update customer order history",
+                "Communicate order processing timeline"
+              ],
+              "informationObjectIds": [
+                "io_order_confirmation"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_fulfill_order": {
+          "name": "Fulfill Order",
+          "preOutcomeId": "outcome_order_received",
+          "postOutcomeId": "outcome_order_fulfilled",
+          "nextActivityId": "act_deliver_product",
+          "requiresCapabilityIds": [
+            "cap_order_management",
+            "cap_inventory_management",
+            "cap_quality_assurance"
+          ],
+          "performedByRoleIds": [
+            "role_order_processor"
+          ],
+          "informationObjectIds": [
+            "io_pick_list",
+            "io_shipping_manifest"
+          ],
+          "outcomeId": "outcome_order_fulfilled",
+          "metricIds": [
+            "metric_netsuite_integration_timeline"
+          ],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_order_management": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Process order for fulfillment",
+                "Coordinate order picking activities",
+                "Track order fulfillment progress"
+              ],
+              "informationObjectIds": [
+                "io_pick_list"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_inventory_management": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Allocate inventory to order",
+                "Generate pick list for warehouse",
+                "Update inventory availability records"
+              ],
+              "informationObjectIds": [
+                "io_pick_list"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_quality_assurance": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Verify picked items against order",
+                "Inspect product quality before shipping",
+                "Validate shipping manifest accuracy"
+              ],
+              "informationObjectIds": [
+                "io_pick_list",
+                "io_shipping_manifest"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_deliver_product": {
+          "name": "Deliver Product",
+          "preOutcomeId": "outcome_order_fulfilled",
+          "postOutcomeId": "outcome_product_delivered",
+          "nextActivityId": "act_support_installation",
+          "requiresCapabilityIds": [
+            "cap_logistics_management",
+            "cap_stakeholder_communication",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_order_processor"
+          ],
+          "informationObjectIds": [
+            "io_delivery_receipt",
+            "io_installation_guide"
+          ],
+          "outcomeId": "outcome_product_delivered",
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_logistics_management": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Coordinate product shipment",
+                "Track delivery status",
+                "Manage delivery logistics"
+              ],
+              "informationObjectIds": [
+                "io_delivery_receipt"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Notify customer of shipment",
+                "Provide delivery tracking information",
+                "Confirm delivery completion"
+              ],
+              "informationObjectIds": [
+                "io_delivery_receipt",
+                "io_installation_guide"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_order_processor"
+              ],
+              "activities": [
+                "Record delivery confirmation",
+                "Update order completion status",
+                "Archive delivery documentation"
+              ],
+              "informationObjectIds": [
+                "io_delivery_receipt"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_support_installation": {
+          "name": "Support Installation",
+          "preOutcomeId": "outcome_product_delivered",
+          "postOutcomeId": "outcome_installation_supported",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_technical_support",
+            "cap_stakeholder_communication",
+            "cap_product_knowledge"
+          ],
+          "performedByRoleIds": [
+            "role_installation_technician"
+          ],
+          "informationObjectIds": [
+            "io_installation_record",
+            "io_support_ticket"
+          ],
+          "outcomeId": "outcome_installation_supported",
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_technical_support": {
+              "roleIds": [
+                "role_installation_technician"
+              ],
+              "activities": [
+                "Provide on-site installation guidance",
+                "Troubleshoot installation issues",
+                "Validate system installation requirements"
+              ],
+              "informationObjectIds": [
+                "io_installation_record",
+                "io_support_ticket"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_installation_technician"
+              ],
+              "activities": [
+                "Coordinate with customer installation team",
+                "Explain installation procedures",
+                "Document installation support activities"
+              ],
+              "informationObjectIds": [
+                "io_installation_record"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_product_knowledge": {
+              "roleIds": [
+                "role_installation_technician"
+              ],
+              "activities": [
+                "Apply product installation expertise",
+                "Reference installation specifications",
+                "Ensure proper product configuration"
+              ],
+              "informationObjectIds": [
+                "io_installation_record"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_commission_system": {
+          "name": "Commission System",
+          "preOutcomeId": "outcome_system_initiated",
+          "postOutcomeId": "outcome_system_commissioned",
+          "nextActivityId": "act_schedule_maintenance",
+          "requiresCapabilityIds": [
+            "cap_technical_support",
+            "cap_quality_assurance",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_service_technician"
+          ],
+          "informationObjectIds": [
+            "io_commissioning_report",
+            "io_system_profile"
+          ],
+          "outcomeId": "outcome_system_commissioned",
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_technical_support": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Perform system commissioning tests",
+                "Calibrate system parameters",
+                "Validate system operational readiness"
+              ],
+              "informationObjectIds": [
+                "io_commissioning_report",
+                "io_system_profile"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_quality_assurance": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Execute commissioning test protocols",
+                "Verify system performance standards",
+                "Certify system commissioning completion"
+              ],
+              "informationObjectIds": [
+                "io_commissioning_report"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Document commissioning results",
+                "Create system configuration profile",
+                "Archive commissioning records"
+              ],
+              "informationObjectIds": [
+                "io_commissioning_report",
+                "io_system_profile"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_schedule_maintenance": {
+          "name": "Schedule Maintenance",
+          "preOutcomeId": "outcome_system_commissioned",
+          "postOutcomeId": "outcome_maintenance_scheduled",
+          "nextActivityId": "act_replace_cartridge",
+          "requiresCapabilityIds": [
+            "cap_service_scheduling",
+            "cap_stakeholder_communication",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_care_representative"
+          ],
+          "informationObjectIds": [
+            "io_service_schedule",
+            "io_maintenance_reminder"
+          ],
+          "outcomeId": "outcome_maintenance_scheduled",
+          "metricIds": [
+            "metric_cartridge_replacement_rate"
+          ],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_service_scheduling": {
+              "roleIds": [
+                "role_customer_care_representative"
+              ],
+              "activities": [
+                "Plan preventive maintenance visits",
+                "Coordinate technician availability",
+                "Generate maintenance schedule"
+              ],
+              "informationObjectIds": [
+                "io_service_schedule"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_customer_care_representative"
+              ],
+              "activities": [
+                "Send maintenance reminder notifications",
+                "Confirm maintenance appointments",
+                "Communicate schedule changes"
+              ],
+              "informationObjectIds": [
+                "io_maintenance_reminder",
+                "io_service_schedule"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_customer_care_representative"
+              ],
+              "activities": [
+                "Update maintenance schedule records",
+                "Track maintenance reminder status",
+                "Archive scheduling communications"
+              ],
+              "informationObjectIds": [
+                "io_service_schedule",
+                "io_maintenance_reminder"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_replace_cartridge": {
+          "name": "Replace Cartridge",
+          "preOutcomeId": "outcome_maintenance_scheduled",
+          "postOutcomeId": "outcome_cartridge_replaced",
+          "nextActivityId": "act_renew_service",
+          "requiresCapabilityIds": [
+            "cap_technical_support",
+            "cap_inventory_management",
+            "cap_quality_assurance"
+          ],
+          "performedByRoleIds": [
+            "role_service_technician"
+          ],
+          "informationObjectIds": [
+            "io_service_report",
+            "io_cartridge_order"
+          ],
+          "outcomeId": "outcome_cartridge_replaced",
+          "metricIds": [
+            "metric_cartridge_replacement_rate"
+          ],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_technical_support": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Perform cartridge replacement procedure",
+                "Test system after cartridge replacement",
+                "Validate cartridge installation"
+              ],
+              "informationObjectIds": [
+                "io_service_report"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_inventory_management": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Allocate replacement cartridge",
+                "Process cartridge order fulfillment",
+                "Update cartridge inventory levels"
+              ],
+              "informationObjectIds": [
+                "io_cartridge_order"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_quality_assurance": {
+              "roleIds": [
+                "role_service_technician"
+              ],
+              "activities": [
+                "Inspect replacement cartridge quality",
+                "Verify cartridge compatibility",
+                "Test system performance post-replacement"
+              ],
+              "informationObjectIds": [
+                "io_service_report"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_renew_service": {
+          "name": "Renew Service",
+          "preOutcomeId": "outcome_cartridge_replaced",
+          "postOutcomeId": "outcome_service_renewed",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_contract_management",
+            "cap_stakeholder_communication"
+          ],
+          "performedByRoleIds": [
+            "role_customer_care_representative"
+          ],
+          "informationObjectIds": [
+            "io_service_contract",
+            "io_renewal_notice"
+          ],
+          "outcomeId": "outcome_service_renewed",
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_customer_relationship_management": {
+              "roleIds": [
+                "role_customer_care_representative"
+              ],
+              "activities": [
+                "Assess customer renewal readiness",
+                "Negotiate service renewal terms",
+                "Maintain customer service relationship"
+              ],
+              "informationObjectIds": [
+                "io_service_contract"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_contract_management": {
+              "roleIds": [
+                "role_customer_care_representative"
+              ],
+              "activities": [
+                "Process service contract renewal",
+                "Update contract terms and pricing",
+                "Execute renewed service agreement"
+              ],
+              "informationObjectIds": [
+                "io_service_contract",
+                "io_renewal_notice"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_customer_care_representative"
+              ],
+              "activities": [
+                "Send service renewal notifications",
+                "Present renewal proposal to customer",
+                "Confirm renewal agreement acceptance"
+              ],
+              "informationObjectIds": [
+                "io_renewal_notice"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_recruit_partner": {
+          "name": "Recruit Partner",
+          "preOutcomeId": "outcome_partner_initiated",
+          "postOutcomeId": "outcome_partner_recruited",
+          "nextActivityId": "act_train_partner",
+          "requiresCapabilityIds": [
+            "cap_partner_management",
+            "cap_stakeholder_communication",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_partner_manager"
+          ],
+          "informationObjectIds": [
+            "io_partner_application",
+            "io_partner_agreement"
+          ],
+          "outcomeId": "outcome_partner_recruited",
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_partner_management": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Identify potential partner candidates",
+                "Evaluate partner application submissions",
+                "Execute partner recruitment strategy"
+              ],
+              "informationObjectIds": [
+                "io_partner_application",
+                "io_partner_agreement"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Present partnership opportunity",
+                "Negotiate partnership terms",
+                "Communicate partner onboarding requirements"
+              ],
+              "informationObjectIds": [
+                "io_partner_application"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Process partner application data",
+                "Create partner master record",
+                "Archive partner agreement documents"
+              ],
+              "informationObjectIds": [
+                "io_partner_application",
+                "io_partner_agreement"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_train_partner": {
+          "name": "Train Partner",
+          "preOutcomeId": "outcome_partner_recruited",
+          "postOutcomeId": "outcome_partner_trained",
+          "nextActivityId": "act_equip_partner",
+          "requiresCapabilityIds": [
+            "cap_training_delivery",
+            "cap_product_knowledge",
+            "cap_stakeholder_communication"
+          ],
+          "performedByRoleIds": [
+            "role_partner_manager"
+          ],
+          "informationObjectIds": [
+            "io_training_record",
+            "io_certification_document"
+          ],
+          "outcomeId": "outcome_partner_trained",
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_training_delivery": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Conduct partner training sessions",
+                "Deliver certification programs",
+                "Assess partner training competency"
+              ],
+              "informationObjectIds": [
+                "io_training_record",
+                "io_certification_document"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_product_knowledge": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Transfer product expertise to partner",
+                "Explain product positioning strategies",
+                "Share technical product knowledge"
+              ],
+              "informationObjectIds": [
+                "io_training_record"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Facilitate partner training workshops",
+                "Provide training feedback to partners",
+                "Communicate certification requirements"
+              ],
+              "informationObjectIds": [
+                "io_certification_document"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_equip_partner": {
+          "name": "Equip Partner",
+          "preOutcomeId": "outcome_partner_trained",
+          "postOutcomeId": "outcome_partner_equipped",
+          "nextActivityId": "act_activate_partner",
+          "requiresCapabilityIds": [
+            "cap_partner_management",
+            "cap_inventory_management",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_partner_manager"
+          ],
+          "informationObjectIds": [
+            "io_partner_kit",
+            "io_marketing_materials"
+          ],
+          "outcomeId": "outcome_partner_equipped",
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_partner_management": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Provision partner enablement resources",
+                "Deploy partner support tools",
+                "Establish partner operational capabilities"
+              ],
+              "informationObjectIds": [
+                "io_partner_kit",
+                "io_marketing_materials"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_inventory_management": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Allocate partner kit inventory",
+                "Distribute marketing materials",
+                "Track partner resource utilization"
+              ],
+              "informationObjectIds": [
+                "io_partner_kit",
+                "io_marketing_materials"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_data_management": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Record partner kit distribution",
+                "Update partner resource allocation",
+                "Archive partner equipment records"
+              ],
+              "informationObjectIds": [
+                "io_partner_kit"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        },
+        "act_activate_partner": {
+          "name": "Activate Partner",
+          "preOutcomeId": "outcome_partner_equipped",
+          "postOutcomeId": "outcome_partner_productive",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_partner_management",
+            "cap_performance_monitoring",
+            "cap_stakeholder_communication"
+          ],
+          "performedByRoleIds": [
+            "role_partner_manager"
+          ],
+          "informationObjectIds": [
+            "io_partner_profile",
+            "io_sales_report"
+          ],
+          "outcomeId": "outcome_partner_productive",
+          "metricIds": [
+            "metric_annual_growth_rate"
+          ],
+          "controlIds": [],
+          "elementType": "Activity",
+          "capabilityPPIT": {
+            "cap_partner_management": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Launch partner go-to-market activities",
+                "Enable partner sales operations",
+                "Activate partner channel relationship"
+              ],
+              "informationObjectIds": [
+                "io_partner_profile"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_performance_monitoring": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Track partner sales performance",
+                "Monitor partner activity metrics",
+                "Evaluate partner productivity levels"
+              ],
+              "informationObjectIds": [
+                "io_sales_report",
+                "io_partner_profile"
+              ],
+              "technologyAppIds": []
+            },
+            "cap_stakeholder_communication": {
+              "roleIds": [
+                "role_partner_manager"
+              ],
+              "activities": [
+                "Announce partner activation",
+                "Communicate partner performance expectations",
+                "Provide ongoing partner support"
+              ],
+              "informationObjectIds": [
+                "io_partner_profile"
+              ],
+              "technologyAppIds": []
+            }
+          }
+        }
+      },
+      "outcomes": {
+        "outcome_prospect_initiated": {
+          "name": "Prospect Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_prospect_identified": {
+          "name": "Prospect Identified",
+          "elementType": "Outcome"
+        },
+        "outcome_customer_briefed": {
+          "name": "Customer Briefed",
+          "elementType": "Outcome"
+        },
+        "outcome_solution_proposed": {
+          "name": "Solution Proposed",
+          "elementType": "Outcome"
+        },
+        "outcome_customer_acquired": {
+          "name": "Customer Acquired",
+          "elementType": "Outcome"
+        },
+        "outcome_order_initiated": {
+          "name": "Order Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_order_received": {
+          "name": "Order Received",
+          "elementType": "Outcome"
+        },
+        "outcome_order_fulfilled": {
+          "name": "Order Fulfilled",
+          "elementType": "Outcome"
+        },
+        "outcome_product_delivered": {
+          "name": "Product Delivered",
+          "elementType": "Outcome"
+        },
+        "outcome_installation_supported": {
+          "name": "Installation Supported",
+          "elementType": "Outcome"
+        },
+        "outcome_system_initiated": {
+          "name": "System Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_system_commissioned": {
+          "name": "System Commissioned",
+          "elementType": "Outcome"
+        },
+        "outcome_maintenance_scheduled": {
+          "name": "Maintenance Scheduled",
+          "elementType": "Outcome"
+        },
+        "outcome_cartridge_replaced": {
+          "name": "Cartridge Replaced",
+          "elementType": "Outcome"
+        },
+        "outcome_service_renewed": {
+          "name": "Service Renewed",
+          "elementType": "Outcome"
+        },
+        "outcome_partner_initiated": {
+          "name": "Partner Initiated",
+          "elementType": "Outcome"
+        },
+        "outcome_partner_recruited": {
+          "name": "Partner Recruited",
+          "elementType": "Outcome"
+        },
+        "outcome_partner_trained": {
+          "name": "Partner Trained",
+          "elementType": "Outcome"
+        },
+        "outcome_partner_equipped": {
+          "name": "Partner Equipped",
+          "elementType": "Outcome"
+        },
+        "outcome_partner_productive": {
+          "name": "Partner Productive",
+          "elementType": "Outcome"
+        }
+      },
+      "roles": {
+        "role_sales_representative": {
+          "name": "Sales Representative",
+          "description": "Territory-based sales professionals responsible for customer acquisition and relationship management",
+          "elementType": "Role"
+        },
+        "role_partner_manager": {
+          "name": "Partner Manager",
+          "description": "Manages relationships with trade partners, plumbers, and distributors",
+          "elementType": "Role"
+        },
+        "role_customer_care_representative": {
+          "name": "Customer Care Representative",
+          "description": "Provides customer support and maintains customer intelligence",
+          "elementType": "Role"
+        },
+        "role_order_processor": {
+          "name": "Order Processor",
+          "description": "Processes and fulfills customer orders",
+          "elementType": "Role"
+        },
+        "role_installation_technician": {
+          "name": "Installation Technician",
+          "description": "Supports product installation and commissioning",
+          "elementType": "Role"
+        },
+        "role_service_technician": {
+          "name": "Service Technician",
+          "description": "Performs maintenance and cartridge replacement services",
+          "elementType": "Role"
+        },
+        "role_trade_partner": {
+          "name": "Trade Partner",
+          "description": "Plumbers and distributors who sell PureTec products",
+          "elementType": "Role"
+        }
+      },
+      "capabilities": {
+        "cap_customer_relationship_management": {
+          "name": "Customer Relationship Management",
+          "description": "Ability to manage customer interactions, relationships, and data throughout the customer lifecycle",
+          "level": 4,
+          "parentId": "cap_l2_lead_to_customer",
+          "businessObject": "Customer",
+          "elementType": "Capability"
+        },
+        "cap_lead_generation": {
+          "name": "Lead Generation",
+          "description": "Ability to identify and qualify potential customers through various channels",
+          "level": 4,
+          "parentId": "cap_l2_lead_to_customer",
+          "businessObject": "Lead",
+          "elementType": "Capability"
+        },
+        "cap_data_management": {
+          "name": "Data Management",
+          "description": "Ability to capture, store, process, and maintain business data with integrity and accessibility",
+          "level": 4,
+          "parentId": "cap_l2_lead_to_customer",
+          "businessObject": "Data",
+          "elementType": "Capability"
+        },
+        "cap_product_knowledge": {
+          "name": "Product Knowledge",
+          "description": "Ability to understand and communicate product features, benefits, and applications",
+          "level": 4,
+          "parentId": "cap_l2_partner_to_productive",
+          "businessObject": "Product",
+          "elementType": "Capability"
+        },
+        "cap_stakeholder_communication": {
+          "name": "Stakeholder Communication",
+          "description": "Ability to effectively communicate with internal and external stakeholders",
+          "level": 4,
+          "parentId": "cap_l2_lead_to_customer",
+          "businessObject": "Communication",
+          "elementType": "Capability"
+        },
+        "cap_solution_design": {
+          "name": "Solution Design",
+          "description": "Ability to design customized solutions based on customer requirements",
+          "level": 4,
+          "parentId": "cap_l2_lead_to_customer",
+          "businessObject": "Solution",
+          "elementType": "Capability"
+        },
+        "cap_contract_management": {
+          "name": "Contract Management",
+          "description": "Ability to create, negotiate, and manage customer and partner contracts",
+          "level": 4,
+          "parentId": "cap_l2_lead_to_customer",
+          "businessObject": "Contract",
+          "elementType": "Capability"
+        },
+        "cap_order_management": {
+          "name": "Order Management",
+          "description": "Ability to process, track, and fulfill customer orders efficiently",
+          "level": 4,
+          "parentId": "cap_l2_order_to_delivery",
+          "businessObject": "Order",
+          "elementType": "Capability"
+        },
+        "cap_inventory_management": {
+          "name": "Inventory Management",
+          "description": "Ability to manage stock levels, procurement, and distribution of products",
+          "level": 4,
+          "parentId": "cap_l2_lead_to_customer",
+          "businessObject": "Inventory",
+          "elementType": "Capability"
+        },
+        "cap_quality_assurance": {
+          "name": "Quality Assurance",
+          "description": "Ability to ensure products and services meet quality standards",
+          "level": 4,
+          "parentId": "cap_l2_lead_to_customer",
+          "businessObject": "Quality",
+          "elementType": "Capability"
+        },
+        "cap_logistics_management": {
+          "name": "Logistics Management",
+          "description": "Ability to coordinate and manage product delivery and distribution",
+          "level": 4,
+          "parentId": "cap_l2_lead_to_customer",
+          "businessObject": "Logistics",
+          "elementType": "Capability"
+        },
+        "cap_technical_support": {
+          "name": "Technical Support",
+          "description": "Ability to provide technical assistance and troubleshooting for products",
+          "level": 4,
+          "parentId": "cap_l2_lead_to_customer",
+          "businessObject": "Support",
+          "elementType": "Capability"
+        },
+        "cap_service_scheduling": {
+          "name": "Service Scheduling",
+          "description": "Ability to plan and coordinate service appointments and maintenance activities",
+          "level": 4,
+          "parentId": "cap_l2_lead_to_customer",
+          "businessObject": "Schedule",
+          "elementType": "Capability"
+        },
+        "cap_partner_management": {
+          "name": "Partner Management",
+          "description": "Ability to recruit, onboard, and manage business partner relationships",
+          "level": 4,
+          "parentId": "cap_l2_partner_to_productive",
+          "businessObject": "Partner",
+          "elementType": "Capability"
+        },
+        "cap_training_delivery": {
+          "name": "Training Delivery",
+          "description": "Ability to design and deliver training programs to partners and staff",
+          "level": 4,
+          "parentId": "cap_l2_order_to_delivery",
+          "businessObject": "Training",
+          "elementType": "Capability"
+        },
+        "cap_performance_monitoring": {
+          "name": "Performance Monitoring",
+          "description": "Ability to track and analyze business performance metrics and KPIs",
+          "level": 4,
+          "parentId": "cap_l2_lead_to_customer",
+          "businessObject": "Performance",
+          "elementType": "Capability"
+        },
+        "cap_l1_extracted_capabilities": {
+          "id": "cap_l1_extracted_capabilities",
+          "name": "Extracted Capabilities",
+          "elementType": "Capability",
+          "level": 1,
+          "type": "Execution"
+        },
+        "cap_l2_lead_to_customer": {
+          "id": "cap_l2_lead_to_customer",
+          "name": "Lead to Customer",
+          "elementType": "Capability",
+          "level": 2,
+          "parentId": "cap_l1_extracted_capabilities"
+        },
+        "cap_l2_order_to_delivery": {
+          "id": "cap_l2_order_to_delivery",
+          "name": "Order to Delivery",
+          "elementType": "Capability",
+          "level": 2,
+          "parentId": "cap_l1_extracted_capabilities"
+        },
+        "cap_l2_install_to_maintenance": {
+          "id": "cap_l2_install_to_maintenance",
+          "name": "Install to Maintenance",
+          "elementType": "Capability",
+          "level": 2,
+          "parentId": "cap_l1_extracted_capabilities"
+        },
+        "cap_l2_partner_to_productive": {
+          "id": "cap_l2_partner_to_productive",
+          "name": "Partner to Productive",
+          "elementType": "Capability",
+          "level": 2,
+          "parentId": "cap_l1_extracted_capabilities"
+        }
+      },
+      "informationObjects": {
+        "io_prospect_record": {
+          "name": "Prospect Record",
+          "description": "Customer prospect information and contact details",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_prospect_draft",
+              "label": "Draft",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_prospect_active"
+              ]
+            },
+            {
+              "id": "ls_prospect_active",
+              "label": "Active",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_prospect_qualified",
+                "ls_prospect_rejected"
+              ],
+              "triggerActivityId": "act_identify_prospect"
+            },
+            {
+              "id": "ls_prospect_qualified",
+              "label": "Qualified",
+              "position": "terminal",
+              "transitionsTo": []
+            },
+            {
+              "id": "ls_prospect_rejected",
+              "label": "Rejected",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_territory_plan": {
+          "name": "Territory Plan",
+          "description": "Sales territory planning and target customer information",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_territory_draft",
+              "label": "Draft",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_territory_approved"
+              ]
+            },
+            {
+              "id": "ls_territory_approved",
+              "label": "Approved",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_territory_active"
+              ]
+            },
+            {
+              "id": "ls_territory_active",
+              "label": "Active",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_customer_brief": {
+          "name": "Customer Brief",
+          "description": "Customer briefing materials and presentation content",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_brief_prepared",
+              "label": "Prepared",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_brief_delivered"
+              ]
+            },
+            {
+              "id": "ls_brief_delivered",
+              "label": "Delivered",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_brief_accepted",
+                "ls_brief_rejected"
+              ],
+              "triggerActivityId": "act_brief_customer"
+            },
+            {
+              "id": "ls_brief_accepted",
+              "label": "Accepted",
+              "position": "terminal",
+              "transitionsTo": []
+            },
+            {
+              "id": "ls_brief_rejected",
+              "label": "Rejected",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_product_catalog": {
+          "name": "Product Catalog",
+          "description": "Comprehensive product information and specifications",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_catalog_draft",
+              "label": "Draft",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_catalog_published"
+              ]
+            },
+            {
+              "id": "ls_catalog_published",
+              "label": "Published",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_catalog_updated"
+              ]
+            },
+            {
+              "id": "ls_catalog_updated",
+              "label": "Updated",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_solution_proposal": {
+          "name": "Solution Proposal",
+          "description": "Customized solution proposal for customer requirements",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_proposal_draft",
+              "label": "Draft",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_proposal_submitted"
+              ]
+            },
+            {
+              "id": "ls_proposal_submitted",
+              "label": "Submitted",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_proposal_accepted",
+                "ls_proposal_rejected"
+              ],
+              "triggerActivityId": "act_propose_solution"
+            },
+            {
+              "id": "ls_proposal_accepted",
+              "label": "Accepted",
+              "position": "terminal",
+              "transitionsTo": []
+            },
+            {
+              "id": "ls_proposal_rejected",
+              "label": "Rejected",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_customer_requirements": {
+          "name": "Customer Requirements",
+          "description": "Documented customer needs and technical requirements",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_requirements_gathered",
+              "label": "Gathered",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_requirements_validated"
+              ]
+            },
+            {
+              "id": "ls_requirements_validated",
+              "label": "Validated",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_requirements_approved"
+              ]
+            },
+            {
+              "id": "ls_requirements_approved",
+              "label": "Approved",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_customer_contract": {
+          "name": "Customer Contract",
+          "description": "Legal agreement between customer and company",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_contract_draft",
+              "label": "Draft",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_contract_negotiated"
+              ]
+            },
+            {
+              "id": "ls_contract_negotiated",
+              "label": "Negotiated",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_contract_signed",
+                "ls_contract_cancelled"
+              ]
+            },
+            {
+              "id": "ls_contract_signed",
+              "label": "Signed",
+              "position": "terminal",
+              "transitionsTo": [],
+              "triggerActivityId": "act_acquire_customer"
+            },
+            {
+              "id": "ls_contract_cancelled",
+              "label": "Cancelled",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_first_order": {
+          "name": "First Order",
+          "description": "Initial customer order following contract signing",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_first_order_placed",
+              "label": "Placed",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_first_order_confirmed"
+              ]
+            },
+            {
+              "id": "ls_first_order_confirmed",
+              "label": "Confirmed",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_first_order_fulfilled"
+              ]
+            },
+            {
+              "id": "ls_first_order_fulfilled",
+              "label": "Fulfilled",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_customer_order": {
+          "name": "Customer Order",
+          "description": "Customer purchase order for products or services",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_order_submitted",
+              "label": "Submitted",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_order_validated"
+              ]
+            },
+            {
+              "id": "ls_order_validated",
+              "label": "Validated",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_order_processed",
+                "ls_order_rejected"
+              ],
+              "triggerActivityId": "act_receive_order"
+            },
+            {
+              "id": "ls_order_processed",
+              "label": "Processed",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_order_fulfilled"
+              ]
+            },
+            {
+              "id": "ls_order_fulfilled",
+              "label": "Fulfilled",
+              "position": "terminal",
+              "transitionsTo": []
+            },
+            {
+              "id": "ls_order_rejected",
+              "label": "Rejected",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_order_confirmation": {
+          "name": "Order Confirmation",
+          "description": "Confirmation document sent to customer upon order receipt",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_confirmation_generated",
+              "label": "Generated",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_confirmation_sent"
+              ]
+            },
+            {
+              "id": "ls_confirmation_sent",
+              "label": "Sent",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_confirmation_acknowledged"
+              ]
+            },
+            {
+              "id": "ls_confirmation_acknowledged",
+              "label": "Acknowledged",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_pick_list": {
+          "name": "Pick List",
+          "description": "Warehouse picking instructions for order fulfillment",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_pick_generated",
+              "label": "Generated",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_pick_assigned"
+              ]
+            },
+            {
+              "id": "ls_pick_assigned",
+              "label": "Assigned",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_pick_completed"
+              ],
+              "triggerActivityId": "act_fulfill_order"
+            },
+            {
+              "id": "ls_pick_completed",
+              "label": "Completed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_shipping_manifest": {
+          "name": "Shipping Manifest",
+          "description": "Detailed shipping documentation for order delivery",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_manifest_created",
+              "label": "Created",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_manifest_dispatched"
+              ]
+            },
+            {
+              "id": "ls_manifest_dispatched",
+              "label": "Dispatched",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_manifest_delivered"
+              ]
+            },
+            {
+              "id": "ls_manifest_delivered",
+              "label": "Delivered",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_delivery_receipt": {
+          "name": "Delivery Receipt",
+          "description": "Customer acknowledgment of product delivery",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_receipt_pending",
+              "label": "Pending",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_receipt_signed"
+              ]
+            },
+            {
+              "id": "ls_receipt_signed",
+              "label": "Signed",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_receipt_processed"
+              ],
+              "triggerActivityId": "act_deliver_product"
+            },
+            {
+              "id": "ls_receipt_processed",
+              "label": "Processed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_installation_guide": {
+          "name": "Installation Guide",
+          "description": "Technical documentation for product installation",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_guide_prepared",
+              "label": "Prepared",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_guide_delivered"
+              ]
+            },
+            {
+              "id": "ls_guide_delivered",
+              "label": "Delivered",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_guide_used"
+              ]
+            },
+            {
+              "id": "ls_guide_used",
+              "label": "Used",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_installation_record": {
+          "name": "Installation Record",
+          "description": "Documentation of installation process and completion",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_install_started",
+              "label": "Started",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_install_completed"
+              ]
+            },
+            {
+              "id": "ls_install_completed",
+              "label": "Completed",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_install_verified"
+              ],
+              "triggerActivityId": "act_support_installation"
+            },
+            {
+              "id": "ls_install_verified",
+              "label": "Verified",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_support_ticket": {
+          "name": "Support Ticket",
+          "description": "Customer support request and resolution tracking",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_ticket_created",
+              "label": "Created",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_ticket_assigned"
+              ]
+            },
+            {
+              "id": "ls_ticket_assigned",
+              "label": "Assigned",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_ticket_resolved",
+                "ls_ticket_escalated"
+              ]
+            },
+            {
+              "id": "ls_ticket_resolved",
+              "label": "Resolved",
+              "position": "terminal",
+              "transitionsTo": []
+            },
+            {
+              "id": "ls_ticket_escalated",
+              "label": "Escalated",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_ticket_resolved"
+              ]
+            }
+          ]
+        },
+        "io_commissioning_report": {
+          "name": "Commissioning Report",
+          "description": "System commissioning and testing documentation",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_commission_started",
+              "label": "Started",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_commission_tested"
+              ]
+            },
+            {
+              "id": "ls_commission_tested",
+              "label": "Tested",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_commission_approved",
+                "ls_commission_failed"
+              ],
+              "triggerActivityId": "act_commission_system"
+            },
+            {
+              "id": "ls_commission_approved",
+              "label": "Approved",
+              "position": "terminal",
+              "transitionsTo": []
+            },
+            {
+              "id": "ls_commission_failed",
+              "label": "Failed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_system_profile": {
+          "name": "System Profile",
+          "description": "Customer system configuration and specifications",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_profile_created",
+              "label": "Created",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_profile_validated"
+              ]
+            },
+            {
+              "id": "ls_profile_validated",
+              "label": "Validated",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_profile_active"
+              ]
+            },
+            {
+              "id": "ls_profile_active",
+              "label": "Active",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_service_schedule": {
+          "name": "Service Schedule",
+          "description": "Planned maintenance and service appointments",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_schedule_created",
+              "label": "Created",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_schedule_confirmed"
+              ]
+            },
+            {
+              "id": "ls_schedule_confirmed",
+              "label": "Confirmed",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_schedule_executed"
+              ],
+              "triggerActivityId": "act_schedule_maintenance"
+            },
+            {
+              "id": "ls_schedule_executed",
+              "label": "Executed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_maintenance_reminder": {
+          "name": "Maintenance Reminder",
+          "description": "Customer notification for upcoming maintenance",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_reminder_scheduled",
+              "label": "Scheduled",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_reminder_sent"
+              ]
+            },
+            {
+              "id": "ls_reminder_sent",
+              "label": "Sent",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_reminder_acknowledged"
+              ]
+            },
+            {
+              "id": "ls_reminder_acknowledged",
+              "label": "Acknowledged",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_service_report": {
+          "name": "Service Report",
+          "description": "Documentation of maintenance work performed",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_service_started",
+              "label": "Started",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_service_completed"
+              ]
+            },
+            {
+              "id": "ls_service_completed",
+              "label": "Completed",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_service_approved"
+              ],
+              "triggerActivityId": "act_replace_cartridge"
+            },
+            {
+              "id": "ls_service_approved",
+              "label": "Approved",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_cartridge_order": {
+          "name": "Cartridge Order",
+          "description": "Order for replacement cartridges",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_cartridge_ordered",
+              "label": "Ordered",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_cartridge_delivered"
+              ]
+            },
+            {
+              "id": "ls_cartridge_delivered",
+              "label": "Delivered",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_cartridge_installed"
+              ]
+            },
+            {
+              "id": "ls_cartridge_installed",
+              "label": "Installed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_service_contract": {
+          "name": "Service Contract",
+          "description": "Ongoing service agreement with customer",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_service_contract_draft",
+              "label": "Draft",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_service_contract_signed"
+              ]
+            },
+            {
+              "id": "ls_service_contract_signed",
+              "label": "Signed",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_service_contract_renewed",
+                "ls_service_contract_expired"
+              ],
+              "triggerActivityId": "act_renew_service"
+            },
+            {
+              "id": "ls_service_contract_renewed",
+              "label": "Renewed",
+              "position": "terminal",
+              "transitionsTo": []
+            },
+            {
+              "id": "ls_service_contract_expired",
+              "label": "Expired",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_renewal_notice": {
+          "name": "Renewal Notice",
+          "description": "Service contract renewal notification",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_renewal_generated",
+              "label": "Generated",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_renewal_sent"
+              ]
+            },
+            {
+              "id": "ls_renewal_sent",
+              "label": "Sent",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_renewal_responded"
+              ]
+            },
+            {
+              "id": "ls_renewal_responded",
+              "label": "Responded",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_partner_application": {
+          "name": "Partner Application",
+          "description": "Application form for potential business partners",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_application_submitted",
+              "label": "Submitted",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_application_reviewed"
+              ]
+            },
+            {
+              "id": "ls_application_reviewed",
+              "label": "Reviewed",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_application_approved",
+                "ls_application_rejected"
+              ],
+              "triggerActivityId": "act_recruit_partner"
+            },
+            {
+              "id": "ls_application_approved",
+              "label": "Approved",
+              "position": "terminal",
+              "transitionsTo": []
+            },
+            {
+              "id": "ls_application_rejected",
+              "label": "Rejected",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_partner_agreement": {
+          "name": "Partner Agreement",
+          "description": "Legal agreement with business partner",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_agreement_draft",
+              "label": "Draft",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_agreement_negotiated"
+              ]
+            },
+            {
+              "id": "ls_agreement_negotiated",
+              "label": "Negotiated",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_agreement_signed"
+              ]
+            },
+            {
+              "id": "ls_agreement_signed",
+              "label": "Signed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_training_record": {
+          "name": "Training Record",
+          "description": "Documentation of partner training completion",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_training_scheduled",
+              "label": "Scheduled",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_training_delivered"
+              ]
+            },
+            {
+              "id": "ls_training_delivered",
+              "label": "Delivered",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_training_completed"
+              ],
+              "triggerActivityId": "act_train_partner"
+            },
+            {
+              "id": "ls_training_completed",
+              "label": "Completed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_certification_document": {
+          "name": "Certification Document",
+          "description": "Partner certification and qualification credentials",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_cert_earned",
+              "label": "Earned",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_cert_issued"
+              ]
+            },
+            {
+              "id": "ls_cert_issued",
+              "label": "Issued",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_cert_active"
+              ]
+            },
+            {
+              "id": "ls_cert_active",
+              "label": "Active",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_partner_kit": {
+          "name": "Partner Kit",
+          "description": "Sales and marketing materials provided to partners",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_kit_prepared",
+              "label": "Prepared",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_kit_delivered"
+              ]
+            },
+            {
+              "id": "ls_kit_delivered",
+              "label": "Delivered",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_kit_deployed"
+              ],
+              "triggerActivityId": "act_equip_partner"
+            },
+            {
+              "id": "ls_kit_deployed",
+              "label": "Deployed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_marketing_materials": {
+          "name": "Marketing Materials",
+          "description": "Promotional and sales support materials",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_materials_created",
+              "label": "Created",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_materials_approved"
+              ]
+            },
+            {
+              "id": "ls_materials_approved",
+              "label": "Approved",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_materials_distributed"
+              ]
+            },
+            {
+              "id": "ls_materials_distributed",
+              "label": "Distributed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_partner_profile": {
+          "name": "Partner Profile",
+          "description": "Partner business profile and performance data",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_profile_setup",
+              "label": "Setup",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_profile_activated"
+              ]
+            },
+            {
+              "id": "ls_profile_activated",
+              "label": "Activated",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_profile_productive"
+              ],
+              "triggerActivityId": "act_activate_partner"
+            },
+            {
+              "id": "ls_profile_productive",
+              "label": "Productive",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_sales_report": {
+          "name": "Sales Report",
+          "description": "Partner sales performance and activity report",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_report_generated",
+              "label": "Generated",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_report_reviewed"
+              ]
+            },
+            {
+              "id": "ls_report_reviewed",
+              "label": "Reviewed",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_report_actioned"
+              ]
+            },
+            {
+              "id": "ls_report_actioned",
+              "label": "Actioned",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        }
+      },
+      "controls": {},
+      "constraints": {},
+      "directives": {},
+      "deonticLogic": {},
+      "flowLogic": {},
+      "concepts": {
+        "concept_party_role_sales_representative": {
+          "id": "concept_party_role_sales_representative",
+          "name": "Sales Representative",
+          "type": "Party",
+          "definition": "Territory-based sales professionals responsible for customer acquisition and relationship management",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": [
+            {
+              "targetId": "concept_record_io_prospect_record",
+              "type": "produces",
+              "label": "produces"
+            },
+            {
+              "targetId": "concept_record_io_territory_plan",
+              "type": "produces",
+              "label": "produces"
+            },
+            {
+              "targetId": "concept_record_io_customer_brief",
+              "type": "produces",
+              "label": "produces"
+            },
+            {
+              "targetId": "concept_record_io_customer_contract",
+              "type": "produces",
+              "label": "produces"
+            },
+            {
+              "targetId": "concept_record_io_first_order",
+              "type": "produces",
+              "label": "produces"
+            }
+          ]
+        },
+        "concept_party_role_partner_manager": {
+          "id": "concept_party_role_partner_manager",
+          "name": "Partner Manager",
+          "type": "Party",
+          "definition": "Manages relationships with trade partners, plumbers, and distributors",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": [
+            {
+              "targetId": "concept_record_io_partner_application",
+              "type": "produces",
+              "label": "produces"
+            },
+            {
+              "targetId": "concept_record_io_training_record",
+              "type": "produces",
+              "label": "produces"
+            },
+            {
+              "targetId": "concept_record_io_partner_profile",
+              "type": "produces",
+              "label": "produces"
+            },
+            {
+              "targetId": "concept_record_io_sales_report",
+              "type": "produces",
+              "label": "produces"
+            }
+          ]
+        },
+        "concept_party_role_customer_care_representative": {
+          "id": "concept_party_role_customer_care_representative",
+          "name": "Customer Care Representative",
+          "type": "Party",
+          "definition": "Provides customer support and maintains customer intelligence",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": [
+            {
+              "targetId": "concept_record_io_service_schedule",
+              "type": "produces",
+              "label": "produces"
+            },
+            {
+              "targetId": "concept_record_io_service_contract",
+              "type": "produces",
+              "label": "produces"
+            }
+          ]
+        },
+        "concept_party_role_order_processor": {
+          "id": "concept_party_role_order_processor",
+          "name": "Order Processor",
+          "type": "Party",
+          "definition": "Processes and fulfills customer orders",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": [
+            {
+              "targetId": "concept_record_io_customer_order",
+              "type": "produces",
+              "label": "produces"
+            },
+            {
+              "targetId": "concept_record_io_order_confirmation",
+              "type": "produces",
+              "label": "produces"
+            }
+          ]
+        },
+        "concept_party_role_installation_technician": {
+          "id": "concept_party_role_installation_technician",
+          "name": "Installation Technician",
+          "type": "Party",
+          "definition": "Supports product installation and commissioning",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": [
+            {
+              "targetId": "concept_record_io_installation_record",
+              "type": "produces",
+              "label": "produces"
+            },
+            {
+              "targetId": "concept_record_io_support_ticket",
+              "type": "produces",
+              "label": "produces"
+            }
+          ]
+        },
+        "concept_party_role_service_technician": {
+          "id": "concept_party_role_service_technician",
+          "name": "Service Technician",
+          "type": "Party",
+          "definition": "Performs maintenance and cartridge replacement services",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": [
+            {
+              "targetId": "concept_record_io_commissioning_report",
+              "type": "produces",
+              "label": "produces"
+            },
+            {
+              "targetId": "concept_record_io_system_profile",
+              "type": "produces",
+              "label": "produces"
+            },
+            {
+              "targetId": "concept_record_io_service_report",
+              "type": "produces",
+              "label": "produces"
+            },
+            {
+              "targetId": "concept_record_io_cartridge_order",
+              "type": "produces",
+              "label": "produces"
+            }
+          ]
+        },
+        "concept_party_role_trade_partner": {
+          "id": "concept_party_role_trade_partner",
+          "name": "Trade Partner",
+          "type": "Party",
+          "definition": "Plumbers and distributors who sell PureTec products",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_prospect_record": {
+          "id": "concept_record_io_prospect_record",
+          "name": "Prospect Record",
+          "type": "Record",
+          "definition": "Customer prospect information and contact details",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_territory_plan": {
+          "id": "concept_record_io_territory_plan",
+          "name": "Territory Plan",
+          "type": "Record",
+          "definition": "Sales territory planning and target customer information",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_customer_brief": {
+          "id": "concept_record_io_customer_brief",
+          "name": "Customer Brief",
+          "type": "Record",
+          "definition": "Customer briefing materials and presentation content",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_customer_contract": {
+          "id": "concept_record_io_customer_contract",
+          "name": "Customer Contract",
+          "type": "Record",
+          "definition": "Legal agreement between customer and company",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_first_order": {
+          "id": "concept_record_io_first_order",
+          "name": "First Order",
+          "type": "Record",
+          "definition": "Initial customer order following contract signing",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_customer_order": {
+          "id": "concept_record_io_customer_order",
+          "name": "Customer Order",
+          "type": "Record",
+          "definition": "Customer purchase order for products or services",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_order_confirmation": {
+          "id": "concept_record_io_order_confirmation",
+          "name": "Order Confirmation",
+          "type": "Record",
+          "definition": "Confirmation document sent to customer upon order receipt",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_installation_record": {
+          "id": "concept_record_io_installation_record",
+          "name": "Installation Record",
+          "type": "Record",
+          "definition": "Documentation of installation process and completion",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_support_ticket": {
+          "id": "concept_record_io_support_ticket",
+          "name": "Support Ticket",
+          "type": "Record",
+          "definition": "Customer support request and resolution tracking",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_commissioning_report": {
+          "id": "concept_record_io_commissioning_report",
+          "name": "Commissioning Report",
+          "type": "Record",
+          "definition": "System commissioning and testing documentation",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_system_profile": {
+          "id": "concept_record_io_system_profile",
+          "name": "System Profile",
+          "type": "Record",
+          "definition": "Customer system configuration and specifications",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_service_schedule": {
+          "id": "concept_record_io_service_schedule",
+          "name": "Service Schedule",
+          "type": "Record",
+          "definition": "Planned maintenance and service appointments",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_service_report": {
+          "id": "concept_record_io_service_report",
+          "name": "Service Report",
+          "type": "Record",
+          "definition": "Documentation of maintenance work performed",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_cartridge_order": {
+          "id": "concept_record_io_cartridge_order",
+          "name": "Cartridge Order",
+          "type": "Record",
+          "definition": "Order for replacement cartridges",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_service_contract": {
+          "id": "concept_record_io_service_contract",
+          "name": "Service Contract",
+          "type": "Record",
+          "definition": "Ongoing service agreement with customer",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_partner_application": {
+          "id": "concept_record_io_partner_application",
+          "name": "Partner Application",
+          "type": "Record",
+          "definition": "Application form for potential business partners",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_training_record": {
+          "id": "concept_record_io_training_record",
+          "name": "Training Record",
+          "type": "Record",
+          "definition": "Documentation of partner training completion",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_partner_profile": {
+          "id": "concept_record_io_partner_profile",
+          "name": "Partner Profile",
+          "type": "Record",
+          "definition": "Partner business profile and performance data",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_sales_report": {
+          "id": "concept_record_io_sales_report",
+          "name": "Sales Report",
+          "type": "Record",
+          "definition": "Partner sales performance and activity report",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_resource_tech_salesforce_crm": {
+          "id": "concept_resource_tech_salesforce_crm",
+          "name": "Salesforce CRM",
+          "type": "Resource",
+          "definition": "Technology: Salesforce CRM (CRM)",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_resource_tech_netsuite_erp": {
+          "id": "concept_resource_tech_netsuite_erp",
+          "name": "NetSuite ERP",
+          "type": "Resource",
+          "definition": "Technology: NetSuite ERP (ERP)",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_resource_tech_mulesoft": {
+          "id": "concept_resource_tech_mulesoft",
+          "name": "MuleSoft",
+          "type": "Resource",
+          "definition": "Technology: MuleSoft (Other)",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_resource_tech_whatsapp_sms": {
+          "id": "concept_resource_tech_whatsapp_sms",
+          "name": "WhatsApp/SMS",
+          "type": "Resource",
+          "definition": "Technology: WhatsApp/SMS (Comms)",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_resource_tech_google_suite": {
+          "id": "concept_resource_tech_google_suite",
+          "name": "Google Suite",
+          "type": "Resource",
+          "definition": "Technology: Google Suite (Other)",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_resource_tech_disparate_manual_tools": {
+          "id": "concept_resource_tech_disparate_manual_tools",
+          "name": "Disparate Manual Tools",
+          "type": "Resource",
+          "definition": "Technology: Disparate Manual Tools (Other)",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        }
+      },
+      "properties": {},
+      "metrics": {
+        "metric_sales_admin_time": {
+          "name": "Sales Admin Time",
+          "elementType": "Metric"
+        },
+        "metric_netsuite_integration_timeline": {
+          "name": "NetSuite Integration Timeline",
+          "elementType": "Metric"
+        },
+        "metric_annual_growth_rate": {
+          "name": "Annual Growth Rate",
+          "elementType": "Metric"
+        },
+        "metric_cartridge_replacement_rate": {
+          "name": "Cartridge Replacement Rate",
+          "elementType": "Metric"
+        }
+      },
+      "measures": {},
+      "conditions": {},
+      "subActivityGraphs": {
+        "act_identify_prospect": {
+          "nodes": [
+            {
+              "id": "sa_ip_research",
+              "label": "Research Territory",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ip_identify"
+              ],
+              "roleId": "role_sales_representative",
+              "outcome": "Territory analyzed"
+            },
+            {
+              "id": "sa_ip_identify",
+              "label": "Identify Prospects",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ip_qualify"
+              ],
+              "roleId": "role_sales_representative",
+              "outcome": "Prospects identified"
+            },
+            {
+              "id": "sa_ip_qualify",
+              "label": "Initial Qualification",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ip_gate"
+              ],
+              "roleId": "role_sales_representative",
+              "outcome": "Prospects qualified"
+            },
+            {
+              "id": "sa_ip_gate",
+              "label": "Qualification Gate",
+              "nodeType": "gate",
+              "nextIds": [
+                "sa_ip_record",
+                "sa_ip_discard"
+              ],
+              "edgeLabels": {
+                "sa_ip_record": "Qualified",
+                "sa_ip_discard": "Not Qualified"
+              }
+            },
+            {
+              "id": "sa_ip_record",
+              "label": "Record Prospect",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_sales_representative",
+              "outcome": "Prospect recorded"
+            },
+            {
+              "id": "sa_ip_discard",
+              "label": "Discard Prospect",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_sales_representative",
+              "outcome": "Prospect discarded"
+            }
+          ]
+        },
+        "act_brief_customer": {
+          "nodes": [
+            {
+              "id": "sa_bc_prepare",
+              "label": "Prepare Brief",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_bc_schedule"
+              ],
+              "roleId": "role_sales_representative",
+              "outcome": "Brief prepared"
+            },
+            {
+              "id": "sa_bc_schedule",
+              "label": "Schedule Meeting",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_bc_present"
+              ],
+              "roleId": "role_sales_representative",
+              "outcome": "Meeting scheduled"
+            },
+            {
+              "id": "sa_bc_present",
+              "label": "Present Solution",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_bc_gate"
+              ],
+              "roleId": "role_sales_representative",
+              "outcome": "Solution presented"
+            },
+            {
+              "id": "sa_bc_gate",
+              "label": "Interest Gate",
+              "nodeType": "gate",
+              "nextIds": [
+                "sa_bc_followup",
+                "sa_bc_nurture"
+              ],
+              "edgeLabels": {
+                "sa_bc_followup": "Interested",
+                "sa_bc_nurture": "Not Ready"
+              }
+            },
+            {
+              "id": "sa_bc_followup",
+              "label": "Schedule Follow-up",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_sales_representative",
+              "outcome": "Follow-up scheduled"
+            },
+            {
+              "id": "sa_bc_nurture",
+              "label": "Add to Nurture",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_sales_representative",
+              "outcome": "Added to nurture"
+            }
+          ]
+        },
+        "act_propose_solution": {
+          "nodes": [
+            {
+              "id": "sa_ps_analyze",
+              "label": "Analyze Requirements",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ps_design"
+              ],
+              "roleId": "role_sales_representative",
+              "outcome": "Requirements analyzed"
+            },
+            {
+              "id": "sa_ps_design",
+              "label": "Design Solution",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ps_price"
+              ],
+              "roleId": "role_sales_representative",
+              "outcome": "Solution designed"
+            },
+            {
+              "id": "sa_ps_price",
+              "label": "Calculate Pricing",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ps_prepare"
+              ],
+              "roleId": "role_sales_representative",
+              "outcome": "Pricing calculated"
+            },
+            {
+              "id": "sa_ps_prepare",
+              "label": "Prepare Proposal",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ps_present"
+              ],
+              "roleId": "role_sales_representative",
+              "outcome": "Proposal prepared"
+            },
+            {
+              "id": "sa_ps_present",
+              "label": "Present Proposal",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_sales_representative",
+              "outcome": "Proposal presented"
+            }
+          ]
+        },
+        "act_acquire_customer": {
+          "nodes": [
+            {
+              "id": "sa_ac_negotiate",
+              "label": "Negotiate Terms",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ac_gate"
+              ],
+              "roleId": "role_sales_representative",
+              "outcome": "Terms negotiated"
+            },
+            {
+              "id": "sa_ac_gate",
+              "label": "Approval Gate",
+              "nodeType": "gate",
+              "nextIds": [
+                "sa_ac_contract",
+                "sa_ac_revise"
+              ],
+              "edgeLabels": {
+                "sa_ac_contract": "Approved",
+                "sa_ac_revise": "Revise"
+              }
+            },
+            {
+              "id": "sa_ac_contract",
+              "label": "Prepare Contract",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ac_sign"
+              ],
+              "roleId": "role_sales_representative",
+              "outcome": "Contract prepared"
+            },
+            {
+              "id": "sa_ac_sign",
+              "label": "Execute Contract",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ac_order"
+              ],
+              "roleId": "role_sales_representative",
+              "outcome": "Contract signed"
+            },
+            {
+              "id": "sa_ac_order",
+              "label": "Process First Order",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_sales_representative",
+              "outcome": "First order placed"
+            },
+            {
+              "id": "sa_ac_revise",
+              "label": "Revise Proposal",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_sales_representative",
+              "outcome": "Proposal revised"
+            }
+          ]
+        },
+        "act_receive_order": {
+          "nodes": [
+            {
+              "id": "sa_ro_capture",
+              "label": "Capture Order",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ro_validate"
+              ],
+              "roleId": "role_order_processor",
+              "outcome": "Order captured"
+            },
+            {
+              "id": "sa_ro_validate",
+              "label": "Validate Order",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ro_gate"
+              ],
+              "roleId": "role_order_processor",
+              "outcome": "Order validated"
+            },
+            {
+              "id": "sa_ro_gate",
+              "label": "Validation Gate",
+              "nodeType": "gate",
+              "nextIds": [
+                "sa_ro_confirm",
+                "sa_ro_reject"
+              ],
+              "edgeLabels": {
+                "sa_ro_confirm": "Valid",
+                "sa_ro_reject": "Invalid"
+              }
+            },
+            {
+              "id": "sa_ro_confirm",
+              "label": "Confirm Order",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ro_notify"
+              ],
+              "roleId": "role_order_processor",
+              "outcome": "Order confirmed"
+            },
+            {
+              "id": "sa_ro_notify",
+              "label": "Notify Customer",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_order_processor",
+              "outcome": "Customer notified"
+            },
+            {
+              "id": "sa_ro_reject",
+              "label": "Reject Order",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_order_processor",
+              "outcome": "Order rejected"
+            }
+          ]
+        },
+        "act_fulfill_order": {
+          "nodes": [
+            {
+              "id": "sa_fo_check",
+              "label": "Check Inventory",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_fo_gate"
+              ],
+              "roleId": "role_order_processor",
+              "outcome": "Inventory checked"
+            },
+            {
+              "id": "sa_fo_gate",
+              "label": "Stock Gate",
+              "nodeType": "gate",
+              "nextIds": [
+                "sa_fo_pick",
+                "sa_fo_backorder"
+              ],
+              "edgeLabels": {
+                "sa_fo_pick": "In Stock",
+                "sa_fo_backorder": "Out of Stock"
+              }
+            },
+            {
+              "id": "sa_fo_pick",
+              "label": "Pick Items",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_fo_pack"
+              ],
+              "roleId": "role_order_processor",
+              "outcome": "Items picked"
+            },
+            {
+              "id": "sa_fo_pack",
+              "label": "Pack Order",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_fo_ship"
+              ],
+              "roleId": "role_order_processor",
+              "outcome": "Order packed"
+            },
+            {
+              "id": "sa_fo_ship",
+              "label": "Ship Order",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_order_processor",
+              "outcome": "Order shipped"
+            },
+            {
+              "id": "sa_fo_backorder",
+              "label": "Create Backorder",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_order_processor",
+              "outcome": "Backorder created"
+            }
+          ]
+        },
+        "act_deliver_product": {
+          "nodes": [
+            {
+              "id": "sa_dp_dispatch",
+              "label": "Dispatch Shipment",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_dp_track"
+              ],
+              "roleId": "role_order_processor",
+              "outcome": "Shipment dispatched"
+            },
+            {
+              "id": "sa_dp_track",
+              "label": "Track Delivery",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_dp_deliver"
+              ],
+              "roleId": "role_order_processor",
+              "outcome": "Delivery tracked"
+            },
+            {
+              "id": "sa_dp_deliver",
+              "label": "Complete Delivery",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_dp_confirm"
+              ],
+              "roleId": "role_order_processor",
+              "outcome": "Delivery completed"
+            },
+            {
+              "id": "sa_dp_confirm",
+              "label": "Confirm Receipt",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_order_processor",
+              "outcome": "Receipt confirmed"
+            }
+          ]
+        },
+        "act_support_installation": {
+          "nodes": [
+            {
+              "id": "sa_si_contact",
+              "label": "Contact Customer",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_si_assess"
+              ],
+              "roleId": "role_installation_technician",
+              "outcome": "Customer contacted"
+            },
+            {
+              "id": "sa_si_assess",
+              "label": "Assess Site",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_si_guide"
+              ],
+              "roleId": "role_installation_technician",
+              "outcome": "Site assessed"
+            },
+            {
+              "id": "sa_si_guide",
+              "label": "Guide Installation",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_si_test"
+              ],
+              "roleId": "role_installation_technician",
+              "outcome": "Installation guided"
+            },
+            {
+              "id": "sa_si_test",
+              "label": "Test System",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_si_gate"
+              ],
+              "roleId": "role_installation_technician",
+              "outcome": "System tested"
+            },
+            {
+              "id": "sa_si_gate",
+              "label": "Test Gate",
+              "nodeType": "gate",
+              "nextIds": [
+                "sa_si_complete",
+                "sa_si_troubleshoot"
+              ],
+              "edgeLabels": {
+                "sa_si_complete": "Pass",
+                "sa_si_troubleshoot": "Fail"
+              }
+            },
+            {
+              "id": "sa_si_complete",
+              "label": "Complete Installation",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_installation_technician",
+              "outcome": "Installation completed"
+            },
+            {
+              "id": "sa_si_troubleshoot",
+              "label": "Troubleshoot Issues",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_installation_technician",
+              "outcome": "Issues resolved"
+            }
+          ]
+        },
+        "act_commission_system": {
+          "nodes": [
+            {
+              "id": "sa_cs_inspect",
+              "label": "Inspect Installation",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_cs_configure"
+              ],
+              "roleId": "role_service_technician",
+              "outcome": "Installation inspected"
+            },
+            {
+              "id": "sa_cs_configure",
+              "label": "Configure System",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_cs_test"
+              ],
+              "roleId": "role_service_technician",
+              "outcome": "System configured"
+            },
+            {
+              "id": "sa_cs_test",
+              "label": "Performance Test",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_cs_gate"
+              ],
+              "roleId": "role_service_technician",
+              "outcome": "Performance tested"
+            },
+            {
+              "id": "sa_cs_gate",
+              "label": "Performance Gate",
+              "nodeType": "gate",
+              "nextIds": [
+                "sa_cs_certify",
+                "sa_cs_adjust"
+              ],
+              "edgeLabels": {
+                "sa_cs_certify": "Pass",
+                "sa_cs_adjust": "Adjust"
+              }
+            },
+            {
+              "id": "sa_cs_certify",
+              "label": "Certify System",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_service_technician",
+              "outcome": "System certified"
+            },
+            {
+              "id": "sa_cs_adjust",
+              "label": "Adjust Settings",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_service_technician",
+              "outcome": "Settings adjusted"
+            }
+          ]
+        },
+        "act_schedule_maintenance": {
+          "nodes": [
+            {
+              "id": "sa_sm_review",
+              "label": "Review System",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_sm_plan"
+              ],
+              "roleId": "role_customer_care_representative",
+              "outcome": "System reviewed"
+            },
+            {
+              "id": "sa_sm_plan",
+              "label": "Plan Schedule",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_sm_contact"
+              ],
+              "roleId": "role_customer_care_representative",
+              "outcome": "Schedule planned"
+            },
+            {
+              "id": "sa_sm_contact",
+              "label": "Contact Customer",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_sm_confirm"
+              ],
+              "roleId": "role_customer_care_representative",
+              "outcome": "Customer contacted"
+            },
+            {
+              "id": "sa_sm_confirm",
+              "label": "Confirm Appointment",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_customer_care_representative",
+              "outcome": "Appointment confirmed"
+            }
+          ]
+        },
+        "act_replace_cartridge": {
+          "nodes": [
+            {
+              "id": "sa_rc_arrive",
+              "label": "Arrive On-site",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_rc_inspect"
+              ],
+              "roleId": "role_service_technician",
+              "outcome": "Arrived on-site"
+            },
+            {
+              "id": "sa_rc_inspect",
+              "label": "Inspect System",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_rc_replace"
+              ],
+              "roleId": "role_service_technician",
+              "outcome": "System inspected"
+            },
+            {
+              "id": "sa_rc_replace",
+              "label": "Replace Cartridge",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_rc_test"
+              ],
+              "roleId": "role_service_technician",
+              "outcome": "Cartridge replaced"
+            },
+            {
+              "id": "sa_rc_test",
+              "label": "Test Operation",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_rc_document"
+              ],
+              "roleId": "role_service_technician",
+              "outcome": "Operation tested"
+            },
+            {
+              "id": "sa_rc_document",
+              "label": "Document Service",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_service_technician",
+              "outcome": "Service documented"
+            }
+          ]
+        },
+        "act_renew_service": {
+          "nodes": [
+            {
+              "id": "sa_rs_review",
+              "label": "Review Contract",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_rs_prepare"
+              ],
+              "roleId": "role_customer_care_representative",
+              "outcome": "Contract reviewed"
+            },
+            {
+              "id": "sa_rs_prepare",
+              "label": "Prepare Renewal",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_rs_contact"
+              ],
+              "roleId": "role_customer_care_representative",
+              "outcome": "Renewal prepared"
+            },
+            {
+              "id": "sa_rs_contact",
+              "label": "Contact Customer",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_rs_gate"
+              ],
+              "roleId": "role_customer_care_representative",
+              "outcome": "Customer contacted"
+            },
+            {
+              "id": "sa_rs_gate",
+              "label": "Renewal Gate",
+              "nodeType": "gate",
+              "nextIds": [
+                "sa_rs_execute",
+                "sa_rs_close"
+              ],
+              "edgeLabels": {
+                "sa_rs_execute": "Renew",
+                "sa_rs_close": "Decline"
+              }
+            },
+            {
+              "id": "sa_rs_execute",
+              "label": "Execute Renewal",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_customer_care_representative",
+              "outcome": "Renewal executed"
+            },
+            {
+              "id": "sa_rs_close",
+              "label": "Close Account",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_customer_care_representative",
+              "outcome": "Account closed"
+            }
+          ]
+        },
+        "act_recruit_partner": {
+          "nodes": [
+            {
+              "id": "sa_rp_identify",
+              "label": "Identify Candidates",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_rp_approach"
+              ],
+              "roleId": "role_partner_manager",
+              "outcome": "Candidates identified"
+            },
+            {
+              "id": "sa_rp_approach",
+              "label": "Approach Partner",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_rp_assess"
+              ],
+              "roleId": "role_partner_manager",
+              "outcome": "Partner approached"
+            },
+            {
+              "id": "sa_rp_assess",
+              "label": "Assess Fit",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_rp_gate"
+              ],
+              "roleId": "role_partner_manager",
+              "outcome": "Fit assessed"
+            },
+            {
+              "id": "sa_rp_gate",
+              "label": "Qualification Gate",
+              "nodeType": "gate",
+              "nextIds": [
+                "sa_rp_onboard",
+                "sa_rp_decline"
+              ],
+              "edgeLabels": {
+                "sa_rp_onboard": "Qualified",
+                "sa_rp_decline": "Not Qualified"
+              }
+            },
+            {
+              "id": "sa_rp_onboard",
+              "label": "Onboard Partner",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_partner_manager",
+              "outcome": "Partner onboarded"
+            },
+            {
+              "id": "sa_rp_decline",
+              "label": "Decline Partner",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_partner_manager",
+              "outcome": "Partner declined"
+            }
+          ]
+        },
+        "act_train_partner": {
+          "nodes": [
+            {
+              "id": "sa_tp_assess",
+              "label": "Assess Needs",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_tp_design"
+              ],
+              "roleId": "role_partner_manager",
+              "outcome": "Needs assessed"
+            },
+            {
+              "id": "sa_tp_design",
+              "label": "Design Training",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_tp_deliver"
+              ],
+              "roleId": "role_partner_manager",
+              "outcome": "Training designed"
+            },
+            {
+              "id": "sa_tp_deliver",
+              "label": "Deliver Training",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_tp_test"
+              ],
+              "roleId": "role_partner_manager",
+              "outcome": "Training delivered"
+            },
+            {
+              "id": "sa_tp_test",
+              "label": "Test Knowledge",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_tp_gate"
+              ],
+              "roleId": "role_partner_manager",
+              "outcome": "Knowledge tested"
+            },
+            {
+              "id": "sa_tp_gate",
+              "label": "Certification Gate",
+              "nodeType": "gate",
+              "nextIds": [
+                "sa_tp_certify",
+                "sa_tp_retrain"
+              ],
+              "edgeLabels": {
+                "sa_tp_certify": "Pass",
+                "sa_tp_retrain": "Retrain"
+              }
+            },
+            {
+              "id": "sa_tp_certify",
+              "label": "Issue Certificate",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_partner_manager",
+              "outcome": "Certificate issued"
+            },
+            {
+              "id": "sa_tp_retrain",
+              "label": "Additional Training",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_partner_manager",
+              "outcome": "Additional training provided"
+            }
+          ]
+        },
+        "act_equip_partner": {
+          "nodes": [
+            {
+              "id": "sa_ep_prepare",
+              "label": "Prepare Kit",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ep_customize"
+              ],
+              "roleId": "role_partner_manager",
+              "outcome": "Kit prepared"
+            },
+            {
+              "id": "sa_ep_customize",
+              "label": "Customize Materials",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ep_deliver"
+              ],
+              "roleId": "role_partner_manager",
+              "outcome": "Materials customized"
+            },
+            {
+              "id": "sa_ep_deliver",
+              "label": "Deliver Kit",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ep_train"
+              ],
+              "roleId": "role_partner_manager",
+              "outcome": "Kit delivered"
+            },
+            {
+              "id": "sa_ep_train",
+              "label": "Train on Tools",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_partner_manager",
+              "outcome": "Tool training completed"
+            }
+          ]
+        },
+        "act_activate_partner": {
+          "nodes": [
+            {
+              "id": "sa_ap_setup",
+              "label": "Setup Systems",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ap_launch"
+              ],
+              "roleId": "role_partner_manager",
+              "outcome": "Systems setup"
+            },
+            {
+              "id": "sa_ap_launch",
+              "label": "Launch Partnership",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ap_monitor"
+              ],
+              "roleId": "role_partner_manager",
+              "outcome": "Partnership launched"
+            },
+            {
+              "id": "sa_ap_monitor",
+              "label": "Monitor Performance",
+              "nodeType": "activity",
+              "nextIds": [
+                "sa_ap_gate"
+              ],
+              "roleId": "role_partner_manager",
+              "outcome": "Performance monitored"
+            },
+            {
+              "id": "sa_ap_gate",
+              "label": "Performance Gate",
+              "nodeType": "gate",
+              "nextIds": [
+                "sa_ap_optimize",
+                "sa_ap_support"
+              ],
+              "edgeLabels": {
+                "sa_ap_optimize": "Good",
+                "sa_ap_support": "Needs Support"
+              }
+            },
+            {
+              "id": "sa_ap_optimize",
+              "label": "Optimize Performance",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_partner_manager",
+              "outcome": "Performance optimized"
+            },
+            {
+              "id": "sa_ap_support",
+              "label": "Provide Support",
+              "nodeType": "activity",
+              "nextIds": [],
+              "roleId": "role_partner_manager",
+              "outcome": "Support provided"
+            }
+          ]
+        }
+      }
+    },
+    "_discoveryPainPoints": "1. [ProcessHandoffFriction] Sales team wastes 3 days per week on admin and meetings instead of selling (intensity 8/10, stage: Prospect Identified) ← flagged as binding\n2. [DataSignalFriction] Salesforce lacks customer intelligence for route planning, requiring manual information gathering (intensity 7/10, stage: Customer Briefed) ← flagged as binding\n3. [TechnologyIntegrationFriction] NetSuite integration project delayed from 3 months to 9+ months (intensity 9/10, stage: Order Received) ← flagged as binding\n4. [TechnologyIntegrationFriction] 90+ Salesforce customizations making standard implementations difficult (intensity 8/10, stage: Solution Proposed) ← flagged as binding\n5. [IncentiveCapacityFriction] Distributors become order takers rather than proactive sellers due to lack of tools (intensity 6/10, stage: Partner Productive)\n6. [ProcessHandoffFriction] Staff use multiple disparate systems due to process gaps, creating manual work (intensity 7/10, stage: Order Fulfilled) ← flagged as binding"
+  },
+  "heatmaps": [],
+  "cardRegistry": {
+    "conceptCards": {
+      "cc_customer": {
+        "cardId": "cc_customer",
+        "canonicalName": "Customer",
+        "description": "A business entity that purchases products or services from the organization",
+        "owner": "role_sales_representative",
+        "senses": [
+          {
+            "senseName": "Prospect",
+            "description": "A potential customer identified through lead generation activities",
+            "systemOfRecord": "CRM System",
+            "disambiguationCues": [
+              "lead",
+              "prospect",
+              "potential",
+              "qualified"
+            ]
+          },
+          {
+            "senseName": "Active Customer",
+            "description": "A customer with current contracts and ongoing service relationships",
+            "systemOfRecord": "Customer Management System",
+            "disambiguationCues": [
+              "active",
+              "contracted",
+              "current",
+              "service"
+            ]
+          },
+          {
+            "senseName": "Service Customer",
+            "description": "A customer receiving ongoing maintenance and support services",
+            "systemOfRecord": "Service Management System",
+            "disambiguationCues": [
+              "maintenance",
+              "support",
+              "service",
+              "renewal"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "has-a",
+            "targetCardId": "cc_contract",
+            "label": "is bound by"
+          },
+          {
+            "type": "has-a",
+            "targetCardId": "cc_order",
+            "label": "places"
+          },
+          {
+            "type": "consumes",
+            "targetCardId": "cc_solution",
+            "label": "receives"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_customer_relationship_management",
+            "cap_lead_generation",
+            "cap_stakeholder_communication"
+          ],
+          "roleIds": [
+            "role_sales_representative",
+            "role_customer_care_representative"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query CRM system for customer records, lead status, and service history",
+        "tokenBudget": 400
+      },
+      "cc_contract": {
+        "cardId": "cc_contract",
+        "canonicalName": "Contract",
+        "description": "A legal agreement between the organization and customer defining terms of service and product delivery",
+        "owner": "role_sales_representative",
+        "senses": [
+          {
+            "senseName": "Sales Contract",
+            "description": "Initial agreement establishing customer relationship and product purchase terms",
+            "systemOfRecord": "Contract Management System",
+            "disambiguationCues": [
+              "sales",
+              "purchase",
+              "initial",
+              "acquisition"
+            ]
+          },
+          {
+            "senseName": "Service Contract",
+            "description": "Ongoing agreement for maintenance, support, and service delivery",
+            "systemOfRecord": "Service Management System",
+            "disambiguationCues": [
+              "service",
+              "maintenance",
+              "support",
+              "renewal"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "governs",
+            "targetCardId": "cc_customer",
+            "label": "binds"
+          },
+          {
+            "type": "governs",
+            "targetCardId": "cc_order",
+            "label": "authorizes"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_solution",
+            "label": "specifies"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_contract_management",
+            "cap_customer_relationship_management"
+          ],
+          "roleIds": [
+            "role_sales_representative",
+            "role_customer_care_representative"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query contract management system for active agreements and renewal schedules",
+        "tokenBudget": 350
+      },
+      "cc_order": {
+        "cardId": "cc_order",
+        "canonicalName": "Order",
+        "description": "A customer request for products or services that triggers fulfillment processes",
+        "owner": "role_order_processor",
+        "senses": [
+          {
+            "senseName": "Product Order",
+            "description": "Request for physical products requiring inventory allocation and delivery",
+            "systemOfRecord": "Order Management System",
+            "disambiguationCues": [
+              "product",
+              "inventory",
+              "delivery",
+              "fulfillment"
+            ]
+          },
+          {
+            "senseName": "Service Order",
+            "description": "Request for installation, maintenance, or support services",
+            "systemOfRecord": "Service Management System",
+            "disambiguationCues": [
+              "service",
+              "installation",
+              "maintenance",
+              "support"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "is-a",
+            "targetCardId": "cc_customer",
+            "label": "placed by"
+          },
+          {
+            "type": "consumes",
+            "targetCardId": "cc_inventory",
+            "label": "allocates"
+          },
+          {
+            "type": "produces",
+            "targetCardId": "cc_delivery",
+            "label": "triggers"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_order_management",
+            "cap_data_management",
+            "cap_inventory_management"
+          ],
+          "roleIds": [
+            "role_order_processor"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query order management system for order status, fulfillment progress, and delivery tracking",
+        "tokenBudget": 300
+      },
+      "cc_solution": {
+        "cardId": "cc_solution",
+        "canonicalName": "Solution",
+        "description": "A configured combination of products and services designed to meet specific customer requirements",
+        "owner": "role_sales_representative",
+        "senses": [
+          {
+            "senseName": "Proposed Solution",
+            "description": "A solution design presented to prospects during the sales process",
+            "systemOfRecord": "Solution Design System",
+            "disambiguationCues": [
+              "proposed",
+              "design",
+              "quote",
+              "presentation"
+            ]
+          },
+          {
+            "senseName": "Delivered Solution",
+            "description": "An implemented solution including installed products and active services",
+            "systemOfRecord": "Service Management System",
+            "disambiguationCues": [
+              "delivered",
+              "installed",
+              "implemented",
+              "active"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "part-of",
+            "targetCardId": "cc_product",
+            "label": "includes"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_customer",
+            "label": "designed for"
+          },
+          {
+            "type": "governs",
+            "targetCardId": "cc_installation",
+            "label": "defines"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_solution_design",
+            "cap_product_knowledge",
+            "cap_stakeholder_communication"
+          ],
+          "roleIds": [
+            "role_sales_representative"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query solution design system for configuration details and customer requirements",
+        "tokenBudget": 350
+      },
+      "cc_product": {
+        "cardId": "cc_product",
+        "canonicalName": "Product",
+        "description": "Physical items or systems sold and delivered to customers",
+        "owner": "role_order_processor",
+        "senses": [
+          {
+            "senseName": "Catalog Product",
+            "description": "Standard products available for sale with defined specifications and pricing",
+            "systemOfRecord": "Product Catalog System",
+            "disambiguationCues": [
+              "catalog",
+              "standard",
+              "specification",
+              "pricing"
+            ]
+          },
+          {
+            "senseName": "Inventory Product",
+            "description": "Physical products tracked in inventory systems for fulfillment",
+            "systemOfRecord": "Inventory Management System",
+            "disambiguationCues": [
+              "inventory",
+              "stock",
+              "fulfillment",
+              "warehouse"
+            ]
+          },
+          {
+            "senseName": "Installed Product",
+            "description": "Products deployed at customer sites requiring ongoing maintenance",
+            "systemOfRecord": "Service Management System",
+            "disambiguationCues": [
+              "installed",
+              "deployed",
+              "maintenance",
+              "site"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "part-of",
+            "targetCardId": "cc_solution",
+            "label": "component of"
+          },
+          {
+            "type": "consumes",
+            "targetCardId": "cc_inventory",
+            "label": "allocated from"
+          },
+          {
+            "type": "produces",
+            "targetCardId": "cc_installation",
+            "label": "requires"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_product_knowledge",
+            "cap_inventory_management",
+            "cap_quality_assurance"
+          ],
+          "roleIds": [
+            "role_sales_representative",
+            "role_order_processor",
+            "role_installation_technician"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query product catalog and inventory systems for specifications, availability, and installation requirements",
+        "tokenBudget": 400
+      },
+      "cc_inventory": {
+        "cardId": "cc_inventory",
+        "canonicalName": "Inventory",
+        "description": "Stock of products and components available for order fulfillment and service delivery",
+        "owner": "role_order_processor",
+        "senses": [
+          {
+            "senseName": "Available Inventory",
+            "description": "Products in stock and available for immediate allocation to orders",
+            "systemOfRecord": "Inventory Management System",
+            "disambiguationCues": [
+              "available",
+              "stock",
+              "allocation",
+              "immediate"
+            ]
+          },
+          {
+            "senseName": "Service Inventory",
+            "description": "Replacement parts and cartridges maintained for service and maintenance activities",
+            "systemOfRecord": "Service Parts System",
+            "disambiguationCues": [
+              "service",
+              "replacement",
+              "cartridge",
+              "maintenance"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "produces",
+            "targetCardId": "cc_product",
+            "label": "supplies"
+          },
+          {
+            "type": "consumes",
+            "targetCardId": "cc_order",
+            "label": "allocated by"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_partner",
+            "label": "managed by"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_inventory_management",
+            "cap_order_management",
+            "cap_quality_assurance"
+          ],
+          "roleIds": [
+            "role_order_processor",
+            "role_service_technician"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query inventory management system for stock levels, allocation status, and reorder requirements",
+        "tokenBudget": 300
+      },
+      "cc_installation": {
+        "cardId": "cc_installation",
+        "canonicalName": "Installation",
+        "description": "The process and outcome of deploying products at customer sites",
+        "owner": "role_installation_technician",
+        "senses": [
+          {
+            "senseName": "Installation Project",
+            "description": "Planned deployment activities including site preparation and product setup",
+            "systemOfRecord": "Project Management System",
+            "disambiguationCues": [
+              "project",
+              "planned",
+              "deployment",
+              "setup"
+            ]
+          },
+          {
+            "senseName": "Commissioned System",
+            "description": "Fully operational installation ready for customer use and ongoing service",
+            "systemOfRecord": "Service Management System",
+            "disambiguationCues": [
+              "commissioned",
+              "operational",
+              "ready",
+              "service"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "consumes",
+            "targetCardId": "cc_product",
+            "label": "deploys"
+          },
+          {
+            "type": "produces",
+            "targetCardId": "cc_service",
+            "label": "enables"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_customer",
+            "label": "delivered to"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_technical_support",
+            "cap_quality_assurance",
+            "cap_stakeholder_communication"
+          ],
+          "roleIds": [
+            "role_installation_technician",
+            "role_service_technician"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query project management and service systems for installation schedules and commissioning status",
+        "tokenBudget": 350
+      },
+      "cc_service": {
+        "cardId": "cc_service",
+        "canonicalName": "Service",
+        "description": "Ongoing maintenance, support, and operational activities provided to customers",
+        "owner": "role_service_technician",
+        "senses": [
+          {
+            "senseName": "Scheduled Service",
+            "description": "Planned maintenance activities based on service contracts and schedules",
+            "systemOfRecord": "Service Scheduling System",
+            "disambiguationCues": [
+              "scheduled",
+              "planned",
+              "maintenance",
+              "contract"
+            ]
+          },
+          {
+            "senseName": "Support Service",
+            "description": "Reactive support and troubleshooting provided in response to customer issues",
+            "systemOfRecord": "Support Ticketing System",
+            "disambiguationCues": [
+              "support",
+              "reactive",
+              "troubleshooting",
+              "issue"
+            ]
+          },
+          {
+            "senseName": "Renewal Service",
+            "description": "Service contract renewal and ongoing relationship management activities",
+            "systemOfRecord": "Contract Management System",
+            "disambiguationCues": [
+              "renewal",
+              "contract",
+              "relationship",
+              "ongoing"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "governs",
+            "targetCardId": "cc_installation",
+            "label": "maintains"
+          },
+          {
+            "type": "consumes",
+            "targetCardId": "cc_inventory",
+            "label": "uses parts from"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_contract",
+            "label": "defined by"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_service_scheduling",
+            "cap_technical_support",
+            "cap_customer_relationship_management"
+          ],
+          "roleIds": [
+            "role_service_technician",
+            "role_customer_care_representative"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query service management systems for maintenance schedules, support tickets, and renewal status",
+        "tokenBudget": 400
+      },
+      "cc_partner": {
+        "cardId": "cc_partner",
+        "canonicalName": "Partner",
+        "description": "External organizations that collaborate in delivering products and services to customers",
+        "owner": "role_partner_manager",
+        "senses": [
+          {
+            "senseName": "Trade Partner",
+            "description": "External partners involved in product delivery, installation, or service activities",
+            "systemOfRecord": "Partner Management System",
+            "disambiguationCues": [
+              "trade",
+              "external",
+              "delivery",
+              "installation"
+            ]
+          },
+          {
+            "senseName": "Certified Partner",
+            "description": "Partners who have completed training and certification requirements",
+            "systemOfRecord": "Training Management System",
+            "disambiguationCues": [
+              "certified",
+              "trained",
+              "qualified",
+              "approved"
+            ]
+          },
+          {
+            "senseName": "Active Partner",
+            "description": "Partners currently engaged in productive business activities",
+            "systemOfRecord": "Performance Monitoring System",
+            "disambiguationCues": [
+              "active",
+              "productive",
+              "engaged",
+              "performing"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_inventory",
+            "label": "manages"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_installation",
+            "label": "performs"
+          },
+          {
+            "type": "consumes",
+            "targetCardId": "cc_training",
+            "label": "receives"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_partner_management",
+            "cap_training_delivery",
+            "cap_performance_monitoring"
+          ],
+          "roleIds": [
+            "role_partner_manager",
+            "role_trade_partner"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query partner management system for partner status, certifications, and performance metrics",
+        "tokenBudget": 400
+      },
+      "cc_training": {
+        "cardId": "cc_training",
+        "canonicalName": "Training",
+        "description": "Educational programs and materials provided to partners to ensure competency",
+        "owner": "role_partner_manager",
+        "senses": [
+          {
+            "senseName": "Product Training",
+            "description": "Training focused on product knowledge, specifications, and technical details",
+            "systemOfRecord": "Training Management System",
+            "disambiguationCues": [
+              "product",
+              "technical",
+              "specifications",
+              "knowledge"
+            ]
+          },
+          {
+            "senseName": "Process Training",
+            "description": "Training on business processes, procedures, and operational requirements",
+            "systemOfRecord": "Training Management System",
+            "disambiguationCues": [
+              "process",
+              "procedure",
+              "operational",
+              "business"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "produces",
+            "targetCardId": "cc_partner",
+            "label": "certifies"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_product",
+            "label": "covers"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_training_delivery",
+            "cap_product_knowledge",
+            "cap_stakeholder_communication"
+          ],
+          "roleIds": [
+            "role_partner_manager"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query training management system for curriculum, completion status, and certification records",
+        "tokenBudget": 250
+      },
+      "cc_delivery": {
+        "cardId": "cc_delivery",
+        "canonicalName": "Delivery",
+        "description": "The logistics process of transporting products from fulfillment centers to customer locations",
+        "owner": "role_order_processor",
+        "senses": [
+          {
+            "senseName": "Product Delivery",
+            "description": "Physical transportation of products to customer sites",
+            "systemOfRecord": "Logistics Management System",
+            "disambiguationCues": [
+              "transportation",
+              "shipping",
+              "logistics",
+              "physical"
+            ]
+          },
+          {
+            "senseName": "Service Delivery",
+            "description": "Provision of services including installation support and technical assistance",
+            "systemOfRecord": "Service Management System",
+            "disambiguationCues": [
+              "service",
+              "installation",
+              "technical",
+              "assistance"
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "type": "consumes",
+            "targetCardId": "cc_order",
+            "label": "fulfills"
+          },
+          {
+            "type": "produces",
+            "targetCardId": "cc_installation",
+            "label": "enables"
+          },
+          {
+            "type": "relates-to",
+            "targetCardId": "cc_customer",
+            "label": "delivered to"
+          }
+        ],
+        "anchors": {
+          "capabilityIds": [
+            "cap_logistics_management",
+            "cap_stakeholder_communication",
+            "cap_data_management"
+          ],
+          "roleIds": [
+            "role_order_processor"
+          ]
+        },
+        "provenance": "Generated from VCC scaffold",
+        "dataAcquisitionPlan": "Query logistics system for delivery schedules, tracking information, and completion status",
+        "tokenBudget": 300
+      }
+    },
+    "policyCards": {
+      "pc_data_privacy": {
+        "cardId": "pc_data_privacy",
+        "name": "Customer Data Privacy Policy",
+        "description": "Ensures customer personal and business information is protected throughout all business processes",
+        "authorityTier": "policy",
+        "scope": {
+          "lifecycleStages": [
+            "act_identify_prospect",
+            "act_brief_customer",
+            "act_acquire_customer",
+            "act_receive_order",
+            "act_schedule_maintenance"
+          ],
+          "roles": [
+            "role_sales_representative",
+            "role_order_processor",
+            "role_customer_care_representative"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_customer:Prospect data is collected",
+            "referencedSenses": [
+              "cc_customer:Prospect"
+            ]
+          },
+          {
+            "expression": "cc_customer:Active Customer data is accessed",
+            "referencedSenses": [
+              "cc_customer:Active Customer"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must obtain explicit consent before collecting customer data"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must encrypt all customer data in transit and at rest"
+          },
+          {
+            "obligationType": "prohibit",
+            "description": "Cannot share customer data with unauthorized parties"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_partner_manager",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_data_management",
+            "cap_customer_relationship_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_sales_representative",
+            "role_order_processor",
+            "role_customer_care_representative"
+          ]
+        }
+      },
+      "pc_quality_assurance": {
+        "cardId": "pc_quality_assurance",
+        "name": "Product Quality Assurance Policy",
+        "description": "Mandates quality checks and validation at critical points in the order fulfillment and service delivery process",
+        "authorityTier": "procedure",
+        "scope": {
+          "lifecycleStages": [
+            "act_fulfill_order",
+            "act_deliver_product",
+            "act_commission_system",
+            "act_replace_cartridge"
+          ],
+          "roles": [
+            "role_order_processor",
+            "role_service_technician",
+            "role_installation_technician"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_order:Product Order is being fulfilled",
+            "referencedSenses": [
+              "cc_order:Product Order"
+            ]
+          },
+          {
+            "expression": "cc_installation:Installation Project is being commissioned",
+            "referencedSenses": [
+              "cc_installation:Installation Project"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must perform quality inspection before product delivery"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must validate system functionality before commissioning"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must document all quality check results"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_order_processor",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_quality_assurance",
+            "cap_order_management",
+            "cap_technical_support"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_order_processor",
+            "role_service_technician",
+            "role_installation_technician"
+          ]
+        }
+      },
+      "pc_partner_certification": {
+        "cardId": "pc_partner_certification",
+        "name": "Partner Certification Requirements",
+        "description": "Establishes mandatory training and certification requirements for trade partners before activation",
+        "authorityTier": "procedure",
+        "scope": {
+          "lifecycleStages": [
+            "act_train_partner",
+            "act_equip_partner",
+            "act_activate_partner"
+          ],
+          "roles": [
+            "role_partner_manager",
+            "role_trade_partner"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_partner:Trade Partner requires activation",
+            "referencedSenses": [
+              "cc_partner:Trade Partner"
+            ]
+          },
+          {
+            "expression": "cc_training:Product Training is incomplete",
+            "referencedSenses": [
+              "cc_training:Product Training"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must complete all required training modules before partner activation"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must pass certification assessment with minimum 80% score"
+          },
+          {
+            "obligationType": "prohibit",
+            "description": "Cannot activate partners without valid certification"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_partner_manager",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_partner_management",
+            "cap_training_delivery",
+            "cap_performance_monitoring"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_partner_manager",
+            "role_trade_partner"
+          ]
+        }
+      },
+      "pc_contract_compliance": {
+        "cardId": "pc_contract_compliance",
+        "name": "Contract Compliance Policy",
+        "description": "Ensures all service delivery activities comply with contractual obligations and service level agreements",
+        "authorityTier": "policy",
+        "scope": {
+          "lifecycleStages": [
+            "act_schedule_maintenance",
+            "act_replace_cartridge",
+            "act_renew_service"
+          ],
+          "roles": [
+            "role_customer_care_representative",
+            "role_service_technician"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_contract:Service Contract defines service levels",
+            "referencedSenses": [
+              "cc_contract:Service Contract"
+            ]
+          },
+          {
+            "expression": "cc_service:Scheduled Service is due",
+            "referencedSenses": [
+              "cc_service:Scheduled Service"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must meet contractual response times for service requests"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must maintain service level agreement compliance above 95%"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must notify customers of any potential service delays"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_customer_care_representative",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_contract_management",
+            "cap_service_scheduling",
+            "cap_customer_relationship_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_customer_care_representative",
+            "role_service_technician"
+          ]
+        }
+      },
+      "pc_inventory_control": {
+        "cardId": "pc_inventory_control",
+        "name": "Inventory Control Policy",
+        "description": "Governs inventory allocation, stock management, and availability controls across order fulfillment and service operations",
+        "authorityTier": "procedure",
+        "scope": {
+          "lifecycleStages": [
+            "act_fulfill_order",
+            "act_equip_partner",
+            "act_replace_cartridge"
+          ],
+          "roles": [
+            "role_order_processor",
+            "role_partner_manager",
+            "role_service_technician"
+          ]
+        },
+        "conditions": [
+          {
+            "expression": "cc_inventory:Available Inventory is below threshold",
+            "referencedSenses": [
+              "cc_inventory:Available Inventory"
+            ]
+          },
+          {
+            "expression": "cc_order:Product Order requires allocation",
+            "referencedSenses": [
+              "cc_order:Product Order"
+            ]
+          }
+        ],
+        "outcomes": [
+          {
+            "obligationType": "obligate",
+            "description": "Must verify inventory availability before confirming orders"
+          },
+          {
+            "obligationType": "obligate",
+            "description": "Must maintain minimum stock levels for critical service parts"
+          },
+          {
+            "obligationType": "prohibit",
+            "description": "Cannot allocate inventory beyond confirmed availability"
+          }
+        ],
+        "exceptions": [],
+        "provenance": "Generated from VCC scaffold",
+        "ownership": "role_order_processor",
+        "actionBindings": [],
+        "anchors": {
+          "capabilityIds": [
+            "cap_inventory_management",
+            "cap_order_management",
+            "cap_partner_management"
+          ],
+          "controlIds": [],
+          "roleIds": [
+            "role_order_processor",
+            "role_partner_manager",
+            "role_service_technician"
+          ]
+        }
+      }
+    }
+  }
+}

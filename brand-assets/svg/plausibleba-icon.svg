@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 120" width="140" height="120">
+  <!--
+    PlausibleBA Icon Mark
+    Shape: Rounded pentagon — flat/rounded left edge, chevron point on right
+    Colours: Primary Blue #242A41, Accent Blue #6AC3EE, White #FFFFFF
+  -->
+
+  <!-- Outer shape: rounded left, pointed right (chevron/pentagon) -->
+  <path d="
+    M 18,2
+    L 80,2
+    L 138,60
+    L 80,118
+    L 18,118
+    Q 2,118 2,102
+    L 2,18
+    Q 2,2 18,2
+    Z
+  " fill="#242A41"/>
+
+  <!-- Thick bold chevron arrow — accent blue -->
+  <path d="
+    M 56,8
+    L 128,60
+    L 56,112
+    L 86,112
+    L 138,60
+    L 86,8
+    Z
+  " fill="#6AC3EE"/>
+
+  <!-- 2x2 Capability grid (larger boxes, tighter spacing) -->
+  <!-- Top-left: white -->
+  <rect x="15" y="22" width="22" height="22" rx="3.5" fill="#FFFFFF"/>
+  <!-- Top-right: white -->
+  <rect x="41" y="22" width="22" height="22" rx="3.5" fill="#FFFFFF"/>
+  <!-- Bottom-left: ACCENT BLUE -->
+  <rect x="15" y="48" width="22" height="22" rx="3.5" fill="#6AC3EE"/>
+  <!-- Bottom-right: white -->
+  <rect x="41" y="48" width="22" height="22" rx="3.5" fill="#FFFFFF"/>
+
+  <!-- Label area bar (below grid, wider) -->
+  <rect x="15" y="78" width="48" height="16" rx="4" fill="#FFFFFF" opacity="0.38"/>
+</svg>
