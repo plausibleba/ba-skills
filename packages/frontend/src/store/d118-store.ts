@@ -243,7 +243,13 @@ export const useD118Store = create<D118State>((set, get) => ({
     const cardRegistry = useCanvasStore.getState().cardRegistry;
     const diagnostics = get().diagnosticArtefacts;
     const externalInputs = get().externalInputs;
-    return computeNBA(scaffold, completedIds, diagnostics, cardRegistry, externalInputs);
+    // Import mapping pair count dynamically to avoid circular dependency
+    let mappingPairCount = 0;
+    try {
+      const { useEnrichmentStore } = require("./enrichment-store");
+      mappingPairCount = useEnrichmentStore.getState().mappingPairs?.length ?? 0;
+    } catch { /* enrichment store not available — default to 0 */ }
+    return computeNBA(scaffold, completedIds, diagnostics, cardRegistry, externalInputs, mappingPairCount);
   },
 
   getStalenessDelta: (diagnosticId) => {

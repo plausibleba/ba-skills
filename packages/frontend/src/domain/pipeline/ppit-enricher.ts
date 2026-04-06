@@ -24,9 +24,10 @@ export async function runPassC(scaffold: any): Promise<PPITResult> {
   }
 
   // Count activity × capability pairs to estimate tokens
+  // Handle both v4 (requiresCapabilityIds) and v5 (enabledByCapabilityIds) field names
   let pairCount = 0;
   for (const act of Object.values(activities)) {
-    pairCount += ((act as any).requiresCapabilityIds ?? []).length;
+    pairCount += ((act as any).enabledByCapabilityIds ?? (act as any).requiresCapabilityIds ?? []).length;
   }
   // ~200 tokens per PPIT entry + overhead
   const maxTokens = Math.max(4000, Math.min(16000, pairCount * 200 + 1000));

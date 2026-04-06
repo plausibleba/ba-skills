@@ -24,19 +24,19 @@ const MODULE_FEATURES: Record<ProjectModule | "mvc", ModuleFeatures> = {
     friction: true,
     solutions: false,
     userStories: false,
-    mvcCards: false,
+    mvcCards: true,  // Cards available once generated via enrichment
   },
   "sales-discovery": {
     friction: true,
     solutions: true,
     userStories: false,
-    mvcCards: false,
+    mvcCards: true,  // Cards available once generated via enrichment
   },
   "transformation": {
     friction: true,
     solutions: false,
     userStories: true,
-    mvcCards: false,
+    mvcCards: true,  // Cards available once generated via enrichment
   },
   "mvc": {
     friction: true,
@@ -47,12 +47,13 @@ const MODULE_FEATURES: Record<ProjectModule | "mvc", ModuleFeatures> = {
 };
 
 // Default: sales-discovery baseline (friction + solutions)
-// Quick Discovery and unknown modules get this — MVC cards only when explicitly chosen.
+// Quick Discovery and unknown modules get this.
+// MVC cards are always available — the enrichment taxonomy gates when they can be generated.
 const DEFAULT_FEATURES: ModuleFeatures = {
   friction: true,
   solutions: true,
   userStories: false,
-  mvcCards: false,
+  mvcCards: true,
 };
 
 /**

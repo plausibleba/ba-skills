@@ -83,13 +83,14 @@ function checkDependencies(
   operation: OperationDefinition,
   completedIds: Set<string>,
   scaffold: any,
-  diagnostics: DiagnosticArtefactStore | null
+  diagnostics: DiagnosticArtefactStore | null,
+  mappingPairCount: number = 0
 ): DependencyCheckResult[] {
   return operation.dependencies.map((dep) => {
     // A dependency is satisfied if the operation has been completed this session
     // OR if the scaffold/diagnostics already contain its output
     const completedThisSession = completedIds.has(dep.operationId);
-    const hasOutput = checkOperationOutput(dep.operationId, scaffold, diagnostics);
+    const hasOutput = checkOperationOutput(dep.operationId, scaffold, diagnostics, mappingPairCount);
 
     return {
       operationId: dep.operationId,
@@ -103,11 +104,15 @@ function checkDependencies(
 /**
  * Check if an operation's output already exists in the model
  * (from a previous session or bundle load).
+ *
+ * @param mappingPairCount - number of cross-mapping pairs in enrichment store
+ *   (cross-maps live in enrichment store, not on scaffold)
  */
 function checkOperationOutput(
   operationId: string,
   scaffold: any,
-  diagnostics: DiagnosticArtefactStore | null
+  diagnostics: DiagnosticArtefactStore | null,
+  mappingPairCount: number = 0
 ): boolean {
   if (!scaffold?.elements) return false;
 
@@ -125,9 +130,11 @@ function checkOperationOutput(
       // Cards live in cardRegistry, not scaffold — check separately
       return false; // Caller should check cardRegistry
     case "cross-mapping":
-      return !!(
-        scaffold.elements.crossMaps &&
-        Object.keys(scaffold.elements.crossMaps).length > 0
+      // Cross-maps live in enrichment store (mappingPairs), not on scaffold.
+      // Also check scaffold.elements.crossMaps for bundles that include them.
+      return (
+        mappingPairCount > 0 ||
+        !!(scaffold.elements.crossMaps && Object.keys(scaffold.elements.crossMaps).length > 0)
       );
     case "metrics":
       return !!(
@@ -222,13 +229,15 @@ function scoreOperation(
  * @param diagnostics - Current diagnostic artefact store
  * @param cardRegistry - Current card registry (for cards completion check)
  * @param externalInputs - External input artefacts provided by the user
+ * @param mappingPairCount - Number of cross-mapping pairs in enrichment store
  */
 export function computeNBA(
   scaffold: any,
   completedIds: Set<string>,
   diagnostics: DiagnosticArtefactStore | null = null,
   cardRegistry: any = null,
-  externalInputs: ExternalInputStore | null = null
+  externalInputs: ExternalInputStore | null = null,
+  mappingPairCount: number = 0
 ): NBARecommendation {
   const readiness = computeReadiness(scaffold, diagnostics);
   const readinessHint = nextReadinessHint(readiness);
@@ -255,7 +264,7 @@ export function computeNBA(
     }
 
     // Already completed this session
-    const alreadyDone = completedIds.has(op.id) || checkOperationOutput(op.id, scaffold, diagnostics);
+    const alreadyDone = completedIds.has(op.id) || checkOperationOutput(op.id, scaffold, diagnostics, mappingPairCount);
     // Special case: cards check against cardRegistry
     const cardsDone =
       op.id === "cards" &&
@@ -289,7 +298,7 @@ export function computeNBA(
     }
 
     // Dependency checks
-    const depChecks = checkDependencies(op, completedIds, scaffold, diagnostics);
+    const depChecks = checkDependencies(op, completedIds, scaffold, diagnostics, mappingPairCount);
     const unmetRequired = depChecks.filter(
       (d) => d.type === "required" && !d.satisfied
     );

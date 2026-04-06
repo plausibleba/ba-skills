@@ -24,10 +24,11 @@ function buildPPITContext(scaffold: any): {
   const els = scaffold.elements ?? {};
 
   // Activity summaries (just what PPIT needs)
+  // Handle both v4 (requiresCapabilityIds) and v5 (enabledByCapabilityIds) field names
   const activities = Object.entries(els.activities ?? {}).map(([id, act]: [string, any]) => ({
     id,
     name: act.name,
-    requiresCapabilityIds: act.requiresCapabilityIds ?? [],
+    requiresCapabilityIds: act.enabledByCapabilityIds ?? act.requiresCapabilityIds ?? [],
     performedByRoleIds: act.performedByRoleIds ?? [],
     informationObjectIds: act.informationObjectIds ?? [],
   }));
@@ -83,7 +84,7 @@ Return a JSON object keyed by activity ID. Each value is an object keyed by capa
 
 ## PPIT Rules
 For each capability on each activity:
-- **roleIds**: 1-2 roles from the activity's performedByRoleIds that exercise this capability
+- **roleIds**: 1-2 roles that SPECIFICALLY exercise THIS capability at this stage. Select from the full roles registry (not limited to the activity's performedByRoleIds). Different capabilities at the same stage should generally involve different roles — e.g. "Data Management" might be performed by a Data Analyst while "Customer Relationship Management" at the same stage is performed by a Sales Representative. Avoid assigning the same role to every capability unless the stage genuinely has only one participant.
 - **activities**: exactly 3 short verb-phrase sub-activities describing specific work done (context-sensitive to the stage — NOT generic)
 - **informationObjectIds**: 1-3 IOs from the activity's informationObjectIds that this capability uses/produces
 - **technologyAppIds**: 0-2 technology IDs that support this capability (use tech_ prefixed IDs from the reference below; if none fit, use empty array)

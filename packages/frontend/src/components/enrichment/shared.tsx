@@ -414,7 +414,14 @@ export function useEnrichmentActions() {
     enrichmentStore.setError(null);
 
     try {
-      await runEnrichmentStep(card.enrichmentStep, scaffoldData, discoveryIR ?? undefined, (progress: PipelineProgress) => {
+      // CRITICAL: Deep-clone the scaffold before passing to enrichers.
+      // Enrichers mutate in-place — without this clone, they mutate the live
+      // Zustand store object, causing stale references, missed re-renders,
+      // and snapshot corruption. The enriched clone is loaded as a fresh
+      // object into the store when the enrichment completes.
+      const enrichmentCopy = JSON.parse(JSON.stringify(scaffoldData));
+
+      await runEnrichmentStep(card.enrichmentStep, enrichmentCopy, discoveryIR ?? undefined, (progress: PipelineProgress) => {
         if (progress.status === "enrichment-done") {
           // Store the snapshot now that enrichment succeeded
           enrichmentStore.addSnapshot(snapshot);

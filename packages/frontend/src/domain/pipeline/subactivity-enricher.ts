@@ -37,7 +37,7 @@ function buildSubActivityContext(scaffold: any): {
       id,
       name: act.name,
       performedByRoleIds: act.performedByRoleIds ?? [],
-      requiresCapabilityIds: act.requiresCapabilityIds ?? [],
+      requiresCapabilityIds: act.enabledByCapabilityIds ?? act.requiresCapabilityIds ?? [],
       preOutcomeId: act.preOutcomeId,
       postOutcomeId: act.postOutcomeId,
     };
