@@ -1,6 +1,6 @@
 # Current State — VCC Frontend
 
-_Last updated: 2026-04-07 — Session 30 (D-097 graph index + Workbench catalog completeness) — v0.5.0 DRAFT_
+_Last updated: 2026-04-07 — Session 31 (Hardening: as-any cleanup, R-013, capability selector) — v0.5.0 DRAFT_
 
 ---
 
@@ -66,7 +66,7 @@ The canvas is now a **living document**, not a read-only output:
 - Role names in Structure Pane chips
 
 **Add/remove elements:**
-- Capabilities: "+ Add Capability" per stage, × to remove on hover
+- Capabilities: Searchable dropdown per stage — search existing L4 capabilities (with level badges + parent context) or type a new name to create. × to remove on hover
 - Stages: "+ Add Stage" at end of canvas, × on column headers
 - Roles: "+ Role" in Structure Pane with smart name matching, × to remove
 - Information Objects: + button per capability (amber, when I toggle active), × to remove
@@ -321,7 +321,7 @@ SPAR design review completed with Technical Architect (GPT-4o) and Functional De
 - New types: `PPITEntry`, `ScaffoldElements`, `ScaffoldRole`, `ScaffoldOutcome`, `ScaffoldTechnologyApp`, `ScaffoldConcept`
 - Helper: `getCapabilityIds(act)` resolves v4/v5 capability field name ambiguity
 - Expanded: `ScaffoldActivity` (capabilityPPIT, informationObjectIds, enabledByCapabilityIds, valueStreamId, stageNumber, description), `ScaffoldValueStream` (layoutZone, zone, accountableStakeholder, activityChainHead), `ScaffoldData` (layoutZones)
-- `as any` reduced 166 → 58 (65% reduction). Remaining in `@ts-nocheck` files.
+- `as any` reduced 166 → 53 (68% reduction). 7 `@ts-nocheck` files remain (network-derivation.ts and FrictionView.tsx cleared in Session 31).
 
 ---
 
@@ -336,9 +336,9 @@ SPAR design review completed with Technical Architect (GPT-4o) and Functional De
 ### Near Term (Structural Hardening)
 5. ~~**TypeScript type drift cleanup (R-010)** — align types with runtime data~~ ✅ Session 29
 6. ~~**Client-side graph index** — in-memory adjacency map on bundle load (D-097 Step 1)~~ ✅ Session 30
-7. **Record-lifecycle coupling** — make Record → Outcome Lifecycle mapping explicit in scaffold (R-013, foundation for agentic orchestration)
-8. **Capability selector** — pick from existing capabilities before "create new" (D-097 Step 1 lite)
-9. **Remaining `as any` cleanup** — 58 instances remain in files with `@ts-nocheck` (FrictionView, CapabilityBlock, network-derivation)
+7. ~~**Record-lifecycle coupling Phase 1** — derive recordClasses + primaryRecordClassId deterministically~~ ✅ Session 30. Phase 2 (outcome→lifecycle state mapping) remains
+8. ~~**Capability selector** — pick from existing capabilities before "create new" (D-097 Step 1 lite)~~ ✅ Session 31
+9. ~~**`as any` cleanup** — network-derivation.ts and FrictionView.tsx cleared~~ ✅ Session 31. 53 instances remain in 7 `@ts-nocheck` files
 10. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
 11. Refactoring sprint using debt register (R-001 through R-015)
 

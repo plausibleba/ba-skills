@@ -9,7 +9,7 @@ import { CapabilityBlock } from "./CapabilityBlock.tsx";
 import { TransformationPane } from "./TransformationPane.tsx";
 import { useCanvasStore } from "../../store/canvas-store.ts";
 import { tv } from "../../theme.ts";
-import { AddItemInput } from "./AddItemInput.tsx";
+import { CapabilitySelector } from "./CapabilitySelector.tsx";
 
 /* ── Stage Card ────────────────────────────────────────────────────── */
 
@@ -45,7 +45,7 @@ export function StageCard({
   const activity = scaffold.elements.activities[activityId];
   if (!activity) return null;
 
-  const { userStoriesByActivity, setActivityStories, addCapabilityToActivity, removeCapabilityFromActivity } = useCanvasStore();
+  const { userStoriesByActivity, setActivityStories, removeCapabilityFromActivity } = useCanvasStore();
 
   const caps: string[] = getCapabilityIds(activity);
   const showSummary = false;
@@ -143,10 +143,7 @@ export function StageCard({
             </button>
           </div>
         ))}
-        <AddItemInput
-          label="Capability"
-          onAdd={(name) => addCapabilityToActivity(activityId, name)}
-        />
+        <CapabilitySelector activityId={activityId} />
       </div>
 
       {/* Transformation pane: friction, controls (future: painpoints, ideas, requirements) */}

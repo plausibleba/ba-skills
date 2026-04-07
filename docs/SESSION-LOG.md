@@ -4,6 +4,62 @@ Chronological record of what was built, decided, and learned.
 
 ---
 
+## Session 31 — Hardening: `as any` Cleanup, R-013, Capability Selector UX
+**Date:** 2026-04-07
+**Status:** Complete
+
+### 1. `as any` Cleanup (166 → 53 instances, 9 → 7 `@ts-nocheck` files)
+
+Removed `@ts-nocheck` pragmas from two of the largest files and fixed all resulting type errors:
+
+**network-derivation.ts** (6 errors):
+- Replaced 5 `as any` casts in `resolveActivityIds()` with typed property access
+- Replaced `Record<string, unknown>` casts with typed `ScaffoldValueStream` / `ScaffoldData` properties
+- Fixed `id` overwrite warning in `activityList` construction
+
+**FrictionView.tsx** (16 errors):
+- Removed unused imports (`classifyCategory`, `buildActivityFrictionMap`)
+- Fixed `vs.stages?.some()` → `vs.activityIds?.includes()` (field name correction)
+- Extended `GatedAction` type in tier-store.ts with `"import_observations"` and `"generate_observations"`
+- Fixed category type narrowing with `as typeof ALL_CATEGORIES[number]`
+- Changed `bindingConstraint: null as any` → `bindingConstraint: null` (3 locations), then updated `HeatmapData.bindingConstraint` type to `BindingConstraint | null` and added optional chaining in CanvasView.tsx and ThroughputPanel.tsx
+- Removed/prefixed unused variables
+
+### 2. R-013 Record-Lifecycle Coupling (Phase 1)
+
+Added `deriveRecordLifecycleCoupling()` to network-derivation.ts (~120 lines). Called during `loadScaffold()` before topology derivation.
+
+**Algorithm:**
+- Step 1: Build `recordClasses` from Record-type concepts + key IOs (2+ activity refs or name pattern match)
+- Step 2: Name → recordClassId index
+- Step 3: Score-based linking of activities to `primaryRecordClassId`: direct IO match = 3, name match = 2, capability businessObject = 2, PPIT IO = 1
+- Highest-scoring record class wins; ties broken by first match
+
+### 3. Capability Selector UX
+
+Built `CapabilitySelector` component — a searchable dropdown that shows existing L4 capabilities before offering "create new":
+- Filters existing capabilities by fuzzy query match, excludes those already on the activity
+- Shows level badges (L1–L4) and parent capability context
+- Keyboard navigation (Arrow keys, Enter, Escape)
+- "Create new" option appears at bottom when no exact match
+- Wired into StageCard.tsx replacing the old `AddItemInput` for capabilities
+
+Added `linkExistingCapabilityToActivity` action to canvas-store.ts for linking without duplication.
+
+### Files Changed
+- `store/network-derivation.ts` — Removed `@ts-nocheck`, fixed 6 type errors, added `deriveRecordLifecycleCoupling()`
+- `components/FrictionView.tsx` — Removed `@ts-nocheck`, fixed 16 type errors
+- `types.ts` — `HeatmapData.bindingConstraint` now nullable
+- `store/tier-store.ts` — Added `"import_observations"` and `"generate_observations"` to GatedAction
+- `hooks/useGateCheck.ts` — Added action labels for new gated actions
+- `components/CanvasView.tsx` — Optional chaining on nullable bindingConstraint
+- `components/ThroughputPanel.tsx` — Optional chaining on nullable bindingConstraint
+- `store/canvas-store.ts` — Added `linkExistingCapabilityToActivity`, calls `deriveRecordLifecycleCoupling()`
+- `components/canvas/CapabilitySelector.tsx` — **NEW** — Searchable capability dropdown
+- `components/canvas/StageCard.tsx` — Replaced `AddItemInput` with `CapabilitySelector`
+
+---
+
 ## Session 30 — D-097 Graph Index + Workbench Catalog Completeness
 **Date:** 2026-04-07
 **Status:** Complete

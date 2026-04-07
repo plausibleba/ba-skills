@@ -41,7 +41,9 @@ export type GatedAction =
   | "create_vendor_library"
   | "card_generation"
   | "workshop_session"
-  | "scenario_planning";
+  | "scenario_planning"
+  | "import_observations"
+  | "generate_observations";
 
 // Maps gated actions to the use case they belong to (if applicable)
 const ACTION_USE_CASE_MAP: Partial<Record<GatedAction, UseCase>> = {

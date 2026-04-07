@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import type {
@@ -10,7 +9,7 @@ import type {
   ObservationStatus,
   ObservationProvenance,
 } from "../types.ts";
-import { classifyCategory, categoryLabel, buildActivityFrictionMap } from "./FrictionOverlay.tsx";
+import { categoryLabel } from "./FrictionOverlay.tsx";
 import { useVendorLibraryStore, type CustomerStory, type CustomerStoryCatalogue } from "../store/vendor-library-store.ts";
 import { NBABanner } from "./NBABanner";
 import type { VendorFeatureLibrary } from "../types.ts";
@@ -335,7 +334,7 @@ interface AggregatedObservation {
 }
 
 /** Generate plausible rationale text for AI suggestions (placeholder — production would use actual LLM output) */
-function generateSuggestionRationale(type: ObservationType, anchorName: string, scaffold: ScaffoldData): string {
+function generateSuggestionRationale(type: ObservationType, anchorName: string, _scaffold: ScaffoldData): string {
   const templates: Record<ObservationType, string[]> = {
     painPoint: [
       `Stakeholders at "${anchorName}" report delays caused by unclear handoff responsibilities and inconsistent communication channels between upstream and downstream teams.`,
@@ -418,7 +417,7 @@ function ObservationsTab({
           // Find the VS this activity belongs to
           let ownerVsId = vsEntries[0]?.[0] ?? "";
           for (const [vId, vs] of vsEntries) {
-            if (vs.stages?.some((s: any) => s.activityId === actId || s === actId)) {
+            if (vs.activityIds?.includes(actId)) {
               ownerVsId = vId;
               break;
             }
@@ -500,7 +499,7 @@ function ObservationsTab({
           valueStreamId: sug.vsId,
           createdAt: new Date().toISOString(),
           observations: [newObs],
-          bindingConstraint: null as any,
+          bindingConstraint: null,
         };
         store.heatmapsByVs.set(sug.vsId, newHm);
       }
@@ -1005,7 +1004,6 @@ function GeneratePanel({
 }) {
   const [editingSuggestion, setEditingSuggestion] = useState<string | null>(null);
   const hasSuggestions = suggestions.length > 0;
-  const hasReviewed = suggestions.length > 0 && pendingCount === 0;
 
   return (
     <div className="mb-4 rounded-lg border-2 overflow-hidden" style={{ borderColor: "#8b5cf6", background: "#faf5ff" }}>
@@ -1192,8 +1190,8 @@ function SuggestionCard({
   onDispose: (disposition: SuggestionDisposition) => void;
   onEdit: (patch: { editedRationale?: string; editedIntensity?: number }) => void;
 }) {
+  void scaffoldData;
   const disp = suggestion.disposition;
-  const isResolved = disp === "accepted" || disp === "rejected" || disp === "modified";
   const isParked = disp === "parked";
 
   const bgColour = disp === "accepted" || disp === "modified"
@@ -1391,6 +1389,7 @@ function ObservationRow({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  void scaffoldData;
   const { obs, vsName, anchorName, isBinding } = item;
   const colours = CATEGORY_COLOURS[obs.category] || CATEGORY_COLOURS.ProcessHandoffFriction;
   const score = obs.intensity.score ?? 0;
@@ -1619,7 +1618,7 @@ function AddObservationForm({
         valueStreamId: vsId,
         createdAt: new Date().toISOString(),
         observations: [newObs],
-        bindingConstraint: null as any,
+        bindingConstraint: null,
       };
       store.heatmapsByVs.set(vsId, newHm);
     }
@@ -1657,7 +1656,7 @@ function AddObservationForm({
         </div>
         <div>
           <label className="mb-1 block text-[10px] font-medium text-gray-500 uppercase tracking-wide">Category</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full rounded border border-gray-200 px-2 py-1.5 text-xs">
+          <select value={category} onChange={(e) => setCategory(e.target.value as typeof ALL_CATEGORIES[number])} className="w-full rounded border border-gray-200 px-2 py-1.5 text-xs">
             {ALL_CATEGORIES.map((c) => (
               <option key={c} value={c}>{categoryLabel(c)}</option>
             ))}
@@ -1821,7 +1820,7 @@ function ObservationImportArea({
 
         const newObs: FrictionObservation = {
           observationId: `fr_import_${Date.now()}_${imported}`,
-          category: ALL_CATEGORIES.includes(categoryVal as any) ? categoryVal : ALL_CATEGORIES[0],
+          category: (ALL_CATEGORIES as string[]).includes(categoryVal) ? categoryVal : ALL_CATEGORIES[0],
           observationType,
           status: (["suggested", "agreed", "discarded", "resolved"].includes(statusVal) ? statusVal : "suggested") as ObservationStatus,
           provenance: "provided" as ObservationProvenance,
@@ -1842,7 +1841,7 @@ function ObservationImportArea({
             valueStreamId: targetVsId,
             createdAt: new Date().toISOString(),
             observations: [newObs],
-            bindingConstraint: null as any,
+            bindingConstraint: null,
           } as HeatmapData);
         }
         imported++;
@@ -2007,8 +2006,8 @@ const BUILTIN_STORY_CATALOGUES: (CustomerStoryCatalogue & { builtIn: true })[] =
 function SolutionsTab() {
   const { customLibraries, customStories, addLibrary, removeLibrary, addStoryCatalogue, removeStoryCatalogue } = useVendorLibraryStore();
   const [activeSection, setActiveSection] = useState<"libraries" | "stories">("libraries");
-  const [showUploadLib, setShowUploadLib] = useState(false);
-  const [showUploadStories, setShowUploadStories] = useState(false);
+  const [_showUploadLib, setShowUploadLib] = useState(false);
+  const [_showUploadStories, setShowUploadStories] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [expandedVendor, setExpandedVendor] = useState<string | null>(null);
   const [expandedStory, setExpandedStory] = useState<string | null>(null);
@@ -2323,7 +2322,7 @@ function SolutionsTab() {
                         {!lib.builtIn && <span className="rounded bg-purple-100 px-1.5 py-0.5 text-[9px] font-medium text-purple-600">Custom</span>}
                       </div>
                       <p className="text-[10px] text-gray-500">
-                        {lib.categories.length} categories · {featureCount} features · v{(lib as any).version ?? "1.0"}
+                        {lib.categories.length} categories · {featureCount} features
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -2839,7 +2838,7 @@ function SurveyTab({ scaffoldData }: { scaffoldData: ScaffoldData }) {
       })),
     };
     // Persist in memory for now — the pipeline can pick this up
-    (window as any).__vcc_friction_survey = surveyData;
+    (window as unknown as Record<string, unknown>).__vcc_friction_survey = surveyData;
     setSubmitted(true);
   };
 
@@ -3120,7 +3119,7 @@ function AddSignalForm({ onAdd, onCancel }: { onAdd: (s: StructuralSignal) => vo
       <div className="space-y-3">
         <div>
           <label className="mb-1 block text-[10px] font-medium text-gray-500 uppercase tracking-wide">Category</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full rounded border border-gray-200 px-2 py-1.5 text-xs">
+          <select value={category} onChange={(e) => setCategory(e.target.value as typeof ALL_CATEGORIES[number])} className="w-full rounded border border-gray-200 px-2 py-1.5 text-xs">
             {ALL_CATEGORIES.map((c) => (
               <option key={c} value={c}>{categoryLabel(c)}</option>
             ))}

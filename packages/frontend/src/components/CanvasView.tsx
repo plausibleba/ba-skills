@@ -421,7 +421,7 @@ function DiagnosisSummary({
   bindingActivityName,
   onBindingClick,
 }: {
-  heatmapData: { observations: unknown[]; bindingConstraint: { confidence?: number | null } };
+  heatmapData: { observations: unknown[]; bindingConstraint: { confidence?: number | null } | null };
   bindingActivityName: string | null;
   onBindingClick: () => void;
 }) {
@@ -458,12 +458,12 @@ function DiagnosisSummary({
               </button>
             </span>
           </div>
-          {heatmapData.bindingConstraint.confidence != null && (
+          {heatmapData.bindingConstraint?.confidence != null && (
             <>
               <div className="h-4 w-px" style={{ background: tv.borderSubtle }} />
               <span className="font-mono text-[10px]" style={{ color: tv.textDim }}>
                 Confidence:{" "}
-                {(heatmapData.bindingConstraint.confidence * 100).toFixed(0)}%
+                {(heatmapData.bindingConstraint?.confidence * 100).toFixed(0)}%
               </span>
             </>
           )}

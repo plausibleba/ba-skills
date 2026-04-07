@@ -25,6 +25,7 @@ import {
   buildNetworkNodes,
   deriveCapabilityInstances,
   deriveTopologyView,
+  deriveRecordLifecycleCoupling,
 } from "./network-derivation.ts";
 import { buildGraphIndex, type ScaffoldGraphIndex } from "./graph-index.ts";
 import { computeScaffoldHash } from "../domain/scaffold-hash";
@@ -101,6 +102,7 @@ interface CanvasState {
 
   // Add/remove actions (D-093: Phase 2 Editable Canvas)
   addCapabilityToActivity: (activityId: string, capabilityName: string) => string;
+  linkExistingCapabilityToActivity: (activityId: string, capabilityId: string) => void;
   removeCapabilityFromActivity: (activityId: string, capabilityId: string) => void;
   addActivity: (vsId: string, activityName: string, afterActivityId?: string) => string;
   removeActivity: (vsId: string, activityId: string) => void;
@@ -203,6 +205,11 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       },
     } as ScaffoldData;
     const resolved = resolveScaffoldMeasures(normalised);
+
+    // R-013: Derive record classes and link activities to primary records
+    // Must run BEFORE topology derivation (which reads primaryRecordClassId)
+    deriveRecordLifecycleCoupling(resolved);
+
     set({ scaffoldData: resolved, error: null, loading: true });
 
     // Derive network topology immediately (before validation)
@@ -719,6 +726,27 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     set({ scaffoldData: updated, scaffoldDirty: true });
     if (selectedVsId) get().generateCanvasForVs(selectedVsId);
     return capId;
+  },
+
+  linkExistingCapabilityToActivity: (activityId: string, capabilityId: string) => {
+    const { scaffoldData, selectedVsId } = get();
+    if (!scaffoldData) return;
+    const activity = scaffoldData.elements.activities[activityId];
+    if (!activity) return;
+    // Don't add duplicates
+    const currentCaps = getCapabilityIds(activity);
+    if (currentCaps.includes(capabilityId)) return;
+    const capIds = [...currentCaps, capabilityId];
+    const updatedActivity = { ...activity, requiresCapabilityIds: capIds };
+    const updated: ScaffoldData = {
+      ...scaffoldData,
+      elements: {
+        ...scaffoldData.elements,
+        activities: { ...scaffoldData.elements.activities, [activityId]: updatedActivity },
+      },
+    };
+    set({ scaffoldData: updated, scaffoldDirty: true });
+    if (selectedVsId) get().generateCanvasForVs(selectedVsId);
   },
 
   removeCapabilityFromActivity: (activityId: string, capabilityId: string) => {

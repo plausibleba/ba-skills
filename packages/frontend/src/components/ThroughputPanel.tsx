@@ -334,7 +334,7 @@ export function ThroughputPanel({
     [effectivePrimary, secondary, entityVolume, assessmentFrequency, fteCapacityDays],
   );
 
-  const confidence = heatmap.bindingConstraint.confidence ?? 0;
+  const confidence = heatmap.bindingConstraint?.confidence ?? 0;
   const activityName =
     scaffold.elements.activities[activityId]?.name ?? humanizeId(activityId);
   const hasData = effectivePrimary != null && effectivePrimary.currentMeasure != null && unavailableReason == null;

@@ -181,7 +181,7 @@ export interface HeatmapData {
   valueStreamId: string;
   createdAt: string;
   observations: FrictionObservation[];
-  bindingConstraint: BindingConstraint;
+  bindingConstraint: BindingConstraint | null;
 }
 
 

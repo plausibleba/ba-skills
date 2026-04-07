@@ -86,4 +86,6 @@ const ACTION_LABELS: Record<GatedAction, string> = {
   card_generation: "generating Concept & Policy Cards",
   workshop_session: "Workshop Mode",
   scenario_planning: "Scenario Planning",
+  import_observations: "importing observations",
+  generate_observations: "generating observations",
 };
