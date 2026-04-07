@@ -46,17 +46,43 @@ Built `CapabilitySelector` component — a searchable dropdown that shows existi
 
 Added `linkExistingCapabilityToActivity` action to canvas-store.ts for linking without duplication.
 
+### 4. R-001 Journey State Machine (Phase 1 + Phase 2 — Complete)
+
+Replaced scattered UI state flags with a single `AppPhase` discriminated union — the canonical source of truth for where the user is in the VCC journey.
+
+**Phase 1 — Type + Store:**
+- Defined `AppPhase` type with 11 phase variants: `projectList`, `creatingProject`, `intake` (with `tab`), `import`, `network`, `stage` (with `vsId`), `capabilityMap`, `conceptGraph`, `friction`, `enrich` (with `section`), `workbench`
+- Added `appPhase` to canvas-store; all `goTo*` actions now transition through `setPhase()`
+- `viewMode` and `enrichSection` derived from `appPhase` for backward compat
+- Migrated `isCreatingProject` (ProjectList) and `intakeTab` (DiscoveryIntake) from project-store to `setPhase()` calls
+
+**Phase 2 — Consumer Migration:**
+- **SideNav**: All 14 `viewMode ===` comparisons → `phase ===` from `appPhase`; removed separate `enrichSection` store selector
+- **App.tsx**: All 11 boolean view flags → derived from `appPhase.phase`; removed `viewMode`/`enrichSection` from store destructure
+- **UserGuidePanel**: `deriveGuideState()` now accepts `AppPhase` directly instead of a `viewMode` string
+- **Zero external consumers** of `viewMode` remain; field marked `@deprecated`
+
+### 5. Dark Mode Fix — Friction Observation Section Headers
+
+Replaced hardcoded `text-gray-900`, `text-gray-500`, and `border-gray-200` with theme tokens (`tv.textPrimary`, `tv.textDim`, `tv.borderSubtle`) so "Pain Points", "Friction", "Risks" etc. are visible in dark mode.
+
 ### Files Changed
 - `store/network-derivation.ts` — Removed `@ts-nocheck`, fixed 6 type errors, added `deriveRecordLifecycleCoupling()`
-- `components/FrictionView.tsx` — Removed `@ts-nocheck`, fixed 16 type errors
+- `components/FrictionView.tsx` — Removed `@ts-nocheck`, fixed 16 type errors, dark mode theme tokens on section headers
 - `types.ts` — `HeatmapData.bindingConstraint` now nullable
 - `store/tier-store.ts` — Added `"import_observations"` and `"generate_observations"` to GatedAction
 - `hooks/useGateCheck.ts` — Added action labels for new gated actions
 - `components/CanvasView.tsx` — Optional chaining on nullable bindingConstraint
 - `components/ThroughputPanel.tsx` — Optional chaining on nullable bindingConstraint
-- `store/canvas-store.ts` — Added `linkExistingCapabilityToActivity`, calls `deriveRecordLifecycleCoupling()`
-- `components/canvas/CapabilitySelector.tsx` — **NEW** — Searchable capability dropdown
+- `store/canvas-store.ts` — `AppPhase` type, `appPhase` state, `setPhase()` action, `linkExistingCapabilityToActivity`, `deriveRecordLifecycleCoupling()`
+- `store/project-store.ts` — `isCreatingProject`/`intakeTab` marked `@deprecated`
+- `components/canvas/CapabilitySelector.tsx` — **NEW** — Searchable capability dropdown with portal
 - `components/canvas/StageCard.tsx` — Replaced `AddItemInput` with `CapabilitySelector`
+- `components/SideNav.tsx` — All nav items read from `appPhase` instead of `viewMode`
+- `App.tsx` — View flags derived from `appPhase.phase`
+- `components/UserGuidePanel.tsx` — `deriveGuideState()` accepts `AppPhase`
+- `components/DiscoveryIntake.tsx` — Calls `setPhase()` instead of project-store `setIntakeTab()`
+- `components/ProjectList.tsx` — Calls `setPhase()` instead of project-store `setCreatingProject()`
 
 ---
 

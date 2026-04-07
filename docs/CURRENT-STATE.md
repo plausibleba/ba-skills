@@ -1,6 +1,6 @@
 # Current State — VCC Frontend
 
-_Last updated: 2026-04-07 — Session 31 (Hardening: as-any cleanup, R-013, capability selector) — v0.5.0 DRAFT_
+_Last updated: 2026-04-07 — Session 31 (Hardening + R-001 journey state machine + dark mode fix) — v0.5.0 DRAFT_
 
 ---
 
@@ -339,8 +339,9 @@ SPAR design review completed with Technical Architect (GPT-4o) and Functional De
 7. ~~**Record-lifecycle coupling Phase 1** — derive recordClasses + primaryRecordClassId deterministically~~ ✅ Session 30. Phase 2 (outcome→lifecycle state mapping) remains
 8. ~~**Capability selector** — pick from existing capabilities before "create new" (D-097 Step 1 lite)~~ ✅ Session 31
 9. ~~**`as any` cleanup** — network-derivation.ts and FrictionView.tsx cleared~~ ✅ Session 31. 53 instances remain in 7 `@ts-nocheck` files
-10. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
-11. Refactoring sprint using debt register (R-001 through R-015)
+10. ~~**R-001 Journey state machine** — AppPhase discriminated union replaces scattered viewMode + UI flags~~ ✅ Session 31 (Phase 1 + Phase 2 complete; viewMode deprecated, zero external consumers)
+11. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
+12. Refactoring sprint using debt register (R-002 through R-009, R-012 remaining)
 
 ### Future
 12. **Agentic orchestration** — executable state machine driven by record lifecycle (R-013)

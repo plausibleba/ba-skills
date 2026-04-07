@@ -4,12 +4,9 @@ Tracked choices where we picked expediency over elegance. Each item is a candida
 
 ---
 
-## R-001: Scattered UI state flags instead of a journey state machine
-**Filed:** 2026-03-21
-**Where:** `project-store.ts`, `UserGuidePanel.tsx`, `deriveGuideState()`
-**What we did:** Added `isCreatingProject`, `intakeTab`, and a `deriveGuideState()` function that stitches together `viewMode`, `scaffoldData`, `heatmapsByVs`, and `enrichVersion` to infer the user's current phase.
-**What we should do:** Replace with a single discriminated-union `appPhase` state machine (e.g. `{ phase: "intake", tab: "provide" }`, `{ phase: "stage-view", vsId, assessed }`) so the Guide and any future phase-dependent logic reads from one source of truth.
-**Payoff:** Cleaner guide logic, analytics hooks, undo/back navigation, fewer bugs as pages multiply.
+## R-001: ~~Scattered UI state flags instead of a journey state machine~~ ✅ COMPLETE
+**Filed:** 2026-03-21 | **Resolved:** 2026-04-07 (Session 31)
+**What was done:** Defined `AppPhase` discriminated union (11 phase variants) as single source of truth for user journey state. All `goTo*` actions transition through `setPhase()` which derives deprecated `viewMode`/`enrichSection` for remaining internal consumers. Migrated all external consumers: SideNav (14 comparisons), App.tsx (11 boolean flags), UserGuidePanel (`deriveGuideState()` accepts `AppPhase` directly), ProjectList (`setCreatingProject` → `setPhase`), DiscoveryIntake (`setIntakeTab` → `setPhase`). Zero external `viewMode` consumers remain. Old project-store UI hints (`isCreatingProject`, `intakeTab`) deprecated.
 
 ## R-002: Module info duplicated across components
 **Filed:** 2026-03-21
@@ -60,19 +57,16 @@ Tracked choices where we picked expediency over elegance. Each item is a candida
 **What we should do:** Decompose prompts into composable sections: system rules (reusable), schema template (generated from a TS type), dynamic context (injected). Consider a prompt builder pattern where sections are assembled and validated.
 **Payoff:** Safer prompt changes, reusable rule fragments, easier testing of prompt variations.
 
-## R-009: Two stores (canvas-store, project-store) with overlapping concerns
-**Filed:** 2026-03-21
+## R-009: Two stores (canvas-store, project-store) with overlapping concerns — PARTIALLY ADDRESSED
+**Filed:** 2026-03-21 | **Partial:** 2026-04-07 (Session 31 — R-001 resolution)
 **Where:** `canvas-store.ts`, `project-store.ts`
-**What we did:** `canvas-store` owns the runtime model (scaffold, heatmaps, viewMode), while `project-store` owns persistence (CRUD, sharing) and now also UI hints (isCreatingProject, intakeTab). `viewMode` is in canvas-store but the Guide needs to read it — so UserGuidePanel imports both stores.
-**What we should do:** Consider a unified `app-store` or at least a clear contract: canvas-store = model data, project-store = persistence, a new `ui-store` or `navigation-store` = app phase, view mode, UI signals. This aligns with R-001 (journey state machine).
+**What we did:** R-001 moved all navigation state (`isCreatingProject`, `intakeTab`) out of project-store into canvas-store's `AppPhase`. UserGuidePanel no longer needs both stores for navigation — it reads `appPhase` from canvas-store only (still needs project-store for `currentModule`).
+**What remains:** Consider whether `currentModule` belongs in canvas-store too, and whether a dedicated `ui-store` or `navigation-store` would be cleaner than growing canvas-store further.
 **Payoff:** Cleaner separation of concerns, less cross-store coupling, easier to reason about state changes.
 
-## R-010: Scaffold type is `any` / `Record<string, unknown>` throughout
-**Filed:** 2026-03-21
-**Where:** `NetworkView.tsx`, `network-derivation.ts`, `canvas-store.ts`
-**What we did:** The scaffold is stored as `ScaffoldData` but many accessors cast to `Record<string, unknown>` because the type doesn't fully describe all fields (e.g. `layoutZone`, `layoutZones`, `zone`). The `_layeredLayout` function casts `scaffold as Record<string, unknown>` to access `layoutZones`.
-**What we should do:** Define a comprehensive `ScaffoldModel` TypeScript interface that covers all fields including `layoutZones`, per-VS `layoutZone`, and any other metadata. Use it everywhere — no more casting.
-**Payoff:** Type safety, IDE autocomplete, catch errors at compile time instead of runtime.
+## R-010: ~~Scaffold type is `any` / `Record<string, unknown>` throughout~~ ✅ COMPLETE
+**Filed:** 2026-03-21 | **Resolved:** 2026-04-07 (Session 29 — type interfaces, Session 31 — @ts-nocheck cleanup)
+**What was done:** Defined comprehensive typed interfaces (`PPITEntry`, `ScaffoldElements`, `ScaffoldRole`, `ScaffoldOutcome`, `ScaffoldTechnologyApp`, `ScaffoldConcept`, etc.) across 22 files. `as any` reduced from 166 → 53 instances (68% reduction). Removed `@ts-nocheck` from network-derivation.ts and FrictionView.tsx (9 → 7 files remain). `getCapabilityIds()` helper resolves v4/v5 field ambiguity.
 
 ## R-011: LAYER_SCHEMES defined in component, not in a shared config
 **Filed:** 2026-03-21
@@ -88,13 +82,12 @@ Tracked choices where we picked expediency over elegance. Each item is a candida
 **What we should do:** Add a "Back to Projects" action (already noted as upsell trigger point). Needs a `closeProject()` action that clears canvas-store and project-store state cleanly. This is also where the journey state machine (R-001) would help — transitioning from `{ phase: "canvas" }` back to `{ phase: "project-list" }`.
 **Payoff:** Basic navigation. Also the trigger point Terry identified for upsell/signup flow.
 
-## R-013: Topology coupling is resource-based, not record-lifecycle-based
-**Filed:** 2026-03-21
-**Where:** `network-derivation.ts` (`deriveTopologyView`), `NetworkView.tsx` (Graph View coupling edges)
-**What we did:** The topology mesh derives coupling from six structural signals: shared roles, shared controls, shared application functions, shared primary records, shared capabilities, and outcome adjacency. This creates "interference" coupling — e.g. a `customer-care` role used in 4 VS makes all 4 appear fully coupled, which is structurally true but semantically misleading.
-**What we should do:** True flow coupling should be driven by **record lifecycle continuity** — the state transitions of the core Record in each VS (e.g. Lead → Created → Qualified → Converted). VS-to-VS coupling should be determined by outcome handoffs: when one VS's terminal record state triggers another VS's initial record state (or when a record transforms, e.g. Lead becomes Opportunity). This is the foundation for making the flow logic executable as a state machine in the agentic orchestration layer.
-**Prerequisites:** (a) Make the Record → Outcome Lifecycle mapping explicit and first-class in the scaffold, not implicit in the activity chain. (b) Support record handoff/transformation at VS boundaries (one record's terminal outcome triggers another record's initial outcome). (c) Model decision gates (e.g. Approved/Rejected branches) as explicit state transitions.
-**Payoff:** Coupling graph reflects causal flow, not just organisational overlap. Directly enables executable orchestration. The existing resource-based coupling remains valuable as an "operational interference" diagnostic — but it should be presented separately from flow coupling.
+## R-013: Topology coupling is resource-based, not record-lifecycle-based — PHASE 1 COMPLETE
+**Filed:** 2026-03-21 | **Phase 1:** 2026-04-07 (Session 31)
+**Where:** `network-derivation.ts` (`deriveTopologyView`, `deriveRecordLifecycleCoupling`), `NetworkView.tsx`
+**Phase 1 done:** `deriveRecordLifecycleCoupling()` deterministically populates `recordClasses` from Record-type concepts + key IOs, and links activities to `primaryRecordClassId` via a score-based algorithm (direct IO match=3, name match=2, capability businessObject=2, PPIT IO=1). Called during `loadScaffold()` before topology derivation.
+**What remains (Phase 2):** (a) Make the Record → Outcome Lifecycle mapping explicit and first-class in the scaffold. (b) Support record handoff/transformation at VS boundaries. (c) Model decision gates as explicit state transitions. (d) Replace resource-based coupling with record-lifecycle-driven coupling in the topology graph.
+**Payoff:** Coupling graph reflects causal flow, not just organisational overlap. Directly enables executable orchestration.
 
 ## R-014: R-006 partially addressed — topological sort replaces alphabetical
 **Filed:** 2026-03-21 (update to R-006)
