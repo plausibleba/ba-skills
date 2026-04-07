@@ -35,10 +35,57 @@ type ViewMode = "network" | "stage" | "intake" | "import" | "enrich" | "capabili
 /** Sub-section within the Enrich view */
 export type EnrichSection = "structure" | "mapping" | "friction" | "assessment" | "custom" | null;
 
+/* ── R-001: Journey State Machine ─────────────────────────────────── */
+
+/**
+ * AppPhase — discriminated union encoding exactly where the user is
+ * in the VCC journey. Single source of truth; replaces scattered
+ * viewMode + enrichSection + isCreatingProject + intakeTab flags.
+ *
+ * Phase 1: lives alongside viewMode (which is derived for compat).
+ * Phase 2 (future): viewMode consumers migrate to appPhase directly.
+ */
+export type AppPhase =
+  | { phase: "projectList" }
+  | { phase: "creatingProject" }
+  | { phase: "intake"; tab: "provide" | "form" }
+  | { phase: "import" }
+  | { phase: "network" }
+  | { phase: "stage"; vsId: string }
+  | { phase: "capabilityMap" }
+  | { phase: "conceptGraph" }
+  | { phase: "friction" }
+  | { phase: "enrich"; section: EnrichSection }
+  | { phase: "workbench" };
+
+/** Derive the legacy viewMode from AppPhase for backward compatibility */
+function viewModeFromPhase(p: AppPhase): ViewMode {
+  switch (p.phase) {
+    case "projectList":
+    case "creatingProject":
+      return "network"; // pre-scaffold: default view
+    case "intake":       return "intake";
+    case "import":       return "import";
+    case "network":      return "network";
+    case "stage":        return "stage";
+    case "capabilityMap": return "capabilityMap";
+    case "conceptGraph": return "conceptGraph";
+    case "friction":     return "friction";
+    case "enrich":       return "enrich";
+    case "workbench":    return "workbench";
+  }
+}
+
+/** Derive the legacy enrichSection from AppPhase */
+function enrichSectionFromPhase(p: AppPhase): EnrichSection {
+  return p.phase === "enrich" ? p.section : null;
+}
+
 interface CanvasState {
-  // View navigation
-  viewMode: ViewMode;
-  enrichSection: EnrichSection;
+  // View navigation (R-001: appPhase is the source of truth)
+  appPhase: AppPhase;
+  viewMode: ViewMode;           // derived from appPhase for compat
+  enrichSection: EnrichSection; // derived from appPhase for compat
   selectedVsId: string | null;
 
   // Data
@@ -87,6 +134,8 @@ interface CanvasState {
   goToFriction: () => void;
   goToEnrich: (section?: EnrichSection) => void;
   goToWorkbench: () => void;
+  /** R-001: Phase transition — sets appPhase and derives viewMode + enrichSection */
+  setPhase: (phase: AppPhase) => void;
   reset: () => void;
   saveUserStory: (activityId: string, story: TransformationUserStory) => void;
   setActivityStories: (activityId: string, stories: TransformationUserStory[]) => void;
@@ -135,6 +184,7 @@ interface CanvasState {
 }
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
+  appPhase: { phase: "network" } as AppPhase,
   viewMode: "network",
   enrichSection: null,
   selectedVsId: null,
@@ -246,7 +296,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       } catch {
         // Validation failure doesn't block network view
       }
-      set({ viewMode: "network", loading: false });
+      get().setPhase({ phase: "network" });
+      set({ loading: false });
     } else if (vsIds.length === 1) {
       // Single VS — validate then generate canvas
       try {
@@ -256,7 +307,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
           set({ loading: false });
           return;
         }
-        set({ selectedVsId: vsIds[0], viewMode: "stage" });
+        get().setPhase({ phase: "stage", vsId: vsIds[0] });
+        set({ selectedVsId: vsIds[0] });
         await get().generateCanvasForVs(vsIds[0]);
       } catch (err) {
         set({
@@ -270,9 +322,11 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       const conceptCount = Object.keys(resolved.elements.concepts ?? {}).length;
 
       if (capCount > 0) {
-        set({ viewMode: "capabilityMap", loading: false });
+        get().setPhase({ phase: "capabilityMap" });
+        set({ loading: false });
       } else if (conceptCount > 0) {
-        set({ viewMode: "conceptGraph", loading: false });
+        get().setPhase({ phase: "conceptGraph" });
+        set({ loading: false });
       } else {
         // Bare scaffold with no renderable data yet — stay in discovery
         set({ loading: false });
@@ -476,11 +530,14 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     // Load VS-specific heatmap if available
     const vsHeatmap = get().heatmapsByVs.get(vsId) ?? null;
 
+    const p: AppPhase = { phase: "stage", vsId };
     set({
       canvasViewModel: vm,
       heatmapData: vsHeatmap,
       selectedVsId: vsId,
-      viewMode: "stage",
+      appPhase: p,
+      viewMode: viewModeFromPhase(p),
+      enrichSection: enrichSectionFromPhase(p),
       error: null,
     });
   },
@@ -491,8 +548,11 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   },
 
   backToNetwork: () => {
+    const p: AppPhase = { phase: "network" };
     set({
-      viewMode: "network",
+      appPhase: p,
+      viewMode: viewModeFromPhase(p),
+      enrichSection: enrichSectionFromPhase(p),
       selectedVsId: null,
       canvasViewModel: null,
       heatmapData: null,
@@ -501,46 +561,56 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   },
 
   goToIntake: () => {
-    set({ viewMode: "intake" });
+    get().setPhase({ phase: "intake", tab: "provide" });
     trackViewChange("intake");
   },
 
   goToImport: () => {
-    set({ viewMode: "import" });
+    get().setPhase({ phase: "import" });
     trackViewChange("import");
   },
 
   goToCapabilityMap: () => {
-    set({ viewMode: "capabilityMap" });
+    get().setPhase({ phase: "capabilityMap" });
     trackViewChange("capabilityMap");
   },
 
   goToConceptGraph: () => {
-    set({ viewMode: "conceptGraph" });
+    get().setPhase({ phase: "conceptGraph" });
     trackViewChange("conceptGraph");
   },
 
   goToFriction: () => {
-    set({ viewMode: "friction" });
+    get().setPhase({ phase: "friction" });
     trackViewChange("friction");
   },
 
   goToEnrich: (section?: EnrichSection) => {
-    set({ viewMode: "enrich", enrichSection: section ?? null });
+    get().setPhase({ phase: "enrich", section: section ?? null });
     trackViewChange("enrich");
   },
 
   goToWorkbench: () => {
-    set({ viewMode: "workbench" });
+    get().setPhase({ phase: "workbench" });
     trackViewChange("workbench");
+  },
+
+  setPhase: (phase: AppPhase) => {
+    set({
+      appPhase: phase,
+      viewMode: viewModeFromPhase(phase),
+      enrichSection: enrichSectionFromPhase(phase),
+    });
   },
 
   reset: () => {
     // Clear workbench state so it doesn't hold stale scaffold from previous project
     useWorkbenchStore.getState().exitWorkbench();
+    const p: AppPhase = { phase: "network" };
     set({
-      viewMode: "network",
-      enrichSection: null,
+      appPhase: p,
+      viewMode: viewModeFromPhase(p),
+      enrichSection: enrichSectionFromPhase(p),
       selectedVsId: null,
       scaffoldData: null,
       heatmapData: null,

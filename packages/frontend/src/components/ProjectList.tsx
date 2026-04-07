@@ -40,11 +40,14 @@ const MODULE_INFO: Record<ProjectModule, { label: string; description: string; c
 
 export function ProjectList() {
   const { user, signOut } = useAuthStore();
-  const { projects, loading, error, fetchProjects, createProject, loadProject, deleteProject, setCreatingProject } = useProjectStore();
-  const { loadScaffold, loadHeatmap, backToNetwork, goToIntake } = useCanvasStore();
+  const { projects, loading, error, fetchProjects, createProject, loadProject, deleteProject } = useProjectStore();
+  const { loadScaffold, loadHeatmap, backToNetwork, goToIntake, setPhase } = useCanvasStore();
 
   const [showNewProject, _setShowNewProject] = useState(false);
-  const setShowNewProject = (v: boolean) => { _setShowNewProject(v); setCreatingProject(v); };
+  const setShowNewProject = (v: boolean) => {
+    _setShowNewProject(v);
+    setPhase(v ? { phase: "creatingProject" } : { phase: "projectList" });
+  };
   const [newName, setNewName] = useState("");
   const [newModule, setNewModule] = useState<ProjectModule>("sales-discovery");
   const [creating, setCreating] = useState(false);

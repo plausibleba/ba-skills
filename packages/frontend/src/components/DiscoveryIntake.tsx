@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { useProjectStore } from "../store/project-store.ts";
+import { useCanvasStore } from "../store/canvas-store.ts";
 import { useGateCheck } from "../hooks/useGateCheck.ts";
 import { runPipeline, continuePipeline } from "../domain/pipeline/pipeline-orchestrator";
 import type { PipelineProgress } from "../domain/pipeline/pipeline-orchestrator";
@@ -290,11 +290,11 @@ function ExtractionSummary({ meta, form }: { meta: FormState["extractionMeta"]; 
 // ─── Main component ──────────────────────────────────────────────────────────
 export default function DiscoveryIntake({ onComplete }: { onComplete?: (bundle: any) => void }) {
   const [mode, setMode] = useState("freeform"); // "freeform" | "structured"
-  const setIntakeTab = useProjectStore((s) => s.setIntakeTab);
+  const setPhase = useCanvasStore((s) => s.setPhase);
   useEffect(() => {
-    setIntakeTab(mode === "freeform" ? "provide" : "form");
-    return () => setIntakeTab(null);
-  }, [mode, setIntakeTab]);
+    setPhase({ phase: "intake", tab: mode === "freeform" ? "provide" : "form" });
+    return () => setPhase({ phase: "network" });
+  }, [mode, setPhase]);
   const [scope, setScope] = useState<"business" | "initiative">("business");
   const [transcript, setTranscript] = useState("");
   const [form, setForm] = useState(EMPTY_FORM);

@@ -204,27 +204,25 @@ const INTAKE_FORM_CONTENT: GuideContent = {
 };
 
 export function UserGuidePanel() {
-  const { viewMode, scaffoldData, heatmapsByVs, canvasViewModel, enrichVersion } = useCanvasStore();
+  const { appPhase, viewMode, scaffoldData, heatmapsByVs, canvasViewModel, enrichVersion } = useCanvasStore();
   const features = useModuleFeatures();
   const currentModule = useProjectStore((s) => s.currentModule);
-  const isCreatingProject = useProjectStore((s) => s.isCreatingProject);
-  const intakeTab = useProjectStore((s) => s.intakeTab);
   const [collapsed, setCollapsed] = useState(true);
 
   const isLoaded = !!scaffoldData;
-  const isIntake = viewMode === "intake";
   const currentVsId = canvasViewModel?.valueStreamId ?? null;
   const hasAssessment = currentVsId
     ? heatmapsByVs.has(currentVsId)
     : heatmapsByVs.size > 0;
   const isEnriched = (enrichVersion ?? 0) > 0;
 
+  // R-001: Content selection driven by appPhase (single source of truth)
   const state = deriveGuideState(viewMode, isLoaded, hasAssessment, isEnriched);
-  const content = isCreatingProject
+  const content = appPhase.phase === "creatingProject"
     ? CREATING_PROJECT_CONTENT
-    : isIntake && intakeTab === "form"
+    : appPhase.phase === "intake" && appPhase.tab === "form"
       ? INTAKE_FORM_CONTENT
-      : isIntake && intakeTab === "provide"
+      : appPhase.phase === "intake" && appPhase.tab === "provide"
         ? INTAKE_PROVIDE_CONTENT
         : getGuideContent(state, features, currentModule);
   const progressSteps = getProgressSteps(features);

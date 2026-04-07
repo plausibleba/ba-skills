@@ -45,10 +45,15 @@ interface ProjectState {
   clearError: () => void;
   clearConflict: () => void;
 
-  // UI hints (lightweight signals for contextual guide)
+  // UI hints — DEPRECATED (R-001): migrated to AppPhase in canvas-store.
+  // Kept temporarily for backward compat; remove when no consumers remain.
+  /** @deprecated Use canvas-store appPhase instead */
   isCreatingProject: boolean;
+  /** @deprecated Use canvas-store setPhase instead */
   setCreatingProject: (v: boolean) => void;
+  /** @deprecated Use canvas-store appPhase instead */
   intakeTab: "provide" | "form" | null;
+  /** @deprecated Use canvas-store setPhase instead */
   setIntakeTab: (v: "provide" | "form" | null) => void;
 }
 
