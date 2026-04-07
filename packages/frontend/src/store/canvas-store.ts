@@ -26,6 +26,7 @@ import {
   deriveCapabilityInstances,
   deriveTopologyView,
 } from "./network-derivation.ts";
+import { buildGraphIndex, type ScaffoldGraphIndex } from "./graph-index.ts";
 import { computeScaffoldHash } from "../domain/scaffold-hash";
 
 type ViewMode = "network" | "stage" | "intake" | "import" | "enrich" | "capabilityMap" | "conceptGraph" | "friction" | "workbench";
@@ -54,6 +55,9 @@ interface CanvasState {
   networkFeedbackEdges: NetworkEdge[];
   topologyView: any;
   capabilityInstanceView: any;
+
+  // D-097: Cross-reference graph index (computed on scaffold load)
+  graphIndex: ScaffoldGraphIndex | null;
 
   // Enrichment tracking
   enrichVersion: number;
@@ -142,6 +146,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   networkNodes: [],
   networkForwardEdges: [],
   networkFeedbackEdges: [],
+  graphIndex: null,
   userStoriesByActivity: {},
   cardRegistry: null,
   scaffoldDirty: false,
@@ -213,12 +218,16 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const capabilityInstanceView = deriveCapabilityInstances(resolved, scaffoldHash);
     const topologyView = deriveTopologyView(resolved, capabilityInstanceView, scaffoldHash);
 
+    // D-097: Build cross-reference graph index
+    const graphIndex = buildGraphIndex(resolved);
+
     set({
       networkNodes: nodes,
       networkForwardEdges: forwardEdges,
       networkFeedbackEdges: feedbackEdges,
       topologyView,
       capabilityInstanceView,
+      graphIndex,
     });
 
     // Route to the best view based on what data is available
@@ -536,6 +545,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       networkNodes: [],
       networkForwardEdges: [],
       networkFeedbackEdges: [],
+      graphIndex: null,
       userStoriesByActivity: {},
       cardRegistry: null,
       scaffoldDirty: false,

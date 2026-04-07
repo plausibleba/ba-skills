@@ -1304,6 +1304,16 @@ function getExamplePrompts(catalog: CatalogType): string[] {
       "Add missing properties to Customer",
       "Flag concepts not linked to any capability",
     ],
+    informationObjects: [
+      "Flag information objects not referenced by any activity",
+      "Add lifecycle states to key business records",
+      "Merge duplicate information objects",
+    ],
+    technologyApps: [
+      "Categorise systems by vendor and function",
+      "Flag systems with no capability linkage",
+      "Add missing systems from our tech landscape",
+    ],
     roles: [
       "Merge Analyst, Risk Analyst, and Senior Analyst",
       "Suggest RACI separation for overlapping roles",

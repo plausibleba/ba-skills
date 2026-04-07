@@ -1,0 +1,2248 @@
+{
+  "bundleVersion": "2.0",
+  "createdAt": "2026-04-07T00:27:43.000Z",
+  "scaffold": {
+    "schemaVersion": "1.0.0",
+    "scaffoldId": "scaffold_ecommerce_business",
+    "name": "Ecommerce Business — Operating Model",
+    "description": "End-to-end operating model for ecommerce business covering customer acquisition, order fulfillment, and support",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "modelIntegrityHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "layoutZones": [
+      {
+        "id": "ecosystem",
+        "label": "Ecosystem",
+        "row": 0,
+        "description": "Customer-facing value delivery operations"
+      },
+      {
+        "id": "knowledge",
+        "label": "Knowledge",
+        "row": 1,
+        "description": "Information and data management operations"
+      }
+    ],
+    "elements": {
+      "valueStreams": {
+        "vs_browse_to_purchase": {
+          "name": "Browse to Purchase",
+          "description": "Customer discovery and purchase flow from initial website visit through completed transaction",
+          "activityIds": [
+            "act_browse_products",
+            "act_assemble_cart",
+            "act_place_order"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_marketing_manager",
+          "elementType": "ValueStream"
+        },
+        "vs_order_to_delivery": {
+          "name": "Order to Delivery",
+          "description": "End-to-end fulfillment from order receipt through customer delivery",
+          "activityIds": [
+            "act_validate_order",
+            "act_fulfill_order",
+            "act_dispatch_order",
+            "act_deliver_order"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_operations_manager",
+          "elementType": "ValueStream"
+        },
+        "vs_issue_to_resolution": {
+          "name": "Issue to Resolution",
+          "description": "Customer service flow from initial inquiry through problem resolution",
+          "activityIds": [
+            "act_receive_inquiry",
+            "act_investigate_issue",
+            "act_deliver_resolution"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_customer_service_representative",
+          "elementType": "ValueStream"
+        },
+        "vs_return_to_refund": {
+          "name": "Return to Refund",
+          "description": "Product return process from customer initiation through refund completion",
+          "activityIds": [
+            "act_request_return",
+            "act_return_item",
+            "act_process_refund"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_customer_service_representative",
+          "elementType": "ValueStream"
+        },
+        "vs_campaign_to_customer": {
+          "name": "Campaign to Customer",
+          "description": "Marketing acquisition flow from campaign launch through customer conversion",
+          "activityIds": [
+            "act_launch_campaign",
+            "act_generate_lead",
+            "act_acquire_customer"
+          ],
+          "layoutZone": "ecosystem",
+          "accountableStakeholder": "role_marketing_manager",
+          "elementType": "ValueStream"
+        },
+        "vs_stock_to_availability": {
+          "name": "Stock to Availability",
+          "description": "Inventory management flow from stock receipt through online availability",
+          "activityIds": [
+            "act_receive_stock",
+            "act_update_inventory",
+            "act_make_available"
+          ],
+          "layoutZone": "knowledge",
+          "accountableStakeholder": "role_inventory_coordinator",
+          "elementType": "ValueStream"
+        }
+      },
+      "activities": {
+        "act_browse_products": {
+          "name": "Browse Products",
+          "preOutcomeId": "outcome_customer_visits",
+          "postOutcomeId": "outcome_products_browsed",
+          "nextActivityId": "act_assemble_cart",
+          "requiresCapabilityIds": [
+            "cap_manage_product_display",
+            "cap_manage_product_availability",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_marketing_manager"
+          ],
+          "informationObjectIds": [
+            "io_product_catalog",
+            "io_customer_session"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_assemble_cart": {
+          "name": "Assemble Cart",
+          "preOutcomeId": "outcome_products_browsed",
+          "postOutcomeId": "outcome_cart_assembled",
+          "nextActivityId": "act_place_order",
+          "requiresCapabilityIds": [
+            "cap_manage_cart_assembly",
+            "cap_manage_inventory_updates",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_marketing_manager"
+          ],
+          "informationObjectIds": [
+            "io_shopping_cart",
+            "io_inventory_record"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_place_order": {
+          "name": "Place Order",
+          "preOutcomeId": "outcome_cart_assembled",
+          "postOutcomeId": "outcome_order_placed",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_manage_order_placement",
+            "cap_manage_inventory_updates",
+            "cap_payment_processing"
+          ],
+          "performedByRoleIds": [
+            "role_operations_manager"
+          ],
+          "informationObjectIds": [
+            "io_customer_order",
+            "io_payment_record"
+          ],
+          "metricIds": [
+            "metric_order_cancellation_rate"
+          ],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_validate_order": {
+          "name": "Validate Order",
+          "preOutcomeId": "outcome_order_confirmed",
+          "postOutcomeId": "outcome_order_validated",
+          "nextActivityId": "act_fulfill_order",
+          "requiresCapabilityIds": [
+            "cap_manage_order_validation",
+            "cap_manage_inventory_updates",
+            "cap_fraud_detection"
+          ],
+          "performedByRoleIds": [
+            "role_operations_manager"
+          ],
+          "informationObjectIds": [
+            "io_validation_report",
+            "io_fraud_check"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_fulfill_order": {
+          "name": "Fulfill Order",
+          "preOutcomeId": "outcome_order_validated",
+          "postOutcomeId": "outcome_order_fulfilled",
+          "nextActivityId": "act_dispatch_order",
+          "requiresCapabilityIds": [
+            "cap_manage_order_fulfilment",
+            "cap_manage_inventory_updates",
+            "cap_warehouse_operations"
+          ],
+          "performedByRoleIds": [
+            "role_warehouse_operator"
+          ],
+          "informationObjectIds": [
+            "io_pick_list",
+            "io_packing_slip"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_dispatch_order": {
+          "name": "Dispatch Order",
+          "preOutcomeId": "outcome_order_fulfilled",
+          "postOutcomeId": "outcome_order_dispatched",
+          "nextActivityId": "act_deliver_order",
+          "requiresCapabilityIds": [
+            "cap_manage_order_dispatch",
+            "cap_logistics_coordination"
+          ],
+          "performedByRoleIds": [
+            "role_logistics_coordinator"
+          ],
+          "informationObjectIds": [
+            "io_shipping_label",
+            "io_dispatch_record"
+          ],
+          "metricIds": [
+            "metric_nz_order_delay_rate"
+          ],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_deliver_order": {
+          "name": "Deliver Order",
+          "preOutcomeId": "outcome_order_dispatched",
+          "postOutcomeId": "outcome_order_delivered",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_manage_order_delivery",
+            "cap_logistics_coordination"
+          ],
+          "performedByRoleIds": [
+            "role_logistics_coordinator"
+          ],
+          "informationObjectIds": [
+            "io_delivery_confirmation",
+            "io_tracking_record"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_receive_inquiry": {
+          "name": "Receive Inquiry",
+          "preOutcomeId": "outcome_customer_contacts",
+          "postOutcomeId": "outcome_inquiry_received",
+          "nextActivityId": "act_investigate_issue",
+          "requiresCapabilityIds": [
+            "cap_manage_inquiry_processing",
+            "cap_customer_communication"
+          ],
+          "performedByRoleIds": [
+            "role_customer_service_representative"
+          ],
+          "informationObjectIds": [
+            "io_customer_inquiry",
+            "io_support_ticket"
+          ],
+          "metricIds": [
+            "metric_customer_service_inquiry_volume"
+          ],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_investigate_issue": {
+          "name": "Investigate Issue",
+          "preOutcomeId": "outcome_inquiry_received",
+          "postOutcomeId": "outcome_issue_investigated",
+          "nextActivityId": "act_deliver_resolution",
+          "requiresCapabilityIds": [
+            "cap_manage_issue_investigation",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_customer_service_representative"
+          ],
+          "informationObjectIds": [
+            "io_investigation_report",
+            "io_case_notes"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_deliver_resolution": {
+          "name": "Deliver Resolution",
+          "preOutcomeId": "outcome_issue_investigated",
+          "postOutcomeId": "outcome_resolution_delivered",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_manage_resolution_delivery",
+            "cap_customer_communication"
+          ],
+          "performedByRoleIds": [
+            "role_customer_service_representative"
+          ],
+          "informationObjectIds": [
+            "io_resolution_record",
+            "io_customer_response"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_request_return": {
+          "name": "Request Return",
+          "preOutcomeId": "outcome_customer_initiates_return",
+          "postOutcomeId": "outcome_return_requested",
+          "nextActivityId": "act_return_item",
+          "requiresCapabilityIds": [
+            "cap_manage_return_requests",
+            "cap_customer_communication"
+          ],
+          "performedByRoleIds": [
+            "role_customer_service_representative"
+          ],
+          "informationObjectIds": [
+            "io_return_request",
+            "io_return_authorization"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_return_item": {
+          "name": "Return Item",
+          "preOutcomeId": "outcome_return_requested",
+          "postOutcomeId": "outcome_item_returned",
+          "nextActivityId": "act_process_refund",
+          "requiresCapabilityIds": [
+            "cap_manage_item_returns",
+            "cap_manage_inventory_updates",
+            "cap_warehouse_operations"
+          ],
+          "performedByRoleIds": [
+            "role_warehouse_operator"
+          ],
+          "informationObjectIds": [
+            "io_returned_item",
+            "io_inspection_report"
+          ],
+          "metricIds": [
+            "metric_returns_processing_time"
+          ],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_process_refund": {
+          "name": "Process Refund",
+          "preOutcomeId": "outcome_item_returned",
+          "postOutcomeId": "outcome_refund_processed",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_manage_refund_processing",
+            "cap_payment_processing"
+          ],
+          "performedByRoleIds": [
+            "role_operations_manager"
+          ],
+          "informationObjectIds": [
+            "io_refund_record",
+            "io_account_credit"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_launch_campaign": {
+          "name": "Launch Campaign",
+          "preOutcomeId": "outcome_campaign_planned",
+          "postOutcomeId": "outcome_campaign_launched",
+          "nextActivityId": "act_generate_lead",
+          "requiresCapabilityIds": [
+            "cap_manage_campaign_execution",
+            "cap_digital_marketing"
+          ],
+          "performedByRoleIds": [
+            "role_marketing_manager"
+          ],
+          "informationObjectIds": [
+            "io_campaign_plan",
+            "io_campaign_assets"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_generate_lead": {
+          "name": "Generate Lead",
+          "preOutcomeId": "outcome_campaign_launched",
+          "postOutcomeId": "outcome_lead_generated",
+          "nextActivityId": "act_acquire_customer",
+          "requiresCapabilityIds": [
+            "cap_manage_lead_generation",
+            "cap_digital_marketing",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_marketing_manager"
+          ],
+          "informationObjectIds": [
+            "io_lead_record",
+            "io_campaign_metrics"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_acquire_customer": {
+          "name": "Acquire Customer",
+          "preOutcomeId": "outcome_lead_generated",
+          "postOutcomeId": "outcome_customer_acquired",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_manage_customer_conversion",
+            "cap_customer_communication"
+          ],
+          "performedByRoleIds": [
+            "role_marketing_manager"
+          ],
+          "informationObjectIds": [
+            "io_customer_record",
+            "io_conversion_metrics"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_receive_stock": {
+          "name": "Receive Stock",
+          "preOutcomeId": "outcome_stock_arrives",
+          "postOutcomeId": "outcome_stock_received",
+          "nextActivityId": "act_update_inventory",
+          "requiresCapabilityIds": [
+            "cap_manage_stock_receipt",
+            "cap_warehouse_operations"
+          ],
+          "performedByRoleIds": [
+            "role_warehouse_operator"
+          ],
+          "informationObjectIds": [
+            "io_stock_receipt",
+            "io_delivery_note"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_update_inventory": {
+          "name": "Update Inventory",
+          "preOutcomeId": "outcome_stock_received",
+          "postOutcomeId": "outcome_inventory_updated",
+          "nextActivityId": "act_make_available",
+          "requiresCapabilityIds": [
+            "cap_manage_inventory_updates",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_inventory_coordinator"
+          ],
+          "informationObjectIds": [
+            "io_inventory_record",
+            "io_stock_adjustment"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        },
+        "act_make_available": {
+          "name": "Make Available",
+          "preOutcomeId": "outcome_inventory_updated",
+          "postOutcomeId": "outcome_products_available",
+          "nextActivityId": null,
+          "requiresCapabilityIds": [
+            "cap_manage_product_availability",
+            "cap_data_management"
+          ],
+          "performedByRoleIds": [
+            "role_inventory_coordinator"
+          ],
+          "informationObjectIds": [
+            "io_product_listing",
+            "io_availability_status"
+          ],
+          "metricIds": [],
+          "controlIds": [],
+          "elementType": "Activity"
+        }
+      },
+      "outcomes": {
+        "outcome_customer_visits": {
+          "name": "Customer Visits",
+          "elementType": "Outcome"
+        },
+        "outcome_products_browsed": {
+          "name": "Products Browsed",
+          "elementType": "Outcome"
+        },
+        "outcome_cart_assembled": {
+          "name": "Cart Assembled",
+          "elementType": "Outcome"
+        },
+        "outcome_order_placed": {
+          "name": "Order Placed",
+          "elementType": "Outcome"
+        },
+        "outcome_order_confirmed": {
+          "name": "Order Confirmed",
+          "elementType": "Outcome"
+        },
+        "outcome_order_validated": {
+          "name": "Order Validated",
+          "elementType": "Outcome"
+        },
+        "outcome_order_fulfilled": {
+          "name": "Order Fulfilled",
+          "elementType": "Outcome"
+        },
+        "outcome_order_dispatched": {
+          "name": "Order Dispatched",
+          "elementType": "Outcome"
+        },
+        "outcome_order_delivered": {
+          "name": "Order Delivered",
+          "elementType": "Outcome"
+        },
+        "outcome_customer_contacts": {
+          "name": "Customer Contacts",
+          "elementType": "Outcome"
+        },
+        "outcome_inquiry_received": {
+          "name": "Inquiry Received",
+          "elementType": "Outcome"
+        },
+        "outcome_issue_investigated": {
+          "name": "Issue Investigated",
+          "elementType": "Outcome"
+        },
+        "outcome_resolution_delivered": {
+          "name": "Resolution Delivered",
+          "elementType": "Outcome"
+        },
+        "outcome_customer_initiates_return": {
+          "name": "Customer Initiates Return",
+          "elementType": "Outcome"
+        },
+        "outcome_return_requested": {
+          "name": "Return Requested",
+          "elementType": "Outcome"
+        },
+        "outcome_item_returned": {
+          "name": "Item Returned",
+          "elementType": "Outcome"
+        },
+        "outcome_refund_processed": {
+          "name": "Refund Processed",
+          "elementType": "Outcome"
+        },
+        "outcome_campaign_planned": {
+          "name": "Campaign Planned",
+          "elementType": "Outcome"
+        },
+        "outcome_campaign_launched": {
+          "name": "Campaign Launched",
+          "elementType": "Outcome"
+        },
+        "outcome_lead_generated": {
+          "name": "Lead Generated",
+          "elementType": "Outcome"
+        },
+        "outcome_customer_acquired": {
+          "name": "Customer Acquired",
+          "elementType": "Outcome"
+        },
+        "outcome_stock_arrives": {
+          "name": "Stock Arrives",
+          "elementType": "Outcome"
+        },
+        "outcome_stock_received": {
+          "name": "Stock Received",
+          "elementType": "Outcome"
+        },
+        "outcome_inventory_updated": {
+          "name": "Inventory Updated",
+          "elementType": "Outcome"
+        },
+        "outcome_products_available": {
+          "name": "Products Available",
+          "elementType": "Outcome"
+        }
+      },
+      "roles": {
+        "role_operations_manager": {
+          "name": "Operations Manager",
+          "description": "Responsible for order validation, fraud review, and operational oversight",
+          "elementType": "Role"
+        },
+        "role_customer_service_representative": {
+          "name": "Customer Service Representative",
+          "description": "Handles customer inquiries, returns processing, and issue resolution",
+          "elementType": "Role"
+        },
+        "role_warehouse_operator": {
+          "name": "Warehouse Operator",
+          "description": "Picks, packs, and processes inventory at 3PL facility",
+          "elementType": "Role"
+        },
+        "role_marketing_manager": {
+          "name": "Marketing Manager",
+          "description": "Manages campaigns, lead generation, and customer acquisition activities",
+          "elementType": "Role"
+        },
+        "role_inventory_coordinator": {
+          "name": "Inventory Coordinator",
+          "description": "Manages stock levels, inventory updates, and product availability",
+          "elementType": "Role"
+        },
+        "role_logistics_coordinator": {
+          "name": "Logistics Coordinator",
+          "description": "Coordinates dispatch, shipping, and delivery processes",
+          "elementType": "Role"
+        }
+      },
+      "capabilities": {
+        "cap_manage_product_display": {
+          "name": "Manage Product Display",
+          "description": "Ability to present products for customer browsing",
+          "level": 4,
+          "parentId": "cap_l3_product_browsing",
+          "businessObject": "Product",
+          "elementType": "Capability"
+        },
+        "cap_manage_product_availability": {
+          "name": "Manage Product Availability",
+          "description": "Ability to maintain product availability for sale",
+          "level": 4,
+          "parentId": "cap_l3_inventory_control",
+          "businessObject": "Product",
+          "elementType": "Capability"
+        },
+        "cap_manage_cart_assembly": {
+          "name": "Manage Cart Assembly",
+          "description": "Ability to enable customers to assemble shopping carts",
+          "level": 4,
+          "parentId": "cap_l3_product_browsing",
+          "businessObject": "Cart",
+          "elementType": "Capability"
+        },
+        "cap_manage_inventory_updates": {
+          "name": "Manage Inventory Updates",
+          "description": "Ability to maintain accurate inventory records",
+          "level": 4,
+          "parentId": "cap_l3_inventory_control",
+          "businessObject": "Inventory",
+          "elementType": "Capability"
+        },
+        "cap_manage_order_placement": {
+          "name": "Manage Order Placement",
+          "description": "Ability to capture and process customer orders",
+          "level": 4,
+          "parentId": "cap_l3_order_processing",
+          "businessObject": "Order",
+          "elementType": "Capability"
+        },
+        "cap_manage_order_validation": {
+          "name": "Manage Order Validation",
+          "description": "Ability to validate orders for fraud and accuracy",
+          "level": 4,
+          "parentId": "cap_l3_order_processing",
+          "businessObject": "Order",
+          "elementType": "Capability"
+        },
+        "cap_manage_order_fulfilment": {
+          "name": "Manage Order Fulfilment",
+          "description": "Ability to pick, pack, and prepare orders for dispatch",
+          "level": 4,
+          "parentId": "cap_l3_warehouse_operations",
+          "businessObject": "Order",
+          "elementType": "Capability"
+        },
+        "cap_manage_order_dispatch": {
+          "name": "Manage Order Dispatch",
+          "description": "Ability to dispatch orders via shipping carriers",
+          "level": 4,
+          "parentId": "cap_l3_logistics_operations",
+          "businessObject": "Shipment",
+          "elementType": "Capability"
+        },
+        "cap_manage_order_delivery": {
+          "name": "Manage Order Delivery",
+          "description": "Ability to coordinate and track order delivery to customers",
+          "level": 4,
+          "parentId": "cap_l3_logistics_operations",
+          "businessObject": "Delivery",
+          "elementType": "Capability"
+        },
+        "cap_manage_inquiry_processing": {
+          "name": "Manage Inquiry Processing",
+          "description": "Ability to receive and process customer inquiries",
+          "level": 4,
+          "parentId": "cap_l3_issue_resolution",
+          "businessObject": "Inquiry",
+          "elementType": "Capability"
+        },
+        "cap_manage_issue_investigation": {
+          "name": "Manage Issue Investigation",
+          "description": "Ability to investigate and diagnose customer issues",
+          "level": 4,
+          "parentId": "cap_l3_issue_resolution",
+          "businessObject": "Issue",
+          "elementType": "Capability"
+        },
+        "cap_manage_resolution_delivery": {
+          "name": "Manage Resolution Delivery",
+          "description": "Ability to deliver solutions to customer issues",
+          "level": 4,
+          "parentId": "cap_l3_issue_resolution",
+          "businessObject": "Resolution",
+          "elementType": "Capability"
+        },
+        "cap_manage_return_requests": {
+          "name": "Manage Return Requests",
+          "description": "Ability to process customer return requests",
+          "level": 4,
+          "parentId": "cap_l3_returns_processing",
+          "businessObject": "Return",
+          "elementType": "Capability"
+        },
+        "cap_manage_item_returns": {
+          "name": "Manage Item Returns",
+          "description": "Ability to receive and process returned items",
+          "level": 4,
+          "parentId": "cap_l3_returns_processing",
+          "businessObject": "Item",
+          "elementType": "Capability"
+        },
+        "cap_manage_refund_processing": {
+          "name": "Manage Refund Processing",
+          "description": "Ability to process customer refunds",
+          "level": 4,
+          "parentId": "cap_l3_returns_processing",
+          "businessObject": "Refund",
+          "elementType": "Capability"
+        },
+        "cap_manage_campaign_execution": {
+          "name": "Manage Campaign Execution",
+          "description": "Ability to launch and execute marketing campaigns across channels",
+          "level": 4,
+          "parentId": "cap_l3_campaign_management",
+          "businessObject": "Campaign",
+          "elementType": "Capability"
+        },
+        "cap_manage_lead_generation": {
+          "name": "Manage Lead Generation",
+          "description": "Ability to generate and capture potential customer leads",
+          "level": 4,
+          "parentId": "cap_l3_campaign_management",
+          "businessObject": "Lead",
+          "elementType": "Capability"
+        },
+        "cap_manage_customer_conversion": {
+          "name": "Manage Customer Conversion",
+          "description": "Ability to convert leads into paying customers",
+          "level": 4,
+          "parentId": "cap_l3_campaign_management",
+          "businessObject": "Customer",
+          "elementType": "Capability"
+        },
+        "cap_manage_stock_receipt": {
+          "name": "Manage Stock Receipt",
+          "description": "Ability to receive and record incoming stock",
+          "level": 4,
+          "parentId": "cap_l3_inventory_control",
+          "businessObject": "Stock",
+          "elementType": "Capability"
+        },
+        "cap_data_management": {
+          "name": "Data Management",
+          "description": "Ability to manage and maintain business data across systems",
+          "level": 4,
+          "parentId": "cap_l3_campaign_management",
+          "businessObject": "Data",
+          "elementType": "Capability"
+        },
+        "cap_payment_processing": {
+          "name": "Payment Processing",
+          "description": "Ability to process customer payments and refunds",
+          "level": 4,
+          "parentId": "cap_l3_order_processing",
+          "businessObject": "Payment",
+          "elementType": "Capability"
+        },
+        "cap_fraud_detection": {
+          "name": "Fraud Detection",
+          "description": "Ability to detect and prevent fraudulent transactions",
+          "level": 4,
+          "parentId": "cap_l3_campaign_management",
+          "businessObject": "Transaction",
+          "elementType": "Capability"
+        },
+        "cap_warehouse_operations": {
+          "name": "Warehouse Operations",
+          "description": "Ability to manage warehouse activities and inventory handling",
+          "level": 4,
+          "parentId": "cap_l3_warehouse_operations",
+          "businessObject": "Warehouse",
+          "elementType": "Capability"
+        },
+        "cap_logistics_coordination": {
+          "name": "Logistics Coordination",
+          "description": "Ability to coordinate shipping and delivery logistics",
+          "level": 4,
+          "parentId": "cap_l3_logistics_operations",
+          "businessObject": "Logistics",
+          "elementType": "Capability"
+        },
+        "cap_customer_communication": {
+          "name": "Customer Communication",
+          "description": "Ability to communicate effectively with customers across channels",
+          "level": 4,
+          "parentId": "cap_l3_campaign_management",
+          "businessObject": "Communication",
+          "elementType": "Capability"
+        },
+        "cap_digital_marketing": {
+          "name": "Digital Marketing",
+          "description": "Ability to execute digital marketing campaigns and activities",
+          "level": 4,
+          "parentId": "cap_l3_campaign_management",
+          "businessObject": "Marketing",
+          "elementType": "Capability"
+        },
+        "cap_l1_customer_management": {
+          "id": "cap_l1_customer_management",
+          "name": "Customer Management",
+          "elementType": "Capability",
+          "level": 1,
+          "type": "Execution"
+        },
+        "cap_l2_customer_acquisition": {
+          "id": "cap_l2_customer_acquisition",
+          "name": "Customer Acquisition",
+          "elementType": "Capability",
+          "level": 2,
+          "parentId": "cap_l1_customer_management"
+        },
+        "cap_l3_campaign_management": {
+          "id": "cap_l3_campaign_management",
+          "name": "Campaign Management",
+          "elementType": "Capability",
+          "level": 3,
+          "parentId": "cap_l2_customer_acquisition",
+          "businessObject": "",
+          "description": ""
+        },
+        "cap_l2_customer_service": {
+          "id": "cap_l2_customer_service",
+          "name": "Customer Service",
+          "elementType": "Capability",
+          "level": 2,
+          "parentId": "cap_l1_customer_management"
+        },
+        "cap_l3_issue_resolution": {
+          "id": "cap_l3_issue_resolution",
+          "name": "Issue Resolution",
+          "elementType": "Capability",
+          "level": 3,
+          "parentId": "cap_l2_customer_service",
+          "businessObject": "",
+          "description": ""
+        },
+        "cap_l1_sales_management": {
+          "id": "cap_l1_sales_management",
+          "name": "Sales Management",
+          "elementType": "Capability",
+          "level": 1,
+          "type": "Execution"
+        },
+        "cap_l2_e_commerce_operations": {
+          "id": "cap_l2_e_commerce_operations",
+          "name": "E-commerce Operations",
+          "elementType": "Capability",
+          "level": 2,
+          "parentId": "cap_l1_sales_management"
+        },
+        "cap_l3_product_browsing": {
+          "id": "cap_l3_product_browsing",
+          "name": "Product Browsing",
+          "elementType": "Capability",
+          "level": 3,
+          "parentId": "cap_l2_e_commerce_operations",
+          "businessObject": "",
+          "description": ""
+        },
+        "cap_l3_order_processing": {
+          "id": "cap_l3_order_processing",
+          "name": "Order Processing",
+          "elementType": "Capability",
+          "level": 3,
+          "parentId": "cap_l2_e_commerce_operations",
+          "businessObject": "",
+          "description": ""
+        },
+        "cap_l1_fulfilment_management": {
+          "id": "cap_l1_fulfilment_management",
+          "name": "Fulfilment Management",
+          "elementType": "Capability",
+          "level": 1,
+          "type": "Execution"
+        },
+        "cap_l2_order_fulfilment": {
+          "id": "cap_l2_order_fulfilment",
+          "name": "Order Fulfilment",
+          "elementType": "Capability",
+          "level": 2,
+          "parentId": "cap_l1_fulfilment_management"
+        },
+        "cap_l3_warehouse_operations": {
+          "id": "cap_l3_warehouse_operations",
+          "name": "Warehouse Operations",
+          "elementType": "Capability",
+          "level": 3,
+          "parentId": "cap_l2_order_fulfilment",
+          "businessObject": "",
+          "description": ""
+        },
+        "cap_l3_logistics_operations": {
+          "id": "cap_l3_logistics_operations",
+          "name": "Logistics Operations",
+          "elementType": "Capability",
+          "level": 3,
+          "parentId": "cap_l2_order_fulfilment",
+          "businessObject": "",
+          "description": ""
+        },
+        "cap_l2_returns_management": {
+          "id": "cap_l2_returns_management",
+          "name": "Returns Management",
+          "elementType": "Capability",
+          "level": 2,
+          "parentId": "cap_l1_fulfilment_management"
+        },
+        "cap_l3_returns_processing": {
+          "id": "cap_l3_returns_processing",
+          "name": "Returns Processing",
+          "elementType": "Capability",
+          "level": 3,
+          "parentId": "cap_l2_returns_management",
+          "businessObject": "",
+          "description": ""
+        },
+        "cap_l1_inventory_management": {
+          "id": "cap_l1_inventory_management",
+          "name": "Inventory Management",
+          "elementType": "Capability",
+          "level": 1,
+          "type": "Execution"
+        },
+        "cap_l2_stock_management": {
+          "id": "cap_l2_stock_management",
+          "name": "Stock Management",
+          "elementType": "Capability",
+          "level": 2,
+          "parentId": "cap_l1_inventory_management"
+        },
+        "cap_l3_inventory_control": {
+          "id": "cap_l3_inventory_control",
+          "name": "Inventory Control",
+          "elementType": "Capability",
+          "level": 3,
+          "parentId": "cap_l2_stock_management",
+          "businessObject": "",
+          "description": ""
+        }
+      },
+      "informationObjects": {
+        "io_product_catalog": {
+          "name": "Product Catalog",
+          "description": "Comprehensive listing of available products with details and pricing",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_catalog_draft",
+              "label": "Draft",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_catalog_published"
+              ]
+            },
+            {
+              "id": "ls_catalog_published",
+              "label": "Published",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_customer_session": {
+          "name": "Customer Session",
+          "description": "Record of customer browsing activity and interactions",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_session_active",
+              "label": "Active",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_session_ended"
+              ]
+            },
+            {
+              "id": "ls_session_ended",
+              "label": "Ended",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_shopping_cart": {
+          "name": "Shopping Cart",
+          "description": "Customer's selected items ready for purchase",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_cart_empty",
+              "label": "Empty",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_cart_populated"
+              ]
+            },
+            {
+              "id": "ls_cart_populated",
+              "label": "Populated",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_cart_abandoned",
+                "ls_cart_converted"
+              ]
+            },
+            {
+              "id": "ls_cart_abandoned",
+              "label": "Abandoned",
+              "position": "terminal",
+              "transitionsTo": []
+            },
+            {
+              "id": "ls_cart_converted",
+              "label": "Converted",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_inventory_record": {
+          "name": "Inventory Record",
+          "description": "Current stock levels and availability status",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_inventory_pending",
+              "label": "Pending",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_inventory_confirmed"
+              ]
+            },
+            {
+              "id": "ls_inventory_confirmed",
+              "label": "Confirmed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_customer_order": {
+          "name": "Customer Order",
+          "description": "Formal order placed by customer with items and payment details",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_order_submitted",
+              "label": "Submitted",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_order_confirmed"
+              ]
+            },
+            {
+              "id": "ls_order_confirmed",
+              "label": "Confirmed",
+              "position": "intermediate",
+              "transitionsTo": [
+                "ls_order_completed"
+              ]
+            },
+            {
+              "id": "ls_order_completed",
+              "label": "Completed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_payment_record": {
+          "name": "Payment Record",
+          "description": "Transaction record of customer payment processing",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_payment_pending",
+              "label": "Pending",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_payment_processed"
+              ]
+            },
+            {
+              "id": "ls_payment_processed",
+              "label": "Processed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_validation_report": {
+          "name": "Validation Report",
+          "description": "Results of order validation including fraud and accuracy checks",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_validation_pending",
+              "label": "Pending",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_validation_complete"
+              ]
+            },
+            {
+              "id": "ls_validation_complete",
+              "label": "Complete",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_fraud_check": {
+          "name": "Fraud Check",
+          "description": "Security assessment of order for fraudulent activity",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_fraud_pending",
+              "label": "Pending",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_fraud_cleared"
+              ]
+            },
+            {
+              "id": "ls_fraud_cleared",
+              "label": "Cleared",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_pick_list": {
+          "name": "Pick List",
+          "description": "Instructions for warehouse staff to collect order items",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_pick_generated",
+              "label": "Generated",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_pick_completed"
+              ]
+            },
+            {
+              "id": "ls_pick_completed",
+              "label": "Completed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_packing_slip": {
+          "name": "Packing Slip",
+          "description": "Document accompanying packed order with item details",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_slip_created",
+              "label": "Created",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_slip_packed"
+              ]
+            },
+            {
+              "id": "ls_slip_packed",
+              "label": "Packed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_shipping_label": {
+          "name": "Shipping Label",
+          "description": "Carrier label with delivery address and tracking information",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_label_generated",
+              "label": "Generated",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_label_applied"
+              ]
+            },
+            {
+              "id": "ls_label_applied",
+              "label": "Applied",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_dispatch_record": {
+          "name": "Dispatch Record",
+          "description": "Record of order handover to shipping carrier",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_dispatch_scheduled",
+              "label": "Scheduled",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_dispatch_completed"
+              ]
+            },
+            {
+              "id": "ls_dispatch_completed",
+              "label": "Completed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_delivery_confirmation": {
+          "name": "Delivery Confirmation",
+          "description": "Proof of successful delivery to customer",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_delivery_pending",
+              "label": "Pending",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_delivery_confirmed"
+              ]
+            },
+            {
+              "id": "ls_delivery_confirmed",
+              "label": "Confirmed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_tracking_record": {
+          "name": "Tracking Record",
+          "description": "Real-time status updates of order in transit",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_tracking_active",
+              "label": "Active",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_tracking_delivered"
+              ]
+            },
+            {
+              "id": "ls_tracking_delivered",
+              "label": "Delivered",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_customer_inquiry": {
+          "name": "Customer Inquiry",
+          "description": "Customer question or concern submitted through support channels",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_inquiry_received",
+              "label": "Received",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_inquiry_resolved"
+              ]
+            },
+            {
+              "id": "ls_inquiry_resolved",
+              "label": "Resolved",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_support_ticket": {
+          "name": "Support Ticket",
+          "description": "Formal record of customer support case with tracking number",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_ticket_open",
+              "label": "Open",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_ticket_closed"
+              ]
+            },
+            {
+              "id": "ls_ticket_closed",
+              "label": "Closed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_investigation_report": {
+          "name": "Investigation Report",
+          "description": "Detailed analysis of customer issue and potential solutions",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_investigation_started",
+              "label": "Started",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_investigation_completed"
+              ]
+            },
+            {
+              "id": "ls_investigation_completed",
+              "label": "Completed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_case_notes": {
+          "name": "Case Notes",
+          "description": "Internal documentation of support case progress and actions",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_notes_draft",
+              "label": "Draft",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_notes_final"
+              ]
+            },
+            {
+              "id": "ls_notes_final",
+              "label": "Final",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_resolution_record": {
+          "name": "Resolution Record",
+          "description": "Documentation of solution provided to customer",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_resolution_proposed",
+              "label": "Proposed",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_resolution_delivered"
+              ]
+            },
+            {
+              "id": "ls_resolution_delivered",
+              "label": "Delivered",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_customer_response": {
+          "name": "Customer Response",
+          "description": "Customer feedback on resolution provided",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_response_pending",
+              "label": "Pending",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_response_received"
+              ]
+            },
+            {
+              "id": "ls_response_received",
+              "label": "Received",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_return_request": {
+          "name": "Return Request",
+          "description": "Customer request to return purchased items",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_return_requested",
+              "label": "Requested",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_return_approved"
+              ]
+            },
+            {
+              "id": "ls_return_approved",
+              "label": "Approved",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_return_authorization": {
+          "name": "Return Authorization",
+          "description": "Approval and instructions for customer to return items",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_auth_issued",
+              "label": "Issued",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_auth_used"
+              ]
+            },
+            {
+              "id": "ls_auth_used",
+              "label": "Used",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_returned_item": {
+          "name": "Returned Item",
+          "description": "Physical product returned by customer",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_item_received",
+              "label": "Received",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_item_processed"
+              ]
+            },
+            {
+              "id": "ls_item_processed",
+              "label": "Processed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_inspection_report": {
+          "name": "Inspection Report",
+          "description": "Assessment of returned item condition and eligibility for refund",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_inspection_pending",
+              "label": "Pending",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_inspection_complete"
+              ]
+            },
+            {
+              "id": "ls_inspection_complete",
+              "label": "Complete",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_refund_record": {
+          "name": "Refund Record",
+          "description": "Documentation of refund amount and processing details",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_refund_pending",
+              "label": "Pending",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_refund_processed"
+              ]
+            },
+            {
+              "id": "ls_refund_processed",
+              "label": "Processed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_account_credit": {
+          "name": "Account Credit",
+          "description": "Credit applied to customer account for refund",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_credit_pending",
+              "label": "Pending",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_credit_applied"
+              ]
+            },
+            {
+              "id": "ls_credit_applied",
+              "label": "Applied",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_campaign_plan": {
+          "name": "Campaign Plan",
+          "description": "Strategic plan for marketing campaign execution",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_plan_draft",
+              "label": "Draft",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_plan_approved"
+              ]
+            },
+            {
+              "id": "ls_plan_approved",
+              "label": "Approved",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_campaign_assets": {
+          "name": "Campaign Assets",
+          "description": "Creative materials and content for marketing campaign",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_assets_created",
+              "label": "Created",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_assets_deployed"
+              ]
+            },
+            {
+              "id": "ls_assets_deployed",
+              "label": "Deployed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_lead_record": {
+          "name": "Lead Record",
+          "description": "Potential customer information captured from campaign",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_lead_captured",
+              "label": "Captured",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_lead_qualified"
+              ]
+            },
+            {
+              "id": "ls_lead_qualified",
+              "label": "Qualified",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_campaign_metrics": {
+          "name": "Campaign Metrics",
+          "description": "Performance data and analytics from marketing campaign",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_metrics_collecting",
+              "label": "Collecting",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_metrics_analyzed"
+              ]
+            },
+            {
+              "id": "ls_metrics_analyzed",
+              "label": "Analyzed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_customer_record": {
+          "name": "Customer Record",
+          "description": "Complete customer profile and transaction history",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_customer_new",
+              "label": "New",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_customer_active"
+              ]
+            },
+            {
+              "id": "ls_customer_active",
+              "label": "Active",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_conversion_metrics": {
+          "name": "Conversion Metrics",
+          "description": "Data on lead to customer conversion rates and performance",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_conversion_tracking",
+              "label": "Tracking",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_conversion_reported"
+              ]
+            },
+            {
+              "id": "ls_conversion_reported",
+              "label": "Reported",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_stock_receipt": {
+          "name": "Stock Receipt",
+          "description": "Documentation of incoming stock delivery",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_receipt_pending",
+              "label": "Pending",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_receipt_confirmed"
+              ]
+            },
+            {
+              "id": "ls_receipt_confirmed",
+              "label": "Confirmed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_delivery_note": {
+          "name": "Delivery Note",
+          "description": "Supplier documentation accompanying stock delivery",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_note_received",
+              "label": "Received",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_note_processed"
+              ]
+            },
+            {
+              "id": "ls_note_processed",
+              "label": "Processed",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_stock_adjustment": {
+          "name": "Stock Adjustment",
+          "description": "Record of inventory level changes and corrections",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_adjustment_pending",
+              "label": "Pending",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_adjustment_applied"
+              ]
+            },
+            {
+              "id": "ls_adjustment_applied",
+              "label": "Applied",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_product_listing": {
+          "name": "Product Listing",
+          "description": "Online product page with availability and pricing",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_listing_draft",
+              "label": "Draft",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_listing_live"
+              ]
+            },
+            {
+              "id": "ls_listing_live",
+              "label": "Live",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        },
+        "io_availability_status": {
+          "name": "Availability Status",
+          "description": "Real-time product availability information",
+          "elementType": "InformationObject",
+          "lifecycleStates": [
+            {
+              "id": "ls_status_updating",
+              "label": "Updating",
+              "position": "initial",
+              "transitionsTo": [
+                "ls_status_current"
+              ]
+            },
+            {
+              "id": "ls_status_current",
+              "label": "Current",
+              "position": "terminal",
+              "transitionsTo": []
+            }
+          ]
+        }
+      },
+      "controls": {},
+      "constraints": {},
+      "directives": {},
+      "deonticLogic": {},
+      "flowLogic": {},
+      "concepts": {
+        "concept_party_role_operations_manager": {
+          "id": "concept_party_role_operations_manager",
+          "name": "Operations Manager",
+          "type": "Party",
+          "subtype": "Role",
+          "definition": "Responsible for order validation, fraud review, and operational oversight",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": [
+            {
+              "targetId": "concept_record_io_customer_order",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            },
+            {
+              "targetId": "concept_record_io_payment_record",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            },
+            {
+              "targetId": "concept_record_io_validation_report",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            },
+            {
+              "targetId": "concept_record_io_refund_record",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            },
+            {
+              "targetId": "concept_record_io_account_credit",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            }
+          ]
+        },
+        "concept_party_role_customer_service_representative": {
+          "id": "concept_party_role_customer_service_representative",
+          "name": "Customer Service Representative",
+          "type": "Party",
+          "subtype": "Role",
+          "definition": "Handles customer inquiries, returns processing, and issue resolution",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": [
+            {
+              "targetId": "concept_record_io_support_ticket",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            },
+            {
+              "targetId": "concept_record_io_investigation_report",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            },
+            {
+              "targetId": "concept_record_io_resolution_record",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            },
+            {
+              "targetId": "concept_record_io_return_request",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            }
+          ]
+        },
+        "concept_party_role_warehouse_operator": {
+          "id": "concept_party_role_warehouse_operator",
+          "name": "Warehouse Operator",
+          "type": "Party",
+          "subtype": "Role",
+          "definition": "Picks, packs, and processes inventory at 3PL facility",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": [
+            {
+              "targetId": "concept_record_io_inspection_report",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            }
+          ]
+        },
+        "concept_party_role_marketing_manager": {
+          "id": "concept_party_role_marketing_manager",
+          "name": "Marketing Manager",
+          "type": "Party",
+          "subtype": "Role",
+          "definition": "Manages campaigns, lead generation, and customer acquisition activities",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": [
+            {
+              "targetId": "concept_record_io_inventory_record",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            },
+            {
+              "targetId": "concept_record_io_campaign_plan",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            },
+            {
+              "targetId": "concept_record_io_lead_record",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            },
+            {
+              "targetId": "concept_record_io_customer_record",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            }
+          ]
+        },
+        "concept_party_role_inventory_coordinator": {
+          "id": "concept_party_role_inventory_coordinator",
+          "name": "Inventory Coordinator",
+          "type": "Party",
+          "subtype": "Role",
+          "definition": "Manages stock levels, inventory updates, and product availability",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_party_role_logistics_coordinator": {
+          "id": "concept_party_role_logistics_coordinator",
+          "name": "Logistics Coordinator",
+          "type": "Party",
+          "subtype": "Role",
+          "definition": "Coordinates dispatch, shipping, and delivery processes",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": [
+            {
+              "targetId": "concept_record_io_dispatch_record",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            },
+            {
+              "targetId": "concept_record_io_tracking_record",
+              "type": "produces",
+              "label": "creates",
+              "cardinality": "1:N"
+            }
+          ]
+        },
+        "concept_party_ext_ext_customer": {
+          "id": "concept_party_ext_ext_customer",
+          "name": "Customer",
+          "type": "Party",
+          "subtype": "External",
+          "definition": "External party who receives products or services",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_inventory_record": {
+          "id": "concept_record_io_inventory_record",
+          "name": "Inventory Record",
+          "type": "Record",
+          "definition": "Current stock levels and availability status",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_customer_order": {
+          "id": "concept_record_io_customer_order",
+          "name": "Customer Order",
+          "type": "Record",
+          "definition": "Formal order placed by customer with items and payment details",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_payment_record": {
+          "id": "concept_record_io_payment_record",
+          "name": "Payment Record",
+          "type": "Record",
+          "definition": "Transaction record of customer payment processing",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_validation_report": {
+          "id": "concept_record_io_validation_report",
+          "name": "Validation Report",
+          "type": "Record",
+          "definition": "Results of order validation including fraud and accuracy checks",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_dispatch_record": {
+          "id": "concept_record_io_dispatch_record",
+          "name": "Dispatch Record",
+          "type": "Record",
+          "definition": "Record of order handover to shipping carrier",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_tracking_record": {
+          "id": "concept_record_io_tracking_record",
+          "name": "Tracking Record",
+          "type": "Record",
+          "definition": "Real-time status updates of order in transit",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_support_ticket": {
+          "id": "concept_record_io_support_ticket",
+          "name": "Support Ticket",
+          "type": "Record",
+          "definition": "Formal record of customer support case with tracking number",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_investigation_report": {
+          "id": "concept_record_io_investigation_report",
+          "name": "Investigation Report",
+          "type": "Record",
+          "definition": "Detailed analysis of customer issue and potential solutions",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_resolution_record": {
+          "id": "concept_record_io_resolution_record",
+          "name": "Resolution Record",
+          "type": "Record",
+          "definition": "Documentation of solution provided to customer",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_return_request": {
+          "id": "concept_record_io_return_request",
+          "name": "Return Request",
+          "type": "Record",
+          "definition": "Customer request to return purchased items",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_inspection_report": {
+          "id": "concept_record_io_inspection_report",
+          "name": "Inspection Report",
+          "type": "Record",
+          "definition": "Assessment of returned item condition and eligibility for refund",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": [
+            {
+              "targetId": "concept_resource_prod_item",
+              "type": "regarding",
+              "label": "regarding",
+              "cardinality": "N:1"
+            }
+          ]
+        },
+        "concept_record_io_refund_record": {
+          "id": "concept_record_io_refund_record",
+          "name": "Refund Record",
+          "type": "Record",
+          "definition": "Documentation of refund amount and processing details",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_account_credit": {
+          "id": "concept_record_io_account_credit",
+          "name": "Account Credit",
+          "type": "Record",
+          "definition": "Credit applied to customer account for refund",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_campaign_plan": {
+          "id": "concept_record_io_campaign_plan",
+          "name": "Campaign Plan",
+          "type": "Record",
+          "definition": "Strategic plan for marketing campaign execution",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_lead_record": {
+          "id": "concept_record_io_lead_record",
+          "name": "Lead Record",
+          "type": "Record",
+          "definition": "Potential customer information captured from campaign",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_record_io_customer_record": {
+          "id": "concept_record_io_customer_record",
+          "name": "Customer Record",
+          "type": "Record",
+          "definition": "Complete customer profile and transaction history",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": [
+            {
+              "targetId": "concept_party_ext_ext_customer",
+              "type": "about",
+              "label": "about",
+              "cardinality": "N:1"
+            }
+          ]
+        },
+        "concept_resource_tech_shopify": {
+          "id": "concept_resource_tech_shopify",
+          "name": "Shopify",
+          "type": "Resource",
+          "subtype": "System",
+          "definition": "Technology: Shopify (ERP)",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_resource_tech_3pl_warehouse_management_system": {
+          "id": "concept_resource_tech_3pl_warehouse_management_system",
+          "name": "3PL Warehouse Management System",
+          "type": "Resource",
+          "subtype": "System",
+          "definition": "Technology: 3PL Warehouse Management System (ERP)",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_resource_tech_excel_spreadsheet": {
+          "id": "concept_resource_tech_excel_spreadsheet",
+          "name": "Excel Spreadsheet",
+          "type": "Resource",
+          "subtype": "System",
+          "definition": "Technology: Excel Spreadsheet (Other)",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_resource_tech_email_system": {
+          "id": "concept_resource_tech_email_system",
+          "name": "Email System",
+          "type": "Resource",
+          "subtype": "System",
+          "definition": "Technology: Email System (Comms)",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_resource_tech_sendle_australia_post": {
+          "id": "concept_resource_tech_sendle_australia_post",
+          "name": "Sendle/Australia Post",
+          "type": "Resource",
+          "subtype": "System",
+          "definition": "Technology: Sendle/Australia Post (Other)",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_resource_prod_product": {
+          "id": "concept_resource_prod_product",
+          "name": "Product",
+          "type": "Resource",
+          "subtype": "Product",
+          "definition": "Business resource: Product",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        },
+        "concept_resource_prod_item": {
+          "id": "concept_resource_prod_item",
+          "name": "Item",
+          "type": "Resource",
+          "subtype": "Product",
+          "definition": "Business resource: Item",
+          "lifecycleStates": [],
+          "relatedCapabilityIds": [],
+          "elementType": "Concept",
+          "relationships": []
+        }
+      },
+      "properties": {},
+      "metrics": {
+        "metric_customer_service_inquiry_volume": {
+          "name": "Customer Service Inquiry Volume",
+          "elementType": "Metric"
+        },
+        "metric_returns_processing_time": {
+          "name": "Returns Processing Time",
+          "elementType": "Metric"
+        },
+        "metric_order_cancellation_rate": {
+          "name": "Order Cancellation Rate",
+          "elementType": "Metric"
+        },
+        "metric_nz_order_delay_rate": {
+          "name": "NZ Order Delay Rate",
+          "elementType": "Metric"
+        }
+      },
+      "measures": {},
+      "conditions": {},
+      "subActivityGraphs": {}
+    },
+    "_discoveryPainPoints": "1. [DataSignalFriction] 60% of customer service time spent on 'where is my order' inquiries due to poor tracking visibility (intensity 8/10, stage: Inquiry Received)\n2. [ProcessHandoffFriction] Returns processing takes 12 days end-to-end with opaque manual process leading to chargebacks (intensity 9/10, stage: Return Requested) ← flagged as binding\n3. [TechnologyIntegrationFriction] Inventory overselling during promotions due to Shopify-warehouse sync issues causing 3-5% order cancellations (intensity 9/10, stage: Order Placed) ← flagged as binding\n4. [DataSignalFriction] No visibility into campaign performance by customer lifetime value, preventing marketing optimization (intensity 6/10, stage: Customer Acquired)\n5. [ProcessHandoffFriction] New Zealand fulfilment has no defined process with 15% delay rate due to manual customs documentation (intensity 7/10, stage: Order Dispatched)"
+  },
+  "heatmaps": []
+}

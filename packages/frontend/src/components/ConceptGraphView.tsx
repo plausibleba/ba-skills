@@ -3,6 +3,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { useDiscoverySessionStore } from "../store/discovery-session-store.ts";
 import { deriveConceptsFromScaffold } from "../domain/pipeline/pipeline-orchestrator.ts";
+import type { ScaffoldGraphIndex } from "../store/graph-index.ts";
 import { tv } from "../theme.ts";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -93,6 +94,8 @@ function layoutER(
   focusId: string,
   concepts: Record<string, ConceptNode>,
   expandedIds: Set<string>,
+  graphIndex?: ScaffoldGraphIndex | null,
+  scaffoldElements?: Record<string, any>,
 ): { nodes: ERNode[]; edges: EREdge[] } {
   const focus = concepts[focusId];
   if (!focus) return { nodes: [], edges: [] };
@@ -107,19 +110,111 @@ function layoutER(
   // Collect 1st-order relations (outgoing + incoming)
   const relatedIds = new Set<string>();
   const edgeData: { fromId: string; toId: string; label: string; cardinality: string }[] = [];
+  const seenEdgeKeys = new Set<string>(); // Deduplicate edges
+
+  const addEdgeDedup = (fromId: string, toId: string, label: string, cardinality: string) => {
+    const key = `${fromId}→${toId}→${label}`;
+    const reverseKey = `${toId}→${fromId}→${label}`;
+    if (seenEdgeKeys.has(key) || seenEdgeKeys.has(reverseKey)) return;
+    seenEdgeKeys.add(key);
+    edgeData.push({ fromId, toId, label, cardinality });
+  };
+
+  // 1. Explicit relationships on the concept object
   for (const rel of focus.relationships ?? []) {
     if (concepts[rel.targetId]) {
       relatedIds.add(rel.targetId);
-      edgeData.push({ fromId: focusId, toId: rel.targetId, label: rel.label ?? rel.type, cardinality: rel.cardinality ?? "" });
+      addEdgeDedup(focusId, rel.targetId, rel.label ?? rel.type, rel.cardinality ?? "");
     }
   }
-  // Incoming relations
+  // Incoming explicit relations
   for (const [cId, c] of Object.entries(concepts)) {
     if (cId === focusId) continue;
     for (const rel of c.relationships ?? []) {
       if (rel.targetId === focusId && !relatedIds.has(cId)) {
         relatedIds.add(cId);
-        edgeData.push({ fromId: cId, toId: focusId, label: rel.label ?? rel.type, cardinality: rel.cardinality ?? "" });
+        addEdgeDedup(cId, focusId, rel.label ?? rel.type, rel.cardinality ?? "");
+      }
+    }
+  }
+
+  // 2. Graph-index derived relationships (D-097)
+  // Find concepts that share capabilities, activities, or value streams with the focus concept
+  if (graphIndex && scaffoldElements) {
+    const focusEdges = graphIndex.edgesFor(focusId);
+
+    // Collect all capabilities and activities linked to this concept
+    const linkedCapIds = new Set<string>();
+    const linkedActIds = new Set<string>();
+    const linkedVsIds = new Set<string>();
+
+    for (const e of focusEdges) {
+      const otherId = e.sourceId === focusId ? e.targetId : e.sourceId;
+      const otherType = e.sourceId === focusId ? e.targetType : e.sourceType;
+      if (otherType === "Capability") linkedCapIds.add(otherId);
+      if (otherType === "Activity") linkedActIds.add(otherId);
+      if (otherType === "ValueStream") linkedVsIds.add(otherId);
+    }
+
+    // Also find capabilities via businessObject name match (capability → concept)
+    for (const [capId, cap] of Object.entries(scaffoldElements.capabilities ?? {})) {
+      const bo = (cap as any).businessObject;
+      if (bo && focus.name && bo.toLowerCase() === focus.name.toLowerCase()) {
+        linkedCapIds.add(capId);
+      }
+    }
+
+    // For each linked capability, find other concepts that also link to it
+    for (const capId of linkedCapIds) {
+      const capEdges = graphIndex.edgesFor(capId);
+      for (const e of capEdges) {
+        const otherId = e.sourceId === capId ? e.targetId : e.sourceId;
+        const otherType = e.sourceId === capId ? e.targetType : e.sourceType;
+        if (otherType === "Concept" && otherId !== focusId && concepts[otherId] && !relatedIds.has(otherId)) {
+          relatedIds.add(otherId);
+          const capName = (scaffoldElements.capabilities?.[capId] as any)?.name ?? "capability";
+          addEdgeDedup(focusId, otherId, `shared capability`, "");
+        }
+      }
+    }
+
+    // For each linked activity, find other concepts referenced in the same activity
+    for (const actId of linkedActIds) {
+      const actEdges = graphIndex.edgesFor(actId);
+      for (const e of actEdges) {
+        const otherId = e.sourceId === actId ? e.targetId : e.sourceId;
+        const otherType = e.sourceId === actId ? e.targetType : e.sourceType;
+        if (otherType === "Concept" && otherId !== focusId && concepts[otherId] && !relatedIds.has(otherId)) {
+          relatedIds.add(otherId);
+          addEdgeDedup(focusId, otherId, `co-occurs in activity`, "");
+        }
+      }
+    }
+
+    // Concept ↔ InformationObject matching: find concepts that map to IOs in the same activities
+    // This connects e.g. Product → Product Catalog when both appear in the same VS
+    const ioIds = graphIndex.relatedIds(focusId, { targetType: "InformationObject" });
+    for (const ioId of ioIds) {
+      // Find activities that use this IO
+      const ioActIds = graphIndex.referencedBy(ioId, "Activity");
+      for (const actId of ioActIds) {
+        // Find other IOs in this activity
+        const actEdges = graphIndex.edgesFor(actId);
+        for (const e of actEdges) {
+          if (e.relation !== "usesInformationObject") continue;
+          const otherIoId = e.targetId;
+          if (otherIoId === ioId) continue;
+          // Check if this IO maps to a concept
+          const ioName = (scaffoldElements.informationObjects?.[otherIoId] as any)?.name?.toLowerCase();
+          if (!ioName) continue;
+          for (const [cId, c] of Object.entries(concepts)) {
+            if (cId === focusId || relatedIds.has(cId)) continue;
+            if ((c as ConceptNode).name?.toLowerCase() === ioName) {
+              relatedIds.add(cId);
+              addEdgeDedup(focusId, cId, "co-occurs in stage", "");
+            }
+          }
+        }
       }
     }
   }
@@ -354,6 +449,7 @@ function TreeSidebar({
    ═══════════════════════════════════════════════════════════════ */
 export function ConceptGraphView() {
   const scaffoldData = useCanvasStore((s) => s.scaffoldData);
+  const graphIndex = useCanvasStore((s) => s.graphIndex);
 
   // Re-derive concept relationships on mount so existing scaffolds pick up
   // improved logic (e.g. Record→Resource via capability businessObject context)
@@ -400,8 +496,8 @@ export function ConceptGraphView() {
 
   const { nodes: layoutNodes, edges: layoutEdges } = useMemo(() => {
     if (!effectiveFocusId) return { nodes: [], edges: [] };
-    return layoutER(effectiveFocusId, concepts, expandedIds);
-  }, [effectiveFocusId, concepts, expandedIds]);
+    return layoutER(effectiveFocusId, concepts, expandedIds, graphIndex, scaffoldData?.elements);
+  }, [effectiveFocusId, concepts, expandedIds, graphIndex, scaffoldData?.elements]);
 
   // Apply drag offsets to produce final node positions
   const nodes = useMemo(() => layoutNodes.map(n => {

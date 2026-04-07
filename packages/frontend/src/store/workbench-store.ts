@@ -11,6 +11,8 @@ export type CatalogType =
   | "valueStreams"
   | "activities"
   | "concepts"
+  | "informationObjects"
+  | "technologyApps"
   | "roles"
   | "metrics";
 
@@ -126,7 +128,9 @@ const CATALOG_SCAFFOLD_KEY: Record<CatalogType, string> = {
   capabilities: "capabilities",
   valueStreams: "valueStreams",
   activities: "activities",
-  concepts: "informationObjects",  // concepts live as informationObjects in scaffold
+  concepts: "concepts",
+  informationObjects: "informationObjects",
+  technologyApps: "technologyApps",
   roles: "roles",
   metrics: "metrics",
 };
@@ -228,6 +232,8 @@ const emptyCatalogViewMode: Record<CatalogType, "grid" | "cards"> = {
   valueStreams: "grid",
   activities: "grid",
   concepts: "grid",
+  informationObjects: "grid",
+  technologyApps: "grid",
   roles: "grid",
   metrics: "grid",
 };
@@ -237,6 +243,8 @@ const emptyDirtyCounts: Record<CatalogType, number> = {
   valueStreams: 0,
   activities: 0,
   concepts: 0,
+  informationObjects: 0,
+  technologyApps: 0,
   roles: 0,
   metrics: 0,
 };
@@ -246,6 +254,8 @@ const emptyMessages: Record<CatalogType, ChatMessage[]> = {
   valueStreams: [],
   activities: [],
   concepts: [],
+  informationObjects: [],
+  technologyApps: [],
   roles: [],
   metrics: [],
 };
@@ -271,7 +281,7 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
   // ── Lifecycle ──
 
   enterWorkbench: (scaffold) => {
-    const allCatalogs: CatalogType[] = ["capabilities", "valueStreams", "activities", "concepts", "roles", "metrics"];
+    const allCatalogs: CatalogType[] = ["capabilities", "valueStreams", "activities", "concepts", "informationObjects", "technologyApps", "roles", "metrics"];
     set({
       isActive: true,
       currentStep: 2,
@@ -337,6 +347,8 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
         valueStreams: countEditsForCatalog(newHistory, "valueStreams"),
         activities: countEditsForCatalog(newHistory, "activities"),
         concepts: countEditsForCatalog(newHistory, "concepts"),
+        informationObjects: countEditsForCatalog(newHistory, "informationObjects"),
+        technologyApps: countEditsForCatalog(newHistory, "technologyApps"),
         roles: countEditsForCatalog(newHistory, "roles"),
         metrics: countEditsForCatalog(newHistory, "metrics"),
       },
@@ -363,6 +375,8 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
         valueStreams: countEditsForCatalog(newHistory, "valueStreams"),
         activities: countEditsForCatalog(newHistory, "activities"),
         concepts: countEditsForCatalog(newHistory, "concepts"),
+        informationObjects: countEditsForCatalog(newHistory, "informationObjects"),
+        technologyApps: countEditsForCatalog(newHistory, "technologyApps"),
         roles: countEditsForCatalog(newHistory, "roles"),
         metrics: countEditsForCatalog(newHistory, "metrics"),
       },
@@ -521,7 +535,9 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
       { key: "capabilities", catalog: "capabilities", label: "Capabilities" },
       { key: "valueStreams", catalog: "valueStreams", label: "Value Streams" },
       { key: "activities", catalog: "activities", label: "Activities" },
-      { key: "informationObjects", catalog: "concepts", label: "Concepts" },
+      { key: "concepts", catalog: "concepts", label: "Concepts" },
+      { key: "informationObjects", catalog: "informationObjects", label: "Information Objects" },
+      { key: "technologyApps", catalog: "technologyApps", label: "Systems" },
       { key: "roles", catalog: "roles", label: "Roles" },
       { key: "metrics", catalog: "metrics", label: "Metrics" },
     ];
@@ -561,7 +577,7 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
           severity: "warning",
           message: `Concept "${(io as any).name || ioId}" is not referenced by any activity`,
           elementIds: [ioId],
-          catalog: "concepts",
+          catalog: "informationObjects",
         });
       }
     }

@@ -4,6 +4,103 @@ Chronological record of what was built, decided, and learned.
 
 ---
 
+## Session 30 — D-097 Graph Index + Workbench Catalog Completeness
+**Date:** 2026-04-07
+**Status:** Complete
+
+### D-097 Step 1: Client-Side Graph Index
+
+Built `graph-index.ts` — an in-memory adjacency map computed on every `loadScaffold()` that materialises ALL cross-references between element types. Pure function, never mutates scaffold.
+
+**Cross-references indexed:**
+- Activity → Role (performedBy), Capability (requiresCapability), Outcome (pre/post), InformationObject, Control, Constraint, Metric, TechnologyApp (via PPIT), RecordClass, ApplicationFunction
+- ValueStream → Activity (containsActivity), Role (accountableStakeholder)
+- Capability → Capability (hierarchy via parentId), Concept (governsConcept via businessObject name match)
+- Concept → Concept (explicit relationships + relatedConceptIds), Capability (anchoredToCapability), Activity (anchoredToActivity)
+- InformationObject ↔ Concept (name-matched instanceOf)
+
+**API:**
+- `edgesFor(elementId)` — all edges involving an element (both directions)
+- `relatedIds(elementId, { relation?, targetType? })` — filtered related element IDs
+- `referencedBy(elementId, sourceType)` — which elements of a given type reference this element
+
+### Workbench Catalog Completeness
+
+**Root cause:** The "Concepts" catalog had `scaffoldKey: "informationObjects"`, meaning it displayed Information Objects while the Concept Model view read from `scaffold.elements.concepts`. This mismatch caused concepts to appear in one view but not the other.
+
+**Fixes:**
+1. Changed Concepts catalog `scaffoldKey` to `"concepts"` — now shows the actual ontological concept model (Party/Record/Resource classification, relationships, capability anchors)
+2. Added **Information Objects** catalog (`scaffoldKey: "informationObjects"`) — data artefacts with lifecycle states and activity cross-reference counts
+3. Added **Systems** catalog (`scaffoldKey: "technologyApps"`) — technology applications with vendor, category, and description
+4. Updated `CatalogType` union, `CATALOG_SCAFFOLD_KEY`, `emptyDirtyCounts`, `emptyCatalogViewMode`, `emptyMessages`, `ALL_CATALOGS`, `CATALOG_DESCRIPTIONS`, and example prompts
+5. Added accessor functions: `conceptDefinition`, `conceptRelationCount`, `conceptCapabilityCount`, `infoObjectActivityCount`
+
+### Concept Model Graph-Index Integration
+
+Rewired `ConceptGraphView` to consume the graph index for relationship discovery:
+- When a concept has explicit `relationships[]`, those are displayed (as before)
+- When the graph index is available, **additional edges are derived** from shared capabilities, activity co-occurrence, and stage co-occurrence
+- This means selecting "Product" now shows related concepts like "Product Catalog", "Shopping Cart", and "Customer" through their shared participation in capabilities and value stream stages
+- Edge deduplication prevents duplicate relationship lines
+
+### Files Changed
+- `store/graph-index.ts` — **NEW** — ScaffoldGraphIndex builder (240 lines)
+- `store/canvas-store.ts` — Added `graphIndex` state, computed in `loadScaffold()`
+- `store/workbench-store.ts` — Extended `CatalogType` union, `CATALOG_SCAFFOLD_KEY`, dirty counts, view modes, messages, validation
+- `lib/catalog-configs.ts` — Fixed Concepts scaffoldKey, added Information Objects and Systems catalogs, new accessor functions
+- `components/ConceptGraphView.tsx` — Consumes graphIndex, derives relationships from cross-references
+- `components/WorkbenchView.tsx` — Added example prompts for new catalogs
+- `domain/pipeline/prompts/refinement-agent.ts` — Added catalog descriptions for new types
+
+---
+
+## Session 29 — Bug Fixes + R-010 Structural Hardening
+**Date:** 2026-04-07
+**Status:** Complete
+
+### Bug Fixes (from weekend demo)
+
+1. **PPIT role duplication** — enrichers used v4 field name `requiresCapabilityIds` but runtime scaffolds use v5 `enabledByCapabilityIds`. Added fallback handling in `pass-c-ppit-enrichment.ts` and `ppit-enricher.ts`. Improved prompt to differentiate roles per capability.
+
+2. **Activity Flows not showing on Flows tab** — two separate causes:
+   - **Token truncation** (primary): 19 activities × 500 tokens + 1000 = 10,500 max_tokens was insufficient. LLM response truncated mid-JSON → parse failure → zero DAGs saved. Fixed by batching (≤10 activities per LLM call), raising per-activity budget to 700 tokens, and adding partial JSON recovery on truncation.
+   - **Canvas store fallback** (defensive): `ActivityFlowsView` relied solely on its prop scaffold for `subActivityGraphs`, unlike `StructuredGraphExplorer` which falls back to the canvas store. Added matching fallback with diagnostic logging.
+
+3. **Cross-mapping NBA always suggesting** — `checkOperationOutput` checked `scaffold.elements.crossMaps` (never populated). Cross-maps live in `enrichmentStore.mappingPairs`. Added `mappingPairCount` parameter to NBA computation.
+
+4. **Policy cards invisible on canvas** — `mvcCards` feature flag was `false` for all modules except "mvc". Enabled across all project modules.
+
+### R-010: Strict Scaffold Type Interfaces
+
+Full type system hardening — 22 files changed, 454 insertions, 297 deletions.
+
+**New types:**
+- `PPITEntry` — capabilityPPIT decomposition (was completely untyped, accessed via `as any` in 8+ files)
+- `ScaffoldElements` — named interface for `scaffold.elements`
+- `ScaffoldRole`, `ScaffoldOutcome`, `ScaffoldTechnologyApp`, `ScaffoldConcept` — specific element types
+- `getCapabilityIds(act)` — resolves v4/v5 capability field name ambiguity
+
+**Expanded types:**
+- `ScaffoldActivity` — `enabledByCapabilityIds`, `capabilityPPIT`, `informationObjectIds`, `valueStreamId`, `stageNumber`, `description`
+- `ScaffoldValueStream` — `layoutZone`, `zone`, `accountableStakeholder`, `activityChainHead`
+- `ScaffoldData` — `layoutZones` field
+
+**Impact:** `as any` reduced from 166 to 58 instances (65% reduction). Remaining instances are in files with `@ts-nocheck` (FrictionView, CapabilityBlock, network-derivation) — candidates for follow-up.
+
+### Files Changed
+- `types.ts` — 134 lines added (new interfaces, expanded fields, helper function)
+- Pipeline: `ppit-enricher.ts`, `subactivity-enricher.ts`, `pipeline-orchestrator.ts`, `scaffold-gates.ts`, `pass-c-ppit-enrichment.ts`, `pass-b-scaffold-formalisation.ts`
+- Stores: `canvas-store.ts`, `workbench-store.ts`, `project-store.ts`
+- Components: `ActivityFlowsView.tsx`, `StructuredGraphExplorer.tsx`, `StageCard.tsx`, `CapabilityMapView.tsx`, `FileLoader.tsx`, `enrichment/shared.tsx`
+- Utils: `bundle-import.ts`, `reference-model-import.ts`, `auto-save.ts`
+
+### Decisions
+- Canonical capability field name is `requiresCapabilityIds` (Pass B source of truth); `enabledByCapabilityIds` typed as v5 alias
+- Sub-activity enrichment batches at ≤10 activities per LLM call
+- `getCapabilityIds()` helper replaces all inline `?? ` coalesce patterns
+
+---
+
 ## Session 12 — Wiring and Testing
 **Date:** 2026-03-06
 **Status:** In progress

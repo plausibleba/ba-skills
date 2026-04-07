@@ -1,6 +1,6 @@
 # Current State — VCC Frontend
 
-_Last updated: 2026-03-31 — Session 28 (D-118 polish: dark mode, Network default, SideNav info icons) — v0.5.0 DRAFT_
+_Last updated: 2026-04-07 — Session 30 (D-097 graph index + Workbench catalog completeness) — v0.5.0 DRAFT_
 
 ---
 
@@ -309,6 +309,22 @@ SPAR design review completed with Technical Architect (GPT-4o) and Functional De
 
 ---
 
+### Session 29 — Bug Fixes + R-010 Strict Types (7 April 2026)
+
+**Bug fixes (4):**
+- PPIT role duplication: v5 field name fallback (`enabledByCapabilityIds`) + prompt improvement
+- Activity Flows empty: batched enrichment (≤10 activities/call, 700 tokens/activity) + canvas store fallback in `ActivityFlowsView`
+- Cross-mapping NBA: `mappingPairCount` from enrichment store, not empty `scaffold.elements.crossMaps`
+- Policy cards invisible: `mvcCards` feature flag enabled across all project modules
+
+**R-010 — Strict scaffold type interfaces (22 files, 454 insertions):**
+- New types: `PPITEntry`, `ScaffoldElements`, `ScaffoldRole`, `ScaffoldOutcome`, `ScaffoldTechnologyApp`, `ScaffoldConcept`
+- Helper: `getCapabilityIds(act)` resolves v4/v5 capability field name ambiguity
+- Expanded: `ScaffoldActivity` (capabilityPPIT, informationObjectIds, enabledByCapabilityIds, valueStreamId, stageNumber, description), `ScaffoldValueStream` (layoutZone, zone, accountableStakeholder, activityChainHead), `ScaffoldData` (layoutZones)
+- `as any` reduced 166 → 58 (65% reduction). Remaining in `@ts-nocheck` files.
+
+---
+
 ## Known Gaps / Next Steps
 
 ### Immediate (v0.5.0 completion)
@@ -317,18 +333,19 @@ SPAR design review completed with Technical Architect (GPT-4o) and Functional De
 3. **Stripe integration** — wire the upsell modal's "Upgrade" button to Stripe checkout for starter/individual tiers
 4. Wire "What's New" modal + version bump to v0.5.0 in app header
 
-### Near Term
-5. **Record-lifecycle coupling** — make Record → Outcome Lifecycle mapping explicit in scaffold (R-013, foundation for agentic orchestration)
-6. **Capability selector** — pick from existing capabilities before "create new" (D-097 Step 1 lite)
-7. **Client-side graph index** — in-memory adjacency map on bundle load (D-097 Step 1)
-8. **TypeScript type drift cleanup** — align types with runtime data (D-096)
-9. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
-10. Refactoring sprint using debt register (R-001 through R-015)
+### Near Term (Structural Hardening)
+5. ~~**TypeScript type drift cleanup (R-010)** — align types with runtime data~~ ✅ Session 29
+6. ~~**Client-side graph index** — in-memory adjacency map on bundle load (D-097 Step 1)~~ ✅ Session 30
+7. **Record-lifecycle coupling** — make Record → Outcome Lifecycle mapping explicit in scaffold (R-013, foundation for agentic orchestration)
+8. **Capability selector** — pick from existing capabilities before "create new" (D-097 Step 1 lite)
+9. **Remaining `as any` cleanup** — 58 instances remain in files with `@ts-nocheck` (FrictionView, CapabilityBlock, network-derivation)
+10. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
+11. Refactoring sprint using debt register (R-001 through R-015)
 
 ### Future
-11. **Agentic orchestration** — executable state machine driven by record lifecycle (R-013)
-12. **Ontology-as-schema validation** — formal metamodel definitions (D-097 Step 2)
-13. F-001 phase 2: delete observations, reassign binding constraint
-14. Multi-vendor support beyond Salesforce
-15. Eric Broda MVC demo — Governance Kernel overlay on StageCard
-16. Multi-user modelling backend (D-097 upgrade trigger)
+12. **Agentic orchestration** — executable state machine driven by record lifecycle (R-013)
+13. **Ontology-as-schema validation** — formal metamodel definitions (D-097 Step 2)
+14. F-001 phase 2: delete observations, reassign binding constraint
+15. Multi-vendor support beyond Salesforce
+16. Eric Broda MVC demo — Governance Kernel overlay on StageCard
+17. Multi-user modelling backend (D-097 upgrade trigger)

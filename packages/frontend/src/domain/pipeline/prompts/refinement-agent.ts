@@ -29,9 +29,17 @@ Common agent tasks: resequence stages, suggest missing stages, merge thin stages
 Each has: id, name, description, performedByRoleIds[], requiresCapabilityIds[], inputs[], outputs[].
 Common agent tasks: reassign capabilities, update role references, flag stages with no capabilities.`,
 
-  concepts: `Concepts (Business Objects / Information Objects) are the things the business talks about.
-Each has: id, name, classification (Party, Place, Thing, Event, Record, Abstract), description, properties[], relatedCapabilities[].
-Common agent tasks: reclassify, merge duplicates, suggest missing properties, flag ungrounded objects.`,
+  concepts: `Concepts are the ontological classes the organisation manages (Party, Record, Resource).
+Each has: id, name, type (Party/Record/Resource), definition, relationships[], anchorCapabilityIds[], properties[].
+Common agent tasks: reclassify triad type, merge duplicates, add relationships, flag concepts not linked to any capability.`,
+
+  informationObjects: `Information Objects are the data artefacts and records managed across value streams.
+Each has: id, name, description, lifecycleStates[].
+Common agent tasks: flag unlinked objects, add lifecycle states, merge duplicates, link to activities.`,
+
+  technologyApps: `Technology Applications (Systems) are the software systems that enable capabilities.
+Each has: id, name, vendor, category, description.
+Common agent tasks: categorise by vendor and function, flag systems with no capability linkage, add missing systems.`,
 
   roles: `Roles are the people or organisational units that perform activities.
 Each has: id, name, description, responsibilities[].

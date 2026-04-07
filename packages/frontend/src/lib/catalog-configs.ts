@@ -85,14 +85,49 @@ export const CATALOG_CONFIGS: Record<CatalogType, CatalogConfig> = {
     id: "concepts",
     label: "Concepts",
     icon: "🔷",
+    scaffoldKey: "concepts",
+    description: "Business concepts — the ontological classes the organisation manages",
+    qualityContribution: "Ontological — fixes what the org manages and how classes relate",
+    columns: [
+      { id: "name", header: "Name", accessorKey: "name", editable: true, editType: "text", width: "22%", pinned: true },
+      { id: "type", header: "Triad", accessorKey: "type", editable: true, editType: "dropdown", dropdownOptions: ["Party", "Record", "Resource"], width: "9%" },
+      { id: "definition", header: "Definition", accessorFn: "conceptDefinition", editable: true, editType: "text", width: "30%" },
+      { id: "lifecycleCount", header: "Lifecycle", accessorFn: "conceptLifecycleCount", editable: false, width: "8%" },
+      { id: "relCount", header: "Relations", accessorFn: "conceptRelationCount", editable: false, width: "8%" },
+      { id: "capCount", header: "Capabilities", accessorFn: "conceptCapabilityCount", editable: false, width: "10%" },
+      { id: "elementType", header: "Type", accessorKey: "elementType", editable: false, width: "10%", monospace: true },
+    ],
+  },
+
+  informationObjects: {
+    id: "informationObjects",
+    label: "Information Objects",
+    icon: "📄",
     scaffoldKey: "informationObjects",
-    description: "Business objects and information entities",
-    qualityContribution: "Ontological — fixes what the org manages",
+    description: "Data artefacts and records managed across value streams",
+    qualityContribution: "Data clarity — what information flows through the model",
     columns: [
       { id: "name", header: "Name", accessorKey: "name", editable: true, editType: "text", width: "25%", pinned: true },
       { id: "description", header: "Description", accessorKey: "description", editable: true, editType: "text", width: "35%" },
       { id: "lifecycleCount", header: "Lifecycle States", accessorFn: "conceptLifecycleCount", editable: false, width: "12%" },
+      { id: "activityCount", header: "Activities", accessorFn: "infoObjectActivityCount", editable: false, width: "10%" },
       { id: "elementType", header: "Type", accessorKey: "elementType", editable: false, width: "12%", monospace: true },
+    ],
+  },
+
+  technologyApps: {
+    id: "technologyApps",
+    label: "Systems",
+    icon: "💻",
+    scaffoldKey: "technologyApps",
+    description: "Technology applications and systems supporting capabilities",
+    qualityContribution: "Technology landscape — what systems enable the operating model",
+    columns: [
+      { id: "name", header: "Name", accessorKey: "name", editable: true, editType: "text", width: "25%", pinned: true },
+      { id: "vendor", header: "Vendor", accessorKey: "vendor", editable: true, editType: "text", width: "15%" },
+      { id: "category", header: "Category", accessorKey: "category", editable: true, editType: "text", width: "15%" },
+      { id: "description", header: "Description", accessorKey: "description", editable: true, editType: "text", width: "30%" },
+      { id: "elementType", header: "Type", accessorKey: "elementType", editable: false, width: "10%", monospace: true },
     ],
   },
 
@@ -134,6 +169,8 @@ export const ALL_CATALOGS: CatalogType[] = [
   "valueStreams",
   "activities",
   "concepts",
+  "informationObjects",
+  "technologyApps",
   "roles",
   "metrics",
 ];
@@ -208,6 +245,22 @@ export function resolveAccessor(
       const activities = Object.values(scaffoldData?.elements?.activities || {}) as any[];
       return activities.filter((a) =>
         a.performedByRoleIds?.includes(element.id)
+      ).length;
+    }
+
+    case "conceptDefinition":
+      return element.definition ?? element.description ?? "—";
+
+    case "conceptRelationCount":
+      return (element.relationships?.length ?? 0) + (element.relatedConceptIds?.length ?? 0);
+
+    case "conceptCapabilityCount":
+      return element.anchorCapabilityIds?.length ?? element.relatedCapabilityIds?.length ?? 0;
+
+    case "infoObjectActivityCount": {
+      const acts = Object.values(scaffoldData?.elements?.activities || {}) as any[];
+      return acts.filter((a) =>
+        a.informationObjectIds?.includes(element.id)
       ).length;
     }
 
