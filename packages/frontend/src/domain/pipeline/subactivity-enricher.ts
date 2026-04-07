@@ -167,9 +167,127 @@ ${JSON.stringify(ctx.capabilities, null, 2)}
 Return ONLY valid JSON — no markdown fences, no commentary.`;
 }
 
+// ── Post-processing: validate and fix linear DAGs ──
+// Sonnet sometimes produces purely sequential flows despite strong prompting.
+// Detect DAGs with no gates and inject a quality check gate at the midpoint.
+function postProcessDAGs(dagMap: Record<string, any>): { gateCount: number; linearCount: number } {
+  let gateCount = 0;
+  let linearCount = 0;
+  for (const [actId, dagData] of Object.entries(dagMap)) {
+    const nodes = (dagData as any)?.nodes;
+    if (!Array.isArray(nodes)) continue;
+    const hasGate = nodes.some((n: any) => n.nodeType === "gate");
+    if (hasGate) {
+      gateCount++;
+    } else {
+      linearCount++;
+      const mid = Math.floor(nodes.length / 2);
+      if (nodes.length >= 3 && mid > 0 && mid < nodes.length - 1) {
+        const beforeNode = nodes[mid - 1];
+        const afterNode = nodes[mid];
+        const gateId = `sa_${actId.replace(/[^a-z0-9]/gi, "_").slice(0, 12)}_gate`;
+        const rejectId = `sa_${actId.replace(/[^a-z0-9]/gi, "_").slice(0, 12)}_exception`;
+
+        const gateNode = {
+          id: gateId,
+          label: "Quality Check",
+          nodeType: "gate",
+          nextIds: [afterNode.id, rejectId],
+          edgeLabels: { [afterNode.id]: "Pass", [rejectId]: "Exception" },
+        };
+        const exceptionNode = {
+          id: rejectId,
+          label: "Handle Exception",
+          nodeType: "activity" as const,
+          nextIds: [] as string[],
+          roleId: beforeNode.roleId ?? nodes[0]?.roleId,
+          outcome: "Exception routed for resolution",
+        };
+
+        beforeNode.nextIds = [gateId];
+        nodes.splice(mid, 0, gateNode);
+        nodes.push(exceptionNode);
+      }
+    }
+  }
+  return { gateCount, linearCount };
+}
+
+/**
+ * Runs a single batch of activity flow generation for a subset of activities.
+ * Returns a parsed dagMap for the batch, or null on failure.
+ */
+async function runBatch(scaffold: any, activityIds: string[]): Promise<Record<string, any> | null> {
+  // Build a filtered scaffold view containing only this batch's activities
+  const batchScaffold = {
+    ...scaffold,
+    elements: {
+      ...scaffold.elements,
+      activities: Object.fromEntries(
+        activityIds.map((id) => [id, scaffold.elements.activities[id]])
+      ),
+    },
+  };
+
+  const batchCount = activityIds.length;
+  // ~700 tokens per activity DAG (accounts for PPIT activities + gate branching) + 1500 overhead
+  const maxTokens = Math.max(4096, batchCount * 700 + 1500);
+
+  const prompt = buildSubActivityPrompt(batchScaffold);
+
+  const llmRes = await callLLM({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: maxTokens,
+    temperature: 0,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  if (llmRes.stopReason === "max_tokens") {
+    console.warn(`Activity Flow batch (${batchCount} activities) response truncated — attempting partial recovery`);
+    // Try to salvage: find the last complete JSON object entry
+    const raw = llmRes.text.replace(/`{3}json|`{3}/g, "").trim();
+    return tryParsePartialJSON(raw);
+  }
+
+  return JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
+}
+
+/**
+ * Attempts to recover valid entries from truncated JSON.
+ * Finds the last valid closing brace for a nodes array and trims there.
+ */
+function tryParsePartialJSON(raw: string): Record<string, any> | null {
+  // Find the last occurrence of ]} which closes a "nodes" array, then close the outer object
+  let lastGoodIdx = -1;
+  let depth = 0;
+  for (let i = 0; i < raw.length; i++) {
+    if (raw[i] === "{") depth++;
+    else if (raw[i] === "}") {
+      depth--;
+      if (depth === 1) {
+        // Just closed an activity entry at the top-level object — mark as recovery point
+        lastGoodIdx = i;
+      }
+    }
+  }
+  if (lastGoodIdx > 0) {
+    const trimmed = raw.slice(0, lastGoodIdx + 1) + "}";
+    try {
+      const result = JSON.parse(trimmed);
+      const count = Object.keys(result).length;
+      console.log(`Partial JSON recovery: salvaged ${count} DAG(s) from truncated response`);
+      return result;
+    } catch { /* recovery failed */ }
+  }
+  return null;
+}
+
 /**
  * Runs sub-activity enrichment: generates DAGs and merges into scaffold in-place.
  * Non-fatal — if generation fails, the scaffold still works (just without DAGs).
+ *
+ * For large models (>10 activities), the work is split into batches to avoid
+ * exceeding the LLM's max_tokens limit and getting truncated responses.
  */
 export async function runSubActivityEnrichment(scaffold: any): Promise<SubActivityResult> {
   const activities = scaffold?.elements?.activities;
@@ -177,95 +295,66 @@ export async function runSubActivityEnrichment(scaffold: any): Promise<SubActivi
     return { success: true };
   }
 
-  const actCount = Object.keys(activities).length;
-  // ~500 tokens per activity DAG (3-8 nodes when PPIT activities are present) + overhead
-  const maxTokens = Math.max(4000, Math.min(20000, actCount * 500 + 1000));
-  console.log(`Derive Activity Flows: ${actCount} activities → max_tokens=${maxTokens}`);
+  const allActIds = Object.keys(activities);
+  const actCount = allActIds.length;
 
-  const prompt = buildSubActivityPrompt(scaffold);
+  // Batch sizing: keep each batch ≤10 activities to stay well within token limits
+  const BATCH_SIZE = 10;
+  const batches: string[][] = [];
+  for (let i = 0; i < allActIds.length; i += BATCH_SIZE) {
+    batches.push(allActIds.slice(i, i + BATCH_SIZE));
+  }
 
-  try {
-    const llmRes = await callLLM({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: maxTokens,
-      temperature: 0,
-      messages: [{ role: "user", content: prompt }],
-    });
+  console.log(`Derive Activity Flows: ${actCount} activities in ${batches.length} batch(es)`);
 
-    if (llmRes.stopReason === "max_tokens") {
-      console.warn("Activity Flow derivation response truncated — DAGs may be incomplete");
-    }
+  // Initialise subActivityGraphs
+  if (!scaffold.elements.subActivityGraphs) {
+    scaffold.elements.subActivityGraphs = {};
+  }
 
-    const dagMap = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
+  let totalMerged = 0;
+  let totalGates = 0;
+  let totalLinear = 0;
+  let batchErrors = 0;
 
-    // ── Post-processing: validate and fix linear DAGs ──
-    // Sonnet sometimes produces purely sequential flows despite strong prompting.
-    // Detect DAGs with no gates and flag them for the user.
-    let gateCount = 0;
-    let linearCount = 0;
-    for (const [actId, dagData] of Object.entries(dagMap)) {
-      const nodes = (dagData as any)?.nodes;
-      if (!Array.isArray(nodes)) continue;
-      const hasGate = nodes.some((n: any) => n.nodeType === "gate");
-      if (hasGate) {
-        gateCount++;
-      } else {
-        linearCount++;
-        // Inject a synthetic validation gate at the midpoint to ensure branching
-        // This is a structural improvement — every real process has at least one check point
-        const mid = Math.floor(nodes.length / 2);
-        if (nodes.length >= 3 && mid > 0 && mid < nodes.length - 1) {
-          const beforeNode = nodes[mid - 1];
-          const afterNode = nodes[mid];
-          const gateId = `sa_${actId.replace(/[^a-z0-9]/gi, "_").slice(0, 12)}_gate`;
-          const rejectId = `sa_${actId.replace(/[^a-z0-9]/gi, "_").slice(0, 12)}_exception`;
+  for (let bIdx = 0; bIdx < batches.length; bIdx++) {
+    const batch = batches[bIdx];
+    console.log(`Derive Activity Flows: batch ${bIdx + 1}/${batches.length} — ${batch.length} activities`);
 
-          // Create gate node
-          const gateNode = {
-            id: gateId,
-            label: "Quality Check",
-            nodeType: "gate",
-            nextIds: [afterNode.id, rejectId],
-            edgeLabels: { [afterNode.id]: "Pass", [rejectId]: "Exception" },
-          };
-          // Create exception branch terminal
-          const exceptionNode = {
-            id: rejectId,
-            label: "Handle Exception",
-            nodeType: "activity" as const,
-            nextIds: [] as string[],
-            roleId: beforeNode.roleId ?? nodes[0]?.roleId,
-            outcome: "Exception routed for resolution",
-          };
+    try {
+      const dagMap = await runBatch(scaffold, batch);
+      if (!dagMap || Object.keys(dagMap).length === 0) {
+        console.warn(`Batch ${bIdx + 1} returned no valid DAGs`);
+        batchErrors++;
+        continue;
+      }
 
-          // Wire: beforeNode → gate → (afterNode | exception)
-          beforeNode.nextIds = [gateId];
-          nodes.splice(mid, 0, gateNode);
-          nodes.push(exceptionNode);
+      // Post-process: inject gates for linear DAGs
+      const { gateCount, linearCount } = postProcessDAGs(dagMap);
+      totalGates += gateCount;
+      totalLinear += linearCount;
+
+      // Merge batch results into scaffold
+      for (const [actId, dagData] of Object.entries(dagMap)) {
+        if (activities[actId]) {
+          scaffold.elements.subActivityGraphs[actId] = dagData;
+          totalMerged++;
         }
       }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error(`Derive Activity Flows batch ${bIdx + 1} failed:`, msg);
+      batchErrors++;
+      // Continue with remaining batches — partial results are better than none
     }
-    if (linearCount > 0) {
-      console.warn(`Derive Activity Flows: ${linearCount}/${gateCount + linearCount} DAGs had no decision gates — injected quality check gates`);
-    }
-
-    // Merge DAGs into scaffold
-    if (!scaffold.elements.subActivityGraphs) {
-      scaffold.elements.subActivityGraphs = {};
-    }
-    let merged = 0;
-    for (const [actId, dagData] of Object.entries(dagMap)) {
-      if (activities[actId]) {
-        scaffold.elements.subActivityGraphs[actId] = dagData;
-        merged++;
-      }
-    }
-    console.log(`Derive Activity Flows: merged DAGs for ${merged}/${actCount} activities (${gateCount} with natural gates, ${linearCount} with injected gates)`);
-
-    return { success: true };
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    console.error("Derive Activity Flows failed:", msg);
-    return { success: false, error: msg };
   }
+
+  if (totalLinear > 0) {
+    console.warn(`Derive Activity Flows: ${totalLinear}/${totalGates + totalLinear} DAGs had no decision gates — injected quality check gates`);
+  }
+  console.log(`Derive Activity Flows: merged ${totalMerged}/${actCount} DAGs (${totalGates} natural gates, ${totalLinear} injected gates, ${batchErrors} batch errors)`);
+
+  return totalMerged > 0
+    ? { success: true }
+    : { success: false, error: `All ${batches.length} batch(es) failed` };
 }
