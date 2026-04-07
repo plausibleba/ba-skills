@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
+import { tv } from "../theme.ts";
 import type {
   FrictionObservation,
   HeatmapData,
@@ -848,7 +849,7 @@ function ObservationTypeSection({
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold text-gray-900">{typeMeta.label}</h3>
+            <h3 className="text-sm font-bold" style={{ color: tv.textPrimary }}>{typeMeta.label}</h3>
             <span
               className="rounded-full px-2 py-0.5 text-[10px] font-bold"
               style={{ background: typeMeta.colour.bg, color: typeMeta.colour.text }}
@@ -856,14 +857,15 @@ function ObservationTypeSection({
               {items.length}
             </span>
           </div>
-          <p className="text-[10px] text-gray-500 leading-relaxed mt-0.5 max-w-2xl">
+          <p className="text-[10px] leading-relaxed mt-0.5 max-w-2xl" style={{ color: tv.textDim }}>
             {typeMeta.description}
           </p>
         </div>
         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={onImport}
-            className="flex items-center gap-1 rounded-md border border-gray-200 px-2 py-1 text-[10px] font-medium text-gray-500 hover:bg-gray-50"
+            className="flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-medium"
+            style={{ borderColor: tv.borderSubtle, color: tv.textDim }}
             title={`Import ${typeMeta.label} from spreadsheet`}
           >
             <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
