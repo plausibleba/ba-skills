@@ -10,6 +10,7 @@
 
 import { useState, useMemo } from "react";
 import type { SubActivity } from "../types";
+import { useCanvasStore } from "../store/canvas-store";
 
 // ── Theme (matches WorkbenchView dulled palette) ──
 
@@ -284,11 +285,37 @@ function EmptyState() {
 // ── Main component ──
 
 export function ActivityFlowsView({ scaffoldData }: { scaffoldData: any }) {
+  // Read canvas store scaffold as fallback — enrichment may update the canvas store
+  // before the prop scaffold reflects the change (same pattern as StructuredGraphExplorer).
+  const canvasScaffold = useCanvasStore((s) => s.scaffoldData);
+
   const els = scaffoldData?.elements ?? {};
   const vsEntries = Object.entries(els.valueStreams ?? {}) as [string, any][];
   const activities = els.activities ?? {};
   const roles = els.roles ?? {};
-  const subActivityGraphs = els.subActivityGraphs ?? {};
+
+  // Merge subActivityGraphs from both the prop scaffold AND the canvas store.
+  // The enricher writes to the canvas store scaffold; if the prop is a stale
+  // workingScaffold clone, it won't have the latest DAGs. The canvas store
+  // fallback ensures we always find them (matches StructuredGraphExplorer pattern).
+  const propGraphs = els.subActivityGraphs ?? {};
+  const canvasGraphs = (canvasScaffold as any)?.elements?.subActivityGraphs ?? {};
+  const subActivityGraphs = useMemo(() => {
+    const propCount = Object.keys(propGraphs).length;
+    const canvasCount = Object.keys(canvasGraphs).length;
+    // Diagnostic: log data sources so we can trace empty-state issues
+    if (propCount === 0 && canvasCount === 0) {
+      console.debug("[ActivityFlowsView] No subActivityGraphs in prop or canvas store");
+    } else if (propCount === 0 && canvasCount > 0) {
+      console.debug(`[ActivityFlowsView] Prop scaffold missing graphs — using canvas store fallback (${canvasCount} DAGs)`);
+    } else {
+      console.debug(`[ActivityFlowsView] Using prop scaffold graphs (${propCount} DAGs)`);
+    }
+    // If prop already has graphs, use them; otherwise fall back to canvas store
+    if (propCount > 0) return propGraphs;
+    if (canvasCount > 0) return canvasGraphs;
+    return {};
+  }, [propGraphs, canvasGraphs]);
 
   // Build structure: VS → activities → DAGs
   const vsFlows = useMemo(() => {
