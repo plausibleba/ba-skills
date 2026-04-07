@@ -1,23 +1,25 @@
 import { useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
+import type { AppPhase } from "../store/canvas-store.ts";
 import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
 import { useProjectStore } from "../store/project-store.ts";
 import { useThemeStore } from "../store/theme-store.ts";
 
 type GuideState = "empty" | "network" | "workbench" | "stage-no-assessment" | "stage-assessed" | "stage-enriched";
 
+/** R-001: Derive guide state from AppPhase (single source of truth) */
 function deriveGuideState(
-  viewMode: string,
+  phase: AppPhase,
   isLoaded: boolean,
   hasAssessment: boolean,
   isEnriched: boolean,
 ): GuideState {
   if (!isLoaded) return "empty";
-  if (viewMode === "workbench") return "workbench";
-  if (viewMode === "network") return "network";
-  if (viewMode === "stage" && !hasAssessment) return "stage-no-assessment";
-  if (viewMode === "stage" && hasAssessment && !isEnriched) return "stage-assessed";
-  if (viewMode === "stage" && isEnriched) return "stage-enriched";
+  if (phase.phase === "workbench") return "workbench";
+  if (phase.phase === "network") return "network";
+  if (phase.phase === "stage" && !hasAssessment) return "stage-no-assessment";
+  if (phase.phase === "stage" && hasAssessment && !isEnriched) return "stage-assessed";
+  if (phase.phase === "stage" && isEnriched) return "stage-enriched";
   return "empty";
 }
 
@@ -204,7 +206,7 @@ const INTAKE_FORM_CONTENT: GuideContent = {
 };
 
 export function UserGuidePanel() {
-  const { appPhase, viewMode, scaffoldData, heatmapsByVs, canvasViewModel, enrichVersion } = useCanvasStore();
+  const { appPhase, scaffoldData, heatmapsByVs, canvasViewModel, enrichVersion } = useCanvasStore();
   const features = useModuleFeatures();
   const currentModule = useProjectStore((s) => s.currentModule);
   const [collapsed, setCollapsed] = useState(true);
@@ -217,7 +219,7 @@ export function UserGuidePanel() {
   const isEnriched = (enrichVersion ?? 0) > 0;
 
   // R-001: Content selection driven by appPhase (single source of truth)
-  const state = deriveGuideState(viewMode, isLoaded, hasAssessment, isEnriched);
+  const state = deriveGuideState(appPhase, isLoaded, hasAssessment, isEnriched);
   const content = appPhase.phase === "creatingProject"
     ? CREATING_PROJECT_CONTENT
     : appPhase.phase === "intake" && appPhase.tab === "form"

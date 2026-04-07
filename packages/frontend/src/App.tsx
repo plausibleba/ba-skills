@@ -40,8 +40,7 @@ export default function App() {
   const {
     scaffoldData,
     canvasViewModel,
-    viewMode,
-    enrichSection,
+    appPhase,
     error,
     backToNetwork,
     goToIntake,
@@ -243,16 +242,18 @@ export default function App() {
   }, []);
 
   const isLoaded = !!scaffoldData;
-  const isNetwork = viewMode === "network";
-  const isStage = viewMode === "stage" && (!!canvasViewModel || loading);
-  const isStageReady = viewMode === "stage" && !!canvasViewModel;
-  const isIntake = viewMode === "intake";
-  const isImport = viewMode === "import";
-  const isCapabilityMap = viewMode === "capabilityMap";
-  const isConceptGraph = viewMode === "conceptGraph";
-  const isFriction = viewMode === "friction";
-  const isEnrich = viewMode === "enrich";
-  const isWorkbench = viewMode === "workbench";
+  const phase = appPhase.phase;
+  const isNetwork = phase === "network";
+  const isStage = phase === "stage" && (!!canvasViewModel || loading);
+  const isStageReady = phase === "stage" && !!canvasViewModel;
+  const isIntake = phase === "intake";
+  const isImport = phase === "import";
+  const isCapabilityMap = phase === "capabilityMap";
+  const isConceptGraph = phase === "conceptGraph";
+  const isFriction = phase === "friction";
+  const isEnrich = phase === "enrich";
+  const isWorkbench = phase === "workbench";
+  const enrichSection = appPhase.phase === "enrich" ? appPhase.section : null;
   const workbenchActive = useWorkbenchStore((s) => s.isActive);
 
   // Auth gate: show login page if not authenticated and not local mode

@@ -84,8 +84,10 @@ function enrichSectionFromPhase(p: AppPhase): EnrichSection {
 interface CanvasState {
   // View navigation (R-001: appPhase is the source of truth)
   appPhase: AppPhase;
-  viewMode: ViewMode;           // derived from appPhase for compat
-  enrichSection: EnrichSection; // derived from appPhase for compat
+  /** @deprecated R-001 Phase 2: use appPhase.phase instead. Kept for remaining consumers (analytics, enrichment/shared). */
+  viewMode: ViewMode;
+  /** @deprecated R-001 Phase 2: use appPhase.section instead. Kept for remaining consumers. */
+  enrichSection: EnrichSection;
   selectedVsId: string | null;
 
   // Data

@@ -145,7 +145,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
 
   const {
     scaffoldData,
-    viewMode,
+    appPhase,
     backToNetwork,
     goToIntake,
     goToImport,
@@ -156,6 +156,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
 
   const workbenchActive = useWorkbenchStore((s) => s.isActive);
   const isLoaded = !!scaffoldData;
+  const phase = appPhase.phase;
 
   // Navigate back to project list
   const goToProjects = async () => {
@@ -193,7 +194,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     goToImport();
   };
 
-  const enrichSection = useCanvasStore((s) => s.enrichSection);
+  const enrichSection = appPhase.phase === "enrich" ? appPhase.section : null;
 
   /* ── Build nav items ──────────────────────────────── */
 
@@ -206,7 +207,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
       label: "Projects",
       icon: <IconProjects />,
       onClick: goToProjects,
-      active: !isLoaded && viewMode !== "intake",
+      active: !isLoaded && phase !== "intake",
     });
   }
 
@@ -218,7 +219,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     label: "Discovery",
     icon: <IconDiscovery />,
     onClick: goToIntake,
-    active: viewMode === "intake",
+    active: phase === "intake",
     indent: true,
   });
 
@@ -227,7 +228,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     label: "Import Model",
     icon: <IconImport />,
     onClick: handleImportClick,
-    active: viewMode === "import",
+    active: phase === "import",
     indent: true,
   });
 
@@ -236,7 +237,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     label: "Workbench",
     icon: <IconWorkbench />,
     onClick: goToWorkbench,
-    active: viewMode === "workbench" && workbenchActive,
+    active: phase === "workbench" && workbenchActive,
     disabled: !isLoaded,
     indent: true,
   });
@@ -249,7 +250,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     label: "Network",
     icon: <IconNetwork />,
     onClick: backToNetwork,
-    active: viewMode === "network",
+    active: phase === "network",
     disabled: !isLoaded,
     indent: true,
   });
@@ -259,7 +260,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     label: "Value Streams",
     icon: <IconStream />,
     onClick: goToStream,
-    active: viewMode === "stage",
+    active: phase === "stage",
     disabled: !isLoaded,
     indent: true,
   });
@@ -269,7 +270,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     label: "Capabilities",
     icon: <IconCapabilities />,
     onClick: goToCapabilityMap,
-    active: viewMode === "capabilityMap",
+    active: phase === "capabilityMap",
     disabled: !isLoaded,
     indent: true,
   });
@@ -279,7 +280,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     label: "Concepts",
     icon: <IconConcepts />,
     onClick: goToConceptGraph,
-    active: viewMode === "conceptGraph",
+    active: phase === "conceptGraph",
     disabled: !isLoaded,
     indent: true,
   });
@@ -292,7 +293,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     label: "Structure",
     icon: <IconEnrich />,
     onClick: () => goToEnrich("structure"),
-    active: viewMode === "enrich" && enrichSection === "structure",
+    active: phase === "enrich" && enrichSection === "structure",
     disabled: !isLoaded,
     indent: true,
   });
@@ -302,7 +303,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     label: "Cross-Mapping",
     icon: <IconEnrich />,
     onClick: () => goToEnrich("mapping"),
-    active: viewMode === "enrich" && enrichSection === "mapping",
+    active: phase === "enrich" && enrichSection === "mapping",
     disabled: !isLoaded,
     indent: true,
   });
@@ -312,7 +313,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     label: "Friction",
     icon: <IconEnrich />,
     onClick: () => goToEnrich("friction"),
-    active: viewMode === "enrich" && enrichSection === "friction",
+    active: phase === "enrich" && enrichSection === "friction",
     disabled: !isLoaded,
     indent: true,
   });
@@ -322,7 +323,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     label: "Assessment",
     icon: <IconEnrich />,
     onClick: () => goToEnrich("assessment"),
-    active: viewMode === "enrich" && enrichSection === "assessment",
+    active: phase === "enrich" && enrichSection === "assessment",
     disabled: !isLoaded,
     indent: true,
   });
@@ -332,7 +333,7 @@ export function SideNav({ onOpenAccountSettings }: SideNavProps) {
     label: "Custom Skills",
     icon: <IconEnrich />,
     onClick: () => goToEnrich("custom"),
-    active: viewMode === "enrich" && enrichSection === "custom",
+    active: phase === "enrich" && enrichSection === "custom",
     disabled: !isLoaded,
     indent: true,
   });
