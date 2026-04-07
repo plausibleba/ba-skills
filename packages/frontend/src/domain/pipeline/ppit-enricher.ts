@@ -7,6 +7,7 @@
 
 import { callLLM } from "./llm-client";
 import { buildPPITPrompt } from "./prompts/pass-c-ppit-enrichment";
+import { ScaffoldData, ScaffoldActivity, getCapabilityIds, PPITEntry } from "../../types";
 
 export interface PPITResult {
   success: boolean;
@@ -17,7 +18,7 @@ export interface PPITResult {
  * Runs Pass C: generates PPIT and merges it into the scaffold in-place.
  * Non-fatal — if PPIT generation fails, the scaffold still works (just without PPIT).
  */
-export async function runPassC(scaffold: any): Promise<PPITResult> {
+export async function runPassC(scaffold: ScaffoldData): Promise<PPITResult> {
   const activities = scaffold?.elements?.activities;
   if (!activities || Object.keys(activities).length === 0) {
     return { success: true }; // nothing to enrich
@@ -27,7 +28,7 @@ export async function runPassC(scaffold: any): Promise<PPITResult> {
   // Handle both v4 (requiresCapabilityIds) and v5 (enabledByCapabilityIds) field names
   let pairCount = 0;
   for (const act of Object.values(activities)) {
-    pairCount += ((act as any).enabledByCapabilityIds ?? (act as any).requiresCapabilityIds ?? []).length;
+    pairCount += getCapabilityIds(act as ScaffoldActivity).length;
   }
   // ~200 tokens per PPIT entry + overhead
   const maxTokens = Math.max(4000, Math.min(16000, pairCount * 200 + 1000));
@@ -47,13 +48,14 @@ export async function runPassC(scaffold: any): Promise<PPITResult> {
       console.warn("Pass C response truncated at max_tokens — PPIT may be incomplete");
     }
 
-    const ppitMap = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
+    const ppitMap = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim()) as Record<string, PPITEntry>;
 
     // Merge PPIT into scaffold activities
     let merged = 0;
     for (const [actId, capPPIT] of Object.entries(ppitMap)) {
       if (activities[actId]) {
-        activities[actId].capabilityPPIT = capPPIT;
+        const activity = activities[actId] as ScaffoldActivity;
+        activity.capabilityPPIT = capPPIT as unknown as Record<string, PPITEntry>;
         merged++;
       }
     }

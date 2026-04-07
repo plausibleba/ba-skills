@@ -10,57 +10,62 @@
 // DECISION LOG:
 // - Session 27: Split from Pass B to reduce output size and improve reliability
 
+import { ScaffoldData, ScaffoldActivity, ScaffoldElements, getCapabilityIds } from "../../../types";
+
 /**
  * Builds a compact context from the scaffold for PPIT generation.
  * Only includes what the LLM needs: activity–capability–role–IO–tech mappings.
  */
-function buildPPITContext(scaffold: any): {
-  activities: any[];
+function buildPPITContext(scaffold: ScaffoldData): {
+  activities: Record<string, unknown>[];
   capabilities: Record<string, string>;
   roles: Record<string, string>;
   informationObjects: Record<string, string>;
   tech: Record<string, string>;
 } {
-  const els = scaffold.elements ?? {};
+  const els = scaffold.elements ?? {} as ScaffoldElements;
 
   // Activity summaries (just what PPIT needs)
   // Handle both v4 (requiresCapabilityIds) and v5 (enabledByCapabilityIds) field names
-  const activities = Object.entries(els.activities ?? {}).map(([id, act]: [string, any]) => ({
-    id,
-    name: act.name,
-    requiresCapabilityIds: act.enabledByCapabilityIds ?? act.requiresCapabilityIds ?? [],
-    performedByRoleIds: act.performedByRoleIds ?? [],
-    informationObjectIds: act.informationObjectIds ?? [],
-  }));
+  const activities = Object.entries(els.activities ?? {}).map(([id, act]) => {
+    const activity = act as unknown as ScaffoldActivity;
+    return {
+      id,
+      name: activity.name,
+      requiresCapabilityIds: getCapabilityIds(activity),
+      performedByRoleIds: activity.performedByRoleIds ?? [],
+      informationObjectIds: activity.informationObjectIds ?? [],
+    };
+  });
 
   // Name lookups
   const capabilities: Record<string, string> = {};
   for (const [id, cap] of Object.entries(els.capabilities ?? {})) {
-    capabilities[id] = (cap as any).name ?? id;
+    capabilities[id] = (cap as unknown as { name?: string }).name ?? id;
   }
 
   const roles: Record<string, string> = {};
   for (const [id, r] of Object.entries(els.roles ?? {})) {
-    roles[id] = (r as any).name ?? id;
+    roles[id] = (r as unknown as { name?: string }).name ?? id;
   }
 
   const informationObjects: Record<string, string> = {};
   for (const [id, io] of Object.entries(els.informationObjects ?? {})) {
-    informationObjects[id] = (io as any).name ?? id;
+    informationObjects[id] = (io as unknown as { name?: string }).name ?? id;
   }
 
   // Tech: check multiple possible registry names
   const tech: Record<string, string> = {};
   for (const key of ["technologyApplications", "technologyApps"]) {
-    for (const [id, t] of Object.entries(els[key] ?? {})) {
-      tech[id] = (t as any).name ?? id;
+    for (const [id, t] of Object.entries((els as Record<string, Record<string, unknown>>)[key] ?? {})) {
+      tech[id] = (t as unknown as { name?: string }).name ?? id;
     }
   }
 
   return { activities, capabilities, roles, informationObjects, tech };
 }
 
-export function buildPPITPrompt(scaffold: any): string {
+export function buildPPITPrompt(scaffold: ScaffoldData): string {
   const ctx = buildPPITContext(scaffold);
 
   return `You are a business architect enriching an operating model with PPIT (People, Process, Information, Technology) decompositions.

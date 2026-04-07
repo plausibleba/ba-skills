@@ -428,34 +428,39 @@ export function useEnrichmentActions() {
 
           // Compute change summary BEFORE updating the store (we have before+after)
           const afterCards = progress.cardRegistry ?? store.cardRegistry;
-          const changeSummary = computeChangeSummary(
-            card.id,
-            snapshot.scaffold,
-            progress.scaffold,
-            snapshot.cardRegistry,
-            afterCards,
-          );
+          let changeSummary = undefined;
+          if (progress.scaffold) {
+            changeSummary = computeChangeSummary(
+              card.id,
+              snapshot.scaffold,
+              progress.scaffold,
+              snapshot.cardRegistry,
+              afterCards,
+            );
 
-          // Update canvas store with enriched scaffold
-          const s = useCanvasStore.getState();
-          s.loadScaffold(progress.scaffold);
-          if (progress.cardRegistry) {
-            s.loadCards(progress.cardRegistry);
+            // Update canvas store with enriched scaffold
+            const s = useCanvasStore.getState();
+            s.loadScaffold(progress.scaffold);
+            if (progress.cardRegistry) {
+              s.loadCards(progress.cardRegistry);
+            }
+
+            // Mark scaffold dirty so auto-save persists enrichment results to Supabase.
+            // loadScaffold doesn't set scaffoldDirty (it's designed for initial load),
+            // so without this, enrichment data stays in memory but is never saved.
+            useCanvasStore.setState({ scaffoldDirty: true });
           }
 
-          // Mark scaffold dirty so auto-save persists enrichment results to Supabase.
-          // loadScaffold doesn't set scaffoldDirty (it's designed for initial load),
-          // so without this, enrichment data stays in memory but is never saved.
-          useCanvasStore.setState({ scaffoldDirty: true });
-
           // Create review result for the user to review and commit
-          enrichmentStore.addReviewResult({
-            cardId: card.id,
-            label: card.label,
-            timestamp: Date.now(),
-            changeSummary,
-            committed: false,
-          });
+          if (changeSummary) {
+            enrichmentStore.addReviewResult({
+              cardId: card.id,
+              label: card.label,
+              timestamp: Date.now(),
+              changeSummary,
+              committed: false,
+            });
+          }
 
           enrichmentStore.markCompleted(card.id);
           enrichmentStore.setRunning(null);

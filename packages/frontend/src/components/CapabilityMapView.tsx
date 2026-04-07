@@ -18,7 +18,8 @@ function isGov(name: string): boolean {
 }
 
 function isGovCap(cap: CapNode): boolean {
-  if ((cap as any).type === "Governance") return true;
+  const c = cap as unknown as Record<string, unknown>;
+  if (c.type === "Governance") return true;
   return false;
 }
 

@@ -299,7 +299,7 @@ export function ActivityFlowsView({ scaffoldData }: { scaffoldData: any }) {
   // workingScaffold clone, it won't have the latest DAGs. The canvas store
   // fallback ensures we always find them (matches StructuredGraphExplorer pattern).
   const propGraphs = els.subActivityGraphs ?? {};
-  const canvasGraphs = (canvasScaffold as any)?.elements?.subActivityGraphs ?? {};
+  const canvasGraphs = canvasScaffold?.elements?.subActivityGraphs ?? {};
   const subActivityGraphs = useMemo(() => {
     const propCount = Object.keys(propGraphs).length;
     const canvasCount = Object.keys(canvasGraphs).length;

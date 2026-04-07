@@ -23,6 +23,7 @@ import type {
   ScaffoldCapability,
   ScaffoldElement,
   ScaffoldInfoObject,
+  ScaffoldConcept,
 } from "../types.ts";
 
 /* ── Helpers ─────────────────────────────────────────────── */
@@ -430,7 +431,7 @@ function parseValueStreams(wb: XLSX.WorkBook): {
 
         // Store description as a property (it's used by various views)
         if (desc) {
-          (activities[actId] as any).description = desc;
+          activities[actId].description = desc;
         }
 
         activityIds.push(actId);
@@ -611,8 +612,8 @@ function classifyConcept(
 function parseConcepts(
   wb: XLSX.WorkBook,
   infoObjects: Record<string, ScaffoldInfoObject>,
-): Record<string, unknown> {
-  const concepts: Record<string, unknown> = {};
+): Record<string, ScaffoldConcept> {
+  const concepts: Record<string, ScaffoldConcept> = {};
 
   const sheet = findSheet(wb, "information map");
 
@@ -652,6 +653,7 @@ function parseConcepts(
 
       concepts[id] = {
         id,
+        elementType: "Concept",
         name: io.name,
         type: conceptType,
         definition: io.description,
@@ -668,6 +670,7 @@ function parseConcepts(
     const ioName = io.name ?? id;
     concepts[id] = {
       id,
+      elementType: "Concept",
       name: ioName,
       type: classifyConcept(ioName),
       definition: io.description,

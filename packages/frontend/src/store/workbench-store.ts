@@ -2,7 +2,7 @@
 // Session 26: Phase 1 foundation (ephemeral state, commit model)
 
 import { create } from "zustand";
-import type { ScaffoldData } from "../types";
+import type { ScaffoldData, ScaffoldElements } from "../types";
 
 // ── Catalog types ──
 
@@ -140,7 +140,7 @@ function deepClone<T>(obj: T): T {
 function applyDiffToScaffold(scaffold: ScaffoldData, op: DiffOperation): ScaffoldData {
   const clone = deepClone(scaffold);
   const key = CATALOG_SCAFFOLD_KEY[op.catalog];
-  const registry = (clone.elements as any)[key] ?? {};
+  const registry = (clone.elements[key as keyof ScaffoldElements] as Record<string, unknown>) ?? {};
 
   switch (op.action) {
     case "add":
@@ -150,7 +150,7 @@ function applyDiffToScaffold(scaffold: ScaffoldData, op: DiffOperation): Scaffol
     case "modify":
     case "move":
       if (registry[op.elementId]) {
-        (registry[op.elementId] as any)[op.field] = op.after;
+        (registry[op.elementId] as Record<string, unknown>)[op.field] = op.after;
       }
       break;
 
@@ -160,9 +160,9 @@ function applyDiffToScaffold(scaffold: ScaffoldData, op: DiffOperation): Scaffol
       if (op.cascadeUpdates) {
         for (const cu of op.cascadeUpdates) {
           const cuKey = CATALOG_SCAFFOLD_KEY[cu.catalog];
-          const cuReg = (clone.elements as any)[cuKey];
+          const cuReg = (clone.elements[cuKey as keyof ScaffoldElements] as Record<string, unknown> | undefined);
           if (cuReg?.[cu.elementId]) {
-            (cuReg[cu.elementId] as any)[cu.field] = cu.after;
+            (cuReg[cu.elementId] as Record<string, unknown>)[cu.field] = cu.after;
           }
         }
       }
@@ -177,9 +177,9 @@ function applyDiffToScaffold(scaffold: ScaffoldData, op: DiffOperation): Scaffol
       if (op.cascadeUpdates) {
         for (const cu of op.cascadeUpdates) {
           const cuKey = CATALOG_SCAFFOLD_KEY[cu.catalog];
-          const cuReg = (clone.elements as any)[cuKey];
+          const cuReg = (clone.elements[cuKey as keyof ScaffoldElements] as Record<string, unknown> | undefined);
           if (cuReg?.[cu.elementId]) {
-            (cuReg[cu.elementId] as any)[cu.field] = cu.after;
+            (cuReg[cu.elementId] as Record<string, unknown>)[cu.field] = cu.after;
           }
         }
       }
@@ -188,23 +188,24 @@ function applyDiffToScaffold(scaffold: ScaffoldData, op: DiffOperation): Scaffol
     case "split":
       delete registry[op.sourceId];
       for (const el of op.newElements) {
-        if ((el as any).id) {
-          registry[(el as any).id] = el;
+        const elem = el as Record<string, unknown>;
+        if (elem.id) {
+          registry[elem.id as string] = el;
         }
       }
       if (op.cascadeUpdates) {
         for (const cu of op.cascadeUpdates) {
           const cuKey = CATALOG_SCAFFOLD_KEY[cu.catalog];
-          const cuReg = (clone.elements as any)[cuKey];
+          const cuReg = (clone.elements[cuKey as keyof ScaffoldElements] as Record<string, unknown> | undefined);
           if (cuReg?.[cu.elementId]) {
-            (cuReg[cu.elementId] as any)[cu.field] = cu.after;
+            (cuReg[cu.elementId] as Record<string, unknown>)[cu.field] = cu.after;
           }
         }
       }
       break;
   }
 
-  (clone.elements as any)[key] = registry;
+  (clone.elements[key as keyof ScaffoldElements] as any) = registry;
   return clone;
 }
 
@@ -401,7 +402,7 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
     const { workingScaffold } = get();
     if (!workingScaffold) return;
     const key = CATALOG_SCAFFOLD_KEY[catalog];
-    const registry = (workingScaffold.elements as any)[key];
+    const registry = (workingScaffold.elements[key as keyof ScaffoldElements] as Record<string, unknown> | undefined);
     const current = registry?.[elementId];
     if (!current) return;
 
@@ -410,13 +411,14 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
       catalog,
       elementId,
       field,
-      before: (current as any)[field],
+      before: (current as Record<string, unknown>)[field],
       after: value,
     });
   },
 
   addElement: (catalog, element) => {
-    const id = (element as any).id || `${catalog.slice(0, 3)}_new_${Date.now()}`;
+    const elem = element as Record<string, unknown>;
+    const id = (elem.id as string) || `${catalog.slice(0, 3)}_new_${Date.now()}`;
     get().applyEdit({
       action: "add",
       catalog,
@@ -456,7 +458,7 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
     // Check: capabilities referenced by at least one activity
     for (const [capId, cap] of Object.entries(els.capabilities || {})) {
       const referenced = Object.values(els.activities || {}).some(
-        (a: any) => a.requiresCapabilityIds?.includes(capId)
+        (a: any) => (a.requiresCapabilityIds as string[] | undefined)?.includes(capId)
       );
       if (!referenced) {
         issues.push({

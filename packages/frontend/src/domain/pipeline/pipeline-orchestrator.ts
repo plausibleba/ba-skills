@@ -19,6 +19,7 @@ import type { CardRegistry } from "../../types/cards";
 import { callLLM } from "./llm-client";
 import { buildPass1Prompt } from "./prompts/pass-a1-value-streams";
 import { buildPass2Prompt } from "./prompts/pass-a2-capability-mapping";
+import { ScaffoldData, ScaffoldActivity, ScaffoldCapability, PPITEntry, getCapabilityIds } from "../../types";
 
 // ── Post-Pass-B enrichment: inject capability hierarchy from DiscoveryIR ────
 // Pass B generates flat L4 capabilities. This function adds L1/L2/L3 hierarchy
@@ -32,15 +33,15 @@ import { buildPass2Prompt } from "./prompts/pass-a2-capability-mapping";
 // 1. Add L1/L2/L3 nodes from the hierarchy
 // 2. Try exact name match first for L4s
 // 3. Fall back: assign unmatched scaffold capabilities to their best-fit L3 group
-function injectCapabilityHierarchy(scaffold: any, ir: DiscoveryIR): void {
+function injectCapabilityHierarchy(scaffold: ScaffoldData, ir: DiscoveryIR): void {
   if (!scaffold?.elements?.capabilities || !ir.capabilityMap?.l1Areas?.length) return;
 
-  const caps = scaffold.elements.capabilities as Record<string, any>;
+  const caps = scaffold.elements.capabilities as Record<string, ScaffoldCapability>;
 
   // Build lookup from capability name → existing cap id (case-insensitive)
   const nameToId: Record<string, string> = {};
   for (const [id, cap] of Object.entries(caps)) {
-    if ((cap as any).name) nameToId[(cap as any).name.toLowerCase()] = id;
+    if (cap.name) nameToId[cap.name.toLowerCase()] = id;
   }
 
   // Track which scaffold caps get matched
@@ -53,8 +54,8 @@ function injectCapabilityHierarchy(scaffold: any, ir: DiscoveryIR): void {
     const l1Id = makeId("cap_l1", l1.name);
     caps[l1Id] = {
       id: l1Id, name: l1.name, elementType: "Capability",
-      level: 1, type: l1.type ?? "Execution",
-    };
+      level: 1,
+    } as ScaffoldCapability;
 
     for (const l2 of l1.domains ?? []) {
       const l2Id = makeId("cap_l2", l2.name);
@@ -65,10 +66,9 @@ function injectCapabilityHierarchy(scaffold: any, ir: DiscoveryIR): void {
       l2Ids.push(l2Id);
 
       // Detect 4-level vs 3-level format
-      const l2Any = l2 as any;
-      if (l2Any.capabilityGroups?.length) {
+      if (l2.capabilityGroups?.length) {
         // 4-level: L2 > L3 capabilityGroups > L4 capabilities
-        for (const l3 of l2Any.capabilityGroups) {
+        for (const l3 of l2.capabilityGroups) {
           const l3Id = makeId("cap_l3", l3.name);
           caps[l3Id] = {
             id: l3Id, name: l3.name, elementType: "Capability",
@@ -161,14 +161,14 @@ function injectCapabilityHierarchy(scaffold: any, ir: DiscoveryIR): void {
 // ── Post-Pass-B enrichment: derive concepts from scaffold + DiscoveryIR ──────
 // Uses DiscoveryIR for Resources (tech) since scaffold often doesn't have them.
 // Selective about Records — only key business objects, not every IO.
-export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): void {
+export function deriveConceptsFromScaffold(scaffold: ScaffoldData, ir?: DiscoveryIR): void {
   if (!scaffold?.elements) return;
-  const concepts: Record<string, any> = scaffold.elements.concepts ?? {};
+  const concepts: Record<string, unknown> = (scaffold.elements.concepts ?? {}) as Record<string, unknown>;
 
   // Derive Party concepts from roles (internal stakeholders)
   const roles = scaffold.elements.roles ?? {};
   for (const [id, role] of Object.entries(roles)) {
-    const r = role as any;
+    const r = role as unknown as { name?: string; description?: string };
     const cId = `concept_party_${id}`;
     if (!concepts[cId]) {
       concepts[cId] = {
@@ -192,18 +192,18 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
   ];
   // Collect all text sources for external party inference
   const textSources: string[] = [];
-  for (const io of Object.values(scaffold.elements.informationObjects ?? {})) textSources.push((io as any).name ?? "");
-  for (const act of Object.values(scaffold.elements.activities ?? {})) textSources.push((act as any).name ?? "");
-  for (const cap of Object.values(scaffold.elements.capabilities ?? {})) textSources.push((cap as any).name ?? "");
+  for (const io of Object.values(scaffold.elements.informationObjects ?? {})) textSources.push((io as unknown as { name?: string }).name ?? "");
+  for (const act of Object.values(scaffold.elements.activities ?? {})) textSources.push((act as unknown as { name?: string }).name ?? "");
+  for (const cap of Object.values(scaffold.elements.capabilities ?? {})) textSources.push((cap as unknown as { name?: string }).name ?? "");
   if (ir?.valueStreams?.length) for (const vs of ir.valueStreams) textSources.push(vs.name ?? "", vs.valueObject ?? "");
   const allText = textSources.join(" ");
   const seenExternalParties = new Set(
-    Object.values(concepts).filter((c: any) => c.type === "Party" && c.subtype === "External").map((c: any) => (c.name ?? "").toLowerCase())
+    Object.values(concepts).filter((c) => (c as Record<string, unknown>).type === "Party" && (c as Record<string, unknown>).subtype === "External").map((c) => ((c as Record<string, unknown>).name ?? "").toString().toLowerCase())
   );
   for (const ep of EXTERNAL_PARTY_PATTERNS) {
     if (ep.pattern.test(allText) && !seenExternalParties.has(ep.name.toLowerCase())) {
       // Check it's not already a role name
-      const existingRole = Object.values(concepts).find((c: any) => c.type === "Party" && (c.name ?? "").toLowerCase() === ep.name.toLowerCase());
+      const existingRole = Object.values(concepts).find((c) => (c as Record<string, unknown>).type === "Party" && ((c as Record<string, unknown>).name ?? "").toString().toLowerCase() === ep.name.toLowerCase());
       if (!existingRole) {
         const cId = `concept_party_ext_${makeId("ext", ep.name)}`;
         concepts[cId] = {
@@ -223,13 +223,14 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
   const activities = scaffold.elements.activities ?? {};
   const ioRefCount: Record<string, number> = {};
   for (const act of Object.values(activities)) {
-    for (const ioId of (act as any).informationObjectIds ?? []) {
+    const a = act as unknown as { informationObjectIds?: string[] };
+    for (const ioId of a.informationObjectIds ?? []) {
       ioRefCount[ioId] = (ioRefCount[ioId] ?? 0) + 1;
     }
   }
   const RECORD_KEYWORDS = /order|invoice|contract|application|request|record|report|plan|schedule|profile|account|claim|ticket|brief|quote|specification|model/i;
   for (const [id, obj] of Object.entries(infoObjects)) {
-    const o = obj as any;
+    const o = obj as unknown as { name?: string; description?: string };
     const isKeyRecord = (ioRefCount[id] ?? 0) >= 2 || RECORD_KEYWORDS.test(o.name ?? "");
     if (!isKeyRecord) continue;
     const cId = `concept_record_${id}`;
@@ -263,9 +264,9 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
     }
   }
   for (const key of ["technologyApplications", "technologyApps"]) {
-    const techApps = scaffold.elements[key] ?? {};
+    const techApps = (scaffold.elements as Record<string, Record<string, unknown>>)[key] ?? {};
     for (const [id, app] of Object.entries(techApps)) {
-      const a = app as any;
+      const a = app as unknown as { name?: string; description?: string };
       const cId = `concept_resource_${id}`;
       if (!concepts[cId]) {
         concepts[cId] = {
@@ -280,7 +281,7 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
   // Infer product/physical Resources from VS valueObjects and capability businessObjects
   const PRODUCT_KW = /product|service|equipment|material|part|component|device|unit|asset|property|vehicle|cartridge|filter|system|machine|tool|supply|good|item/i;
   const seenResourceNames = new Set(
-    Object.values(concepts).filter((c: any) => c.type === "Resource").map((c: any) => (c.name ?? "").toLowerCase())
+    Object.values(concepts).filter((c) => (c as Record<string, unknown>).type === "Resource").map((c) => ((c as Record<string, unknown>).name ?? "").toString().toLowerCase())
   );
   // From VS valueObjects
   if (ir?.valueStreams?.length) {
@@ -303,7 +304,7 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
   // From capability businessObjects
   const caps = scaffold.elements.capabilities ?? {};
   for (const cap of Object.values(caps)) {
-    const bo = (cap as any).businessObject;
+    const bo = (cap as unknown as { businessObject?: string }).businessObject;
     if (bo && PRODUCT_KW.test(bo) && !seenResourceNames.has(bo.toLowerCase())) {
       const cId = `concept_resource_${makeId("prod", bo)}`;
       if (!concepts[cId]) {
@@ -329,13 +330,13 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
   const partyToRecords: Record<string, Set<string>> = {};
   const partyToResources: Record<string, Set<string>> = {};
   for (const act of Object.values(activities)) {
-    const a = act as any;
+    const a = act as unknown as ScaffoldActivity;
     const ppit = a.capabilityPPIT;
     if (!ppit) {
       // Fallback: use activity-level links
       const roleIds = a.performedByRoleIds ?? [];
       const infoIds = a.informationObjectIds ?? [];
-      const techIds = a.technologyAppIds ?? [];
+      const techIds = (a as unknown as Record<string, unknown>).technologyAppIds as string[] | undefined ?? [];
       for (const rId of roleIds) {
         const pId = `concept_party_${rId}`;
         if (!concepts[pId]) continue;
@@ -352,10 +353,11 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
       }
       continue;
     }
-    for (const decomp of Object.values(ppit) as any[]) {
-      const roleIds = decomp?.roleIds ?? [];
-      const infoIds = decomp?.informationObjectIds ?? [];
-      const techIds = decomp?.technologyAppIds ?? [];
+    for (const decomp of Object.values(ppit)) {
+      const d = decomp as PPITEntry;
+      const roleIds = d.roleIds ?? [];
+      const infoIds = d.informationObjectIds ?? [];
+      const techIds = d.technologyAppIds ?? [];
       for (const rId of roleIds) {
         const pId = `concept_party_${rId}`;
         if (!concepts[pId]) continue;
@@ -387,11 +389,12 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
   // Build capability→resource map from businessObject field on capabilities
   const capToResource: Record<string, string> = {};
   for (const [capId, cap] of Object.entries(caps)) {
-    const bo = (cap as any).businessObject;
+    const bo = (cap as unknown as { businessObject?: string }).businessObject;
     if (!bo) continue;
     // Find the resource concept whose name matches this businessObject
     for (const resId of allResources) {
-      if ((concepts[resId].name ?? "").toLowerCase() === bo.toLowerCase()) {
+      const conceptName = (concepts[resId] as Record<string, unknown>)?.name ?? "";
+      if ((conceptName as string).toLowerCase() === bo.toLowerCase()) {
         capToResource[capId] = resId;
         break;
       }
@@ -401,8 +404,8 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
   // Build record→capabilities map: which capabilities does each IO appear in?
   const recordToCaps: Record<string, Set<string>> = {};
   for (const act of Object.values(activities)) {
-    const a = act as any;
-    const actCapIds: string[] = a.enabledByCapabilityIds ?? a.requiresCapabilityIds ?? [];
+    const a = act as unknown as ScaffoldActivity;
+    const actCapIds: string[] = getCapabilityIds(a);
     const infoIds: string[] = a.informationObjectIds ?? [];
     for (const iId of infoIds) {
       const rCId = `concept_record_${iId}`;
@@ -413,8 +416,9 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
     // Also check capabilityPPIT for finer-grained links
     const ppit = a.capabilityPPIT;
     if (ppit) {
-      for (const [cId, decomp] of Object.entries(ppit) as [string, any][]) {
-        for (const iId of decomp?.informationObjectIds ?? []) {
+      for (const [cId, decomp] of Object.entries(ppit)) {
+        const d = decomp as PPITEntry;
+        for (const iId of d.informationObjectIds ?? []) {
           const rCId = `concept_record_${iId}`;
           if (!concepts[rCId]) continue;
           if (!recordToCaps[rCId]) recordToCaps[rCId] = new Set();
@@ -425,11 +429,11 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
   }
 
   // Collect all parties (including external) and all resources for semantic matching
-  const allParties = Object.entries(concepts).filter(([, c]) => (c as any).type === "Party");
+  const allParties = Object.entries(concepts).filter(([, c]) => (c as Record<string, unknown>).type === "Party");
 
-  for (const recId of Object.keys(concepts).filter(id => (concepts[id] as any).type === "Record")) {
+  for (const recId of Object.keys(concepts).filter(id => (concepts[id] as Record<string, unknown>).type === "Record")) {
     if (recordObject[recId]) continue; // already assigned
-    const recName = ((concepts[recId] as any).name ?? "").toLowerCase();
+    const recName = ((concepts[recId] as Record<string, unknown>).name ?? "").toString().toLowerCase();
 
     // Strategy 1: semantic name matching — infer object from the record's name
     // "Customer Profile" → object is "Customer" (a Party)
@@ -445,7 +449,7 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
       let bestParty: string | null = null;
       let bestScore = 0;
       for (const [pId, p] of allParties) {
-        const pName = ((p as any).name ?? "").toLowerCase();
+        const pName = ((p as Record<string, unknown>).name ?? "").toString().toLowerCase();
         if (recName.includes(pName) && pName.length > bestScore) {
           bestParty = pId;
           bestScore = pName.length;
@@ -482,7 +486,7 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
       }
 
       // Strategy 4: if there's a single Product resource, assign it to order-like records only
-      const productResources = allResources.filter(id => (concepts[id] as any).subtype === "Product");
+      const productResources = allResources.filter(id => (concepts[id] as Record<string, unknown>).subtype === "Product");
       if (productResources.length === 1) {
         recordObject[recId] = productResources[0];
         continue;
@@ -505,33 +509,40 @@ export function deriveConceptsFromScaffold(scaffold: any, ir?: DiscoveryIR): voi
 
   // Now wire the relationships
   for (const [recId, partyId] of Object.entries(recordSubject)) {
-    const rels = (concepts[partyId].relationships as any[]);
-    if (!rels.some((r: any) => r.targetId === recId)) {
+    const concept = concepts[partyId] as Record<string, unknown>;
+    const rels = (concept?.relationships as Array<Record<string, unknown>>) ?? [];
+    if (!rels.some((r) => r.targetId === recId)) {
       rels.push({ targetId: recId, type: "produces", label: "creates", cardinality: "1:N" });
     }
+    concept.relationships = rels;
   }
   for (const [recId, objId] of Object.entries(recordObject)) {
-    const rels = (concepts[recId].relationships as any[]);
-    if (!rels.some((r: any) => r.targetId === objId)) {
-      const objType = (concepts[objId] as any)?.type;
+    const concept = concepts[recId] as Record<string, unknown>;
+    const rels = (concept?.relationships as Array<Record<string, unknown>>) ?? [];
+    if (!rels.some((r) => r.targetId === objId)) {
+      const objType = (concepts[objId] as Record<string, unknown>)?.type;
       const label = objType === "Party" ? "about" : "regarding";
       rels.push({ targetId: objId, type: label, label, cardinality: "N:1" });
     }
+    concept.relationships = rels;
   }
   // Party → Resource (uses) — limit to max 2 per party
   for (const [partyId, resSet] of Object.entries(partyToResources)) {
-    const rels = (concepts[partyId].relationships as any[]);
+    const concept = concepts[partyId] as Record<string, unknown>;
+    const rels = (concept?.relationships as Array<Record<string, unknown>>) ?? [];
     let count = 0;
     for (const resId of resSet) {
       if (count >= 2) break;
-      if (!rels.some((r: any) => r.targetId === resId)) {
+      if (!rels.some((r) => r.targetId === resId)) {
         rels.push({ targetId: resId, type: "uses", label: "uses", cardinality: "N:N" });
         count++;
       }
     }
+    concept.relationships = rels;
   }
 
-  scaffold.elements.concepts = concepts;
+  // Type assertion is safe because concepts follow ScaffoldConcept structure
+  (scaffold.elements as Record<string, unknown>).concepts = concepts as unknown;
 }
 
 // ── Progress state fed back to the UI ────────────────────────────────────────
@@ -557,11 +568,11 @@ export type EnrichmentStep = "subactivities" | "ppit" | "cards";
 export interface PipelineProgress {
   status: PipelineStatus;
   discoveryIR?: DiscoveryIR;          // available after pass-a-done
-  scaffold?: any;                      // available after pass-b
+  scaffold?: ScaffoldData;             // available after pass-b
   gate1?: GateResult;
   gate2?: GateResult;
   cardRegistry?: CardRegistry;        // available after done/enrichment
-  bundle?: any;                        // available after done
+  bundle?: Record<string, unknown>;   // available after done
   errorMessage?: string;
   enrichmentStep?: EnrichmentStep;    // which enrichment just completed
 }
@@ -708,7 +719,7 @@ import { runSubActivityEnrichment } from "./subactivity-enricher";
 
 export async function runEnrichmentStep(
   step: EnrichmentStep,
-  scaffold: any,
+  scaffold: ScaffoldData,
   discoveryIR: DiscoveryIR | undefined,
   onProgress: ProgressCallback
 ): Promise<void> {

@@ -111,7 +111,7 @@ function getZone(vs: any): string {
 }
 
 function typeColor(type: string): string {
-  return (theme as any)[type] || theme.textDim;
+  return (theme as Record<string, string>)[type] || theme.textDim;
 }
 
 function typeIcon(type: string): string {
@@ -246,7 +246,7 @@ function buildL3Data(scaffold: any, activityId: string): SectionData[] {
   // 5. Activity Flow (drillable into L5 if DAG exists)
   // Check both the workbench scaffold and the canvas store's live scaffold (enrichment may have updated it)
   const dag = el.subActivityGraphs?.[activityId]
-    ?? (useCanvasStore.getState().scaffoldData as any)?.elements?.subActivityGraphs?.[activityId];
+    ?? useCanvasStore.getState().scaffoldData?.elements?.subActivityGraphs?.[activityId];
   if (dag?.nodes?.length > 0) {
     const gateCount = dag.nodes.filter((n: any) => n.nodeType === "gate").length;
     sections.push({
@@ -309,7 +309,7 @@ function buildL5Data(scaffold: any, activityId: string): SectionData[] {
   const el = scaffold.elements;
   // Check both workbench scaffold and canvas store's live scaffold
   const dag = el.subActivityGraphs?.[activityId]
-    ?? (useCanvasStore.getState().scaffoldData as any)?.elements?.subActivityGraphs?.[activityId];
+    ?? useCanvasStore.getState().scaffoldData?.elements?.subActivityGraphs?.[activityId];
   if (!dag?.nodes?.length) return [];
   const roles = el.roles || {};
 
@@ -531,7 +531,7 @@ function detectEnrichmentStatus(scaffold: any): EnrichmentStatus {
   const subGraphs = els.subActivityGraphs ?? {};
 
   // Also check the canvas store's live scaffold in case the workbench copy is stale
-  const canvasScaffoldData = useCanvasStore.getState().scaffoldData as any;
+  const canvasScaffoldData = useCanvasStore.getState().scaffoldData;
   const canvasSubGraphs = canvasScaffoldData?.elements?.subActivityGraphs ?? {};
   const completed = useEnrichmentStore.getState().completedThisSession;
 
@@ -711,7 +711,7 @@ export function StructuredGraphExplorer({ scaffoldData, onActionsChange }: { sca
   // Check if an activity has a sub-activity DAG
   const activityHasDAG = useCallback((actId: string) => {
     const dag = scaffoldData?.elements?.subActivityGraphs?.[actId]
-      ?? (canvasScaffold as any)?.elements?.subActivityGraphs?.[actId];
+      ?? canvasScaffold?.elements?.subActivityGraphs?.[actId];
     return dag?.nodes?.length > 0;
   }, [scaffoldData, canvasScaffold]);
 

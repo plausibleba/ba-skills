@@ -8,7 +8,12 @@ import type {
   NetworkNode,
   NetworkEdge,
   TransformationUserStory,
+  ScaffoldActivity,
+  ScaffoldValueStream,
+  ScaffoldElements,
+  PPITEntry,
 } from "../types.ts";
+import { getCapabilityIds } from "../types.ts";
 import type { CardRegistry } from "../types/cards.ts";
 import { resolveScaffoldMeasures } from "./scaffold-resolver.ts";
 import { trackViewChange } from "../utils/analytics.ts";
@@ -149,10 +154,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     // Normalise pipeline-generated scaffolds: ensure every metric has a measures block
     // and elements.measures exists, so downstream validators don't crash on undefined.
     // Auto-derive layoutZones from VS layoutZone values if not present
-    let derivedLayoutZones = (json as any).layoutZones;
+    let derivedLayoutZones = json.layoutZones;
     if (!derivedLayoutZones) {
       const zoneIds = new Set<string>();
-      for (const vs of Object.values(json.elements.valueStreams) as any[]) {
+      for (const vs of Object.values(json.elements.valueStreams)) {
         const z = vs.layoutZone ?? vs.zone;
         if (z) zoneIds.add(z);
       }
@@ -246,7 +251,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     } else {
       // No value streams — route to best available view
       const capCount = Object.keys(resolved.elements.capabilities ?? {}).length;
-      const conceptCount = Object.keys((resolved.elements as any).concepts ?? {}).length;
+      const conceptCount = Object.keys(resolved.elements.concepts ?? {}).length;
 
       if (capCount > 0) {
         set({ viewMode: "capabilityMap", loading: false });
@@ -382,11 +387,11 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     // activityChainHead + nextActivityId chain on each activity.
     const resolveOrderedActivityIds = (): string[] => {
       // v4: activityIds array present and non-empty
-      if (Array.isArray((vs as any).activityIds) && (vs as any).activityIds.length > 0) {
-        return (vs as any).activityIds as string[];
+      if (Array.isArray(vs.activityIds) && vs.activityIds.length > 0) {
+        return vs.activityIds;
       }
       // v5: walk nextActivityId chain from activityChainHead
-      const startId = (vs as any).activityChainHead;
+      const startId = vs.activityChainHead;
       if (!startId) return [];
       const ordered: string[] = [];
       const seen = new Set<string>();
@@ -395,7 +400,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         seen.add(current);
         ordered.push(current);
         const act = scaffoldData.elements.activities[current];
-        current = (act as any)?.nextActivityId ?? null;
+        current = act?.nextActivityId ?? null;
       }
       return ordered;
     };
@@ -416,11 +421,11 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         label: act?.name ?? actId,
         activityIds: [actId],
         aggregates: {
-          roleIds: (act as any)?.performedByRoleIds ?? [],
-          capabilityIds: (act as any)?.enabledByCapabilityIds ?? (act as any)?.requiresCapabilityIds ?? [],
-          metricIds: (act as any)?.metricIds ?? [],
-          controlIds: (act as any)?.controlIds ?? [],
-          constraintIds: (act as any)?.constraintIds ?? [],
+          roleIds: act?.performedByRoleIds ?? [],
+          capabilityIds: getCapabilityIds(act),
+          metricIds: act?.metricIds ?? [],
+          controlIds: act?.controlIds ?? [],
+          constraintIds: act?.constraintIds ?? [],
         },
       };
     });
@@ -690,7 +695,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const newCap = { id: capId, elementType: "Capability", name: capabilityName };
 
     // Add to elements registry + activity's capability list
-    const capIds = [...((activity as any).requiresCapabilityIds ?? (activity as any).enabledByCapabilityIds ?? []), capId];
+    const capIds = [...getCapabilityIds(activity), capId];
     const updatedActivity = { ...activity, requiresCapabilityIds: capIds };
 
     const updated: ScaffoldData = {
@@ -712,7 +717,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const activity = scaffoldData.elements.activities[activityId];
     if (!activity) return;
 
-    const currentCaps = (activity as any).requiresCapabilityIds ?? (activity as any).enabledByCapabilityIds ?? [];
+    const currentCaps = getCapabilityIds(activity);
     const capIds = currentCaps.filter((id: string) => id !== capabilityId);
     const updatedActivity = { ...activity, requiresCapabilityIds: capIds };
 
@@ -768,7 +773,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       ...scaffoldData,
       elements: {
         ...scaffoldData.elements,
-        activities: { ...scaffoldData.elements.activities, [actId]: newActivity as any },
+        activities: { ...scaffoldData.elements.activities, [actId]: newActivity },
         outcomes: {
           ...scaffoldData.elements.outcomes,
           [preOutId]: newPreOutcome,
@@ -918,7 +923,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     };
 
     // Add to capabilityPPIT if it exists on the activity
-    const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
+    const ppitMap = activity.capabilityPPIT;
     if (ppitMap && ppitMap[capabilityId]) {
       const capPpit = ppitMap[capabilityId];
       const updatedPpit = { ...capPpit, informationObjectIds: [...(capPpit.informationObjectIds ?? []), infoId] };
@@ -926,10 +931,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity };
     } else {
       // Fall back to activity-level informationObjectIds
-      const actRec = activity as any;
-      const currentIds = actRec.informationObjectIds ?? [];
+      const currentIds = activity.informationObjectIds ?? [];
       const updatedActivity = { ...activity, informationObjectIds: [...currentIds, infoId] };
-      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity as any };
+      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity };
     }
 
     const updated: ScaffoldData = { ...scaffoldData, elements: updatedElements };
@@ -945,17 +949,16 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     if (!activity) return;
 
     const updatedElements = { ...scaffoldData.elements };
-    const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
+    const ppitMap = activity.capabilityPPIT;
     if (ppitMap && ppitMap[capabilityId]) {
       const capPpit = ppitMap[capabilityId];
       const updatedPpit = { ...capPpit, informationObjectIds: (capPpit.informationObjectIds ?? []).filter((id: string) => id !== infoId) };
       const updatedActivity = { ...activity, capabilityPPIT: { ...ppitMap, [capabilityId]: updatedPpit } };
       updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity };
     } else {
-      const actRec = activity as any;
-      const currentIds = (actRec.informationObjectIds ?? []).filter((id: string) => id !== infoId);
+      const currentIds = (activity.informationObjectIds ?? []).filter((id: string) => id !== infoId);
       const updatedActivity = { ...activity, informationObjectIds: currentIds };
-      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity as any };
+      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity };
     }
 
     const updated: ScaffoldData = { ...scaffoldData, elements: updatedElements };
@@ -972,23 +975,22 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const techId = `tech_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
     const newApp = { id: techId, elementType: "TechnologyApp", name };
 
-    const techApps = (scaffoldData.elements as any).technologyApps ?? {};
+    const techApps = scaffoldData.elements.technologyApps ?? {};
     const updatedElements = {
       ...scaffoldData.elements,
       technologyApps: { ...techApps, [techId]: newApp },
     };
 
-    const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
+    const ppitMap = activity.capabilityPPIT;
     if (ppitMap && ppitMap[capabilityId]) {
       const capPpit = ppitMap[capabilityId];
       const updatedPpit = { ...capPpit, technologyAppIds: [...(capPpit.technologyAppIds ?? []), techId] };
       const updatedActivity = { ...activity, capabilityPPIT: { ...ppitMap, [capabilityId]: updatedPpit } };
       updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity };
     } else {
-      const actRec = activity as any;
-      const currentIds = actRec.technologyAppIds ?? [];
+      const currentIds = activity.technologyAppIds ?? [];
       const updatedActivity = { ...activity, technologyAppIds: [...currentIds, techId] };
-      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity as any };
+      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity };
     }
 
     const updated: ScaffoldData = { ...scaffoldData, elements: updatedElements };
@@ -1004,17 +1006,16 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     if (!activity) return;
 
     const updatedElements = { ...scaffoldData.elements };
-    const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
+    const ppitMap = activity.capabilityPPIT;
     if (ppitMap && ppitMap[capabilityId]) {
       const capPpit = ppitMap[capabilityId];
       const updatedPpit = { ...capPpit, technologyAppIds: (capPpit.technologyAppIds ?? []).filter((id: string) => id !== techId) };
       const updatedActivity = { ...activity, capabilityPPIT: { ...ppitMap, [capabilityId]: updatedPpit } };
       updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity };
     } else {
-      const actRec = activity as any;
-      const currentIds = (actRec.technologyAppIds ?? []).filter((id: string) => id !== techId);
+      const currentIds = (activity.technologyAppIds ?? []).filter((id: string) => id !== techId);
       const updatedActivity = { ...activity, technologyAppIds: currentIds };
-      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity as any };
+      updatedElements.activities = { ...updatedElements.activities, [activityId]: updatedActivity };
     }
 
     const updated: ScaffoldData = { ...scaffoldData, elements: updatedElements };
@@ -1030,7 +1031,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const activity = scaffoldData.elements.activities[activityId];
     if (!activity) return;
 
-    const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
+    const ppitMap = activity.capabilityPPIT;
     if (!ppitMap || !ppitMap[capabilityId]) return;
 
     const capPpit = ppitMap[capabilityId];
@@ -1057,7 +1058,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const activity = scaffoldData.elements.activities[activityId];
     if (!activity) return;
 
-    const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
+    const ppitMap = activity.capabilityPPIT;
     if (!ppitMap) {
       // No capabilityPPIT yet — create it with this first sub-activity
       const newPpit = { roleIds: [], activities: [text], informationObjectIds: [], technologyAppIds: [] };
@@ -1111,7 +1112,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const activity = scaffoldData.elements.activities[activityId];
     if (!activity) return;
 
-    const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
+    const ppitMap = activity.capabilityPPIT;
     if (!ppitMap || !ppitMap[capabilityId]) return;
 
     const capPpit = ppitMap[capabilityId];
@@ -1140,7 +1141,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const activity = scaffoldData.elements.activities[activityId];
     if (!activity) return;
 
-    const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
+    const ppitMap = activity.capabilityPPIT;
     if (!ppitMap) {
       // Create capabilityPPIT with this role
       const newPpit = { roleIds: [roleId], activities: [], informationObjectIds: [], technologyAppIds: [] };
@@ -1182,7 +1183,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const activity = scaffoldData.elements.activities[activityId];
     if (!activity) return;
 
-    const ppitMap = (activity as any).capabilityPPIT as Record<string, any> | undefined;
+    const ppitMap = activity.capabilityPPIT;
     if (!ppitMap || !ppitMap[capabilityId]) return;
 
     const capPpit = ppitMap[capabilityId];
@@ -1227,18 +1228,18 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     // Try modern File System Access API, fall back to download link
     if (typeof window !== "undefined" && "showSaveFilePicker" in window) {
       try {
-        const handle = await (window as any).showSaveFilePicker({
+        const handle = await (window as unknown as { showSaveFilePicker: Function }).showSaveFilePicker({
           suggestedName: filename,
           types: [{ description: "JSON Bundle", accept: { "application/json": [".json"] } }],
         });
-        const writable = await handle.createWritable();
+        const writable = await (handle as any).createWritable();
         await writable.write(blob);
         await writable.close();
         set({ scaffoldDirty: false });
         return;
-      } catch (e: any) {
+      } catch (e) {
         // User cancelled or API not supported — fall through to blob download
-        if (e?.name === "AbortError") return;
+        if ((e as any)?.name === "AbortError") return;
       }
     }
     // Blob fallback

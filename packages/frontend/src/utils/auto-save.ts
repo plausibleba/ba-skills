@@ -25,7 +25,8 @@ function buildBundle(extra?: { cardRegistry?: any }): Record<string, unknown> {
   if (stories.length > 0) {
     const byActivity: Record<string, any[]> = {};
     for (const s of stories) {
-      (byActivity[(s as any).activityId] ??= []).push(s);
+      const story = s as unknown as Record<string, unknown>;
+      (byActivity[story.activityId as string] ??= []).push(s);
     }
     saveable.userStoriesByActivity = byActivity;
   }

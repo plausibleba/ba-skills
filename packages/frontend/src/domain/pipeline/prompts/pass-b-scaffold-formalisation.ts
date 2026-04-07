@@ -32,9 +32,9 @@ function buildVsContext(ir: DiscoveryIR) {
   const capMap: Record<string, { id: string; name: string; businessObject: string; description: string }> = {};
   for (const l1 of (ir.capabilityMap?.l1Areas ?? [])) {
     for (const l2 of (l1.domains ?? [])) {
-      if ((l2 as any).capabilityGroups?.length) {
+      if (l2.capabilityGroups?.length) {
         // 4-level format: L2 > L3 groups > L4 capabilities (leaf)
-        for (const l3 of ((l2 as any).capabilityGroups ?? [])) {
+        for (const l3 of (l2.capabilityGroups ?? [])) {
           for (const l4 of (l3.capabilities ?? [])) {
             const id = makeId("cap", l4.name);
             capMap[l4.name] = { id, name: l4.name, businessObject: l4.businessObject ?? "", description: l4.description ?? "" };

@@ -7,6 +7,8 @@
 import { create } from "zustand";
 import { supabase, isSupabaseConfigured } from "../lib/supabase.ts";
 import type { ProjectRow, ProjectModule, ProjectAccessRow, ProfileRow } from "../types/database.ts";
+import type { ScaffoldData, HeatmapData, TransformationUserStory } from "../types.ts";
+import type { CardRegistry } from "../types/cards.ts";
 
 /** Enriched access row with profile info for UI display */
 export interface AccessGrant extends ProjectAccessRow {
@@ -172,29 +174,30 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     if (!project) return;
 
     // Reload the bundle into the canvas store
-    const bundle = project.bundle as any;
+    const bundle = project.bundle as Record<string, unknown>;
     const { useCanvasStore } = await import("./canvas-store.ts");
     const canvasStore = useCanvasStore.getState();
 
     if (bundle.scaffold) {
-      await canvasStore.loadScaffold(bundle.scaffold);
-      if (bundle.heatmaps) {
+      const scaffold = bundle.scaffold as ScaffoldData;
+      await canvasStore.loadScaffold(scaffold);
+      if (bundle.heatmaps && Array.isArray(bundle.heatmaps)) {
         for (const hm of bundle.heatmaps) {
-          await canvasStore.loadHeatmap(hm);
+          await canvasStore.loadHeatmap(hm as HeatmapData);
         }
       }
       // Restore user stories if present in the bundle
-      if (bundle.userStoriesByActivity) {
+      if (bundle.userStoriesByActivity && typeof bundle.userStoriesByActivity === "object") {
         for (const [actId, stories] of Object.entries(bundle.userStoriesByActivity)) {
-          canvasStore.setActivityStories(actId, stories as any[]);
+          canvasStore.setActivityStories(actId, stories as TransformationUserStory[]);
         }
       }
       // Restore MVC card registry if present
       if (bundle.cardRegistry) {
-        canvasStore.loadCards(bundle.cardRegistry);
+        canvasStore.loadCards(bundle.cardRegistry as CardRegistry);
       }
-    } else if (bundle.elements) {
-      await canvasStore.loadScaffold(bundle);
+    } else if ((bundle as any).elements) {
+      await canvasStore.loadScaffold(bundle as unknown as ScaffoldData);
     }
 
     set({ conflict: false, error: null });

@@ -61,12 +61,12 @@ export function detectArtifactType(json: Record<string, unknown>): PlausibleArti
 
   // Check if every value is an object with an elementType field
   const typed = values.filter(
-    (v) => v && typeof v === "object" && !Array.isArray(v) && "elementType" in (v as any)
+    (v) => v && typeof v === "object" && !Array.isArray(v) && "elementType" in (v as Record<string, unknown>)
   );
   if (typed.length === 0) return "unknown";
 
   // Sample the elementTypes to classify
-  const elementTypes = new Set(typed.map((v) => (v as any).elementType));
+  const elementTypes = new Set(typed.map((v) => (v as Record<string, unknown>).elementType as string));
 
   if (elementTypes.has("BusinessObject") && !elementTypes.has("Capability") && !elementTypes.has("ValueStream")) {
     return "concept-model";
@@ -441,7 +441,7 @@ export function normaliseConceptModelArtifact(json: Record<string, unknown>): Sc
   const name = (json.name as string) ?? deriveNameFromElements(flat, "Concept Model");
 
   const scaffold = emptyScaffold(name);
-  (scaffold.elements as any).concepts = normaliseConceptRegistry(flat);
+  scaffold.elements.concepts = normaliseConceptRegistry(flat);
   return scaffold;
 }
 
@@ -453,7 +453,7 @@ export function normaliseCapabilityMapArtifact(json: Record<string, unknown>): S
   const name = (json.name as string) ?? deriveNameFromElements(flat, "Capability Map");
 
   const scaffold = emptyScaffold(name);
-  (scaffold.elements as any).capabilities = normaliseCapabilityRegistry(flat);
+  scaffold.elements.capabilities = normaliseCapabilityRegistry(flat);
   return scaffold;
 }
 
@@ -466,9 +466,9 @@ export function normaliseValueStreamArtifact(json: Record<string, unknown>): Sca
 
   const scaffold = emptyScaffold(name);
   const { valueStreams, activities, outcomes } = normaliseValueStreamRegistry(flat);
-  (scaffold.elements as any).valueStreams = valueStreams;
-  (scaffold.elements as any).activities = activities;
-  (scaffold.elements as any).outcomes = { ...(scaffold.elements as any).outcomes, ...outcomes };
+  scaffold.elements.valueStreams = valueStreams;
+  scaffold.elements.activities = activities;
+  scaffold.elements.outcomes = { ...scaffold.elements.outcomes, ...outcomes };
   return scaffold;
 }
 

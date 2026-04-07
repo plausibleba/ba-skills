@@ -11,6 +11,7 @@
 // - Session 28: Extracted to separate enrichment pass for reliability
 
 import { callLLM } from "./llm-client";
+import { ScaffoldData, ScaffoldActivity, ScaffoldElements, getCapabilityIds, PPITEntry } from "../../types";
 
 export interface SubActivityResult {
   success: boolean;
@@ -24,33 +25,34 @@ export interface SubActivityResult {
  * When PPIT data is present, the activity flows should incorporate those
  * fine-grained process activities rather than inventing from scratch.
  */
-function buildSubActivityContext(scaffold: any): {
-  activities: any[];
+function buildSubActivityContext(scaffold: ScaffoldData): {
+  activities: Record<string, unknown>[];
   roles: Record<string, string>;
   capabilities: Record<string, string>;
   hasPPIT: boolean;
 } {
-  const els = scaffold.elements ?? {};
+  const els = scaffold.elements ?? {} as ScaffoldElements;
 
-  const activities = Object.entries(els.activities ?? {}).map(([id, act]: [string, any]) => {
-    const base: any = {
+  const activities = Object.entries(els.activities ?? {}).map(([id, act]) => {
+    const activity = act as ScaffoldActivity;
+    const base: Record<string, unknown> = {
       id,
-      name: act.name,
-      performedByRoleIds: act.performedByRoleIds ?? [],
-      requiresCapabilityIds: act.enabledByCapabilityIds ?? act.requiresCapabilityIds ?? [],
-      preOutcomeId: act.preOutcomeId,
-      postOutcomeId: act.postOutcomeId,
+      name: activity.name,
+      performedByRoleIds: activity.performedByRoleIds ?? [],
+      requiresCapabilityIds: getCapabilityIds(activity),
+      preOutcomeId: activity.preOutcomeId,
+      postOutcomeId: activity.postOutcomeId,
     };
 
     // Include PPIT-derived activities if present (from Map PPIT enrichment).
     // These are the fine-grained process activities per capability that should
     // be woven into the activity flow DAG.
-    const ppit = act.capabilityPPIT;
+    const ppit = activity.capabilityPPIT;
     if (ppit && typeof ppit === "object") {
       const ppitActivities: string[] = [];
       const ppitRoles: string[] = [];
-      for (const [, decomp] of Object.entries(ppit)) {
-        const d = decomp as any;
+      for (const decomp of Object.values(ppit)) {
+        const d = decomp as PPITEntry;
         for (const sub of d.activities ?? []) {
           if (sub && !ppitActivities.includes(sub)) ppitActivities.push(sub);
         }
@@ -65,22 +67,25 @@ function buildSubActivityContext(scaffold: any): {
     return base;
   });
 
-  const hasPPIT = activities.some((a) => a.ppitActivities?.length > 0);
+  const hasPPIT = activities.some((a) => {
+    const ppitActivities = (a as Record<string, unknown>).ppitActivities;
+    return Array.isArray(ppitActivities) && ppitActivities.length > 0;
+  });
 
   const roles: Record<string, string> = {};
   for (const [id, r] of Object.entries(els.roles ?? {})) {
-    roles[id] = (r as any).name ?? id;
+    roles[id] = (r as unknown as { name?: string }).name ?? id;
   }
 
   const capabilities: Record<string, string> = {};
   for (const [id, cap] of Object.entries(els.capabilities ?? {})) {
-    capabilities[id] = (cap as any).name ?? id;
+    capabilities[id] = (cap as unknown as { name?: string }).name ?? id;
   }
 
   return { activities, roles, capabilities, hasPPIT };
 }
 
-function buildSubActivityPrompt(scaffold: any): string {
+function buildSubActivityPrompt(scaffold: ScaffoldData): string {
   const ctx = buildSubActivityContext(scaffold);
 
   const ppitGuidance = ctx.hasPPIT
@@ -170,37 +175,37 @@ Return ONLY valid JSON — no markdown fences, no commentary.`;
 // ── Post-processing: validate and fix linear DAGs ──
 // Sonnet sometimes produces purely sequential flows despite strong prompting.
 // Detect DAGs with no gates and inject a quality check gate at the midpoint.
-function postProcessDAGs(dagMap: Record<string, any>): { gateCount: number; linearCount: number } {
+function postProcessDAGs(dagMap: Record<string, Record<string, unknown>>): { gateCount: number; linearCount: number } {
   let gateCount = 0;
   let linearCount = 0;
   for (const [actId, dagData] of Object.entries(dagMap)) {
-    const nodes = (dagData as any)?.nodes;
+    const nodes = (dagData as Record<string, unknown>).nodes;
     if (!Array.isArray(nodes)) continue;
-    const hasGate = nodes.some((n: any) => n.nodeType === "gate");
+    const hasGate = nodes.some((n) => (n as Record<string, unknown>).nodeType === "gate");
     if (hasGate) {
       gateCount++;
     } else {
       linearCount++;
       const mid = Math.floor(nodes.length / 2);
       if (nodes.length >= 3 && mid > 0 && mid < nodes.length - 1) {
-        const beforeNode = nodes[mid - 1];
-        const afterNode = nodes[mid];
+        const beforeNode = nodes[mid - 1] as Record<string, unknown>;
+        const afterNode = nodes[mid] as Record<string, unknown>;
         const gateId = `sa_${actId.replace(/[^a-z0-9]/gi, "_").slice(0, 12)}_gate`;
         const rejectId = `sa_${actId.replace(/[^a-z0-9]/gi, "_").slice(0, 12)}_exception`;
 
-        const gateNode = {
+        const gateNode: Record<string, unknown> = {
           id: gateId,
           label: "Quality Check",
           nodeType: "gate",
           nextIds: [afterNode.id, rejectId],
-          edgeLabels: { [afterNode.id]: "Pass", [rejectId]: "Exception" },
+          edgeLabels: { [afterNode.id as string]: "Pass", [rejectId]: "Exception" },
         };
-        const exceptionNode = {
+        const exceptionNode: Record<string, unknown> = {
           id: rejectId,
           label: "Handle Exception",
-          nodeType: "activity" as const,
-          nextIds: [] as string[],
-          roleId: beforeNode.roleId ?? nodes[0]?.roleId,
+          nodeType: "activity",
+          nextIds: [],
+          roleId: beforeNode.roleId ?? (nodes[0] as Record<string, unknown>)?.roleId,
           outcome: "Exception routed for resolution",
         };
 
@@ -217,9 +222,9 @@ function postProcessDAGs(dagMap: Record<string, any>): { gateCount: number; line
  * Runs a single batch of activity flow generation for a subset of activities.
  * Returns a parsed dagMap for the batch, or null on failure.
  */
-async function runBatch(scaffold: any, activityIds: string[]): Promise<Record<string, any> | null> {
+async function runBatch(scaffold: ScaffoldData, activityIds: string[]): Promise<Record<string, Record<string, unknown>> | null> {
   // Build a filtered scaffold view containing only this batch's activities
-  const batchScaffold = {
+  const batchScaffold: ScaffoldData = {
     ...scaffold,
     elements: {
       ...scaffold.elements,
@@ -249,14 +254,14 @@ async function runBatch(scaffold: any, activityIds: string[]): Promise<Record<st
     return tryParsePartialJSON(raw);
   }
 
-  return JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
+  return JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim()) as Record<string, Record<string, unknown>>;
 }
 
 /**
  * Attempts to recover valid entries from truncated JSON.
  * Finds the last valid closing brace for a nodes array and trims there.
  */
-function tryParsePartialJSON(raw: string): Record<string, any> | null {
+function tryParsePartialJSON(raw: string): Record<string, Record<string, unknown>> | null {
   // Find the last occurrence of ]} which closes a "nodes" array, then close the outer object
   let lastGoodIdx = -1;
   let depth = 0;
@@ -273,7 +278,7 @@ function tryParsePartialJSON(raw: string): Record<string, any> | null {
   if (lastGoodIdx > 0) {
     const trimmed = raw.slice(0, lastGoodIdx + 1) + "}";
     try {
-      const result = JSON.parse(trimmed);
+      const result = JSON.parse(trimmed) as Record<string, Record<string, unknown>>;
       const count = Object.keys(result).length;
       console.log(`Partial JSON recovery: salvaged ${count} DAG(s) from truncated response`);
       return result;
@@ -289,7 +294,7 @@ function tryParsePartialJSON(raw: string): Record<string, any> | null {
  * For large models (>10 activities), the work is split into batches to avoid
  * exceeding the LLM's max_tokens limit and getting truncated responses.
  */
-export async function runSubActivityEnrichment(scaffold: any): Promise<SubActivityResult> {
+export async function runSubActivityEnrichment(scaffold: ScaffoldData): Promise<SubActivityResult> {
   const activities = scaffold?.elements?.activities;
   if (!activities || Object.keys(activities).length === 0) {
     return { success: true };
@@ -337,7 +342,8 @@ export async function runSubActivityEnrichment(scaffold: any): Promise<SubActivi
       // Merge batch results into scaffold
       for (const [actId, dagData] of Object.entries(dagMap)) {
         if (activities[actId]) {
-          scaffold.elements.subActivityGraphs[actId] = dagData;
+          // DAG nodes come from LLM and match SubActivity structure
+          (scaffold.elements.subActivityGraphs as Record<string, unknown>)[actId] = dagData;
           totalMerged++;
         }
       }

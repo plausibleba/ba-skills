@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
-import type { ScaffoldData, HeatmapData } from "../types.ts";
+import type { ScaffoldData, HeatmapData, TransformationUserStory } from "../types.ts";
 import type { CardRegistry } from "../types/cards.ts";
 import {
   isPlausibleBABundle,
@@ -37,17 +37,17 @@ export function FileLoader({ compact = false }: { compact?: boolean }) {
         // Detect file type: bundle, scaffold, individual artifact, or heatmap
         if ("bundleVersion" in json && "scaffold" in json) {
           // VCC Bundle v2.0 — load scaffold, all heatmaps, and user stories
-          const bundle = json as any;
+          const bundle = json as unknown as Record<string, unknown>;
           await loadScaffold(bundle.scaffold as ScaffoldData);
           // Load heatmaps from flat array or by-VS map
-          const heatmaps = bundle.heatmaps ?? Object.values(bundle.heatmapsByVs ?? {});
+          const heatmaps = (bundle.heatmaps as unknown[] ?? Object.values((bundle.heatmapsByVs as Record<string, unknown>) ?? {}));
           for (const heatmap of heatmaps) {
             await loadHeatmap(heatmap as HeatmapData);
           }
           // Restore user stories if present (bundle v2.0)
           if (bundle.userStoriesByActivity && typeof bundle.userStoriesByActivity === "object") {
-            for (const [actId, stories] of Object.entries(bundle.userStoriesByActivity)) {
-              useCanvasStore.getState().setActivityStories(actId, stories as any[]);
+            for (const [actId, stories] of Object.entries(bundle.userStoriesByActivity as Record<string, unknown>)) {
+              useCanvasStore.getState().setActivityStories(actId, stories as TransformationUserStory[]);
             }
           }
           // Load MVC cards — from bundle if present, else demo fixture (D-099)

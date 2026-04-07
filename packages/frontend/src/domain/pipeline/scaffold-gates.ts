@@ -3,6 +3,8 @@
 // Gate 2: post-Assembly (after B2). Full scaffold validation.
 // Called between subpasses — not just at final render.
 
+import { ScaffoldData, ScaffoldValueStream, ScaffoldActivity } from "../../types";
+
 export interface GateResult {
   passed: boolean;
   errors: string[];
@@ -11,7 +13,7 @@ export interface GateResult {
 
 // Gate 1: Minimum FSM chain integrity check
 // Mirrors V-SCAFFOLD-01/02/03/07/08 from the prompt pack
-export function runGate1(scaffold: any): GateResult {
+export function runGate1(scaffold: ScaffoldData): GateResult {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -24,8 +26,9 @@ export function runGate1(scaffold: any): GateResult {
     return { passed: false, errors, warnings };
   }
 
-  for (const [vsId, vs] of Object.entries(valueStreams) as [string, any][]) {
-    const vsActIds: string[] = vs.activityIds ?? [];
+  for (const [vsId, vs] of Object.entries(valueStreams)) {
+    const vsData = vs as unknown as ScaffoldValueStream;
+    const vsActIds: string[] = vsData.activityIds ?? [];
 
     if (vsActIds.length === 0) {
       errors.push(`VS ${vsId}: no activityIds declared`);
@@ -40,9 +43,21 @@ export function runGate1(scaffold: any): GateResult {
     }
 
     // Follow the chain from head
-    const head = vsActIds.find(
-      (id) => !vsActIds.some((other) => activities[other]?.nextActivityId === id)
-    );
+    let head: string | undefined;
+    for (const id of vsActIds) {
+      let isHead = true;
+      for (const other of vsActIds) {
+        const otherAct = activities[other] as unknown as ScaffoldActivity;
+        if (otherAct?.nextActivityId === id) {
+          isHead = false;
+          break;
+        }
+      }
+      if (isHead) {
+        head = id;
+        break;
+      }
+    }
 
     if (!head) {
       errors.push(`VS ${vsId}: cannot determine chain head — possible cycle`);
@@ -50,41 +65,42 @@ export function runGate1(scaffold: any): GateResult {
     }
 
     const visited = new Set<string>();
-    let current = head;
+    let current: string | undefined = head;
     while (current) {
       if (visited.has(current)) {
         errors.push(`VS ${vsId}: cycle detected at ${current}`);
         break;
       }
       visited.add(current);
-      const act = activities[current];
-      if (!act) break;
+      const actData = activities[current] as unknown as ScaffoldActivity;
+      if (!actData) break;
 
       // V-SCAFFOLD-02: no no-op transitions
-      if (act.preOutcomeId && act.preOutcomeId === act.postOutcomeId) {
+      if (actData.preOutcomeId && actData.preOutcomeId === actData.postOutcomeId) {
         errors.push(`Activity ${current}: preOutcomeId === postOutcomeId (no-op transition)`);
       }
 
       // V-SCAFFOLD-08: adjacent outcome consistency
-      const next = act.nextActivityId;
-      if (next && activities[next]) {
-        if (act.postOutcomeId !== activities[next].preOutcomeId) {
+      const next = actData.nextActivityId;
+      if (next && typeof next === "string" && activities[next]) {
+        const nextAct = activities[next] as unknown as ScaffoldActivity;
+        if (actData.postOutcomeId !== nextAct.preOutcomeId) {
           errors.push(
             `Chain break between ${current} and ${next}: ` +
-            `postOutcome ${act.postOutcomeId} ≠ preOutcome ${activities[next].preOutcomeId}`
+            `postOutcome ${actData.postOutcomeId} ≠ preOutcome ${nextAct.preOutcomeId}`
           );
         }
       }
 
       // Check outcome references exist
-      if (act.preOutcomeId && act.preOutcomeId !== null && !outcomes[act.preOutcomeId]) {
-        errors.push(`Activity ${current}: preOutcomeId ${act.preOutcomeId} not found in outcomes`);
+      if (actData.preOutcomeId && actData.preOutcomeId !== null && !outcomes[actData.preOutcomeId]) {
+        errors.push(`Activity ${current}: preOutcomeId ${actData.preOutcomeId} not found in outcomes`);
       }
-      if (act.postOutcomeId && !outcomes[act.postOutcomeId]) {
-        errors.push(`Activity ${current}: postOutcomeId ${act.postOutcomeId} not found in outcomes`);
+      if (actData.postOutcomeId && !outcomes[actData.postOutcomeId]) {
+        errors.push(`Activity ${current}: postOutcomeId ${actData.postOutcomeId} not found in outcomes`);
       }
 
-      current = next;
+      current = (next && typeof next === "string") ? next : undefined;
     }
 
     // V-SCAFFOLD-07: all activities reachable
@@ -98,7 +114,7 @@ export function runGate1(scaffold: any): GateResult {
 }
 
 // Gate 2: Full scaffold validation — referential integrity check
-export function runGate2(scaffold: any): GateResult {
+export function runGate2(scaffold: ScaffoldData): GateResult {
   const gate1 = runGate1(scaffold);
   const errors = [...gate1.errors];
   const warnings = [...gate1.warnings];
@@ -112,31 +128,33 @@ export function runGate2(scaffold: any): GateResult {
   const valueStreams = elements.valueStreams ?? {};
 
   // V-SCAFFOLD-04: each VS has activities
-  for (const [vsId, vs] of Object.entries(valueStreams) as [string, any][]) {
-    if (!vs.activityIds?.length) {
+  for (const [vsId, vs] of Object.entries(valueStreams)) {
+    const vsData = vs as unknown as ScaffoldValueStream;
+    if (!vsData.activityIds?.length) {
       errors.push(`VS ${vsId}: has no activities`);
     }
   }
 
   // Referential integrity for activity fields — missing registries are errors, not warnings
-  for (const [actId, act] of Object.entries(activities) as [string, any][]) {
-    for (const roleId of act.performedByRoleIds ?? []) {
+  for (const [actId, act] of Object.entries(activities)) {
+    const actData = act as unknown as ScaffoldActivity;
+    for (const roleId of actData.performedByRoleIds ?? []) {
       if (!roles[roleId]) errors.push(`Activity ${actId}: role ${roleId} not in roles registry`);
     }
-    for (const capId of act.requiresCapabilityIds ?? []) {
+    for (const capId of (actData.requiresCapabilityIds ?? []) as string[]) {
       if (!capabilities[capId]) errors.push(`Activity ${actId}: capability ${capId} not in capabilities registry`);
     }
-    for (const ctrlId of act.controlIds ?? []) {
+    for (const ctrlId of actData.controlIds ?? []) {
       if (!controls[ctrlId]) errors.push(`Activity ${actId}: control ${ctrlId} not in controls registry`);
     }
-    for (const metricId of act.metricIds ?? []) {
+    for (const metricId of actData.metricIds ?? []) {
       if (!metrics[metricId]) warnings.push(`Activity ${actId}: metric ${metricId} not in metrics registry`);
     }
   }
 
   // V-SCAFFOLD-06: orphan metrics (metrics not referenced by any activity)
   const referencedMetrics = new Set(
-    Object.values(activities).flatMap((act: any) => act.metricIds ?? [])
+    Object.values(activities).flatMap((act) => (act as unknown as ScaffoldActivity).metricIds ?? [])
   );
   for (const metricId of Object.keys(metrics)) {
     if (!referencedMetrics.has(metricId)) {
@@ -146,13 +164,14 @@ export function runGate2(scaffold: any): GateResult {
 
   // V-SCAFFOLD-09: lifecycle states on information objects
   const informationObjects = elements.informationObjects ?? {};
-  for (const [ioId, io] of Object.entries(informationObjects) as [string, any][]) {
-    const states = io.lifecycleStates ?? [];
+  for (const [ioId, io] of Object.entries(informationObjects)) {
+    const ioData = io as unknown as { lifecycleStates?: Array<{ position: string }> };
+    const states = ioData.lifecycleStates ?? [];
     if (states.length === 0) {
       warnings.push(`InfoObject ${ioId}: no lifecycleStates defined`);
     } else {
-      const hasInitial = states.some((s: any) => s.position === "initial");
-      const hasTerminal = states.some((s: any) => s.position === "terminal");
+      const hasInitial = states.some((s) => s.position === "initial");
+      const hasTerminal = states.some((s) => s.position === "terminal");
       if (!hasInitial) warnings.push(`InfoObject ${ioId}: no initial lifecycle state`);
       if (!hasTerminal) warnings.push(`InfoObject ${ioId}: no terminal lifecycle state`);
     }
@@ -170,15 +189,16 @@ export function runGate2(scaffold: any): GateResult {
     }
   }
   // Validate sub-activity DAG structure
-  for (const [actId, dag] of Object.entries(subActivityGraphs) as [string, any][]) {
-    const nodes = dag?.nodes ?? [];
+  for (const [actId, dag] of Object.entries(subActivityGraphs)) {
+    const dagData = dag as unknown as { nodes?: Array<{ id: string; nodeType: string; nextIds?: string[] }> };
+    const nodes = dagData?.nodes ?? [];
     if (nodes.length === 0) {
       warnings.push(`SubActivityGraph ${actId}: empty nodes array`);
       continue;
     }
-    const nodeIds = new Set(nodes.map((n: any) => n.id));
+    const nodeIds = new Set(nodes.map((n) => n.id));
     for (const node of nodes) {
-      for (const nextId of (node.nextIds ?? [])) {
+      for (const nextId of node.nextIds ?? []) {
         if (!nodeIds.has(nextId)) {
           warnings.push(`SubActivityGraph ${actId}: node ${node.id} references unknown nextId ${nextId}`);
         }

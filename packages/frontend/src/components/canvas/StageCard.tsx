@@ -4,6 +4,7 @@ import type { CardToggleLayer } from "./useCanvasControls.ts";
 import type { CardRegistry } from "../../types/cards.ts";
 import type { InspectorTarget } from "./InspectorPanel.tsx";
 import { getCardsForActivity } from "../../types/cards.ts";
+import { getCapabilityIds } from "../../types.ts";
 import { CapabilityBlock } from "./CapabilityBlock.tsx";
 import { TransformationPane } from "./TransformationPane.tsx";
 import { useCanvasStore } from "../../store/canvas-store.ts";
@@ -46,7 +47,7 @@ export function StageCard({
 
   const { userStoriesByActivity, setActivityStories, addCapabilityToActivity, removeCapabilityFromActivity } = useCanvasStore();
 
-  const caps: string[] = (activity as any).enabledByCapabilityIds ?? (activity as any).requiresCapabilityIds ?? [];
+  const caps: string[] = getCapabilityIds(activity);
   const showSummary = false;
 
   // MVC card counts for this activity
