@@ -6,6 +6,7 @@ import type {
   ScaffoldConcept,
   ScaffoldInfoObject,
   RecordClass,
+  LifecycleState,
   HeatmapData,
   HeatmapVNext,
   NetworkNode,
@@ -663,6 +664,38 @@ export function deriveTopologyView(
     }
   }
 
+  // Signal 7: Lifecycle adjacency — two activities couple when they operate on
+  // the same record class AND transition it through adjacent lifecycle states.
+  // This is the R-013 Phase 2 causal flow signal — the relationship IS the
+  // semantics (no flags). Directional: earlier state → later state.
+  const recordClasses = scaffold.elements.recordClasses ?? {};
+  for (const rc of Object.values(recordClasses)) {
+    const states = rc.lifecycleStates;
+    if (!states || states.length < 2) continue;
+
+    // Build lifecycleStateId → activities index for this record class
+    const stateToActs = new Map<string, string[]>();
+    for (const act of activityList) {
+      if (act.primaryRecordClassId !== rc.id || !act.lifecycleStateId) continue;
+      const list = stateToActs.get(act.lifecycleStateId) ?? [];
+      list.push(act.id);
+      stateToActs.set(act.lifecycleStateId, list);
+    }
+
+    // For each pair of adjacent states, create edges between their activities
+    for (let i = 0; i < states.length - 1; i++) {
+      const fromActs = stateToActs.get(states[i].id) ?? [];
+      const toActs = stateToActs.get(states[i + 1].id) ?? [];
+      for (const fromId of fromActs) {
+        for (const toId of toActs) {
+          if (fromId !== toId) {
+            addEdge(fromId, toId, 'lifecycleAdjacency');
+          }
+        }
+      }
+    }
+  }
+
   // Build node list from all activities that appear in edges
   const valueStreams = scaffold.elements.valueStreams ?? {};
   const activityVsMap = new Map<string, string>();
@@ -833,9 +866,103 @@ export function deriveRecordLifecycleCoupling(scaffold: ScaffoldData): {
     }
   }
 
-  if (recordClassesAdded > 0 || activitiesLinked > 0) {
+  // ── Step 4: Derive lifecycle states per record class ──
+  // For each record class, walk the activities that reference it (in stage order)
+  // and extract unique postOutcomeId transitions as ordered lifecycle states.
+  // The outcome label becomes the lifecycle state label.
+  const outcomes = els.outcomes ?? {};
+  const valueStreams = els.valueStreams ?? {};
+
+  // Group activities by recordClassId, preserving value-stream stage order
+  const rcActivities = new Map<string, ScaffoldActivity[]>();
+  for (const [, vsRaw] of Object.entries(valueStreams)) {
+    const vs = vsRaw as ScaffoldValueStream;
+    const actIds = vs.activityIds ?? [];
+    for (const actId of actIds) {
+      const act = (els.activities ?? {})[actId] as ScaffoldActivity | undefined;
+      if (!act?.primaryRecordClassId) continue;
+      const list = rcActivities.get(act.primaryRecordClassId) ?? [];
+      list.push(act);
+      rcActivities.set(act.primaryRecordClassId, list);
+    }
+  }
+
+  let lifecycleStatesBuilt = 0;
+  let activitiesWithLifecycleState = 0;
+
+  for (const [rcId, acts] of rcActivities) {
+    const rc = recordClasses[rcId];
+    if (!rc) continue;
+
+    // Build ordered lifecycle states from postOutcomeIds (preserving stage order)
+    const seenOutcomes = new Set<string>();
+    const states: LifecycleState[] = [];
+
+    // Also include the first activity's preOutcomeId as the initial state
+    if (acts.length > 0 && acts[0].preOutcomeId && !seenOutcomes.has(acts[0].preOutcomeId)) {
+      const outcome = outcomes[acts[0].preOutcomeId] as ScaffoldElement | undefined;
+      const label = outcome?.name ?? acts[0].preOutcomeId;
+      states.push({
+        id: `ls_${rcId}_${states.length}`,
+        label,
+        ordinal: states.length,
+        position: "initial",
+        outcomeId: acts[0].preOutcomeId,
+      });
+      seenOutcomes.add(acts[0].preOutcomeId);
+    }
+
+    for (const act of acts) {
+      if (!act.postOutcomeId || seenOutcomes.has(act.postOutcomeId)) continue;
+      const outcome = outcomes[act.postOutcomeId] as ScaffoldElement | undefined;
+      const label = outcome?.name ?? act.postOutcomeId;
+      states.push({
+        id: `ls_${rcId}_${states.length}`,
+        label,
+        ordinal: states.length,
+        position: "intermediate", // will be corrected to "terminal" below
+        outcomeId: act.postOutcomeId,
+      });
+      seenOutcomes.add(act.postOutcomeId);
+    }
+
+    // Mark the last state as terminal
+    if (states.length >= 2) {
+      states[states.length - 1].position = "terminal";
+      // Wire sequential transitions
+      for (let i = 0; i < states.length - 1; i++) {
+        states[i].transitionsTo = [states[i + 1].id];
+      }
+      rc.lifecycleStates = states;
+      lifecycleStatesBuilt += states.length;
+    }
+  }
+
+  // ── Step 5: Assign lifecycleStateId to activities ──
+  // Map each activity's postOutcomeId to the corresponding lifecycle state
+  const outcomeToLifecycleState = new Map<string, string>(); // outcomeId → lifecycleStateId
+  for (const rc of Object.values(recordClasses)) {
+    for (const ls of rc.lifecycleStates ?? []) {
+      if (ls.outcomeId) {
+        outcomeToLifecycleState.set(ls.outcomeId, ls.id);
+      }
+    }
+  }
+
+  for (const activity of Object.values(els.activities ?? {})) {
+    const act = activity as ScaffoldActivity;
+    if (!act.primaryRecordClassId || !act.postOutcomeId) continue;
+    const lsId = outcomeToLifecycleState.get(act.postOutcomeId);
+    if (lsId) {
+      act.lifecycleStateId = lsId;
+      activitiesWithLifecycleState++;
+    }
+  }
+
+  if (recordClassesAdded > 0 || activitiesLinked > 0 || lifecycleStatesBuilt > 0) {
     console.log(
-      `R-013: Derived ${recordClassesAdded} record classes, linked ${activitiesLinked} activities to primary records`
+      `R-013: ${recordClassesAdded} record classes, ${activitiesLinked} activities linked, ` +
+      `${lifecycleStatesBuilt} lifecycle states, ${activitiesWithLifecycleState} activities with lifecycle state`
     );
   }
 

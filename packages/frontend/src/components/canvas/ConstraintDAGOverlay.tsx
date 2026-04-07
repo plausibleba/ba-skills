@@ -38,6 +38,7 @@ const STAGE_BASIS_STYLES: Record<TopologyBasis, BasisStyle> = {
   sharedControl:             { color: "#ea580c", dash: "5,3", label: "Shared control" },
   sharedApplicationFunction: { color: "#16a34a", dash: "5,3", label: "Shared application" },
   sharedPrimaryRecord:       { color: "#dc2626", dash: "5,3", label: "Shared record" },
+  lifecycleAdjacency:        { color: "#059669", dash: "",    label: "Lifecycle flow" },
 };
 
 // Capability-level basis types
@@ -368,6 +369,7 @@ export function ConstraintDAGOverlay({
   const [stageBasisToggles, setStageBasisToggles] = useState<Record<TopologyBasis, boolean>>({
     outcomeAdjacency: true, sharedRole: true, sharedCapability: true,
     sharedControl: true, sharedApplicationFunction: true, sharedPrimaryRecord: true,
+    lifecycleAdjacency: true,
   });
   const [capBasisToggles, setCapBasisToggles] = useState<Record<CapBasis, boolean>>({
     coDeployed: true, sharedRole: true, sharedControl: true,

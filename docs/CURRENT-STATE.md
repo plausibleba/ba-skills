@@ -1,6 +1,6 @@
 # Current State — VCC Frontend
 
-_Last updated: 2026-04-07 — Session 31 (Hardening + R-001 journey state machine + dark mode fix) — v0.5.0 DRAFT_
+_Last updated: 2026-04-08 — Session 32 (R-013 Phase 2: record lifecycle coupling) — v0.5.0 DRAFT_
 
 ---
 
@@ -336,7 +336,7 @@ SPAR design review completed with Technical Architect (GPT-4o) and Functional De
 ### Near Term (Structural Hardening)
 5. ~~**TypeScript type drift cleanup (R-010)** — align types with runtime data~~ ✅ Session 29
 6. ~~**Client-side graph index** — in-memory adjacency map on bundle load (D-097 Step 1)~~ ✅ Session 30
-7. ~~**Record-lifecycle coupling Phase 1** — derive recordClasses + primaryRecordClassId deterministically~~ ✅ Session 30. Phase 2 (outcome→lifecycle state mapping) remains
+7. ~~**Record-lifecycle coupling Phase 1+2** — recordClasses, primaryRecordClassId, lifecycleStates, lifecycleStateId, lifecycleAdjacency coupling~~ ✅ Session 30-32. Phase 3 (VS-boundary handoff, decision gates) remains
 8. ~~**Capability selector** — pick from existing capabilities before "create new" (D-097 Step 1 lite)~~ ✅ Session 31
 9. ~~**`as any` cleanup** — network-derivation.ts and FrictionView.tsx cleared~~ ✅ Session 31. 53 instances remain in 7 `@ts-nocheck` files
 10. ~~**R-001 Journey state machine** — AppPhase discriminated union replaces scattered viewMode + UI flags~~ ✅ Session 31 (Phase 1 + Phase 2 complete; viewMode deprecated, zero external consumers)

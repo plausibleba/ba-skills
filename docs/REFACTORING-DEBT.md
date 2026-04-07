@@ -82,12 +82,13 @@ Tracked choices where we picked expediency over elegance. Each item is a candida
 **What we should do:** Add a "Back to Projects" action (already noted as upsell trigger point). Needs a `closeProject()` action that clears canvas-store and project-store state cleanly. This is also where the journey state machine (R-001) would help — transitioning from `{ phase: "canvas" }` back to `{ phase: "project-list" }`.
 **Payoff:** Basic navigation. Also the trigger point Terry identified for upsell/signup flow.
 
-## R-013: Topology coupling is resource-based, not record-lifecycle-based — PHASE 1 COMPLETE
-**Filed:** 2026-03-21 | **Phase 1:** 2026-04-07 (Session 31)
-**Where:** `network-derivation.ts` (`deriveTopologyView`, `deriveRecordLifecycleCoupling`), `NetworkView.tsx`
-**Phase 1 done:** `deriveRecordLifecycleCoupling()` deterministically populates `recordClasses` from Record-type concepts + key IOs, and links activities to `primaryRecordClassId` via a score-based algorithm (direct IO match=3, name match=2, capability businessObject=2, PPIT IO=1). Called during `loadScaffold()` before topology derivation.
-**What remains (Phase 2):** (a) Make the Record → Outcome Lifecycle mapping explicit and first-class in the scaffold. (b) Support record handoff/transformation at VS boundaries. (c) Model decision gates as explicit state transitions. (d) Replace resource-based coupling with record-lifecycle-driven coupling in the topology graph.
-**Payoff:** Coupling graph reflects causal flow, not just organisational overlap. Directly enables executable orchestration.
+## R-013: Topology coupling is resource-based, not record-lifecycle-based — PHASE 2 COMPLETE
+**Filed:** 2026-03-21 | **Phase 1:** 2026-04-07 (Session 31) | **Phase 2:** 2026-04-08 (Session 32)
+**Where:** `network-derivation.ts` (`deriveTopologyView`, `deriveRecordLifecycleCoupling`), `types.ts`, `ConstraintDAGOverlay.tsx`
+**Phase 1:** `deriveRecordLifecycleCoupling()` populates `recordClasses` from Record-type concepts + key IOs, links activities to `primaryRecordClassId` via score-based algorithm.
+**Phase 2:** Extended `RecordClass` with `lifecycleStates` (ordered state sequence derived from outcome chain). Activities assigned `lifecycleStateId` via outcome mapping. New `'lifecycleAdjacency'` topology signal creates directional coupling edges between activities that transition the same record through adjacent lifecycle states. Consolidated `LifecycleState` interface across IO and RecordClass usage.
+**What remains (Phase 3):** (a) VS-boundary record handoff — terminal lifecycle state of one VS triggers initial state of another. (b) Decision gates as explicit branching state transitions. (c) Surface lifecycle flow in a dedicated UI view.
+**Payoff:** Coupling graph now reflects causal flow alongside operational interference. Foundation for executable orchestration.
 
 ## R-014: R-006 partially addressed — topological sort replaces alphabetical
 **Filed:** 2026-03-21 (update to R-006)

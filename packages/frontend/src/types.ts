@@ -361,6 +361,9 @@ export interface ScaffoldActivity {
    *  Execution grammar: Role performs Capability under Control using ApplicationFunction
    *  to transition RecordClass to achieve Outcome */
   primaryRecordClassId?: string;
+  /** R-013 Phase 2: The lifecycle state this activity transitions the record TO.
+   *  Derived from postOutcomeId → LifecycleState mapping. */
+  lifecycleStateId?: string;
   /** D-054: Mereological parthood — this Activity is an ordered part of the named
    *  composite transition. Not a parent/child tree relation. Not inheritance.
    *  v1: strict ordered parthood, single membership. */
@@ -495,15 +498,23 @@ export interface ScaffoldInfoObject extends ScaffoldElement {
   lifecycleStates?: LifecycleState[];
 }
 
+/** LifecycleState — a named state in a record/IO lifecycle progression.
+ *  Used by both ScaffoldInfoObject (IO lifecycle diagrams) and RecordClass
+ *  (R-013 record lifecycle coupling). The ordinal defines adjacency for
+ *  coupling derivation; position classifies the state semantically. */
 export interface LifecycleState {
   id: string;
   label: string;
-  /** Position in lifecycle: initial, terminal, or intermediate */
+  /** Position in lifecycle: initial, terminal, intermediate, or decision */
   position: "initial" | "intermediate" | "terminal" | "decision";
+  /** 0-based ordinal in the lifecycle sequence (R-013 Phase 2) */
+  ordinal?: number;
   /** IDs of states this state can transition to */
   transitionsTo?: string[];
   /** Activity that triggers this transition */
   triggerActivityId?: string;
+  /** The outcome ID that represents this lifecycle transition (R-013 Phase 2) */
+  outcomeId?: string;
 }
 
 /**
@@ -559,11 +570,17 @@ export interface ApplicationFunction {
 /** RecordClass — the governed interaction record whose lifecycle the value stream defines.
  *  v1: Record only. Party (subject) and Product (object) are implied by the Record.
  *  Example: CustomerRecord (not "Customer" — the record is distinct from the person)
- *  v2 path: add PartyClass and ProductClass once Record foundation is established */
+ *  v2 path: add PartyClass and ProductClass once Record foundation is established.
+ *
+ *  R-013 Phase 2: lifecycleStates encodes the record's ordered state progression.
+ *  Lifecycle adjacency between activities is derived from these states — the
+ *  relationship IS the semantics (no flags). */
 export interface RecordClass {
   id: string;
   prefLabel: string;
   description?: string;
+  /** Ordered lifecycle states for this record. Derived from outcome chain. */
+  lifecycleStates?: LifecycleState[];
 }
 
 export interface ScaffoldElements {
@@ -636,7 +653,8 @@ export type TopologyBasis =
   | 'sharedCapability'
   | 'sharedControl'
   | 'sharedApplicationFunction'
-  | 'sharedPrimaryRecord';
+  | 'sharedPrimaryRecord'
+  | 'lifecycleAdjacency';
 
 export interface TopologyNode {
   activityId: string;

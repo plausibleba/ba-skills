@@ -543,6 +543,7 @@ function parseInformationMap(
           return {
             id: stateId,
             label,
+            ordinal: idx,
             position: (idx === 0
               ? "initial"
               : idx === arr.length - 1

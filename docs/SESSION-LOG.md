@@ -4,6 +4,34 @@ Chronological record of what was built, decided, and learned.
 
 ---
 
+## Session 32 — R-013 Phase 2: Record Lifecycle Coupling
+**Date:** 2026-04-08
+**Status:** Complete
+
+### Record Lifecycle States
+
+Extended `RecordClass` with `lifecycleStates: LifecycleState[]` — an ordered sequence of states derived from the outcome chain. Each state carries `id`, `label`, `ordinal`, `position` (initial/intermediate/terminal), `outcomeId`, and `transitionsTo` (successor IDs).
+
+Consolidated `LifecycleState` interface — was previously defined separately for `ScaffoldInfoObject` (with `position` + `transitionsTo`) and now also serves `RecordClass` (with `ordinal` + `outcomeId`). Single interface covers both use cases.
+
+### Lifecycle Derivation (Steps 4-5 in `deriveRecordLifecycleCoupling()`)
+
+**Step 4:** For each record class, walks activities that reference it (in value-stream stage order), extracts unique `postOutcomeId` transitions as ordered lifecycle states. The first activity's `preOutcomeId` becomes the initial state. Sequential `transitionsTo` wiring is automatic.
+
+**Step 5:** Maps each activity's `postOutcomeId` to the corresponding `lifecycleStateId`, populating `ScaffoldActivity.lifecycleStateId`.
+
+### Lifecycle Adjacency Coupling (Signal 7 in `deriveTopologyView()`)
+
+New `'lifecycleAdjacency'` topology basis: two activities couple when they operate on the same record class AND transition it through adjacent lifecycle states (ordinal N → N+1). This is directional (earlier → later), unlike the existing `sharedPrimaryRecord` signal which is bidirectional. Both signals coexist — `sharedPrimaryRecord` represents operational interference, `lifecycleAdjacency` represents causal flow.
+
+### Files Changed
+- `types.ts` — Consolidated `LifecycleState` interface (added `ordinal`, `outcomeId`), added `lifecycleStateId` to `ScaffoldActivity`, added `'lifecycleAdjacency'` to `TopologyBasis`
+- `store/network-derivation.ts` — Steps 4-5 in `deriveRecordLifecycleCoupling()`, Signal 7 in `deriveTopologyView()`
+- `components/canvas/ConstraintDAGOverlay.tsx` — Added `lifecycleAdjacency` style (green solid line) and toggle default
+- `utils/reference-model-import.ts` — Added `ordinal` to lifecycle state construction for compatibility
+
+---
+
 ## Session 31 — Hardening: `as any` Cleanup, R-013, Capability Selector UX
 **Date:** 2026-04-07
 **Status:** Complete
