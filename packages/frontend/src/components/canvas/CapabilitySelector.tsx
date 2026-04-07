@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { useCanvasStore } from "../../store/canvas-store.ts";
 import { tv } from "../../theme.ts";
 import type { ScaffoldCapability } from "../../types.ts";
@@ -128,6 +129,17 @@ export function CapabilitySelector({ activityId, className = "" }: CapabilitySel
     }
   }, [suggestions, highlightIdx, query, exactMatch, selectExisting, createNew, close]);
 
+  // Track input position for portal dropdown
+  const [dropdownRect, setDropdownRect] = useState<{ top: number; left: number; width: number } | null>(null);
+  useLayoutEffect(() => {
+    if (open && inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setDropdownRect({ top: rect.bottom + 2, left: rect.left, width: rect.width });
+    } else {
+      setDropdownRect(null);
+    }
+  }, [open, query]);
+
   // Scroll highlighted item into view
   useEffect(() => {
     if (listRef.current) {
@@ -153,6 +165,8 @@ export function CapabilitySelector({ activityId, className = "" }: CapabilitySel
 
   const hasCreateNew = query.trim().length > 0 && !exactMatch;
 
+  const showDropdown = (suggestions.length > 0 || hasCreateNew) && dropdownRect;
+
   return (
     <div className={`relative ${className}`}>
       <input
@@ -170,12 +184,18 @@ export function CapabilitySelector({ activityId, className = "" }: CapabilitySel
         style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgSurface, color: tv.textSecondary }}
       />
 
-      {/* Dropdown */}
-      {(suggestions.length > 0 || hasCreateNew) && (
+      {/* Portal dropdown — escapes overflow-hidden on StageCard */}
+      {showDropdown && createPortal(
         <div
           ref={listRef}
-          className="absolute left-0 right-0 z-50 mt-0.5 max-h-48 overflow-auto rounded border shadow-lg"
-          style={{ background: tv.bgCard, borderColor: tv.borderSubtle }}
+          className="fixed z-[9999] max-h-48 overflow-auto rounded border shadow-lg"
+          style={{
+            top: dropdownRect.top,
+            left: dropdownRect.left,
+            width: dropdownRect.width,
+            background: tv.bgCard,
+            borderColor: tv.borderSubtle,
+          }}
         >
           {suggestions.map((s, i) => (
             <div
@@ -218,7 +238,8 @@ export function CapabilitySelector({ activityId, className = "" }: CapabilitySel
               <span>Create &ldquo;{query.trim()}&rdquo;</span>
             </div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
