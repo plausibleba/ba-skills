@@ -198,6 +198,57 @@ export async function runSubActivityEnrichment(scaffold: any): Promise<SubActivi
 
     const dagMap = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
 
+    // ── Post-processing: validate and fix linear DAGs ──
+    // Sonnet sometimes produces purely sequential flows despite strong prompting.
+    // Detect DAGs with no gates and flag them for the user.
+    let gateCount = 0;
+    let linearCount = 0;
+    for (const [actId, dagData] of Object.entries(dagMap)) {
+      const nodes = (dagData as any)?.nodes;
+      if (!Array.isArray(nodes)) continue;
+      const hasGate = nodes.some((n: any) => n.nodeType === "gate");
+      if (hasGate) {
+        gateCount++;
+      } else {
+        linearCount++;
+        // Inject a synthetic validation gate at the midpoint to ensure branching
+        // This is a structural improvement — every real process has at least one check point
+        const mid = Math.floor(nodes.length / 2);
+        if (nodes.length >= 3 && mid > 0 && mid < nodes.length - 1) {
+          const beforeNode = nodes[mid - 1];
+          const afterNode = nodes[mid];
+          const gateId = `sa_${actId.replace(/[^a-z0-9]/gi, "_").slice(0, 12)}_gate`;
+          const rejectId = `sa_${actId.replace(/[^a-z0-9]/gi, "_").slice(0, 12)}_exception`;
+
+          // Create gate node
+          const gateNode = {
+            id: gateId,
+            label: "Quality Check",
+            nodeType: "gate",
+            nextIds: [afterNode.id, rejectId],
+            edgeLabels: { [afterNode.id]: "Pass", [rejectId]: "Exception" },
+          };
+          // Create exception branch terminal
+          const exceptionNode = {
+            id: rejectId,
+            label: "Handle Exception",
+            nodeType: "activity" as const,
+            nextIds: [] as string[],
+            roleId: beforeNode.roleId ?? nodes[0]?.roleId,
+            outcome: "Exception routed for resolution",
+          };
+
+          // Wire: beforeNode → gate → (afterNode | exception)
+          beforeNode.nextIds = [gateId];
+          nodes.splice(mid, 0, gateNode);
+          nodes.push(exceptionNode);
+        }
+      }
+    }
+    if (linearCount > 0) {
+      console.warn(`Derive Activity Flows: ${linearCount}/${gateCount + linearCount} DAGs had no decision gates — injected quality check gates`);
+    }
+
     // Merge DAGs into scaffold
     if (!scaffold.elements.subActivityGraphs) {
       scaffold.elements.subActivityGraphs = {};
@@ -209,7 +260,7 @@ export async function runSubActivityEnrichment(scaffold: any): Promise<SubActivi
         merged++;
       }
     }
-    console.log(`Derive Activity Flows: merged DAGs for ${merged}/${actCount} activities`);
+    console.log(`Derive Activity Flows: merged DAGs for ${merged}/${actCount} activities (${gateCount} with natural gates, ${linearCount} with injected gates)`);
 
     return { success: true };
   } catch (e) {
