@@ -669,18 +669,6 @@ export function deriveTopologyView(
   // This is the R-013 Phase 2 causal flow signal — the relationship IS the
   // semantics (no flags). Directional: earlier state → later state.
   const recordClasses = scaffold.elements.recordClasses ?? {};
-
-  // Pre-build activity→VS map for diagnostics and node building
-  const valueStreams = scaffold.elements.valueStreams ?? {};
-  const activityVsMap = new Map<string, string>();
-  for (const [vsId, vs] of Object.entries(valueStreams)) {
-    for (const actId of (vs as ScaffoldValueStream).activityIds ?? []) {
-      activityVsMap.set(actId, vsId);
-    }
-  }
-
-  let sig7Total = 0;
-  let sig7CrossVs = 0;
   for (const rc of Object.values(recordClasses)) {
     const states = rc.lifecycleStates;
     if (!states || states.length < 2) continue;
@@ -702,25 +690,18 @@ export function deriveTopologyView(
         for (const toId of toActs) {
           if (fromId !== toId) {
             addEdge(fromId, toId, 'lifecycleAdjacency');
-            sig7Total++;
-            if (activityVsMap.get(fromId) !== activityVsMap.get(toId)) sig7CrossVs++;
           }
         }
       }
     }
   }
-  if (sig7Total > 0 || Object.values(recordClasses).some(rc => (rc.lifecycleStates?.length ?? 0) >= 2)) {
-    console.log(`[Sig7] lifecycle edges: ${sig7Total} total, ${sig7CrossVs} cross-VS, ${sig7Total - sig7CrossVs} within-VS`);
-    // Show per-RC breakdown for debugging
-    for (const rc of Object.values(recordClasses)) {
-      const states = rc.lifecycleStates;
-      if (!states || states.length < 2) continue;
-      const matched = activityList.filter(a => a.primaryRecordClassId === rc.id && a.lifecycleStateId);
-      const stateIds = new Set(states.map(s => s.id));
-      const matchedInStates = matched.filter(a => stateIds.has(a.lifecycleStateId!));
-      if (matched.length > 0) {
-        console.log(`[Sig7]   RC "${rc.prefLabel}": ${states.length} states, ${matched.length} acts matched, ${matchedInStates.length} in correct states`);
-      }
+
+  // Build node list from all activities that appear in edges
+  const valueStreams = scaffold.elements.valueStreams ?? {};
+  const activityVsMap = new Map<string, string>();
+  for (const [vsId, vs] of Object.entries(valueStreams)) {
+    for (const actId of (vs as ScaffoldValueStream).activityIds ?? []) {
+      activityVsMap.set(actId, vsId);
     }
   }
 
@@ -734,15 +715,6 @@ export function deriveTopologyView(
     activityId,
     valueStreamId: activityVsMap.get(activityId) ?? '',
   }));
-
-  // Topology edge basis summary
-  const basisCounts: Record<string, number> = {};
-  for (const edge of edgeMap.values()) {
-    for (const b of edge.basis) {
-      basisCounts[b] = (basisCounts[b] ?? 0) + 1;
-    }
-  }
-  console.log(`[Topology] ${edgeMap.size} edges, basis counts:`, basisCounts);
 
   const ciHash = `ci-hash-${capabilityInstanceView.instances.length}-${capabilityInstanceView.scaffoldIntegrityHash}`;
 
