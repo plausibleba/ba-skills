@@ -21,12 +21,31 @@ function deriveGuideState(
   isEnriched: boolean,
 ): GuideState {
   if (!isLoaded) return "empty";
-  if (phase.phase === "workbench") return "workbench";
-  if (phase.phase === "network") return "network";
-  if (phase.phase === "stage" && !hasAssessment) return "stage-no-assessment";
-  if (phase.phase === "stage" && hasAssessment && !isEnriched) return "stage-assessed";
-  if (phase.phase === "stage" && isEnriched) return "stage-enriched";
-  return "empty";
+
+  switch (phase.phase) {
+    case "workbench":      return "workbench";
+    case "network":        return "network";
+    case "import":         return "import";
+    case "capabilityMap":  return "capabilityMap";
+    case "conceptGraph":   return "conceptGraph";
+    case "friction":       return "friction";
+    case "enrich": {
+      const sec = phase.section;
+      if (sec === "structure")  return "enrich-structure";
+      if (sec === "mapping")    return "enrich-mapping";
+      if (sec === "friction")   return "enrich-friction";
+      if (sec === "assessment") return "enrich-assessment";
+      if (sec === "custom")     return "enrich-custom";
+      return "enrich-structure"; // fallback for null section
+    }
+    case "stage": {
+      if (!hasAssessment) return "stage-no-assessment";
+      if (!isEnriched)    return "stage-assessed";
+      return "stage-enriched";
+    }
+    default:
+      return "empty";
+  }
 }
 
 export function UserGuidePanel() {

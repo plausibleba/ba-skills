@@ -11,8 +11,17 @@ import { getModuleLabel } from "./module-registry.ts";
 
 export type GuideState =
   | "empty"
+  | "import"
   | "network"
   | "workbench"
+  | "capabilityMap"
+  | "conceptGraph"
+  | "friction"
+  | "enrich-structure"
+  | "enrich-mapping"
+  | "enrich-friction"
+  | "enrich-assessment"
+  | "enrich-custom"
   | "stage-no-assessment"
   | "stage-assessed"
   | "stage-enriched";
@@ -103,6 +112,112 @@ export function getGuideContent(
           "Use Graph Explorer to visualise cross-catalog relationships",
           "When done editing, click Reconcile to run cross-catalog validation checks",
           "Finally, Apply commits your changes back to the project model",
+        ],
+      };
+
+    case "import":
+      return {
+        where: "Import Model",
+        what: "Import an existing reference model or PlausibleBA bundle into a new project. You can load a Guild Reference Model, a previously saved VCC bundle, or individual PlausibleBA artifacts (Capability Map, Concept Model, Value Stream).",
+        next: [
+          "Drag and drop a .json file or click to browse",
+          "Individual artifacts can be imported incrementally — each one merges into the current model",
+          "After import, you'll be taken to the Network View to explore your model",
+        ],
+      };
+
+    case "capabilityMap":
+      return {
+        where: "Capability Map",
+        what: "The Capability Map shows what the organisation does, organised by business function. Capabilities are grouped hierarchically — L1 business functions contain L2 capabilities, which may contain L3 detail. This is a structural view of organisational ability, independent of how or where it's performed.",
+        next: [
+          "Toggle between Grid, Stack, and Row layouts to find the view that suits your model",
+          "Click any capability to inspect its detail — PPIT breakdown, linked activities, and governance bindings",
+          "Use the enrichment builder to generate deeper PPIT decomposition for selected capabilities",
+          "Look for governance capabilities highlighted separately — these often carry policy and compliance implications",
+        ],
+      };
+
+    case "conceptGraph":
+      return {
+        where: "Concept Graph",
+        what: "The Concept Graph visualises the business objects (concepts) your operating model manages and how they relate to each other. Concepts are classified as Parties (who), Records (what gets transitioned), or Resources (what gets consumed). Relationships show cardinality and dependency.",
+        next: [
+          "Review the concept nodes — each shows its type, key attributes, and lifecycle states",
+          "Trace relationships between concepts to understand how business objects depend on each other",
+          "Concepts of type Record are particularly important — they drive the lifecycle coupling in your value streams",
+          "Use this view to validate that your model captures all the key business objects before enrichment",
+        ],
+      };
+
+    case "friction":
+      return {
+        where: "Friction View",
+        what: "The Friction view is where you identify and analyse operational bottlenecks across your value streams. It uses a six-category taxonomy to classify where work slows down: execution, information, decision, handoff, compliance, and technology friction.",
+        next: [
+          "Review the 'How it works' tab for methodology and category definitions",
+          "Switch to Observations to see friction points identified per value stream and stage",
+          "Use the Survey tab to capture additional friction data from stakeholders",
+          "Check the Signals tab to review structural signals that may indicate hidden friction",
+        ],
+      };
+
+    case "enrich-structure":
+      return {
+        where: "Enrich — Structure & Depth",
+        what: "Structure enrichment adds internal detail to your high-level model elements. It breaks activities into sub-activities, generates PPIT decomposition (People, Process, Information, Technology) for each capability, and creates governance cards where applicable.",
+        next: [
+          "Run each enrichment type in sequence — sub-activities first, then PPIT, then cards",
+          "Review the generated detail before moving on — you can revert any enrichment that doesn't look right",
+          "Once structure is enriched, the Cross-Mapping and Assessment views will have more to work with",
+        ],
+      };
+
+    case "enrich-mapping":
+      return {
+        where: "Enrich — Cross-Mapping",
+        what: "Cross-mapping defines relationships between different dimensions of your model — for example, which capabilities support which stages, or how roles relate to business objects. These mappings strengthen the structural integrity of the operating model.",
+        next: [
+          "Add mapping pairs by selecting a source and target from different catalogs",
+          "Configure semantic properties — symmetry, transitivity, and cardinality — to define how mappings behave",
+          "Use inverse mappings to automatically generate the reverse relationship",
+          "Cross-mappings feed into the Constraint DAG and topology coupling analysis",
+        ],
+      };
+
+    case "enrich-friction":
+      return {
+        where: "Enrich — Friction Analysis",
+        what: "Run a friction assessment against your operating model to identify bottlenecks, binding constraints, and areas of operational drag. The analysis uses your model's structure — stages, capabilities, roles, and information flows — to surface friction points.",
+        next: [
+          "Click 'Run new' to generate a fresh friction analysis across all value streams",
+          "Review observations by category — each friction point is classified and evidenced",
+          "The binding constraint (biggest bottleneck) is highlighted in red on the stage view",
+          "After friction analysis, consider running Solution enrichment to map technology responses",
+        ],
+      };
+
+    case "enrich-assessment":
+      return {
+        where: "Enrich — Assessment & Analysis",
+        what: "Assessment enrichment evaluates your model through multiple analytical lenses: metrics alignment, dependency analysis, maturity scoring, gap identification, and risk assessment. These overlay insights onto your model without changing its structure.",
+        next: [
+          "Run each assessment independently — they analyse different dimensions of your model",
+          "Review the results to identify areas that need attention before transformation planning",
+          "Assessment findings complement friction analysis — friction shows where things slow down, assessment shows why",
+          "Use assessment outputs to build the case for investment priorities",
+        ],
+      };
+
+    case "enrich-custom":
+      return {
+        where: "Enrich — Custom Skills",
+        what: "Custom enrichments let you create domain-specific analysis skills with your own prompts. Use these for compliance checks, vendor assessments, scoring models, or any specialised analysis that the standard enrichments don't cover.",
+        next: [
+          "Click 'Add Skill' to create a new custom enrichment with a descriptive name",
+          "Write a prompt that describes what the skill should analyse and what output you expect",
+          "Select which model elements the skill should operate on (value streams, capabilities, concepts, etc.)",
+          "Run the skill and review the results — custom skills can be edited and re-run as you refine them",
         ],
       };
 
