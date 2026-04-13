@@ -1,66 +1,9 @@
 /**
  * Module Feature Configuration (D-112: Module-Specific UI)
  *
- * Each project module only shows features relevant to its workflow.
- * This prevents cognitive overload by hiding irrelevant tools.
- *
- * Board Diagnostic:  Friction only
- * Sales Discovery:   Friction + Solutions
- * Transformation:    Friction + User Stories / SBR
- * MVC (governance):  Friction + Concept & Policy Cards
+ * @deprecated — Import from `./module-registry.ts` instead. This file
+ * re-exports for backward compatibility with existing consumers.
  */
 
-import type { ProjectModule } from "../types/database.ts";
-
-export interface ModuleFeatures {
-  friction: boolean;        // Assess Friction (heatmaps, friction panel)
-  solutions: boolean;       // Enrich Solutions (vendor picker, solution cards)
-  userStories: boolean;     // User Stories / SBR (transformation pane, Jira export)
-  mvcCards: boolean;        // MVC Concept & Policy Cards (card panel, card toggles)
-}
-
-const MODULE_FEATURES: Record<ProjectModule | "mvc", ModuleFeatures> = {
-  "board-diagnostic": {
-    friction: true,
-    solutions: false,
-    userStories: false,
-    mvcCards: true,  // Cards available once generated via enrichment
-  },
-  "sales-discovery": {
-    friction: true,
-    solutions: true,
-    userStories: false,
-    mvcCards: true,  // Cards available once generated via enrichment
-  },
-  "transformation": {
-    friction: true,
-    solutions: false,
-    userStories: true,
-    mvcCards: true,  // Cards available once generated via enrichment
-  },
-  "mvc": {
-    friction: true,
-    solutions: false,
-    userStories: false,
-    mvcCards: true,
-  },
-};
-
-// Default: sales-discovery baseline (friction + solutions)
-// Quick Discovery and unknown modules get this.
-// MVC cards are always available — the enrichment taxonomy gates when they can be generated.
-const DEFAULT_FEATURES: ModuleFeatures = {
-  friction: true,
-  solutions: true,
-  userStories: false,
-  mvcCards: true,
-};
-
-/**
- * Get the feature set for the current module.
- * Falls back to sales-discovery baseline for unknown modules or Quick Discovery.
- */
-export function getModuleFeatures(module: string | null | undefined): ModuleFeatures {
-  if (!module) return DEFAULT_FEATURES;
-  return MODULE_FEATURES[module as keyof typeof MODULE_FEATURES] ?? DEFAULT_FEATURES;
-}
+export type { ModuleFeatures } from "./module-registry.ts";
+export { getModuleFeatures } from "./module-registry.ts";

@@ -8,26 +8,17 @@ Tracked choices where we picked expediency over elegance. Each item is a candida
 **Filed:** 2026-03-21 | **Resolved:** 2026-04-07 (Session 31)
 **What was done:** Defined `AppPhase` discriminated union (11 phase variants) as single source of truth for user journey state. All `goTo*` actions transition through `setPhase()` which derives deprecated `viewMode`/`enrichSection` for remaining internal consumers. Migrated all external consumers: SideNav (14 comparisons), App.tsx (11 boolean flags), UserGuidePanel (`deriveGuideState()` accepts `AppPhase` directly), ProjectList (`setCreatingProject` → `setPhase`), DiscoveryIntake (`setIntakeTab` → `setPhase`). Zero external `viewMode` consumers remain. Old project-store UI hints (`isCreatingProject`, `intakeTab`) deprecated.
 
-## R-002: Module info duplicated across components
-**Filed:** 2026-03-21
-**Where:** `ProjectList.tsx` (`MODULE_INFO`), `module-features.ts`, `UserGuidePanel.tsx` (inline label map)
-**What we did:** Each component defines its own label/description map for modules. `ProjectList` has `MODULE_INFO`, the guide has an inline `moduleLabel` lookup, and `module-features.ts` has the feature flags.
-**What we should do:** Single `MODULE_REGISTRY` object that carries label, description, icon, and feature flags. All components import from one place.
-**Payoff:** Add a new module in one file, not three.
+## R-002: ~~Module info duplicated across components~~ ✅ COMPLETE
+**Filed:** 2026-03-21 | **Resolved:** 2026-04-13 (Session 33)
+**What was done:** Created `lib/module-registry.ts` with unified `MODULE_REGISTRY` carrying id, label, description, color, and feature flags. `module-features.ts` now re-exports from registry for backward compatibility. `ProjectList.tsx` imports `MODULE_REGISTRY` + `MODULE_IDS` (removed local `MODULE_INFO`). `UserGuidePanel.tsx` uses `getModuleLabel()` (removed inline lookup). Adding a module is now one entry in one file.
 
-## R-003: UserGuidePanel content as inline constants
-**Filed:** 2026-03-21
-**Where:** `UserGuidePanel.tsx`
-**What we did:** Guide content for every state is defined as constants and functions inside the component file. As we add more pages (intake provide, intake form, creating project, etc.) the file keeps growing with static content.
-**What we should do:** Extract guide content into a separate `guide-content.ts` or a JSON/record keyed by `appPhase`. The component just renders — it doesn't own the copy.
-**Payoff:** Easier to edit copy without touching component logic. Could eventually be driven by a CMS or i18n file.
+## R-003: ~~UserGuidePanel content as inline constants~~ ✅ COMPLETE
+**Filed:** 2026-03-21 | **Resolved:** 2026-04-13 (Session 33)
+**What was done:** Extracted all guide content to `lib/guide-content.ts` — types (`GuideState`, `GuideContent`), phase-specific constants (`CREATING_PROJECT_CONTENT`, `INTAKE_PROVIDE_CONTENT`, `INTAKE_FORM_CONTENT`), `getGuideContent()`, and `getProgressSteps()`. `UserGuidePanel.tsx` reduced from 314 to ~120 lines — pure rendering, no content ownership.
 
-## R-004: FileLoader compact mode is a boolean prop, not a variant
-**Filed:** 2026-03-21
-**Where:** `FileLoader.tsx`
-**What we did:** Added a `compact` boolean prop that switches between two completely different render paths (full drop zone vs. inline button). The two modes share almost no markup.
-**What we should do:** Either split into two components (`FileDropZone` and `FileUploadButton`) or use a `variant` prop with a union type if we expect more modes.
-**Payoff:** Clearer API, easier to test each variant independently.
+## R-004: ~~FileLoader compact mode is a boolean prop, not a variant~~ ✅ COMPLETE
+**Filed:** 2026-03-21 | **Resolved:** 2026-04-13 (Session 33)
+**What was done:** Split into `FileDropZone` (full mode, used in App.tsx) and `FileUploadButton` (compact, used in ProjectList.tsx). Shared file-handling logic extracted to `useFileImport()` hook. Deprecated `FileLoader` wrapper kept for backward compatibility. Zero shared JSX — each component owns its own markup; hook owns the parsing pipeline.
 
 ## R-005: Discovery Intake is a monolith (~900 lines)
 **Filed:** 2026-03-21

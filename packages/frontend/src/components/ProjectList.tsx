@@ -10,33 +10,14 @@ import { useCanvasStore } from "../store/canvas-store.ts";
 import { useAuthStore } from "../store/auth-store.ts";
 import { ChangelogLink } from "./ChangelogModal.tsx";
 import { autoSaveToProject } from "../utils/auto-save.ts";
-import { FileLoader } from "./FileLoader.tsx";
+import { FileUploadButton } from "./FileLoader.tsx";
 import { ShareDialog } from "./ShareDialog.tsx";
 import { useGateCheck } from "../hooks/useGateCheck.ts";
 import type { ProjectModule } from "../types/database.ts";
+import MODULE_REGISTRY, { MODULE_IDS } from "../lib/module-registry.ts";
 
-const MODULE_INFO: Record<ProjectModule, { label: string; description: string; color: string }> = {
-  "sales-discovery": {
-    label: "Solution Engineering",
-    description: "Presales discovery — transcript to operating model with vendor solutions",
-    color: "bg-blue-100 text-blue-700",
-  },
-  "board-diagnostic": {
-    label: "Board Diagnostic",
-    description: "Operating model analysis — friction assessment and binding constraint identification",
-    color: "bg-purple-100 text-purple-700",
-  },
-  "transformation": {
-    label: "Transformation Planning",
-    description: "Transformation planning — friction to user stories, Jira export",
-    color: "bg-amber-100 text-amber-700",
-  },
-  "mvc": {
-    label: "Agentic Governance",
-    description: "Agentic governance — friction assessment with Concept & Policy Cards",
-    color: "bg-indigo-100 text-indigo-700",
-  },
-};
+/** @deprecated — use MODULE_REGISTRY directly. Alias kept for minimal diff. */
+const MODULE_INFO = MODULE_REGISTRY;
 
 export function ProjectList() {
   const { user, signOut } = useAuthStore();
@@ -249,7 +230,7 @@ export function ProjectList() {
               <label className="mb-0.5 block text-xs font-semibold text-gray-700">Step 2: Select your use case</label>
               <p className="mb-2 text-[11px] text-gray-400">This will determine which features get enabled in the project.</p>
               <div className="grid grid-cols-3 gap-2">
-                {(Object.keys(MODULE_INFO) as ProjectModule[]).map((mod) => {
+                {MODULE_IDS.map((mod) => {
                   const info = MODULE_INFO[mod];
                   const selected = newModule === mod;
                   return (
@@ -377,7 +358,7 @@ export function ProjectList() {
 
               {/* Drop Zone */}
               <div className="flex flex-col items-center text-center">
-                <FileLoader compact />
+                <FileUploadButton />
                 <p className="mt-3 text-xs leading-relaxed text-gray-500">
                   Import a VCC Bundle, PlausibleBA Bundle, or individual artifacts (.json).
                 </p>

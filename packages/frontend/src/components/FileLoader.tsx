@@ -1,3 +1,13 @@
+/**
+ * File import components (R-004: split from boolean prop)
+ *
+ * Two components sharing the same file-handling logic:
+ *   - FileDropZone  — large drop zone with status feedback (used in App.tsx)
+ *   - FileUploadButton — compact inline button (used in ProjectList.tsx)
+ *
+ * Both delegate to the useFileImport() hook for parsing and loading.
+ */
+
 import { useCallback, useRef, useState } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import type { ScaffoldData, HeatmapData, TransformationUserStory } from "../types.ts";
@@ -21,7 +31,9 @@ const ARTIFACT_LABELS: Record<string, string> = {
   "value-stream": "Value Stream",
 };
 
-export function FileLoader({ compact = false }: { compact?: boolean }) {
+// ── Shared hook ─────────────────────────────────────────────────────
+
+function useFileImport() {
   const { loadScaffold, loadHeatmap, loading, error, scaffoldData } =
     useCanvasStore();
   const [dragOver, setDragOver] = useState(false);
@@ -39,18 +51,15 @@ export function FileLoader({ compact = false }: { compact?: boolean }) {
           // VCC Bundle v2.0 — load scaffold, all heatmaps, and user stories
           const bundle = json as unknown as Record<string, unknown>;
           await loadScaffold(bundle.scaffold as ScaffoldData);
-          // Load heatmaps from flat array or by-VS map
           const heatmaps = (bundle.heatmaps as unknown[] ?? Object.values((bundle.heatmapsByVs as Record<string, unknown>) ?? {}));
           for (const heatmap of heatmaps) {
             await loadHeatmap(heatmap as HeatmapData);
           }
-          // Restore user stories if present (bundle v2.0)
           if (bundle.userStoriesByActivity && typeof bundle.userStoriesByActivity === "object") {
             for (const [actId, stories] of Object.entries(bundle.userStoriesByActivity as Record<string, unknown>)) {
               useCanvasStore.getState().setActivityStories(actId, stories as TransformationUserStory[]);
             }
           }
-          // Load MVC cards — from bundle if present, else demo fixture (D-099)
           if (bundle.cardRegistry) {
             useCanvasStore.getState().loadCards(bundle.cardRegistry as CardRegistry);
           } else {
@@ -58,20 +67,17 @@ export function FileLoader({ compact = false }: { compact?: boolean }) {
           }
           setImportedArtifacts([]);
         } else if (isPlausibleBABundle(json)) {
-          // PlausibleBA ba-skills-bundle — normalise naming then load
           const scaffold = normaliseBundle(json);
           await loadScaffold(scaffold);
           useCanvasStore.getState().loadCards(PURETEC_CARDS as unknown as CardRegistry);
           setImportedArtifacts([]);
         } else if ("scaffoldId" in json && "elements" in json) {
           await loadScaffold(json as unknown as ScaffoldData);
-          // Auto-load demo card fixture for standalone scaffolds
           useCanvasStore.getState().loadCards(PURETEC_CARDS as unknown as CardRegistry);
           setImportedArtifacts([]);
         } else if ("heatmapId" in json) {
           void loadHeatmap(json as unknown as HeatmapData);
         } else {
-          // ── NEW: Detect individual PlausibleBA artifacts ────────────
           const artifactType = detectArtifactType(json);
 
           if (artifactType !== "unknown") {
@@ -88,12 +94,10 @@ export function FileLoader({ compact = false }: { compact?: boolean }) {
                 partialScaffold = normaliseValueStreamArtifact(json);
                 break;
               default:
-                // ba-skills-bundle already handled above
                 partialScaffold = normaliseBundle(json);
                 break;
             }
 
-            // If we already have scaffold data, merge into it
             const currentScaffold = useCanvasStore.getState().scaffoldData;
             if (currentScaffold) {
               const merged = mergeScaffolds(currentScaffold, partialScaffold);
@@ -103,7 +107,6 @@ export function FileLoader({ compact = false }: { compact?: boolean }) {
               useCanvasStore.getState().loadCards(PURETEC_CARDS as unknown as CardRegistry);
             }
 
-            // Track which artifacts have been imported
             const label = ARTIFACT_LABELS[artifactType] ?? artifactType;
             setImportedArtifacts((prev) => {
               const next = prev.includes(label) ? prev : [...prev, label];
@@ -114,11 +117,10 @@ export function FileLoader({ compact = false }: { compact?: boolean }) {
               error:
                 "Unrecognized JSON file. Expected a scaffold, heatmap, VCC bundle, or PlausibleBA artifact (concept model, capability map, or value stream).",
             });
-            return; // Don't auto-save unrecognized files
+            return;
           }
         }
 
-        // Auto-create project and save to Supabase
         await autoSaveToProject();
       } catch (err) {
         console.error("[FileLoader] load error:", err);
@@ -138,7 +140,6 @@ export function FileLoader({ compact = false }: { compact?: boolean }) {
       e.preventDefault();
       setDragOver(false);
       const files = Array.from(e.dataTransfer.files);
-      // Support multi-file drop — process in order
       if (files.length > 0) {
         void (async () => {
           for (const file of files) {
@@ -173,51 +174,68 @@ export function FileLoader({ compact = false }: { compact?: boolean }) {
           }
         })();
       }
-      // Reset input so the same file can be re-selected
       e.target.value = "";
     },
     [handleFile],
   );
 
-  // Don't completely hide when scaffold is loaded — allow adding more artifacts
+  return {
+    dragOver, loading, error, scaffoldData, importedArtifacts,
+    fileInputRef, handleDrop, handleDragOver, handleDragLeave, handleClick, handleInputChange,
+  };
+}
+
+// ── FileUploadButton (compact inline) ───────────────────────────────
+
+export function FileUploadButton() {
+  const {
+    dragOver, loading,
+    fileInputRef, handleDrop, handleDragOver, handleDragLeave, handleClick, handleInputChange,
+  } = useFileImport();
+
+  return (
+    <div
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onClick={handleClick}
+      className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-3 text-sm font-medium transition-colors ${
+        dragOver
+          ? "border-vcc-500 bg-vcc-50 text-vcc-700"
+          : "border-gray-300 text-gray-700 hover:border-vcc-400 hover:bg-gray-50"
+      }`}
+    >
+      <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.5}
+          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+        />
+      </svg>
+      {loading ? "Importing..." : "Import File"}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        multiple
+        onChange={handleInputChange}
+        className="hidden"
+      />
+    </div>
+  );
+}
+
+// ── FileDropZone (full mode with status feedback) ───────────────────
+
+export function FileDropZone() {
+  const {
+    dragOver, loading, error, scaffoldData, importedArtifacts,
+    fileInputRef, handleDrop, handleDragOver, handleDragLeave, handleClick, handleInputChange,
+  } = useFileImport();
+
   const hasScaffold = !!scaffoldData && !loading && !error;
 
-  // ── Compact mode: button-style drop zone for inline use (e.g. empty state grid) ──
-  if (compact) {
-    return (
-      <div
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onClick={handleClick}
-        className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-3 text-sm font-medium transition-colors ${
-          dragOver
-            ? "border-vcc-500 bg-vcc-50 text-vcc-700"
-            : "border-gray-300 text-gray-700 hover:border-vcc-400 hover:bg-gray-50"
-        }`}
-      >
-        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-          />
-        </svg>
-        {loading ? "Importing..." : "Import File"}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json"
-          multiple
-          onChange={handleInputChange}
-          className="hidden"
-        />
-      </div>
-    );
-  }
-
-  // ── Full mode: large drop zone with status feedback ──
   return (
     <div className="flex flex-col items-center justify-center gap-4 p-8">
       <div
@@ -321,4 +339,12 @@ export function FileLoader({ compact = false }: { compact?: boolean }) {
       )}
     </div>
   );
+}
+
+/**
+ * @deprecated Use FileDropZone (full) or FileUploadButton (compact) directly.
+ * Kept for backward compatibility during migration.
+ */
+export function FileLoader({ compact = false }: { compact?: boolean }) {
+  return compact ? <FileUploadButton /> : <FileDropZone />;
 }

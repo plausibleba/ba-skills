@@ -3,7 +3,7 @@ import { useCanvasStore } from "./store/canvas-store.ts";
 import { useAuthStore } from "./store/auth-store.ts";
 import { useProjectStore } from "./store/project-store.ts";
 import { SideNav } from "./components/SideNav.tsx";
-import { FileLoader } from "./components/FileLoader.tsx";
+import { FileDropZone } from "./components/FileLoader.tsx";
 import { CanvasView } from "./components/CanvasView.tsx";
 import { StageWizard } from "./components/StageWizard.tsx";
 import { UserGuidePanel } from "./components/UserGuidePanel.tsx";
@@ -436,7 +436,7 @@ export default function App() {
                 </button>
                 <span className="text-xs text-gray-400">or</span>
                 <div className="flex flex-col items-center gap-1">
-                  <FileLoader />
+                  <FileDropZone />
                   <span className="text-[10px] text-gray-400">Load a saved VCC Bundle (.json)</span>
                 </div>
               </div>
