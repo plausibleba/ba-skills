@@ -1,6 +1,6 @@
 # Current State — VCC Frontend
 
-_Last updated: 2026-04-08 — Session 32 (R-013 Phase 2: record lifecycle coupling) — v0.5.0 DRAFT_
+_Last updated: 2026-04-13 — Session 33 (R-013 Phase 2 bug fix: lifecycle adjacency edges) — v0.5.0 DRAFT_
 
 ---
 
@@ -192,11 +192,11 @@ Decisions numbered D-001 through D-097. Single source of truth: `docs/DECISIONS.
 ## Refactoring Debt Register
 
 15 items tracked in `docs/REFACTORING-DEBT.md` (R-001 through R-015). Key items:
-- R-001: Journey state machine (replaces scattered UI flags)
+- ~~R-001: Journey state machine~~ ✅ Complete (Session 31)
 - R-005: Discovery Intake monolith (~1000 lines)
 - R-007: Layer scheme not persisted as project setting
-- R-010: Scaffold type is `any` throughout
-- R-013: Topology coupling is resource-based, not record-lifecycle-based (critical for agentic orchestration)
+- ~~R-010: Scaffold type is `any` throughout~~ ✅ Complete (Session 31)
+- R-013: Phases 1-2 complete (record lifecycle coupling + adjacency edges). Phase 3 pending: cross-VS lifecycle flow in Network view
 - R-014/R-015: Partially addressed (topological sort, shared layer schemes)
 
 ---

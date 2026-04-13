@@ -82,12 +82,14 @@ Tracked choices where we picked expediency over elegance. Each item is a candida
 **What we should do:** Add a "Back to Projects" action (already noted as upsell trigger point). Needs a `closeProject()` action that clears canvas-store and project-store state cleanly. This is also where the journey state machine (R-001) would help — transitioning from `{ phase: "canvas" }` back to `{ phase: "project-list" }`.
 **Payoff:** Basic navigation. Also the trigger point Terry identified for upsell/signup flow.
 
-## R-013: Topology coupling is resource-based, not record-lifecycle-based — PHASE 2 COMPLETE
-**Filed:** 2026-03-21 | **Phase 1:** 2026-04-07 (Session 31) | **Phase 2:** 2026-04-08 (Session 32)
+## R-013: Topology coupling is resource-based, not record-lifecycle-based — PHASE 2 COMPLETE + BUG FIX
+**Filed:** 2026-03-21 | **Phase 1:** 2026-04-07 (Session 31) | **Phase 2:** 2026-04-08 (Session 32) | **Phase 2 bug fix:** 2026-04-13 (Session 33)
 **Where:** `network-derivation.ts` (`deriveTopologyView`, `deriveRecordLifecycleCoupling`), `types.ts`, `ConstraintDAGOverlay.tsx`
 **Phase 1:** `deriveRecordLifecycleCoupling()` populates `recordClasses` from Record-type concepts + key IOs, links activities to `primaryRecordClassId` via score-based algorithm.
 **Phase 2:** Extended `RecordClass` with `lifecycleStates` (ordered state sequence derived from outcome chain). Activities assigned `lifecycleStateId` via outcome mapping. New `'lifecycleAdjacency'` topology signal creates directional coupling edges between activities that transition the same record through adjacent lifecycle states. Consolidated `LifecycleState` interface across IO and RecordClass usage.
-**What remains (Phase 3):** (a) VS-boundary record handoff — terminal lifecycle state of one VS triggers initial state of another. (b) Decision gates as explicit branching state transitions. (c) Surface lifecycle flow in a dedicated UI view.
+**Phase 2 bug fix:** Step 5's `outcomeToLifecycleState` was a flat global map — shared outcomes across record classes caused cross-contamination. Fixed to scoped `Map<rcId, Map<outcomeId, lsId>>`. Also added `lifecycleAdjacency` to directed basis set in `deduplicateStageEdges`.
+**Key insight:** Lifecycle adjacency is primarily a cross-VS signal (ecommerce model: 4 of 6 edges cross VS boundaries). Within a single VS, stages typically touch different record classes, so within-VS lifecycle edges are sparse. The real value surfaces in Phase 3 cross-VS coupling.
+**What remains (Phase 3):** (a) Surface cross-VS lifecycle coupling in Network view — this is where the signal has most value. (b) VS-boundary record handoff — terminal lifecycle state of one VS triggers initial state of another. (c) Decision gates as explicit branching state transitions.
 **Payoff:** Coupling graph now reflects causal flow alongside operational interference. Foundation for executable orchestration.
 
 ## R-014: R-006 partially addressed — topological sort replaces alphabetical

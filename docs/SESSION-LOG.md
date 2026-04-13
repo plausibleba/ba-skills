@@ -4,6 +4,30 @@ Chronological record of what was built, decided, and learned.
 
 ---
 
+## Session 33 — R-013 Phase 2 Bug Fix: Lifecycle Adjacency Edges
+**Date:** 2026-04-13
+**Status:** Complete
+
+### Bug: Lifecycle adjacency edges not appearing in Constraint DAG
+
+Diagnosed via targeted console logging. Root cause was **Step 5 scoping bug**: the `outcomeToLifecycleState` map was global (flat `Map<outcomeId, lsId>`). When multiple record classes shared the same outcome ID, last-write-wins contaminated assignments — activities received lifecycle state IDs belonging to the wrong record class. Signal 7's `stateToActs` lookup then found zero matches.
+
+**Fix:** Replaced flat map with scoped `Map<rcId, Map<outcomeId, lsId>>`. Each activity's `postOutcomeId` is now only matched against lifecycle states from its own `primaryRecordClassId`.
+
+### Second fix: Directed edge treatment in `deduplicateStageEdges`
+
+`lifecycleAdjacency` was incorrectly treated as undirected (only `outcomeAdjacency` was in the directed set). Added `lifecycleAdjacency` to the `DIRECTED_BASES` set so green arrows preserve source→target causal direction in the DAG overlay.
+
+### Key finding: Lifecycle adjacency is primarily a cross-VS signal
+
+Diagnostics on ecommerce model showed 6 lifecycle edges total: 4 cross-VS, 2 within-VS. Within a single VS, stages typically operate on different record classes (each activity gets exactly one `primaryRecordClassId`), so lifecycle adjacency edges are sparse. The sequential flow (outcomeAdjacency) already captures the within-VS outcome chain. The real value of lifecycle adjacency will emerge in Phase 3 when cross-VS lifecycle coupling is surfaced in the Network view.
+
+### Files Changed
+- `store/network-derivation.ts` — Step 5 scoped lookup, removed diagnostic logging
+- `components/canvas/ConstraintDAGOverlay.tsx` — `DIRECTED_BASES` set for directed edge deduplication
+
+---
+
 ## Session 32 — R-013 Phase 2: Record Lifecycle Coupling
 **Date:** 2026-04-08
 **Status:** Complete
