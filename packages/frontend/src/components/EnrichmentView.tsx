@@ -908,6 +908,7 @@ function CrossMappingBuilder({
   const handleAddPair = useCallback(() => {
     const newPair: MappingPair = {
       id: Math.random().toString(36).substring(7),
+      relationshipTypeId: "technology-supports-capability",
       from: "capabilities",
       to: "technology",
       includeInverse: true,

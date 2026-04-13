@@ -176,11 +176,11 @@ export function getGuideContent(
     case "enrich-mapping":
       return {
         where: "Enrich — Cross-Mapping",
-        what: "Cross-mapping defines relationships between different dimensions of your model — for example, which capabilities support which stages, or how roles relate to business objects. These mappings strengthen the structural integrity of the operating model.",
+        what: "Cross-mapping discovers typed relationships between elements in your model — for example, which technologies support which capabilities, or which roles participate in which activities. Relationship types and their semantics (symmetry, transitivity, cardinality) are defined by the metamodel, not configured per instance.",
         next: [
-          "Add mapping pairs by selecting a source and target from different catalogs",
-          "Configure semantic properties — symmetry, transitivity, and cardinality — to define how mappings behave",
-          "Use inverse mappings to automatically generate the reverse relationship",
+          "Click 'Add Relationship Type' to choose from the metamodel's predefined relationship types",
+          "Click 'Semantics' on any row to see the fixed ontological properties that will be applied",
+          "Inverse mappings are always generated — if Technology supports Capability, then Capability supported-by Technology is created automatically",
           "Cross-mappings feed into the Constraint DAG and topology coupling analysis",
         ],
       };

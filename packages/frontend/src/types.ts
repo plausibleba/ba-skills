@@ -583,6 +583,25 @@ export interface RecordClass {
   lifecycleStates?: LifecycleState[];
 }
 
+/**
+ * A single discovered cross-mapping instance between two scaffold elements.
+ * Produced by the cross-mapping enricher; stored in scaffold.elements.crossMaps.
+ */
+export interface CrossMapInstance {
+  /** Metamodel relationship type ID (from CROSS_MAPPING_METAMODEL) */
+  relationshipTypeId: string;
+  /** Source element ID (e.g., "cap_crm") */
+  sourceId: string;
+  /** Target element ID (e.g., "act_qualify_lead") */
+  targetId: string;
+  /** LLM confidence in this mapping (0.0–1.0) */
+  confidence: number;
+  /** Brief reasoning or evidence for the mapping */
+  evidence?: string;
+  /** Level constraint that was active when this mapping was discovered */
+  levelConstraint?: { appliesTo: "from" | "to"; level: number };
+}
+
 export interface ScaffoldElements {
   valueStreams: Record<string, ScaffoldValueStream>;
   activities: Record<string, ScaffoldActivity>;
@@ -604,8 +623,9 @@ export interface ScaffoldElements {
   recordClasses?: Record<string, RecordClass>;
   /** Sub-activity DAGs per stage (keyed by activity/stage ID) */
   subActivityGraphs?: Record<string, { nodes: SubActivity[] }>;
-  /** Cross-mapping results (VS↔Capability) */
-  crossMaps?: Record<string, unknown>;
+  /** Cross-mapping instances discovered by cross-mapping enrichment.
+   *  Keyed by a stable composite key: `${relationshipTypeId}::${sourceId}→${targetId}` */
+  crossMaps?: Record<string, CrossMapInstance>;
   /** Catch-all for forward-compatibility with new element types.
    *  New element types should be added as explicit fields above. */
   [key: string]: Record<string, unknown> | undefined;

@@ -49,9 +49,9 @@ export type { MappableEntity, MappingSemantics, MappingPair, CustomSkill, Influe
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 export const MAPPABLE_ENTITIES: { value: MappableEntity; label: string; description: string }[] = [
-  { value: "capabilities",  label: "Capabilities",            description: "Business capabilities in your capability hierarchy (L1–L4)" },
-  { value: "stages",        label: "Value Stream Stages",     description: "Sequential steps within a value stream that illustrate the flow of work from trigger to outcome" },
-  { value: "activities",    label: "Activities",              description: "Operational activities that underpin and enable capabilities — part of the PPIT decomposition" },
+  { value: "capabilities",  label: "Capabilities",            description: "Business capabilities in your capability hierarchy (L1–L4). PPIT decomposes these." },
+  { value: "stages",        label: "Value Stream Stages",     description: "Sequential stages within a value stream — the flow from trigger to outcome. Distinct from Activities." },
+  { value: "activities",    label: "Activities (Process Steps)", description: "Steps in a Process that operationalise a Capability. Distinct from VS Stages." },
   { value: "valueStreams",  label: "Value Streams",           description: "End-to-end flows that deliver value to a customer or stakeholder" },
   { value: "roles",         label: "Roles / Stakeholders",   description: "People, roles, or organisational units involved in the operating model" },
   { value: "information",   label: "Information Assets",      description: "Data, documents, knowledge, and information objects consumed or produced" },

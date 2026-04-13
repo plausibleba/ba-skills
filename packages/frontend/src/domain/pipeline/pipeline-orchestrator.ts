@@ -13,6 +13,7 @@ import { buildDiscoveryIR, makeId } from "./discovery-ir";
 import type { DiscoveryIR } from "./discovery-ir";
 import { runPassB } from "./scaffold-formaliser";
 import { runPassC } from "./ppit-enricher";
+import { runCrossMappingEnrichment } from "./cross-mapping-enricher";
 import type { GateResult } from "./scaffold-gates";
 import { generateCards } from "./card-generator";
 import type { CardRegistry } from "../../types/cards";
@@ -558,12 +559,13 @@ export type PipelineStatus =
   | "done"             // lean scaffold delivered — user can browse immediately
   | "error"
   // Enrichment statuses (opt-in, run after scaffold is delivered)
-  | "enriching-subactivities" // Derive Activity Flows
-  | "enriching-ppit"          // Map PPIT
-  | "enriching-cards"         // Generate Cards
-  | "enrichment-done";        // enrichment step completed
+  | "enriching-subactivities"   // Derive Activity Flows
+  | "enriching-ppit"            // Map PPIT (legacy — now delegates to cross-mapping)
+  | "enriching-cards"           // Generate Cards
+  | "enriching-cross-mapping"   // Cross-mapping (includes PPIT compound)
+  | "enrichment-done";          // enrichment step completed
 
-export type EnrichmentStep = "subactivities" | "ppit" | "cards";
+export type EnrichmentStep = "subactivities" | "ppit" | "cards" | "cross-mapping";
 
 export interface PipelineProgress {
   status: PipelineStatus;
@@ -721,7 +723,9 @@ export async function runEnrichmentStep(
   step: EnrichmentStep,
   scaffold: ScaffoldData,
   discoveryIR: DiscoveryIR | undefined,
-  onProgress: ProgressCallback
+  onProgress: ProgressCallback,
+  /** Required for cross-mapping step — the mapping pairs to execute */
+  mappingPairs?: import("../../store/enrichment-store").MappingPair[],
 ): Promise<void> {
   switch (step) {
     case "subactivities": {
@@ -760,6 +764,28 @@ export async function runEnrichmentStep(
         console.warn("[enrichment] Card generation failed:", e);
       }
       onProgress({ status: "enrichment-done", scaffold, cardRegistry, enrichmentStep: "cards" });
+      break;
+    }
+    case "cross-mapping": {
+      if (!mappingPairs || mappingPairs.length === 0) {
+        console.warn("[enrichment] cross-mapping called with no mapping pairs");
+        onProgress({ status: "enrichment-done", scaffold, enrichmentStep: "cross-mapping" });
+        break;
+      }
+      onProgress({ status: "enriching-cross-mapping", scaffold });
+      const result = await runCrossMappingEnrichment(scaffold, mappingPairs, (msg) => {
+        onProgress({ status: "enriching-cross-mapping", scaffold, errorMessage: msg });
+      });
+      if (!result.success) {
+        console.warn("[enrichment] Cross-mapping errors:", result.error);
+      }
+      console.log(`[enrichment] Cross-mapping complete: ${result.instanceCount} instances`);
+      // Re-derive concepts if PPIT compound was included (it writes capabilityPPIT)
+      const hasPPIT = mappingPairs.some((p) => p.relationshipTypeId === "ppit-decomposition");
+      if (hasPPIT && discoveryIR) {
+        deriveConceptsFromScaffold(scaffold, discoveryIR);
+      }
+      onProgress({ status: "enrichment-done", scaffold, enrichmentStep: "cross-mapping" });
       break;
     }
   }
