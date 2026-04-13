@@ -298,16 +298,28 @@ function deduplicateStageEdges(
   const vsEdges = edges.filter(
     e => vsActivitySet.has(e.sourceActivityId) && vsActivitySet.has(e.targetActivityId)
   );
+  // Directed basis types — causal/flow signals that preserve source→target direction
+  const DIRECTED_BASES: Set<TopologyBasis> = new Set(["outcomeAdjacency", "lifecycleAdjacency"]);
+
   const edgeMap = new Map<string, MergedEdge<TopologyBasis>>();
   for (const e of vsEdges) {
-    const hasDirected = e.basis.includes("outcomeAdjacency");
-    const undirectedBases = e.basis.filter(b => b !== "outcomeAdjacency");
-    if (hasDirected) {
+    const directedBases = e.basis.filter(b => DIRECTED_BASES.has(b as TopologyBasis));
+    const undirectedBases = e.basis.filter(b => !DIRECTED_BASES.has(b as TopologyBasis));
+
+    // Directed edges preserve source→target direction
+    if (directedBases.length > 0) {
       const dKey = `d:${e.sourceActivityId}→${e.targetActivityId}`;
-      if (!edgeMap.has(dKey)) {
-        edgeMap.set(dKey, { sourceId: e.sourceActivityId, targetId: e.targetActivityId, basis: ["outcomeAdjacency"], directed: true });
+      const existing = edgeMap.get(dKey);
+      if (existing) {
+        for (const basis of directedBases) {
+          if (!existing.basis.includes(basis)) existing.basis.push(basis);
+        }
+      } else {
+        edgeMap.set(dKey, { sourceId: e.sourceActivityId, targetId: e.targetActivityId, basis: [...directedBases], directed: true });
       }
     }
+
+    // Undirected edges merge both directions
     if (undirectedBases.length > 0) {
       const [a, b] = e.sourceActivityId < e.targetActivityId
         ? [e.sourceActivityId, e.targetActivityId]

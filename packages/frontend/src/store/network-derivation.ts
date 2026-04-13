@@ -669,12 +669,6 @@ export function deriveTopologyView(
   // This is the R-013 Phase 2 causal flow signal — the relationship IS the
   // semantics (no flags). Directional: earlier state → later state.
   const recordClasses = scaffold.elements.recordClasses ?? {};
-  let sig7EdgesAdded = 0;
-  const rcWithStates = Object.values(recordClasses).filter(rc => rc.lifecycleStates && rc.lifecycleStates.length >= 2);
-  console.log(`[Signal 7] recordClasses: ${Object.keys(recordClasses).length}, with lifecycleStates>=2: ${rcWithStates.length}`);
-  console.log(`[Signal 7] activityList sample:`, activityList.slice(0, 3).map(a => ({
-    id: a.id, primaryRecordClassId: a.primaryRecordClassId, lifecycleStateId: a.lifecycleStateId
-  })));
   for (const rc of Object.values(recordClasses)) {
     const states = rc.lifecycleStates;
     if (!states || states.length < 2) continue;
@@ -688,26 +682,19 @@ export function deriveTopologyView(
       stateToActs.set(act.lifecycleStateId, list);
     }
 
-    console.log(`[Signal 7] RC "${rc.prefLabel}" (${rc.id}): ${states.length} states, stateToActs entries: ${stateToActs.size}`, Object.fromEntries(stateToActs));
-
     // For each pair of adjacent states, create edges between their activities
     for (let i = 0; i < states.length - 1; i++) {
       const fromActs = stateToActs.get(states[i].id) ?? [];
       const toActs = stateToActs.get(states[i + 1].id) ?? [];
-      if (fromActs.length > 0 || toActs.length > 0) {
-        console.log(`[Signal 7]   state[${i}] "${states[i].label}" (${states[i].id}) → state[${i+1}] "${states[i+1].label}" (${states[i+1].id}): fromActs=${fromActs.length}, toActs=${toActs.length}`);
-      }
       for (const fromId of fromActs) {
         for (const toId of toActs) {
           if (fromId !== toId) {
             addEdge(fromId, toId, 'lifecycleAdjacency');
-            sig7EdgesAdded++;
           }
         }
       }
     }
   }
-  console.log(`[Signal 7] Total lifecycle adjacency edges added: ${sig7EdgesAdded}`);
 
   // Build node list from all activities that appear in edges
   const valueStreams = scaffold.elements.valueStreams ?? {};
@@ -952,20 +939,25 @@ export function deriveRecordLifecycleCoupling(scaffold: ScaffoldData): {
   }
 
   // ── Step 5: Assign lifecycleStateId to activities ──
-  // Map each activity's postOutcomeId to the corresponding lifecycle state
-  const outcomeToLifecycleState = new Map<string, string>(); // outcomeId → lifecycleStateId
-  for (const rc of Object.values(recordClasses)) {
+  // Map each activity's postOutcomeId to the corresponding lifecycle state,
+  // scoped by record class — the same outcomeId can appear in multiple
+  // record classes, so a global map would cause cross-contamination.
+  const rcOutcomeToState = new Map<string, Map<string, string>>(); // rcId → (outcomeId → lifecycleStateId)
+  for (const [rcId, rc] of Object.entries(recordClasses)) {
+    const inner = new Map<string, string>();
     for (const ls of rc.lifecycleStates ?? []) {
       if (ls.outcomeId) {
-        outcomeToLifecycleState.set(ls.outcomeId, ls.id);
+        inner.set(ls.outcomeId, ls.id);
       }
     }
+    if (inner.size > 0) rcOutcomeToState.set(rcId, inner);
   }
 
   for (const activity of Object.values(els.activities ?? {})) {
     const act = activity as ScaffoldActivity;
     if (!act.primaryRecordClassId || !act.postOutcomeId) continue;
-    const lsId = outcomeToLifecycleState.get(act.postOutcomeId);
+    const inner = rcOutcomeToState.get(act.primaryRecordClassId);
+    const lsId = inner?.get(act.postOutcomeId);
     if (lsId) {
       act.lifecycleStateId = lsId;
       activitiesWithLifecycleState++;
