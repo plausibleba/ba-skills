@@ -11,7 +11,7 @@
 
 import { callLLM } from "./llm-client";
 import { buildCrossMappingPrompt, buildPPITCrossMappingPrompt } from "./prompts/pass-e-cross-mapping";
-import type { ScaffoldData, ScaffoldActivity, PPITEntry } from "../../types";
+import type { ScaffoldData, ScaffoldActivity, ScaffoldCapability, PPITEntry } from "../../types";
 import { getRelationshipTypeById } from "../cross-mapping-metamodel";
 import type { RelationshipType } from "../cross-mapping-metamodel";
 import type { MappingPair } from "../../store/enrichment-store";
@@ -21,6 +21,148 @@ export interface CrossMappingResult {
   /** Number of cross-map instances discovered */
   instanceCount: number;
   error?: string;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+
+/**
+ * Count elements of a given entity type in the scaffold, respecting level constraints.
+ */
+function countElements(
+  scaffold: ScaffoldData,
+  entityType: string,
+  levelConstraint?: { allowedLevels: number[] },
+): number {
+  const els = scaffold.elements ?? {};
+  switch (entityType) {
+    case "capabilities": {
+      const caps = Object.entries(els.capabilities ?? {});
+      if (levelConstraint) {
+        return caps.filter(([, c]) => {
+          const cap = c as unknown as ScaffoldCapability;
+          return cap.level != null && levelConstraint.allowedLevels.includes(cap.level);
+        }).length;
+      }
+      return caps.length;
+    }
+    case "activities":
+    case "stages":
+      return Object.keys(els.activities ?? {}).length;
+    case "roles":
+      return Object.keys(els.roles ?? {}).length;
+    case "information":
+      return Object.keys(els.informationObjects ?? {}).length;
+    case "technology": {
+      let n = 0;
+      for (const key of ["technologyApplications", "technologyApps"]) {
+        n += Object.keys((els as Record<string, Record<string, unknown>>)[key] ?? {}).length;
+      }
+      return n;
+    }
+    case "processes":
+      return Object.keys((els as Record<string, Record<string, unknown>>).processes ?? {}).length;
+    case "valueStreams":
+      return Object.keys(els.valueStreams ?? {}).length;
+    default:
+      return 0;
+  }
+}
+
+/**
+ * Estimate max_tokens for a cross-mapping LLM call.
+ * Each mapping instance needs ~80 tokens of JSON output.
+ * We estimate a plausible hit rate rather than assuming all pairs map.
+ */
+function estimateMaxTokens(fromCount: number, toCount: number): number {
+  // Not every pair will map — assume ~20% hit rate for large sets, higher for small
+  const totalPairs = fromCount * toCount;
+  const estimatedHits = totalPairs <= 50
+    ? totalPairs  // small sets: assume most will map
+    : Math.ceil(totalPairs * 0.2);  // large sets: ~20% hit rate
+  const tokensPerHit = 80;
+  return Math.max(4000, Math.min(64000, estimatedHits * tokensPerHit + 500));
+}
+
+/**
+ * Attempt to recover a valid JSON array from a truncated LLM response.
+ * Finds the last complete array entry and closes the array.
+ * Returns null if recovery is not possible.
+ */
+function recoverTruncatedJsonArray(text: string): unknown[] | null {
+  const trimmed = text.replace(/`{3}json|`{3}/g, "").trim();
+  // Must start with [
+  if (!trimmed.startsWith("[")) return null;
+
+  // Try to find the last complete object by looking for },
+  // then close the array after it
+  const lastCompleteEntry = trimmed.lastIndexOf("},");
+  if (lastCompleteEntry === -1) {
+    // Try just a single complete object: [{ ... }
+    const lastBrace = trimmed.lastIndexOf("}");
+    if (lastBrace > 0) {
+      const attempt = trimmed.slice(0, lastBrace + 1) + "]";
+      try {
+        return JSON.parse(attempt) as unknown[];
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  // Slice up to and including the last complete }, then close
+  const attempt = trimmed.slice(0, lastCompleteEntry + 1) + "]";
+  try {
+    return JSON.parse(attempt) as unknown[];
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Attempt to recover a valid JSON object from a truncated LLM response.
+ * For PPIT output which is `{ "capId": { ... }, "capId2": { ... }, ... }`.
+ * Finds the last complete top-level value entry and closes the object.
+ */
+function recoverTruncatedJsonObject(text: string): Record<string, unknown> | null {
+  const trimmed = text.replace(/`{3}json|`{3}/g, "").trim();
+  if (!trimmed.startsWith("{")) return null;
+
+  // Find the last pattern of `}, "` or `},\n  "` which marks the boundary
+  // between complete top-level entries. We look for the last `},` followed
+  // eventually by a quote (next key) — the `},` marks a complete entry.
+  // Strategy: find last `},"` or `},\n` and close after it.
+
+  // Look for last occurrence of a closing brace followed by comma
+  // that represents a complete top-level entry
+  const regex = /\},\s*"/g;
+  let lastMatch: RegExpExecArray | null = null;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(trimmed)) !== null) {
+    lastMatch = match;
+  }
+
+  if (!lastMatch) {
+    // Try single entry: { "key": { ... }
+    const lastBrace = trimmed.lastIndexOf("}");
+    if (lastBrace > 0) {
+      const attempt = trimmed.slice(0, lastBrace + 1) + "}";
+      try {
+        return JSON.parse(attempt) as Record<string, unknown>;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  // Close after the }, (include the closing brace of the last complete entry)
+  const attempt = trimmed.slice(0, lastMatch.index + 1) + "}";
+  try {
+    return JSON.parse(attempt) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -56,11 +198,15 @@ async function runSimpleCrossMapping(
 ): Promise<CrossMappingResult> {
   const levelConstraint = resolveLevelConstraint(pair, relType);
 
-  const prompt = buildCrossMappingPrompt(scaffold, relType, levelConstraint);
-  const estimatedPairs = 100; // rough estimate
-  const maxTokens = Math.max(4000, Math.min(16000, estimatedPairs * 80));
+  const fromConstraint = levelConstraint?.appliesTo === "from" ? { allowedLevels: levelConstraint.allowedLevels } : undefined;
+  const toConstraint = levelConstraint?.appliesTo === "to" ? { allowedLevels: levelConstraint.allowedLevels } : undefined;
+  const fromCount = countElements(scaffold, relType.from, fromConstraint);
+  const toCount = countElements(scaffold, relType.to, toConstraint);
 
-  console.log(`[cross-mapping] Running "${relType.label}" (${relType.from} → ${relType.to}), max_tokens=${maxTokens}`);
+  const prompt = buildCrossMappingPrompt(scaffold, relType, levelConstraint);
+  const maxTokens = estimateMaxTokens(fromCount, toCount);
+
+  console.log(`[cross-mapping] Running "${relType.label}" (${relType.from}[${fromCount}] → ${relType.to}[${toCount}]), max_tokens=${maxTokens}`);
 
   try {
     const llmRes = await callLLM({
@@ -70,16 +216,33 @@ async function runSimpleCrossMapping(
       messages: [{ role: "user", content: prompt }],
     });
 
-    if (llmRes.stopReason === "max_tokens") {
-      console.warn("[cross-mapping] Response truncated — results may be incomplete");
+    const truncated = llmRes.stopReason === "max_tokens";
+    if (truncated) {
+      console.warn("[cross-mapping] Response truncated — will attempt to recover partial results");
     }
 
-    const raw = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim()) as Array<{
+    let raw: Array<{
       sourceId: string;
       targetId: string;
       confidence: number;
       evidence?: string;
     }>;
+
+    try {
+      raw = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
+    } catch (parseError) {
+      if (truncated) {
+        const recovered = recoverTruncatedJsonArray(llmRes.text);
+        if (recovered) {
+          console.warn(`[cross-mapping] Recovered ${recovered.length} entries from truncated response`);
+          raw = recovered as typeof raw;
+        } else {
+          throw new Error(`JSON parse failed and recovery unsuccessful: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+        }
+      } else {
+        throw parseError;
+      }
+    }
 
     // Initialize crossMaps if needed
     if (!scaffold.elements.crossMaps) {
@@ -150,10 +313,11 @@ async function runPPITCrossMapping(
     levelConstraint ? { allowedLevels: levelConstraint.allowedLevels } : undefined,
   );
 
-  // Estimate tokens based on number of capabilities
+  // Estimate tokens: each capability PPIT entry needs ~150 tokens of JSON output
   const caps = scaffold.elements?.capabilities ?? {};
-  const capCount = Object.keys(caps).length;
-  const maxTokens = Math.max(4000, Math.min(16000, capCount * 150 + 1000));
+  const lcFilter = levelConstraint ? { allowedLevels: levelConstraint.allowedLevels } : undefined;
+  const capCount = countElements(scaffold, "capabilities", lcFilter);
+  const maxTokens = Math.max(4000, Math.min(64000, capCount * 150 + 1000));
 
   console.log(`[cross-mapping] Running PPIT compound (${capCount} capabilities), max_tokens=${maxTokens}`);
 
@@ -165,21 +329,37 @@ async function runPPITCrossMapping(
       messages: [{ role: "user", content: prompt }],
     });
 
-    if (llmRes.stopReason === "max_tokens") {
-      console.warn("[cross-mapping] PPIT response truncated — results may be incomplete");
+    const truncated = llmRes.stopReason === "max_tokens";
+    if (truncated) {
+      console.warn("[cross-mapping] PPIT response truncated — will attempt to recover partial results");
     }
 
     // New capability-centric output format
-    const ppitMap = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim()) as Record<
-      string,
-      {
-        roleIds?: string[];
-        processSteps?: string[];
-        informationIds?: string[];
-        technologyIds?: string[];
-        confidence?: number;
+    type PPITMapEntry = {
+      roleIds?: string[];
+      processSteps?: string[];
+      informationIds?: string[];
+      technologyIds?: string[];
+      confidence?: number;
+    };
+    let ppitMap: Record<string, PPITMapEntry>;
+
+    try {
+      ppitMap = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
+    } catch (parseError) {
+      if (truncated) {
+        const recovered = recoverTruncatedJsonObject(llmRes.text);
+        if (recovered) {
+          const entryCount = Object.keys(recovered).length;
+          console.warn(`[cross-mapping] PPIT: recovered ${entryCount} capability entries from truncated response`);
+          ppitMap = recovered as Record<string, PPITMapEntry>;
+        } else {
+          throw new Error(`PPIT JSON parse failed and recovery unsuccessful: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+        }
+      } else {
+        throw parseError;
       }
-    >;
+    }
 
     // Initialize crossMaps if needed
     if (!scaffold.elements.crossMaps) {
