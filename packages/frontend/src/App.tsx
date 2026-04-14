@@ -32,6 +32,7 @@ import { DevTierSwitcher } from "./components/DevTierSwitcher.tsx";
 import { extractClaimFromURL, consumePendingClaim } from "./utils/bundle-claim.ts";
 import { useTierStore } from "./store/tier-store.ts";
 import { trackEvent, startHeartbeat, stopHeartbeat } from "./utils/analytics.ts";
+import { ToastContainer } from "./components/Toast.tsx";
 
 export default function App() {
   const { user, loading: authLoading, isLocalMode, initialize: initAuth } = useAuthStore();
@@ -521,6 +522,7 @@ export default function App() {
       )}
       </div>{/* end right column */}
     </div>{/* end outer flex */}
+    <ToastContainer />
     </UpsellModalProvider>
   );
 }

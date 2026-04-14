@@ -16,6 +16,7 @@ import { INFLUENCE_MODES } from "../../store/enrichment-store.ts";
 import { tv } from "../../theme.ts";
 import { runEnrichmentStep } from "../../domain/pipeline/pipeline-orchestrator";
 import type { EnrichmentStep, PipelineProgress } from "../../domain/pipeline/pipeline-orchestrator";
+import { pushToast } from "../Toast.tsx";
 // WaitPuzzle is imported by individual sub-views, not here
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -428,7 +429,7 @@ export function useEnrichmentActions() {
 
           // Compute change summary BEFORE updating the store (we have before+after)
           const afterCards = progress.cardRegistry ?? store.cardRegistry;
-          let changeSummary = undefined;
+          let changeSummary: string[] | undefined = undefined;
           if (progress.scaffold) {
             changeSummary = computeChangeSummary(
               card.id,
@@ -464,12 +465,34 @@ export function useEnrichmentActions() {
 
           enrichmentStore.markCompleted(card.id);
           enrichmentStore.setRunning(null);
+
+          // ── Toast + activity log ──
+          const changeCount = changeSummary?.length ?? 0;
+          pushToast(
+            changeCount > 0 ? "success" : "warning",
+            `${card.label} complete`,
+            changeCount > 0 ? `${changeCount} changes applied` : "No changes detected",
+          );
+          enrichmentStore.addLogEntry({
+            level: changeCount > 0 ? "success" : "warning",
+            source: card.id,
+            message: changeCount > 0
+              ? `${card.label}: ${changeCount} changes applied`
+              : `${card.label}: completed with no changes`,
+            detail: { changeCount },
+          });
         }
       });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       enrichmentStore.setError(`${card.label} failed: ${msg}`);
       enrichmentStore.setRunning(null);
+      pushToast("error", `${card.label} failed`, msg, 8000);
+      enrichmentStore.addLogEntry({
+        level: "error",
+        source: card.id,
+        message: `${card.label}: ${msg}`,
+      });
     }
   }, [scaffoldData, discoveryIR]);
 

@@ -92,6 +92,22 @@ export interface CustomSkill {
   createdAt: number;
 }
 
+// ─── Activity Log ──────────────────────────────────────────────────────────
+
+export type ActivityLogLevel = "info" | "success" | "warning" | "error";
+
+export interface ActivityLogEntry {
+  id: string;
+  timestamp: number;
+  level: ActivityLogLevel;
+  /** Enrichment step or operation that produced this entry */
+  source: string;
+  /** Human-readable summary */
+  message: string;
+  /** Optional structured detail (e.g., instance counts, element counts) */
+  detail?: Record<string, unknown>;
+}
+
 // ─── Store Interface ────────────────────────────────────────────────────────
 
 interface EnrichmentState {
@@ -117,6 +133,9 @@ interface EnrichmentState {
   customSkills: CustomSkill[];
   showSkillEditor: boolean;
   editingSkill: CustomSkill | null;
+
+  // Activity log
+  activityLog: ActivityLogEntry[];
 
   // Friction workspace
   frictionExpanded: boolean;
@@ -147,6 +166,10 @@ interface EnrichmentState {
   saveCustomSkill: (skill: CustomSkill) => void;
   deleteCustomSkill: (id: string) => void;
 
+  // Activity log actions
+  addLogEntry: (entry: Omit<ActivityLogEntry, "id" | "timestamp">) => void;
+  clearActivityLog: () => void;
+
   // Friction
   setFrictionExpanded: (expanded: boolean) => void;
 }
@@ -163,6 +186,7 @@ export const useEnrichmentStore = create<EnrichmentState>((set) => ({
   customSkills: [],
   showSkillEditor: false,
   editingSkill: null,
+  activityLog: [],
   frictionExpanded: false,
 
   setRunning: (id) => set({ running: id }),
@@ -271,6 +295,17 @@ export const useEnrichmentStore = create<EnrichmentState>((set) => ({
 
   deleteCustomSkill: (id) =>
     set((s) => ({ customSkills: s.customSkills.filter((sk) => sk.id !== id) })),
+
+  // Activity log
+  addLogEntry: (entry) =>
+    set((s) => ({
+      activityLog: [
+        { ...entry, id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, timestamp: Date.now() },
+        ...s.activityLog,  // newest first
+      ].slice(0, 500),  // cap at 500 entries
+    })),
+
+  clearActivityLog: () => set({ activityLog: [] }),
 
   // Friction
   setFrictionExpanded: (expanded) => set({ frictionExpanded: expanded }),

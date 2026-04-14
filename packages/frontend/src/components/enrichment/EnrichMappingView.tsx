@@ -18,6 +18,7 @@ import type { RelationshipType } from "../../domain/cross-mapping-metamodel.ts";
 import { MAPPABLE_ENTITIES, CARDINALITY_OPTIONS } from "./shared.tsx";
 import { runEnrichmentStep } from "../../domain/pipeline/pipeline-orchestrator.ts";
 import type { PipelineProgress } from "../../domain/pipeline/pipeline-orchestrator.ts";
+import { pushToast } from "../Toast.tsx";
 import { useDiscoverySessionStore } from "../../store/discovery-session-store.ts";
 import WaitPuzzle from "../WaitPuzzle";
 
@@ -353,6 +354,22 @@ export function EnrichMappingView() {
             }
             store.markCompleted("cross-mapping");
             store.setRunning(null);
+
+            // ── Toast + activity log ──
+            const outcome = progress.enrichmentOutcome;
+            if (outcome) {
+              const { addLogEntry } = useEnrichmentStore.getState();
+              if (outcome.success && outcome.instanceCount > 0) {
+                pushToast("success", "Cross-mapping complete", `${outcome.instanceCount} mapping instances discovered (+ inverses)`);
+                addLogEntry({ level: "success", source: "cross-mapping", message: `Discovered ${outcome.instanceCount} mapping instances`, detail: { instanceCount: outcome.instanceCount } });
+              } else if (outcome.success && outcome.instanceCount === 0) {
+                pushToast("warning", "Cross-mapping complete", "No mapping instances were discovered. Check element counts and level constraints.");
+                addLogEntry({ level: "warning", source: "cross-mapping", message: "Completed with 0 instances — check element counts and level constraints" });
+              } else {
+                pushToast("error", "Cross-mapping issues", outcome.error ?? "Unknown error");
+                addLogEntry({ level: "error", source: "cross-mapping", message: outcome.error ?? "Cross-mapping failed", detail: { instanceCount: outcome.instanceCount } });
+              }
+            }
           }
         },
         mappingPairs,
@@ -361,6 +378,12 @@ export function EnrichMappingView() {
       const msg = e instanceof Error ? e.message : String(e);
       store.setError(`Cross-mapping failed: ${msg}`);
       store.setRunning(null);
+      pushToast("error", "Cross-mapping failed", msg, 8000);
+      useEnrichmentStore.getState().addLogEntry({
+        level: "error",
+        source: "cross-mapping",
+        message: `Exception: ${msg}`,
+      });
     }
   }, [scaffoldData, mappingPairs, discoveryIR, store]);
 

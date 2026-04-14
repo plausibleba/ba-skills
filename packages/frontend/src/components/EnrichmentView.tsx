@@ -17,6 +17,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useCanvasStore } from "../store/canvas-store.ts";
 import { useEnrichmentStore } from "../store/enrichment-store.ts";
+import type { ActivityLogEntry } from "../store/enrichment-store.ts";
 import { useD118Store, useReadiness, useReadinessHint, useExternalInputsByType } from "../store/d118-store.ts";
 import { tv } from "../theme.ts";
 import {
@@ -848,6 +849,9 @@ export function EnrichmentView() {
         />
       </div>
 
+      {/* Activity Log */}
+      <ActivityLogSection />
+
       {/* Modals */}
       {showCustomSkillEditor && (
         <SkillEditorModal
@@ -884,6 +888,139 @@ export function EnrichmentView() {
         </div>
       )}
     </div>
+    </div>
+  );
+}
+
+// ─── Component: ActivityLogSection ──────────────────────────────────────────
+
+const LEVEL_BADGES: Record<string, { color: string; bg: string; label: string }> = {
+  success: { color: "#22c55e", bg: "rgba(34,197,94,0.1)", label: "OK" },
+  warning: { color: "#eab308", bg: "rgba(234,179,8,0.1)", label: "WARN" },
+  error:   { color: "#ef4444", bg: "rgba(239,68,68,0.1)", label: "ERR" },
+  info:    { color: "#3b82f6", bg: "rgba(59,130,246,0.1)", label: "INFO" },
+};
+
+function formatTimestamp(ts: number): string {
+  const d = new Date(ts);
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function ActivityLogRow({ entry }: { entry: ActivityLogEntry }) {
+  const badge = LEVEL_BADGES[entry.level] ?? LEVEL_BADGES.info;
+  return (
+    <div style={{
+      display: "flex",
+      alignItems: "flex-start",
+      gap: 10,
+      padding: "8px 12px",
+      borderBottom: `1px solid ${tv.borderSubtle}`,
+      fontSize: 12,
+      lineHeight: 1.5,
+    }}>
+      <span style={{
+        fontSize: 10,
+        fontWeight: 700,
+        padding: "1px 6px",
+        borderRadius: 4,
+        color: badge.color,
+        backgroundColor: badge.bg,
+        whiteSpace: "nowrap",
+        flexShrink: 0,
+        marginTop: 2,
+      }}>
+        {badge.label}
+      </span>
+      <span style={{ color: tv.textDim, whiteSpace: "nowrap", flexShrink: 0, marginTop: 1 }}>
+        {formatTimestamp(entry.timestamp)}
+      </span>
+      <span style={{ color: tv.textSecondary, flexShrink: 0, fontWeight: 600, marginTop: 1 }}>
+        {entry.source}
+      </span>
+      <span style={{ color: tv.textPrimary, flex: 1, minWidth: 0, wordBreak: "break-word" }}>
+        {entry.message}
+      </span>
+    </div>
+  );
+}
+
+function ActivityLogSection() {
+  const activityLog = useEnrichmentStore((s) => s.activityLog);
+  const clearLog = useEnrichmentStore((s) => s.clearActivityLog);
+  const [expanded, setExpanded] = useState(false);
+
+  if (activityLog.length === 0 && !expanded) return null;
+
+  return (
+    <div style={{ marginBottom: "48px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <button
+          onClick={() => setExpanded(!expanded)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: tv.textSecondary,
+            fontSize: 13,
+            fontWeight: 600,
+            padding: 0,
+          }}
+        >
+          <span style={{ transform: expanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.15s" }}>
+            ▸
+          </span>
+          Activity Log
+          {activityLog.length > 0 && (
+            <span style={{
+              fontSize: 10,
+              fontWeight: 700,
+              padding: "1px 7px",
+              borderRadius: 10,
+              backgroundColor: tv.accentMuted,
+              color: tv.accent,
+            }}>
+              {activityLog.length}
+            </span>
+          )}
+        </button>
+        {expanded && activityLog.length > 0 && (
+          <button
+            onClick={clearLog}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: tv.textDim,
+              fontSize: 11,
+              padding: "2px 8px",
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {expanded && (
+        <div style={{
+          backgroundColor: tv.bgCard,
+          border: `1px solid ${tv.borderSubtle}`,
+          borderRadius: 10,
+          overflow: "hidden",
+          maxHeight: 400,
+          overflowY: "auto",
+        }}>
+          {activityLog.length === 0 ? (
+            <div style={{ padding: 24, textAlign: "center", color: tv.textDim, fontSize: 12 }}>
+              No activity yet. Run an enrichment operation to see results here.
+            </div>
+          ) : (
+            activityLog.map((entry) => <ActivityLogRow key={entry.id} entry={entry} />)
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -203,6 +203,15 @@ async function runSimpleCrossMapping(
   const fromCount = countElements(scaffold, relType.from, fromConstraint);
   const toCount = countElements(scaffold, relType.to, toConstraint);
 
+  // Guard: nothing to map if either side is empty
+  if (fromCount === 0 || toCount === 0) {
+    const detail = fromCount === 0
+      ? `no ${relType.from} elements found${fromConstraint ? ` at level(s) ${fromConstraint.allowedLevels.join(",")}` : ""}`
+      : `no ${relType.to} elements found${toConstraint ? ` at level(s) ${toConstraint.allowedLevels.join(",")}` : ""}`;
+    console.warn(`[cross-mapping] Skipped "${relType.label}": ${detail}`);
+    return { success: false, instanceCount: 0, error: `Skipped — ${detail}` };
+  }
+
   const prompt = buildCrossMappingPrompt(scaffold, relType, levelConstraint);
   const maxTokens = estimateMaxTokens(fromCount, toCount);
 
@@ -317,6 +326,14 @@ async function runPPITCrossMapping(
   const caps = scaffold.elements?.capabilities ?? {};
   const lcFilter = levelConstraint ? { allowedLevels: levelConstraint.allowedLevels } : undefined;
   const capCount = countElements(scaffold, "capabilities", lcFilter);
+
+  // Guard: nothing to decompose if no capabilities found
+  if (capCount === 0) {
+    const detail = `no capabilities found${lcFilter ? ` at level(s) ${lcFilter.allowedLevels.join(",")}` : ""}`;
+    console.warn(`[cross-mapping] Skipped PPIT: ${detail}`);
+    return { success: false, instanceCount: 0, error: `Skipped — ${detail}` };
+  }
+
   const maxTokens = Math.max(4000, Math.min(64000, capCount * 150 + 1000));
 
   console.log(`[cross-mapping] Running PPIT compound (${capCount} capabilities), max_tokens=${maxTokens}`);

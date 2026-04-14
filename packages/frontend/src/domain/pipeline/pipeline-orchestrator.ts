@@ -567,6 +567,13 @@ export type PipelineStatus =
 
 export type EnrichmentStep = "subactivities" | "ppit" | "cards" | "cross-mapping";
 
+/** Summarises the outcome of an enrichment step (passed to UI via progress callback) */
+export interface EnrichmentOutcome {
+  success: boolean;
+  instanceCount: number;
+  error?: string;
+}
+
 export interface PipelineProgress {
   status: PipelineStatus;
   discoveryIR?: DiscoveryIR;          // available after pass-a-done
@@ -577,6 +584,7 @@ export interface PipelineProgress {
   bundle?: Record<string, unknown>;   // available after done
   errorMessage?: string;
   enrichmentStep?: EnrichmentStep;    // which enrichment just completed
+  enrichmentOutcome?: EnrichmentOutcome; // result summary for the step
 }
 
 export type ProgressCallback = (progress: PipelineProgress) => void;
@@ -785,7 +793,16 @@ export async function runEnrichmentStep(
       if (hasPPIT && discoveryIR) {
         deriveConceptsFromScaffold(scaffold, discoveryIR);
       }
-      onProgress({ status: "enrichment-done", scaffold, enrichmentStep: "cross-mapping" });
+      onProgress({
+        status: "enrichment-done",
+        scaffold,
+        enrichmentStep: "cross-mapping",
+        enrichmentOutcome: {
+          success: result.success,
+          instanceCount: result.instanceCount,
+          error: result.error,
+        },
+      });
       break;
     }
   }
