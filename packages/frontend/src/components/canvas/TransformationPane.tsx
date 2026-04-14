@@ -6,7 +6,7 @@ import type {
   TransformationUserStory,
 } from "../../types.ts";
 import { humanizeId } from "../../lib/humanize-id.ts";
-import { callLLM } from "../../domain/pipeline/llm-client";
+import { callLLM, DEFAULT_MODEL } from "../../domain/pipeline/llm-client";
 
 /* ── Category label map ─────────────────────────────────────────────── */
 const CATEGORY_LABELS: Record<string, { label: string; colour: string }> = {
@@ -405,7 +405,7 @@ Generate the user story.`;
 
   try {
     const llmRes = await callLLM({
-      model: "claude-sonnet-4-20250514",
+      model: DEFAULT_MODEL,
       max_tokens: 1000,
       temperature: 0,
       messages: [{ role: "user", content: `${system}\n\n${user}` }],

@@ -7,7 +7,7 @@
 
 import type { ScaffoldData } from "../../types.ts";
 import type { CardRegistry } from "../../types/cards.ts";
-import { callLLM } from "./llm-client";
+import { callLLM, DEFAULT_MODEL } from "./llm-client";
 import { buildCardGenerationPrompt } from "./prompts/pass-d-card-generation";
 
 export interface CardGenerationResult {
@@ -26,7 +26,7 @@ export async function generateCards(scaffold: ScaffoldData): Promise<CardGenerat
     const prompt = buildCardGenerationPrompt(scaffold);
 
     const llmRes = await callLLM({
-      model: "claude-sonnet-4-20250514",
+      model: DEFAULT_MODEL,
       max_tokens: 16000,
       temperature: 0,
       messages: [{ role: "user", content: prompt }],

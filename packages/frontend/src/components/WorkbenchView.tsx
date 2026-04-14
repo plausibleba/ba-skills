@@ -17,7 +17,7 @@ import {
   resolveAccessor,
   type CatalogConfig,
 } from "../lib/catalog-configs";
-import { callLLM } from "../domain/pipeline/llm-client";
+import { callLLM, DEFAULT_MODEL } from "../domain/pipeline/llm-client";
 import { buildRefinementAgentPrompt, parseAgentResponse } from "../domain/pipeline/prompts/refinement-agent";
 import { StructuredGraphExplorer, type NextAction } from "./StructuredGraphExplorer";
 import { ActivityFlowsView } from "./ActivityFlowsView";
@@ -958,7 +958,7 @@ function AgentSidebar({ onClose }: { onClose: () => void }) {
       );
 
       const response = await callLLM({
-        model: "claude-sonnet-4-20250514",
+        model: DEFAULT_MODEL,
         max_tokens: 4096,
         temperature: 0.3,
         messages: llmMessages,

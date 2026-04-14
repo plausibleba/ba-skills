@@ -5,7 +5,7 @@
 // This is a separate pass to keep Pass B's output small and fast. PPIT is the
 // densest part of the scaffold — roughly 40% of total token output.
 
-import { callLLM } from "./llm-client";
+import { callLLM, DEFAULT_MODEL } from "./llm-client";
 import { buildPPITPrompt } from "./prompts/pass-c-ppit-enrichment";
 import { ScaffoldData, ScaffoldActivity, getCapabilityIds, PPITEntry } from "../../types";
 
@@ -38,7 +38,7 @@ export async function runPassC(scaffold: ScaffoldData): Promise<PPITResult> {
 
   try {
     const llmRes = await callLLM({
-      model: "claude-sonnet-4-20250514",
+      model: DEFAULT_MODEL,
       max_tokens: maxTokens,
       temperature: 0,
       messages: [{ role: "user", content: prompt }],

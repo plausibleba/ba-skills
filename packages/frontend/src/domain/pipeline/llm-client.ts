@@ -8,6 +8,16 @@
 // Retry behaviour: network errors and 5xx/429 responses are retried up to 2
 // times with exponential backoff (2s → 4s). Non-retryable errors throw immediately.
 
+/**
+ * Default model used across all VCC pipeline calls.
+ * Centralised here so model upgrades are a one-line change.
+ *
+ * History:
+ *   2026-03 → 2026-04  claude-sonnet-4-20250514
+ *   2026-04-15          claude-sonnet-4-6  (Sonnet 4 date-stamped retiring 2026-06-15)
+ */
+export const DEFAULT_MODEL = "claude-sonnet-4-6";
+
 export interface LLMResponse {
   text: string;
   stopReason: string;

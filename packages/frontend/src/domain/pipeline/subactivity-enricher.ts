@@ -10,7 +10,7 @@
 // - Session 26: Sub-activity DAGs added to Pass B (Capsicum alignment)
 // - Session 28: Extracted to separate enrichment pass for reliability
 
-import { callLLM } from "./llm-client";
+import { callLLM, DEFAULT_MODEL } from "./llm-client";
 import { ScaffoldData, ScaffoldActivity, ScaffoldElements, getCapabilityIds, PPITEntry } from "../../types";
 
 export interface SubActivityResult {
@@ -241,7 +241,7 @@ async function runBatch(scaffold: ScaffoldData, activityIds: string[]): Promise<
   const prompt = buildSubActivityPrompt(batchScaffold);
 
   const llmRes = await callLLM({
-    model: "claude-sonnet-4-20250514",
+    model: DEFAULT_MODEL,
     max_tokens: maxTokens,
     temperature: 0,
     messages: [{ role: "user", content: prompt }],

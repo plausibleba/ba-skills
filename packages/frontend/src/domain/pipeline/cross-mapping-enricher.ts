@@ -9,7 +9,7 @@
 // Results are written to scaffold.elements.crossMaps as CrossMapInstance records.
 // PPIT results are ALSO written to the legacy capabilityPPIT structure for backward compat.
 
-import { callLLM } from "./llm-client";
+import { callLLM, DEFAULT_MODEL } from "./llm-client";
 import { buildCrossMappingPrompt, buildPPITCrossMappingPrompt } from "./prompts/pass-e-cross-mapping";
 import type { ScaffoldData, ScaffoldActivity, ScaffoldCapability, PPITEntry } from "../../types";
 import { getRelationshipTypeById } from "../cross-mapping-metamodel";
@@ -219,7 +219,7 @@ async function runSimpleCrossMapping(
 
   try {
     const llmRes = await callLLM({
-      model: "claude-sonnet-4-20250514",
+      model: DEFAULT_MODEL,
       max_tokens: maxTokens,
       temperature: 0,
       messages: [{ role: "user", content: prompt }],
@@ -340,7 +340,7 @@ async function runPPITCrossMapping(
 
   try {
     const llmRes = await callLLM({
-      model: "claude-sonnet-4-20250514",
+      model: DEFAULT_MODEL,
       max_tokens: maxTokens,
       temperature: 0,
       messages: [{ role: "user", content: prompt }],

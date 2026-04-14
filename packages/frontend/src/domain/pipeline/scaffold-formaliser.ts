@@ -5,7 +5,7 @@
 import type { DiscoveryIR } from "./discovery-ir";
 import { runGate1, runGate2 } from "./scaffold-gates";
 import type { GateResult } from "./scaffold-gates";
-import { callLLM } from "./llm-client";
+import { callLLM, DEFAULT_MODEL } from "./llm-client";
 import { buildScaffoldPrompt, buildRepairPrompt } from "./prompts/pass-b-scaffold-formalisation";
 
 export interface FormaliseResult {
@@ -69,7 +69,7 @@ export async function runPassB(
   // First attempt
   try {
     const llmRes = await callLLM({
-      model: "claude-sonnet-4-20250514",
+      model: DEFAULT_MODEL,
       max_tokens: maxTokens,
       temperature: 0,
       messages: [{ role: "user", content: scaffoldPrompt }],
@@ -108,7 +108,7 @@ export async function runPassB(
     const repairPrompt = buildRepairPrompt(scaffoldPrompt, gate1.errors);
     try {
       const llmRes = await callLLM({
-        model: "claude-sonnet-4-20250514",
+        model: DEFAULT_MODEL,
         max_tokens: maxTokens,
         temperature: 0,
         messages: [{ role: "user", content: repairPrompt }],

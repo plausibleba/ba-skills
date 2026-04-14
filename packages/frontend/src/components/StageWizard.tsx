@@ -8,7 +8,7 @@ import type { VendorFeatureLibrary, Solution, FrictionObservation, HeatmapData }
 import { useVendorLibraryStore } from "../store/vendor-library-store.ts";
 import { humanizeId } from "../lib/humanize-id.ts";
 import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
-import { callLLM } from "../domain/pipeline/llm-client";
+import { callLLM, DEFAULT_MODEL } from "../domain/pipeline/llm-client";
 import { runPassC } from "../domain/pipeline/heatmap-analyser";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -118,7 +118,7 @@ Return ONLY valid JSON:
 }`;
 
     const llmRes = await callLLM({
-      model: "claude-sonnet-4-20250514",
+      model: DEFAULT_MODEL,
       max_tokens: 4000,
       temperature: 0,
       messages: [{ role: "user", content: prompt }],

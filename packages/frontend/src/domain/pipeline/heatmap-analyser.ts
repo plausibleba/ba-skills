@@ -3,7 +3,7 @@
 // This file handles: LLM call, response parsing, heatmap assembly.
 
 import type { DiscoveryIR } from "./discovery-ir";
-import { callLLM } from "./llm-client";
+import { callLLM, DEFAULT_MODEL } from "./llm-client";
 import { buildHeatmapPrompt } from "./prompts/pass-c-friction-analysis";
 
 export interface HeatmapResult {
@@ -21,7 +21,7 @@ export async function runPassC(
 
   try {
     const llmRes = await callLLM({
-      model: "claude-sonnet-4-20250514",
+      model: DEFAULT_MODEL,
       max_tokens: 8000,
       temperature: 0,
       messages: [{ role: "user", content: heatmapPrompt }],

@@ -4,7 +4,7 @@ import SALESFORCE_LIB from "../../fixtures/vendor-libraries/salesforce-agentforc
 import type { VendorFeatureLibrary, Solution, FrictionObservation } from "../types.ts";
 import { useVendorLibraryStore } from "../store/vendor-library-store.ts";
 import { humanizeId } from "../lib/humanize-id.ts";
-import { callLLM } from "../domain/pipeline/llm-client";
+import { callLLM, DEFAULT_MODEL } from "../domain/pipeline/llm-client";
 
 // ─── Vendor catalogue ─────────────────────────────────────────────────────────
 
@@ -107,7 +107,7 @@ Return ONLY valid JSON with no markdown fences:
 }`;
 
     const llmRes = await callLLM({
-      model: "claude-sonnet-4-20250514",
+      model: DEFAULT_MODEL,
       max_tokens: 4000,
       temperature: 0,
       messages: [{ role: "user", content: prompt }],

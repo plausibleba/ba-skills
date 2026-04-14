@@ -17,7 +17,7 @@ import { runCrossMappingEnrichment } from "./cross-mapping-enricher";
 import type { GateResult } from "./scaffold-gates";
 import { generateCards } from "./card-generator";
 import type { CardRegistry } from "../../types/cards";
-import { callLLM } from "./llm-client";
+import { callLLM, DEFAULT_MODEL } from "./llm-client";
 import { buildPass1Prompt } from "./prompts/pass-a1-value-streams";
 import { buildPass2Prompt } from "./prompts/pass-a2-capability-mapping";
 import { ScaffoldData, ScaffoldActivity, ScaffoldCapability, PPITEntry, getCapabilityIds } from "../../types";
@@ -605,7 +605,7 @@ export async function runPipeline(
 
   try {
     const llmRes = await callLLM({
-      model: "claude-sonnet-4-20250514",
+      model: DEFAULT_MODEL,
       max_tokens: 8000,
       temperature: 0,
       messages: [{ role: "user", content: buildPass1Prompt(transcript) }],
@@ -630,7 +630,7 @@ export async function runPipeline(
 
   try {
     const llmRes = await callLLM({
-      model: "claude-sonnet-4-20250514",
+      model: DEFAULT_MODEL,
       max_tokens: 12000,
       temperature: 0,
       messages: [{ role: "user", content: buildPass2Prompt(transcript, confirmedVS) }],
