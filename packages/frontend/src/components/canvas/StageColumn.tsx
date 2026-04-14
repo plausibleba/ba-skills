@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { useState } from "react";
 import type {
   CanvasColumn,
   FrictionObservation,
@@ -61,6 +62,7 @@ export function StageColumn({
   onRemoveActivity?: () => void;
 }) {
   const { updateActivityName } = useCanvasStore();
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const fCnt = column.activityIds.reduce(
     (s, a) => s + (frictionMap.get(a)?.length ?? 0),
     0,
@@ -116,15 +118,35 @@ export function StageColumn({
                 {fCnt} obs
               </span>
             )}
-            {onRemoveActivity && (
+            {onRemoveActivity && !confirmRemove && (
               <button
-                onClick={onRemoveActivity}
+                onClick={() => setConfirmRemove(true)}
                 title="Remove this stage"
                 className="rounded px-1.5 py-0.5 text-[9px] font-semibold hover:bg-red-500/40 hover:text-white transition-colors"
                 style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.tileBg, color: tv.textDim }}
               >
                 ×
               </button>
+            )}
+            {onRemoveActivity && confirmRemove && (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => { onRemoveActivity(); setConfirmRemove(false); }}
+                  title="Confirm removal"
+                  className="rounded px-1.5 py-0.5 text-[9px] font-semibold transition-colors"
+                  style={{ background: "rgba(239,68,68,0.25)", border: "1px solid rgba(239,68,68,0.5)", color: "#f87171" }}
+                >
+                  Remove
+                </button>
+                <button
+                  onClick={() => setConfirmRemove(false)}
+                  title="Cancel"
+                  className="rounded px-1.5 py-0.5 text-[9px] font-semibold transition-colors"
+                  style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.tileBg, color: tv.textDim }}
+                >
+                  Cancel
+                </button>
+              </div>
             )}
           </div>
         </div>
