@@ -375,6 +375,8 @@ async function runSimpleCrossMapping(
     }
 
     // ── Write-through: push capability IDs onto stage/activity records ──
+    // Uses requiresCapabilityIds (canonical v4 field) for consistency with
+    // the discovery pipeline (Pass B). All readers check this field first.
     if (relType.from === "capabilities" && (relType.to === "stages" || relType.to === "activities")) {
       const activities = scaffold.elements.activities ?? {};
       let writeThroughCount = 0;
@@ -383,9 +385,9 @@ async function runSimpleCrossMapping(
         if (entry.confidence < 0.5) continue;
         const stage = activities[entry.targetId] as ScaffoldActivity | undefined;
         if (!stage) { missingTargets++; continue; }
-        if (!stage.enabledByCapabilityIds) stage.enabledByCapabilityIds = [];
-        if (!stage.enabledByCapabilityIds.includes(entry.sourceId)) {
-          stage.enabledByCapabilityIds.push(entry.sourceId);
+        if (!stage.requiresCapabilityIds) stage.requiresCapabilityIds = [];
+        if (!stage.requiresCapabilityIds.includes(entry.sourceId)) {
+          stage.requiresCapabilityIds.push(entry.sourceId);
           writeThroughCount++;
         }
       }

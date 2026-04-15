@@ -529,7 +529,8 @@ export function deriveCapabilityInstances(
   const valueStreams = scaffold.elements.valueStreams ?? {};
 
   for (const [activityId, activity] of Object.entries(activities)) {
-    const capabilityIds = (activity as ScaffoldActivity).requiresCapabilityIds ?? [];
+    const actTyped = activity as ScaffoldActivity;
+    const capabilityIds = actTyped.enabledByCapabilityIds ?? actTyped.requiresCapabilityIds ?? [];
     const vsId = Object.entries(valueStreams).find(
       ([, vs]) => (vs as ScaffoldValueStream).activityIds?.includes(activityId)
     )?.[0];
