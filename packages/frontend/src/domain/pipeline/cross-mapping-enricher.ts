@@ -294,19 +294,23 @@ async function runSimpleCrossMapping(
     // ── Write-through: push capability IDs onto stage/activity records ──
     // This makes cross-mapping results visible in existing stage views
     // which read enabledByCapabilityIds directly from the activity record.
-    const CAPABILITY_TO_STAGE_TYPES = new Set([
-      "capability-realised-in-stage",
-      "capability-enables-activity",
-    ]);
-    if (CAPABILITY_TO_STAGE_TYPES.has(relType.id)) {
+    //
+    // Applies when source=capabilities and target=stages or activities
+    // (covers "capability-realised-in-stage" and "capability-enables-activity").
+    if (relType.from === "capabilities" && (relType.to === "stages" || relType.to === "activities")) {
       const activities = scaffold.elements.activities ?? {};
+      const activityIds = new Set(Object.keys(activities));
       let writeThroughCount = 0;
+      let missingTargets = 0;
       for (const entry of raw) {
         if (entry.confidence < 0.5) continue;
-        const capId = entry.sourceId;  // capability is always the source
+        const capId = entry.sourceId;
         const stageId = entry.targetId;
         const stage = activities[stageId] as ScaffoldActivity | undefined;
-        if (!stage) continue;
+        if (!stage) {
+          missingTargets++;
+          continue;
+        }
         if (!stage.enabledByCapabilityIds) {
           stage.enabledByCapabilityIds = [];
         }
@@ -315,9 +319,11 @@ async function runSimpleCrossMapping(
           writeThroughCount++;
         }
       }
-      if (writeThroughCount > 0) {
-        console.log(`[cross-mapping] Write-through: added ${writeThroughCount} capability links to stages/activities`);
-      }
+      console.log(
+        `[cross-mapping] Write-through: ${writeThroughCount} capability links added to stages` +
+        `${missingTargets > 0 ? `, ${missingTargets} targets not found in scaffold.elements.activities` : ""}` +
+        ` (scaffold has ${activityIds.size} activities)`
+      );
     }
 
     console.log(`[cross-mapping] "${relType.label}": ${count} instances discovered (+ ${count} inverse)`);
