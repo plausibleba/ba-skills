@@ -26,6 +26,23 @@ interface ElementSummary {
   valueStreamName?: string;
 }
 
+/**
+ * Detect "matching" capabilities — a Guild reference model pattern where
+ * capabilities represent the ability to cross-reference two business objects.
+ * These are meta-capabilities (e.g., "Brand/Strategy Matching") that don't
+ * belong in value streams and should be excluded from cross-mapping.
+ *
+ * Detection: name ends with "Matching" AND description contains "associate".
+ * Both conditions required to avoid false positives on legitimate capabilities
+ * that happen to use the word "matching" in a different sense.
+ */
+function isMatchingCapability(name: string, description?: string): boolean {
+  if (!name.endsWith("Matching")) return false;
+  if (description && description.toLowerCase().includes("associate")) return true;
+  // Name-only fallback: "X/Y Matching" pattern (slash separating two objects)
+  return /\w+\s*\/\s*\w+.*Matching$/.test(name);
+}
+
 export function extractElements(
   scaffold: ScaffoldData,
   entityType: string,
@@ -39,10 +56,16 @@ export function extractElements(
 
   switch (entityType) {
     case "capabilities": {
-      const caps = Object.entries(els.capabilities ?? {}).map(([id, cap]) => {
+      let caps = Object.entries(els.capabilities ?? {}).map(([id, cap]) => {
         const c = cap as unknown as ScaffoldCapability;
         return { id, name: c.name ?? id, description: c.description, level: c.level, parentId: c.parentId };
       });
+      // Filter out "matching" meta-capabilities (Guild reference model pattern)
+      const beforeCount = caps.length;
+      caps = caps.filter((c) => !isMatchingCapability(c.name, c.description));
+      if (caps.length < beforeCount) {
+        console.log(`[cross-mapping] Excluded ${beforeCount - caps.length} matching meta-capabilities (${caps.length} remaining)`);
+      }
       if (levelConstraint) {
         return caps.filter((c) => c.level != null && levelConstraint.allowedLevels.includes(c.level));
       }
