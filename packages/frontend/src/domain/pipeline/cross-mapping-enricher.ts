@@ -291,6 +291,35 @@ async function runSimpleCrossMapping(
       };
     }
 
+    // ── Write-through: push capability IDs onto stage/activity records ──
+    // This makes cross-mapping results visible in existing stage views
+    // which read enabledByCapabilityIds directly from the activity record.
+    const CAPABILITY_TO_STAGE_TYPES = new Set([
+      "capability-realised-in-stage",
+      "capability-enables-activity",
+    ]);
+    if (CAPABILITY_TO_STAGE_TYPES.has(relType.id)) {
+      const activities = scaffold.elements.activities ?? {};
+      let writeThroughCount = 0;
+      for (const entry of raw) {
+        if (entry.confidence < 0.5) continue;
+        const capId = entry.sourceId;  // capability is always the source
+        const stageId = entry.targetId;
+        const stage = activities[stageId] as ScaffoldActivity | undefined;
+        if (!stage) continue;
+        if (!stage.enabledByCapabilityIds) {
+          stage.enabledByCapabilityIds = [];
+        }
+        if (!stage.enabledByCapabilityIds.includes(capId)) {
+          stage.enabledByCapabilityIds.push(capId);
+          writeThroughCount++;
+        }
+      }
+      if (writeThroughCount > 0) {
+        console.log(`[cross-mapping] Write-through: added ${writeThroughCount} capability links to stages/activities`);
+      }
+    }
+
     console.log(`[cross-mapping] "${relType.label}": ${count} instances discovered (+ ${count} inverse)`);
     return { success: true, instanceCount: count };
   } catch (e) {
