@@ -10,7 +10,7 @@
 // PPIT results are ALSO written to the legacy capabilityPPIT structure for backward compat.
 
 import { callLLM, DEFAULT_MODEL } from "./llm-client";
-import { buildCrossMappingPrompt, buildPPITCrossMappingPrompt } from "./prompts/pass-e-cross-mapping";
+import { buildCrossMappingPrompt, buildVSScopedCrossMappingPrompt, buildPPITCrossMappingPrompt, extractElements } from "./prompts/pass-e-cross-mapping";
 import type { ScaffoldData, ScaffoldActivity, ScaffoldCapability, PPITEntry } from "../../types";
 import { getRelationshipTypeById } from "../cross-mapping-metamodel";
 import type { RelationshipType } from "../cross-mapping-metamodel";
@@ -85,38 +85,40 @@ function estimateMaxTokens(fromCount: number, toCount: number): number {
 
 /**
  * Attempt to recover a valid JSON array from a truncated LLM response.
- * Finds the last complete array entry and closes the array.
+ * Handles truncation mid-string, mid-object, or between entries.
  * Returns null if recovery is not possible.
  */
 function recoverTruncatedJsonArray(text: string): unknown[] | null {
   const trimmed = text.replace(/`{3}json|`{3}/g, "").trim();
-  // Must start with [
   if (!trimmed.startsWith("[")) return null;
 
-  // Try to find the last complete object by looking for },
-  // then close the array after it
+  // Strategy: progressively trim from the end until JSON.parse succeeds.
+  // Start by looking for the last `},` boundary (fast path), then
+  // fall back to stripping characters until we find a parseable prefix.
+
+  // Fast path: find last complete `},` entry boundary
   const lastCompleteEntry = trimmed.lastIndexOf("},");
-  if (lastCompleteEntry === -1) {
-    // Try just a single complete object: [{ ... }
-    const lastBrace = trimmed.lastIndexOf("}");
-    if (lastBrace > 0) {
-      const attempt = trimmed.slice(0, lastBrace + 1) + "]";
-      try {
-        return JSON.parse(attempt) as unknown[];
-      } catch {
-        return null;
-      }
+  if (lastCompleteEntry > 0) {
+    const attempt = trimmed.slice(0, lastCompleteEntry + 1) + "]";
+    try {
+      return JSON.parse(attempt) as unknown[];
+    } catch {
+      // Fall through to slower recovery
     }
-    return null;
   }
 
-  // Slice up to and including the last complete }, then close
-  const attempt = trimmed.slice(0, lastCompleteEntry + 1) + "]";
-  try {
-    return JSON.parse(attempt) as unknown[];
-  } catch {
-    return null;
+  // Slower path: find last `}` and try closing there
+  let pos = trimmed.lastIndexOf("}");
+  while (pos > 0) {
+    const attempt = trimmed.slice(0, pos + 1) + "]";
+    try {
+      return JSON.parse(attempt) as unknown[];
+    } catch {
+      pos = trimmed.lastIndexOf("}", pos - 1);
+    }
   }
+
+  return null;
 }
 
 /**
@@ -187,9 +189,85 @@ function resolveLevelConstraint(
   return undefined;
 }
 
+type RawMapping = { sourceId: string; targetId: string; confidence: number; evidence?: string };
+
+/**
+ * Run a single LLM call for cross-mapping and return parsed results.
+ * Handles truncation recovery.
+ */
+async function callCrossMappingLLM(
+  prompt: string,
+  maxTokens: number,
+  label: string,
+): Promise<RawMapping[]> {
+  const llmRes = await callLLM({
+    model: DEFAULT_MODEL,
+    max_tokens: maxTokens,
+    temperature: 0,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  const truncated = llmRes.stopReason === "max_tokens";
+  if (truncated) {
+    console.warn(`[cross-mapping] ${label}: response truncated — attempting recovery`);
+  }
+
+  try {
+    return JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
+  } catch (parseError) {
+    if (truncated) {
+      const recovered = recoverTruncatedJsonArray(llmRes.text);
+      if (recovered) {
+        console.warn(`[cross-mapping] ${label}: recovered ${recovered.length} entries from truncated response`);
+        return recovered as RawMapping[];
+      }
+    }
+    throw new Error(`${label}: JSON parse failed — ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+  }
+}
+
+/**
+ * Determine whether to use VS-by-VS scoping for cross-mapping.
+ * Returns grouped stages by VS if applicable, or null for single-call mode.
+ */
+function getVSScopedChunks(
+  scaffold: ScaffoldData,
+  relType: RelationshipType,
+  toElements: { id: string; name: string; valueStreamId?: string }[],
+): { vsId: string; vsName: string; vsDescription?: string; stageIds: string[] }[] | null {
+  // Only scope by VS when target is stages and there are multiple value streams
+  if (relType.to !== "stages") return null;
+  const vs = scaffold.elements.valueStreams ?? {};
+  const vsIds = Object.keys(vs);
+  if (vsIds.length <= 1) return null;
+
+  // Group target stages by their parent VS
+  const groups: { vsId: string; vsName: string; vsDescription?: string; stageIds: string[] }[] = [];
+  for (const vsId of vsIds) {
+    const vsObj = vs[vsId] as unknown as { name?: string; description?: string; activityIds?: string[] };
+    const vsStageIds = (vsObj.activityIds ?? []).filter((id: string) =>
+      toElements.some((e) => e.id === id),
+    );
+    if (vsStageIds.length > 0) {
+      groups.push({
+        vsId,
+        vsName: vsObj.name ?? vsId,
+        vsDescription: vsObj.description,
+        stageIds: vsStageIds,
+      });
+    }
+  }
+  return groups.length > 1 ? groups : null;
+}
+
 /**
  * Run cross-mapping for a single (non-compound) relationship type.
  * Discovers instances and writes to scaffold.elements.crossMaps.
+ *
+ * For capability-to-stage mappings on multi-VS models, the request is
+ * automatically scoped by value stream — one LLM call per VS, with
+ * all capabilities sent alongside only that VS's stages. This gives
+ * the LLM proper context for better mapping quality.
  */
 async function runSimpleCrossMapping(
   scaffold: ScaffoldData,
@@ -200,66 +278,64 @@ async function runSimpleCrossMapping(
 
   const fromConstraint = levelConstraint?.appliesTo === "from" ? { allowedLevels: levelConstraint.allowedLevels } : undefined;
   const toConstraint = levelConstraint?.appliesTo === "to" ? { allowedLevels: levelConstraint.allowedLevels } : undefined;
-  const fromCount = countElements(scaffold, relType.from, fromConstraint);
-  const toCount = countElements(scaffold, relType.to, toConstraint);
+
+  const fromElements = extractElements(scaffold, relType.from, fromConstraint ? { allowedLevels: fromConstraint.allowedLevels } : undefined);
+  const toElements = extractElements(scaffold, relType.to, toConstraint ? { allowedLevels: toConstraint.allowedLevels } : undefined);
 
   // Guard: nothing to map if either side is empty
-  if (fromCount === 0 || toCount === 0) {
-    const detail = fromCount === 0
+  if (fromElements.length === 0 || toElements.length === 0) {
+    const detail = fromElements.length === 0
       ? `no ${relType.from} elements found${fromConstraint ? ` at level(s) ${fromConstraint.allowedLevels.join(",")}` : ""}`
       : `no ${relType.to} elements found${toConstraint ? ` at level(s) ${toConstraint.allowedLevels.join(",")}` : ""}`;
     console.warn(`[cross-mapping] Skipped "${relType.label}": ${detail}`);
     return { success: false, instanceCount: 0, error: `Skipped — ${detail}` };
   }
 
-  const prompt = buildCrossMappingPrompt(scaffold, relType, levelConstraint);
-  const maxTokens = estimateMaxTokens(fromCount, toCount);
-
-  console.log(`[cross-mapping] Running "${relType.label}" (${relType.from}[${fromCount}] → ${relType.to}[${toCount}]), max_tokens=${maxTokens}`);
+  // ── Determine strategy: VS-by-VS scoping or single call ──
+  const vsChunks = getVSScopedChunks(scaffold, relType, toElements);
 
   try {
-    const llmRes = await callLLM({
-      model: DEFAULT_MODEL,
-      max_tokens: maxTokens,
-      temperature: 0,
-      messages: [{ role: "user", content: prompt }],
-    });
+    const allRaw: RawMapping[] = [];
 
-    const truncated = llmRes.stopReason === "max_tokens";
-    if (truncated) {
-      console.warn("[cross-mapping] Response truncated — will attempt to recover partial results");
-    }
+    if (vsChunks) {
+      // ── VS-by-VS: one LLM call per value stream ──
+      console.log(`[cross-mapping] VS-scoped: ${vsChunks.length} value streams × ${fromElements.length} ${relType.from}`);
 
-    let raw: Array<{
-      sourceId: string;
-      targetId: string;
-      confidence: number;
-      evidence?: string;
-    }>;
+      for (let vi = 0; vi < vsChunks.length; vi++) {
+        const vs = vsChunks[vi];
+        const vsStages = toElements.filter((e) => vs.stageIds.includes(e.id));
+        const maxTokens = estimateMaxTokens(fromElements.length, vsStages.length);
+        const label = `VS ${vi + 1}/${vsChunks.length} "${vs.vsName}"`;
 
-    try {
-      raw = JSON.parse(llmRes.text.replace(/`{3}json|`{3}/g, "").trim());
-    } catch (parseError) {
-      if (truncated) {
-        const recovered = recoverTruncatedJsonArray(llmRes.text);
-        if (recovered) {
-          console.warn(`[cross-mapping] Recovered ${recovered.length} entries from truncated response`);
-          raw = recovered as typeof raw;
-        } else {
-          throw new Error(`JSON parse failed and recovery unsuccessful: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
-        }
-      } else {
-        throw parseError;
+        console.log(`[cross-mapping] ${label} (${fromElements.length} caps → ${vsStages.length} stages), max_tokens=${maxTokens}`);
+
+        const prompt = buildVSScopedCrossMappingPrompt(
+          fromElements, vsStages, relType,
+          vs.vsName, vs.vsDescription,
+          vi, vsChunks.length,
+        );
+
+        const results = await callCrossMappingLLM(prompt, maxTokens, label);
+        console.log(`[cross-mapping] ${label}: ${results.length} raw mappings`);
+        allRaw.push(...results);
       }
+    } else {
+      // ── Single call: small model or non-stage target ──
+      const maxTokens = estimateMaxTokens(fromElements.length, toElements.length);
+      console.log(`[cross-mapping] Running "${relType.label}" (${relType.from}[${fromElements.length}] → ${relType.to}[${toElements.length}]), max_tokens=${maxTokens}`);
+
+      const prompt = buildCrossMappingPrompt(scaffold, relType, levelConstraint);
+      const results = await callCrossMappingLLM(prompt, maxTokens, `"${relType.label}"`);
+      allRaw.push(...results);
     }
 
-    // Initialize crossMaps if needed
+    // ── Write results to crossMaps ──
     if (!scaffold.elements.crossMaps) {
       scaffold.elements.crossMaps = {};
     }
 
     let count = 0;
-    for (const entry of raw) {
+    for (const entry of allRaw) {
       if (entry.confidence < 0.5) continue;
       const key = `${relType.id}::${entry.sourceId}→${entry.targetId}`;
       scaffold.elements.crossMaps[key] = {
@@ -275,8 +351,8 @@ async function runSimpleCrossMapping(
       count++;
     }
 
-    // Also write inverse mappings
-    for (const entry of raw) {
+    // Write inverse mappings
+    for (const entry of allRaw) {
       if (entry.confidence < 0.5) continue;
       const invKey = `${relType.id}:inv::${entry.targetId}→${entry.sourceId}`;
       scaffold.elements.crossMaps[invKey] = {
@@ -292,41 +368,29 @@ async function runSimpleCrossMapping(
     }
 
     // ── Write-through: push capability IDs onto stage/activity records ──
-    // This makes cross-mapping results visible in existing stage views
-    // which read enabledByCapabilityIds directly from the activity record.
-    //
-    // Applies when source=capabilities and target=stages or activities
-    // (covers "capability-realised-in-stage" and "capability-enables-activity").
     if (relType.from === "capabilities" && (relType.to === "stages" || relType.to === "activities")) {
       const activities = scaffold.elements.activities ?? {};
-      const activityIds = new Set(Object.keys(activities));
       let writeThroughCount = 0;
       let missingTargets = 0;
-      for (const entry of raw) {
+      for (const entry of allRaw) {
         if (entry.confidence < 0.5) continue;
-        const capId = entry.sourceId;
-        const stageId = entry.targetId;
-        const stage = activities[stageId] as ScaffoldActivity | undefined;
-        if (!stage) {
-          missingTargets++;
-          continue;
-        }
-        if (!stage.enabledByCapabilityIds) {
-          stage.enabledByCapabilityIds = [];
-        }
-        if (!stage.enabledByCapabilityIds.includes(capId)) {
-          stage.enabledByCapabilityIds.push(capId);
+        const stage = activities[entry.targetId] as ScaffoldActivity | undefined;
+        if (!stage) { missingTargets++; continue; }
+        if (!stage.enabledByCapabilityIds) stage.enabledByCapabilityIds = [];
+        if (!stage.enabledByCapabilityIds.includes(entry.sourceId)) {
+          stage.enabledByCapabilityIds.push(entry.sourceId);
           writeThroughCount++;
         }
       }
       console.log(
         `[cross-mapping] Write-through: ${writeThroughCount} capability links added to stages` +
-        `${missingTargets > 0 ? `, ${missingTargets} targets not found in scaffold.elements.activities` : ""}` +
-        ` (scaffold has ${activityIds.size} activities)`
+        `${missingTargets > 0 ? `, ${missingTargets} targets not found` : ""}` +
+        ` (scaffold has ${Object.keys(activities).length} activities)`
       );
     }
 
-    console.log(`[cross-mapping] "${relType.label}": ${count} instances discovered (+ ${count} inverse)`);
+    const scopeNote = vsChunks ? ` across ${vsChunks.length} value streams` : "";
+    console.log(`[cross-mapping] "${relType.label}": ${count} instances discovered (+ ${count} inverse)${scopeNote}`);
     return { success: true, instanceCount: count };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

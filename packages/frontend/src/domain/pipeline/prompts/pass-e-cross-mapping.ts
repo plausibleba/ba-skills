@@ -26,7 +26,7 @@ interface ElementSummary {
   valueStreamName?: string;
 }
 
-function extractElements(
+export function extractElements(
   scaffold: ScaffoldData,
   entityType: string,
   levelConstraint?: { allowedLevels: number[] },
@@ -155,6 +155,60 @@ ${JSON.stringify(fromElements.map((e) => ({ id: e.id, name: e.name, ...(e.descri
 
 ## Target Elements (${relType.to})
 ${JSON.stringify(toElements.map((e) => ({ id: e.id, name: e.name, ...(e.description ? { desc: e.description } : {}), ...(e.level != null ? { level: e.level } : {}), ...(e.valueStreamName ? { vs: e.valueStreamName } : {}) })), null, 2)}
+
+Return ONLY valid JSON — no markdown fences, no commentary. Return an empty array [] if no plausible mappings exist.`;
+}
+
+/**
+ * Build a cross-mapping prompt scoped to a single Value Stream.
+ * All capabilities are sent as source elements, but only the stages belonging
+ * to this VS are included as targets. The VS name and description provide
+ * context for better mapping quality.
+ */
+export function buildVSScopedCrossMappingPrompt(
+  fromElements: ElementSummary[],
+  vsStages: ElementSummary[],
+  relType: RelationshipType,
+  vsName: string,
+  vsDescription: string | undefined,
+  vsIndex: number,
+  totalVS: number,
+): string {
+  const vsContext = vsDescription
+    ? `\n\n## Value Stream Context\n**${vsName}** (${vsIndex + 1} of ${totalVS})\n${vsDescription}`
+    : `\n\n## Value Stream Context\n**${vsName}** (${vsIndex + 1} of ${totalVS})`;
+
+  return `You are a business architect performing cross-mapping analysis on an operating model.
+
+## Task
+Discover which capabilities are "${relType.label}" the stages of the value stream "${vsName}".
+
+For each stage below, identify which capabilities from the source list are exercised, delivered, or realised during that stage. A capability may map to multiple stages, and a stage may require multiple capabilities.${vsContext}
+
+## Relationship Definition
+- **Type**: ${relType.from} ${relType.label} ${relType.to}
+- **Description**: ${relType.description}
+- **Cardinality**: ${relType.semantics.cardinality}
+
+## Output Format
+Return a JSON array of mapping objects. Each mapping has:
+- "sourceId": ID of the capability
+- "targetId": ID of the stage
+- "confidence": number 0.0-1.0 (how confident you are in this mapping)
+- "evidence": brief phrase explaining why this mapping exists (max 20 words)
+
+Only include mappings with confidence >= 0.5. Aim for precision over recall — it's better to miss a weak mapping than to include a spurious one.
+
+Example:
+[
+  { "sourceId": "cap_001", "targetId": "act_002", "confidence": 0.9, "evidence": "CRM capability directly exercised in customer qualification stage" }
+]
+
+## Capabilities (${fromElements.length} items)
+${JSON.stringify(fromElements.map((e) => ({ id: e.id, name: e.name, ...(e.description ? { desc: e.description } : {}), ...(e.level != null ? { level: e.level } : {}) })), null, 2)}
+
+## Stages in "${vsName}" (${vsStages.length} items)
+${JSON.stringify(vsStages.map((e) => ({ id: e.id, name: e.name, ...(e.description ? { desc: e.description } : {}) })), null, 2)}
 
 Return ONLY valid JSON — no markdown fences, no commentary. Return an empty array [] if no plausible mappings exist.`;
 }
