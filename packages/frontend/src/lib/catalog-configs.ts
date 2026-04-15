@@ -194,6 +194,7 @@ export function resolveAccessor(
     case "capabilityStageCount": {
       const activities = Object.values(scaffoldData?.elements?.activities || {}) as any[];
       return activities.filter((a) =>
+        a.enabledByCapabilityIds?.includes(element.id) ||
         a.requiresCapabilityIds?.includes(element.id)
       ).length;
     }

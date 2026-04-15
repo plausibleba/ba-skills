@@ -5,6 +5,8 @@ import { buildPPITByCapId } from "../domain/ppit-enrichment.ts";
 import { CapNode, L1Block, LayoutMode, LayoutMap } from "./capability-map-types.ts";
 import { CapabilityTable } from "./CapabilityTable.tsx";
 import { CapabilityInspectorPanel } from "./CapabilityInspector.tsx";
+import type { CapCrossMapInfo } from "./CapabilityInspector.tsx";
+import type { CrossMapInstance } from "../types.ts";
 import { NBABanner } from "./NBABanner";
 
 /* ── Governance detection ─────────────────────────────────── */
@@ -226,6 +228,48 @@ export function CapabilityMapView() {
     return buildPPITByCapId(scaffoldData);
   }, [scaffoldData]);
 
+  /** Build cross-map info for the currently selected capability */
+  const selectedCrossMapInfo = useMemo((): CapCrossMapInfo | undefined => {
+    if (!selectedL3 || !scaffoldData) return undefined;
+    const crossMaps = scaffoldData.elements.crossMaps ?? {};
+    const activities = scaffoldData.elements.activities ?? {};
+    const vs = scaffoldData.elements.valueStreams ?? {};
+
+    // Find all cross-map entries where this capability is the source
+    const entries: { stageId: string; stageName: string; vsName: string; confidence: number; evidence?: string }[] = [];
+    for (const [, cm] of Object.entries(crossMaps)) {
+      const inst = cm as unknown as CrossMapInstance;
+      if (inst.sourceId !== selectedL3.id) continue;
+      if (!inst.relationshipTypeId.startsWith("capability-realised") && !inst.relationshipTypeId.startsWith("capability-enables")) continue;
+      const stage = activities[inst.targetId] as unknown as { name?: string; valueStreamId?: string } | undefined;
+      if (!stage) continue;
+      const vsObj = stage.valueStreamId ? vs[stage.valueStreamId] as unknown as { name?: string } : undefined;
+      entries.push({
+        stageId: inst.targetId,
+        stageName: stage.name ?? inst.targetId,
+        vsName: vsObj?.name ?? stage.valueStreamId ?? "Unknown VS",
+        confidence: inst.confidence,
+        evidence: inst.evidence,
+      });
+    }
+
+    if (entries.length === 0) return undefined;
+
+    // Group by VS
+    const grouped = new Map<string, typeof entries>();
+    for (const e of entries) {
+      if (!grouped.has(e.vsName)) grouped.set(e.vsName, []);
+      grouped.get(e.vsName)!.push(e);
+    }
+
+    return {
+      stagesByVS: [...grouped.entries()]
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([vsName, stages]) => ({ vsName, stages })),
+      totalStages: entries.length,
+    };
+  }, [selectedL3, scaffoldData]);
+
   const stats = useMemo(() => {
     const l2Count = hierarchy.reduce((a, b) => a + b.l2s.length, 0);
     const l3Count = hierarchy.reduce(
@@ -436,6 +480,7 @@ export function CapabilityMapView() {
       <CapabilityInspectorPanel
         cap={selectedL3}
         ppit={selectedL3 ? ppitByCapId.get(selectedL3.id) : undefined}
+        crossMapInfo={selectedCrossMapInfo}
         onClose={() => setSelectedL3(null)}
       />
     </div>

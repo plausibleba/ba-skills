@@ -2,6 +2,7 @@ import { tv } from "../theme.ts";
 import { useThemeStore } from "../store/theme-store.ts";
 import { PPITEntry } from "../domain/ppit-enrichment.ts";
 import { CapNode } from "./capability-map-types.ts";
+// CrossMapInstance is used by CapabilityMapView which builds CapCrossMapInfo
 
 /* ── Colour palette (matches standard InspectorPanel) ──────────────── */
 
@@ -70,13 +71,22 @@ function levelLabel(level?: number): string {
 
 /* ── Main Panel ────────────────────────────────────────────────────── */
 
+/** Cross-mapping entries relevant to a specific capability, grouped by VS */
+export interface CapCrossMapInfo {
+  /** Stages this capability is mapped to, grouped by value stream name */
+  stagesByVS: { vsName: string; stages: { stageId: string; stageName: string; confidence: number; evidence?: string }[] }[];
+  totalStages: number;
+}
+
 export function CapabilityInspectorPanel({
   cap,
   ppit,
+  crossMapInfo,
   onClose,
 }: {
   cap: CapNode | null;
   ppit?: PPITEntry;
+  crossMapInfo?: CapCrossMapInfo;
   onClose: () => void;
 }) {
   const isDark = useThemeStore((s) => s.mode) === "dark";
@@ -121,7 +131,7 @@ export function CapabilityInspectorPanel({
             Select a capability tile to see its definition, relationships, and PPIT breakdown.
           </p>
         ) : (
-          <CapabilityDetail cap={cap} ppit={ppit} pal={pal} />
+          <CapabilityDetail cap={cap} ppit={ppit} crossMapInfo={crossMapInfo} pal={pal} />
         )}
       </div>
     </div>
@@ -133,10 +143,12 @@ export function CapabilityInspectorPanel({
 function CapabilityDetail({
   cap,
   ppit,
+  crossMapInfo,
   pal,
 }: {
   cap: CapNode;
   ppit?: PPITEntry;
+  crossMapInfo?: CapCrossMapInfo;
   pal: typeof PALETTE.dark;
 }) {
   return (
@@ -221,6 +233,34 @@ function CapabilityDetail({
                 </span>
                 <span style={{ color: tv.textDim }}>→</span>
                 <span style={{ color: tv.textSecondary }}>{p.activity}</span>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {/* Cross-Mapping: Realised-in-Stage */}
+      {crossMapInfo && crossMapInfo.totalStages > 0 && (
+        <Section title={`Realised in ${crossMapInfo.totalStages} Stage${crossMapInfo.totalStages !== 1 ? "s" : ""}`} color={pal.cross}>
+          <div className="space-y-2">
+            {crossMapInfo.stagesByVS.map((vsGroup) => (
+              <div key={vsGroup.vsName}>
+                <div className="text-[9px] font-semibold uppercase tracking-wider mb-1" style={{ color: tv.textDim }}>
+                  {vsGroup.vsName}
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {vsGroup.stages.map((s) => (
+                    <span
+                      key={s.stageId}
+                      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px]"
+                      style={{ backgroundColor: pal.cross.bg, color: pal.cross.fg }}
+                      title={s.evidence ? `${s.evidence} (${Math.round(s.confidence * 100)}%)` : `${Math.round(s.confidence * 100)}% confidence`}
+                    >
+                      {s.stageName}
+                      <span style={{ opacity: 0.6, fontSize: 9 }}>{Math.round(s.confidence * 100)}%</span>
+                    </span>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
