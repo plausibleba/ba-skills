@@ -734,6 +734,8 @@ export async function runEnrichmentStep(
   onProgress: ProgressCallback,
   /** Required for cross-mapping step — the mapping pairs to execute */
   mappingPairs?: import("../../store/enrichment-store").MappingPair[],
+  /** Optional: only run VS-scoped mappings for these value stream IDs */
+  vsFilter?: string[],
 ): Promise<void> {
   switch (step) {
     case "subactivities": {
@@ -783,7 +785,7 @@ export async function runEnrichmentStep(
       onProgress({ status: "enriching-cross-mapping", scaffold });
       const result = await runCrossMappingEnrichment(scaffold, mappingPairs, (msg) => {
         onProgress({ status: "enriching-cross-mapping", scaffold, errorMessage: msg });
-      });
+      }, vsFilter);
       if (!result.success) {
         console.warn("[enrichment] Cross-mapping errors:", result.error);
       }

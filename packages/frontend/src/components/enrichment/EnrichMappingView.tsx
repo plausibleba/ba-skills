@@ -303,6 +303,26 @@ export function EnrichMappingView() {
   const [mappingPairs, setMappingPairs] = useState<MappingPair[]>([]);
   const [showPicker, setShowPicker] = useState(false);
 
+  // VS selection for scoped mapping
+  const vsEntries = Object.entries(scaffoldData?.elements?.valueStreams ?? {}).map(
+    ([id, vs]) => ({ id, name: (vs as unknown as { name?: string }).name ?? id }),
+  );
+  const hasMultipleVS = vsEntries.length > 1;
+  const [selectedVsIds, setSelectedVsIds] = useState<Set<string>>(new Set());
+  const allVsSelected = selectedVsIds.size === 0 || selectedVsIds.size === vsEntries.length;
+
+  const toggleVs = useCallback((vsId: string) => {
+    setSelectedVsIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(vsId)) next.delete(vsId);
+      else next.add(vsId);
+      return next;
+    });
+  }, []);
+
+  const selectAllVs = useCallback(() => setSelectedVsIds(new Set()), []);
+  const selectNoneVs = useCallback(() => setSelectedVsIds(new Set(["__none__"])), []);
+
   const existingTypeIds = new Set(mappingPairs.map((p) => p.relationshipTypeId));
 
   // ── Add a relationship type ──
@@ -341,6 +361,10 @@ export function EnrichMappingView() {
 
     try {
       const enrichmentCopy = JSON.parse(JSON.stringify(scaffoldData));
+      // Pass VS filter: empty set or all selected = no filter (run all)
+      const vsFilterArg = hasMultipleVS && selectedVsIds.size > 0 && selectedVsIds.size < vsEntries.length
+        ? [...selectedVsIds].filter((id) => id !== "__none__")
+        : undefined;
       await runEnrichmentStep(
         "cross-mapping",
         enrichmentCopy,
@@ -373,6 +397,7 @@ export function EnrichMappingView() {
           }
         },
         mappingPairs,
+        vsFilterArg,
       );
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -385,7 +410,7 @@ export function EnrichMappingView() {
         message: `Exception: ${msg}`,
       });
     }
-  }, [scaffoldData, mappingPairs, discoveryIR, store]);
+  }, [scaffoldData, mappingPairs, discoveryIR, store, hasMultipleVS, selectedVsIds, vsEntries.length]);
 
   if (!scaffoldData) return null;
 
@@ -485,8 +510,74 @@ export function EnrichMappingView() {
             />
           )}
 
+          {/* VS scope selector (multi-VS models only) */}
+          {hasMultipleVS && mappingPairs.some((p) => {
+            const rt = getRelationshipTypeById(p.relationshipTypeId);
+            return rt?.to === "stages";
+          }) && (
+            <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${tv.borderSubtle}` }}>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] font-semibold" style={{ color: tv.textPrimary }}>
+                  Value Stream Scope
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={selectAllVs}
+                    className="text-[10px] font-medium"
+                    style={{ background: "none", border: "none", cursor: "pointer", color: allVsSelected ? tv.accent : tv.textDim }}
+                  >
+                    All
+                  </button>
+                  <button
+                    onClick={selectNoneVs}
+                    className="text-[10px] font-medium"
+                    style={{ background: "none", border: "none", cursor: "pointer", color: tv.textDim }}
+                  >
+                    None
+                  </button>
+                </div>
+              </div>
+              <p className="text-[10px] mb-2" style={{ color: tv.textDim }}>
+                Select which value streams to include. Each VS runs as a separate mapping call.
+                Leave all selected to map the entire model.
+              </p>
+              <div style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 6,
+                maxHeight: 160,
+                overflowY: "auto",
+                padding: "4px 0",
+              }}>
+                {vsEntries.map((vs) => {
+                  const isSelected = selectedVsIds.size === 0 || selectedVsIds.has(vs.id);
+                  return (
+                    <button
+                      key={vs.id}
+                      onClick={() => toggleVs(vs.id)}
+                      className="rounded-md px-2.5 py-1 text-[10px] font-medium transition-all"
+                      style={{
+                        border: `1px solid ${isSelected ? tv.accentBorder : tv.borderSubtle}`,
+                        background: isSelected ? tv.accentMuted : tv.bgSurface,
+                        color: isSelected ? tv.accent : tv.textDim,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {vs.name}
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedVsIds.size > 0 && selectedVsIds.size < vsEntries.length && !selectedVsIds.has("__none__") && (
+                <p className="text-[10px] mt-1" style={{ color: tv.accent }}>
+                  {selectedVsIds.size} of {vsEntries.length} value streams selected
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Add + Run buttons */}
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-2 mt-3">
             {!showPicker && (
               <button
                 onClick={() => setShowPicker(true)}
@@ -510,6 +601,9 @@ export function EnrichMappingView() {
                 }}
               >
                 Run {mappingPairs.length} Mapping{mappingPairs.length !== 1 ? "s" : ""}
+                {hasMultipleVS && selectedVsIds.size > 0 && selectedVsIds.size < vsEntries.length && !selectedVsIds.has("__none__")
+                  ? ` (${selectedVsIds.size} VS)`
+                  : ""}
               </button>
             )}
           </div>

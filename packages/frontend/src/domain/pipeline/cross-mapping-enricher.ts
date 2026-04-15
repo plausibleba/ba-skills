@@ -234,12 +234,18 @@ function getVSScopedChunks(
   scaffold: ScaffoldData,
   relType: RelationshipType,
   toElements: { id: string; name: string; valueStreamId?: string }[],
+  vsFilter?: string[],
 ): { vsId: string; vsName: string; vsDescription?: string; stageIds: string[] }[] | null {
   // Only scope by VS when target is stages and there are multiple value streams
   if (relType.to !== "stages") return null;
   const vs = scaffold.elements.valueStreams ?? {};
-  const vsIds = Object.keys(vs);
-  if (vsIds.length <= 1) return null;
+  let vsIds = Object.keys(vs);
+  if (vsIds.length <= 1 && !vsFilter) return null;
+
+  // Apply user's VS selection filter
+  if (vsFilter && vsFilter.length > 0) {
+    vsIds = vsIds.filter((id) => vsFilter.includes(id));
+  }
 
   // Group target stages by their parent VS
   const groups: { vsId: string; vsName: string; vsDescription?: string; stageIds: string[] }[] = [];
@@ -273,6 +279,7 @@ async function runSimpleCrossMapping(
   scaffold: ScaffoldData,
   pair: MappingPair,
   relType: RelationshipType,
+  vsFilter?: string[],
 ): Promise<CrossMappingResult> {
   const levelConstraint = resolveLevelConstraint(pair, relType);
 
@@ -292,7 +299,7 @@ async function runSimpleCrossMapping(
   }
 
   // ── Determine strategy: VS-by-VS scoping or single call ──
-  const vsChunks = getVSScopedChunks(scaffold, relType, toElements);
+  const vsChunks = getVSScopedChunks(scaffold, relType, toElements, vsFilter);
 
   try {
     const allRaw: RawMapping[] = [];
@@ -561,6 +568,8 @@ export async function runCrossMappingEnrichment(
   scaffold: ScaffoldData,
   pairs: MappingPair[],
   onProgress?: (message: string) => void,
+  /** Optional: only run VS-scoped mappings for these value stream IDs */
+  vsFilter?: string[],
 ): Promise<CrossMappingResult> {
   let totalInstances = 0;
   const errors: string[] = [];
@@ -578,7 +587,7 @@ export async function runCrossMappingEnrichment(
     if (relType.compound) {
       result = await runPPITCrossMapping(scaffold, pair, relType);
     } else {
-      result = await runSimpleCrossMapping(scaffold, pair, relType);
+      result = await runSimpleCrossMapping(scaffold, pair, relType, vsFilter);
     }
 
     totalInstances += result.instanceCount;
