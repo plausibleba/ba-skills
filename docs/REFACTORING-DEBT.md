@@ -95,6 +95,21 @@ Tracked choices where we picked expediency over elegance. Each item is a candida
 **What we did:** Extracted LAYER_SCHEMES, DEFAULT_SCHEME, LayerDef, LayerScheme, and detectSchemeId to `lib/layer-schemes.ts`. Both DiscoveryIntake and NetworkView now import from one place.
 **What remains:** The scheme choice isn't yet persisted as a project-level setting (R-007 scope).
 
+## R-016: capabilityPPIT is a compound blob on Activity — should be relationships on Capability
+**Filed:** 2026-04-15 (Session 34)
+**Where:** `ScaffoldActivity.capabilityPPIT: Record<string, PPITEntry>` in `types.ts`
+**What we did:** PPIT is stored as a denormalised compound attribute on the Activity (VS Stage) record, keyed by capability ID. Each entry bundles roleIds, activities (free-text), informationObjectIds, technologyAppIds.
+**What we should do:** PPIT should be direct typed relationships on the Capability class. PPI&T are categories of existing classes (Role=People, InfoObject=Information, TechApp=Technology, Process=Process). Tag classes with a PPIT category, then "People for Capability X" = "find all Roles linked to Capability X" via normal relationship traversal. The relationships already exist in the scaffold (performedByRoleIds, informationObjectIds, technologyAppIds) — they just need to be traversed from the Capability rather than bundled.
+**Why it matters:** (a) Misplaced — PPIT decomposes Capabilities, not Stages; (b) over-bundled — conflates four relationship types into one blob; (c) blocks graph backend migration — a triplestore would represent these as edges, not a compound JSON attribute.
+**Payoff:** Clean ontological alignment. Graph-ready. Eliminates the special-case PPIT enricher — becomes standard cross-mapping with category filtering.
+
+## R-017: Deprecate enabledByCapabilityIds v5 alias
+**Filed:** 2026-04-15 (Session 34)
+**Where:** `ScaffoldActivity.enabledByCapabilityIds` in `types.ts`; ~15 reader sites across codebase
+**What we did:** Introduced `enabledByCapabilityIds` as a v5 "improved name" for `requiresCapabilityIds`, but never migrated all writers. Cross-mapping enricher wrote to v5 while discovery wrote to v4, causing visibility bugs in Workbench Graph Explorer.
+**What we should do:** Canonicalise on `requiresCapabilityIds` everywhere. Remove `enabledByCapabilityIds` from the interface. Update all reader-side fallback patterns to use only v4. Update `getCapabilityIds()` helper to just return `requiresCapabilityIds`.
+**Payoff:** Eliminates an entire class of dual-field bugs. Simplifies every reader site. Prerequisite for graph backend migration.
+
 ---
 
 *This register is append-only. When we fix an item, mark it with a completion date rather than deleting it.*

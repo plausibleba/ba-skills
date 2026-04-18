@@ -972,7 +972,7 @@ function ActivityLogSection() {
           <span style={{ transform: expanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.15s" }}>
             ▸
           </span>
-          Activity Log
+          Session Activity
           {activityLog.length > 0 && (
             <span style={{
               fontSize: 10,
@@ -1015,6 +1015,7 @@ function ActivityLogSection() {
           {activityLog.length === 0 ? (
             <div style={{ padding: 24, textAlign: "center", color: tv.textDim, fontSize: 12 }}>
               No activity yet. Run an enrichment operation to see results here.
+              <div style={{ marginTop: 4, fontSize: 11 }}>This log covers the current session and clears on page refresh.</div>
             </div>
           ) : (
             activityLog.map((entry) => <ActivityLogRow key={entry.id} entry={entry} />)

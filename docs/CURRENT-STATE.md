@@ -1,6 +1,6 @@
 # Current State — VCC Frontend
 
-_Last updated: 2026-04-13 — Session 33 (R-013 Phase 2 bug fix: lifecycle adjacency edges) — v0.5.0 DRAFT_
+_Last updated: 2026-04-15 — Session 34 (Cross-mapping pipeline, activity log, metamodel audit) — v0.4.0_
 
 ---
 
@@ -343,6 +343,15 @@ SPAR design review completed with Technical Architect (GPT-4o) and Functional De
 11. Phase 3: Surface Form view from Canvas — round-trip editing between form and canvas
 12. Refactoring sprint using debt register (R-002 through R-009, R-012 remaining)
 
+### Session 34 Additions (2026-04-15)
+- Cross-mapping enrichment pipeline — VS-scoped, per-VS selective, matching filter, write-through
+- Toast notification system + Session Activity log
+- Capability Inspector cross-map section (Realised in N Stages)
+- Stage delete confirmation dialog
+- LLM model upgraded to claude-sonnet-4-6 (centralised DEFAULT_MODEL)
+- Metamodel audit document: `docs/VCC-Metamodel-Audit-v0.4.0.docx`
+- Repo cleanup: duplicates removed, superseded files archived
+
 ### Future
 12. **Agentic orchestration** — executable state machine driven by record lifecycle (R-013)
 13. **Ontology-as-schema validation** — formal metamodel definitions (D-097 Step 2)
@@ -350,3 +359,8 @@ SPAR design review completed with Technical Architect (GPT-4o) and Functional De
 15. Multi-vendor support beyond Salesforce
 16. Eric Broda MVC demo — Governance Kernel overlay on StageCard
 17. Multi-user modelling backend (D-097 upgrade trigger)
+18. **Graph-based backend** — SPAR briefing prepared (`docs/SPAR-BRIEFING-graph-backend.md`). Three options: in-memory graph layer, client-side triplestore, server-side graph DB. Triggered by metamodel complexity (Session 34).
+19. **R-016: PPIT as relationships** — capabilityPPIT should be direct typed relationships on Capability, not a compound blob on Activity
+20. **R-017: Deprecate enabledByCapabilityIds** — canonicalise on requiresCapabilityIds everywhere
+21. **Workbench capability inspector** — Workbench catalog grid lacks click-to-inspect for capabilities (exists in CapabilityMapView but not wired into Workbench)
+22. **Cross-mapping confidence tuning** — current threshold (0.5) produces prolific mappings. Consider L2-only constraint and 0.7 threshold for tighter results
