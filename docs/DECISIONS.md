@@ -742,6 +742,34 @@ A design specification was prepared (DESIGN-SPEC-enrichment-diagnostic-refactori
 
 ---
 
+## D-119: Outcome Externalization — Critical Path for Metamodel Evolution
+**Date:** 2026-04-17
+**Status:** Approved — implementation post-BBC
+**Context:** Both the BIZBOK v15 gap analysis (GAP-VS-4) and the BACM v1.0 comparison (CAP-5/CAP-7/VS-3) independently identify the same structural divergence: VCC internalizes state as `lifecycleStates[]` arrays on Concepts/InfoObjects, whereas both the Guild methodology and OMG standard externalize state as Outcome entities with `stateOf` → AbstractBusinessObject and `triggers` → ValueStreamStage.
+**Decision:** Adopt externalized Outcome as the target metamodel architecture. Outcome becomes a first-class entity with:
+- `stateOf` association to ScaffoldConcept (business object state)
+- `triggers` association to ScaffoldActivity (state-based VS stage entry)
+- `values` association to ValueItem (when introduced)
+- `needs`/`produces` associations on ScaffoldCapability (capability-outcome chain)
+The R-013 lifecycle state work (Sessions 32-33) is the foundation. The graph backend (SPAR briefing) is the enabling infrastructure. Implementation to begin post-BBC.
+**Rationale:** This single architectural change unlocks: object state-based VS navigation, the capability→outcome→value item chain, non-linear VS patterns (iteration, parallel), and cross-VS coupling via shared object states. Confirmed by two independent analyses against different standards bodies' formalizations of the same underlying methodology.
+**Depends on:** Graph backend decision (SPAR briefing), R-013 lifecycle state foundation.
+**Cascading unlocks:** BIZBOK GAP-VS-1 (ValueProposition), GAP-VS-3 (ValueItem per stage), GAP-CM-7 (knowledgebase relationships), BACM CAP-1 (capability→outcome), VS-1/VS-2/VS-3.
+
+## D-120: BIZBOK + BACM Gap Analyses Inform Graph Backend Schema Design
+**Date:** 2026-04-17
+**Status:** Approved
+**Context:** Two comprehensive analyses produced in Session 35 — `docs/BIZBOK-v15-Analysis-PlausibleBA-Alignment.md` (16 gaps, 3 tiers) and `docs/BACM-v1.0-vs-VCC-Metamodel-Comparison.md` (13 named gaps, class-by-class). The graph backend SPAR has been planned but the schema design has not yet been influenced by formal standards alignment.
+**Decision:** The BIZBOK and BACM gap analyses are mandatory inputs to the graph backend schema design. Specifically:
+- Tier 1 gaps from both analyses define the minimum entity and relationship set for the graph schema
+- BACM's `BusinessElement` pattern (uniform owns/aggregates/generalizes) should inform the base node type
+- BACM's reified relationship pattern (BACMRelation/BACMBinDirRelation) should inform the edge model
+- The BACM shortcut association pattern (derived relationships) maps naturally to graph materialized views
+- BACM's disjointness axioms (AbstractAction/AbstractResult/AbstractThing/Capability) should be enforced as graph constraints
+**Rationale:** Designing the graph schema without reference to the formal standards would risk another divergence requiring correction later. The BACM TTL file provides a ready-made OWL ontology that could serve as the initial schema seed.
+
+---
+
 ## D-118a: FA SPAR Review — Provenance, Confidence Propagation, Staleness Delta
 **Date:** 2026-03-31
 **Status:** Locked (accepted into Phase 1 scope)

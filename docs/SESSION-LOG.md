@@ -4,6 +4,138 @@ Chronological record of what was built, decided, and learned.
 
 ---
 
+## Session 35 — BIZBOK v15 & BACM v1.0 Alignment Analysis
+**Date:** 2026-04-17
+**Status:** Complete
+
+### Theme: Standards Alignment — Guild Methods + OMG Metamodel vs VCC
+
+Two major analysis documents produced to map VCC against the formal standards Terry is working with through the Guild and OMG.
+
+### BIZBOK v15 Gap Analysis
+
+Extracted full text of BIZBOK Guide v15 sections 2.2 (Capability Mapping, pp.63-121) and 2.4 (Value Mapping, pp.148-189) via Chrome extension + PDFTron WebViewer's `docViewer.getDocument().loadPageText()` API. The WebViewer is login-gated and blocks copy/paste — the PDFTron document API was the only viable extraction route.
+
+Produced comprehensive gap analysis: `docs/BIZBOK-v15-Analysis-PlausibleBA-Alignment.md`
+- 8 alignment points for Capability Mapping, 8 for Value Stream Mapping
+- 16 gaps identified across 3 categories: Capability Mapping (7), Value Stream Mapping (7), Cross-Mapping (4)
+- 3 priority tiers for Guild-endorsed agent development
+
+**Key findings:**
+- Biggest methodological gap: object state-based VS navigation (BIZBOK) vs our linear FSM chain (GAP-VS-4)
+- Most impactful quick win: GAP-XM-1 — "map highest-level capability possible" rule with implicit child inheritance. Directly addresses the "overly prolific" cross-mapping observation from Session 34
+- Matching capabilities (GAP-CM-3): BIZBOK formally defines them; we filter them out by design. Recommendation: add a toggle for Guild mode vs simplified mode
+
+### BACM v1.0 vs VCC Metamodel Comparison
+
+Read complete OMG BACM v1.0 formal specification (93 pages, 7 packages, ~50+ classes) and BACM.ttl ontology file (107 classes, 120+ properties). Compared class-by-class against VCC Metamodel Audit v0.4.0.
+
+Produced comprehensive comparison: `docs/BACM-v1.0-vs-VCC-Metamodel-Comparison.md`
+- 13 named gaps across 3 tiers: CAP-1 through CAP-8 (capability), VS-1 through VS-3 (value), ORG-1 (organization), PROC-1 (process)
+- 3 entire BACM packages absent from VCC: Customer (6 classes), Product (9 classes), Strategy (8 classes) — scope-appropriate for now
+- Terminology cross-reference mapping all BACM classes to VCC equivalents
+
+**Critical finding — Outcome externalization:** The single most important structural divergence between BACM and VCC is how state is modeled. BACM externalizes state: Outcome is a first-class entity with `stateOf` → AbstractBusinessObject and `triggers` → ValueStreamStage. VCC internalizes state as `lifecycleStates[]` arrays on Concepts. This cascading gap blocks:
+- Object state-based VS navigation (BIZBOK GAP-VS-4)
+- Capability→Outcome→ValueItem chain
+- Non-linear VS progression (iteration, parallel paths)
+- Cross-VS coupling via shared object state changes
+
+This confirms the BIZBOK analysis at the formal metamodel level and identifies the R-013 lifecycle state work (Sessions 32-33) as the foundation to build on. The graph backend direction (SPAR briefing) is the enabling infrastructure.
+
+### BIZBOK↔BACM Cross-Validation
+
+The comparison document includes a cross-reference table showing all major BIZBOK gaps map directly to BACM structural gaps — which makes sense since BACM IS the formal specification of the Guild's knowledgebase relationships. This gives us a single prioritized roadmap with two corroborating analyses.
+
+### Files Created
+- `docs/BIZBOK-v15-Analysis-PlausibleBA-Alignment.md` — 16 gaps, 3 tiers, Guild alignment assessment
+- `docs/BACM-v1.0-vs-VCC-Metamodel-Comparison.md` — 13 named gaps, class-by-class comparison, strategic assessment
+
+### Decisions
+- D-119: Outcome externalization identified as critical path for metamodel evolution (post-BBC)
+- D-120: BIZBOK + BACM gap analyses to inform graph backend schema design
+
+---
+
+## Session 34 — Cross-Mapping Pipeline, Activity Log, Metamodel Audit
+**Date:** 2026-04-15
+**Status:** Complete
+
+### Cross-Mapping Enrichment — Full Pipeline
+
+Built and iterated the cross-mapping feature from enricher through to UI visibility:
+
+1. **Token estimation fix** — replaced hardcoded `estimatedPairs = 100` with actual element count calculation. Ceiling raised to 64k tokens. Added truncated JSON recovery (iterative backward search for valid parse points).
+
+2. **Zero-element guard** — enricher returns immediately with descriptive error when either side of a mapping has 0 elements (e.g., level constraints filter everything out).
+
+3. **VS-scoped chunking** — for multi-VS models (e.g., Insurance Reference Model with 1,600 caps × 24 VS), the enricher runs one LLM call per value stream rather than one massive call. Each call sends all capabilities alongside only that VS's stages, with VS name/description as context. Replaced arbitrary 200-element batch chunking.
+
+4. **Per-VS selective run** — UI shows a Value Stream Scope selector with toggle chips. Users select which VSs to include, avoiding re-running the entire model to add one VS. Run button shows "(3 VS)" count.
+
+5. **Matching capability filter** — Guild reference models include "matching" meta-capabilities (e.g., "Brand/Strategy Matching — Ability to associate a brand with a strategy") that don't belong in value streams. 485 of 1,681 capabilities (29%) in the Insurance model are these. Now filtered from cross-mapping prompts. Detection: name ends with "Matching" AND description contains "associate."
+
+6. **Write-through to stage records** — cross-mapping results written to `requiresCapabilityIds` (canonical v4 field) on stage records so they appear in existing views. Initially wrote to `enabledByCapabilityIds` (v5 alias) which caused visibility bugs — fixed to use canonical field.
+
+7. **Cross-mapping metamodel** — 12 typed relationship types with fixed semantics (symmetry, functional, transitive, cardinality). Level constraints. Compound PPIT type. All defined in `cross-mapping-metamodel.ts`.
+
+### Observability: Toast Notifications + Session Activity Log
+
+- **Toast system** — `Toast.tsx` with Zustand-backed queue. Auto-dismissing, color-coded (success/warning/error/info). All enrichment operations push toasts with instance counts or error messages.
+- **Session Activity Log** — collapsible section in EnrichmentView. Timestamped entries with level badges, source operation, and message. Capped at 500 entries. Ephemeral (clears on page refresh) — labeled "Session Activity" with explicit scope note.
+- **EnrichmentOutcome on PipelineProgress** — orchestrator now passes structured results (instanceCount, error) through to UI.
+
+### Capability Inspector Cross-Map Section
+
+Added "Realised in N Stages" section to `CapabilityInspectorPanel` on the Capability Map view. Shows cross-mapped stages grouped by VS with confidence percentages and evidence tooltips.
+
+### Stage Delete Confirmation
+
+Added two-step confirmation (Remove/Cancel) before deleting a VS stage. Previously a single click on × with no undo.
+
+### Repo Cleanup
+
+Deleted 10 exact duplicates and temp files from root. Archived superseded files (dated session logs, old prompts v1, orphaned ThroughputImpactPanel specs) to `docs/archive/`.
+
+### Model Upgrade: claude-sonnet-4-6
+
+Centralised the LLM model string into `DEFAULT_MODEL` constant in `llm-client.ts`. Upgraded from `claude-sonnet-4-20250514` (retiring 2026-06-15) to `claude-sonnet-4-6`. All 14 call sites now reference the single constant.
+
+### Metamodel Audit
+
+Generated comprehensive metamodel audit document (`docs/VCC-Metamodel-Audit-v0.4.0.docx`). Covers all 10 core element classes with every attribute, type, and FK target; foreign key relationship table; 12 cross-mapping relationship types; known inconsistencies; and derived views.
+
+**Key findings:**
+- `requiresCapabilityIds` vs `enabledByCapabilityIds` dual field name — root cause of cross-mapping visibility bugs. Fixed.
+- `capabilityPPIT` stored as compound blob on Activity — should be direct typed relationships on Capability (logged as R-016).
+- `network-derivation.ts` only read v4 field — fixed.
+- Stage ≠ Activity naming confusion (scaffold stores stages in `elements.activities`) — documented.
+
+### Architecture Discussion: Graph Backend
+
+Identified that flat JSON scaffold with denormalised FK arrays has reached its expressiveness ceiling. Symptoms: dual field names, PPIT as compound blob, write-through hacks, reader-side fallbacks. SPAR briefing prepared for post-BBC session to evaluate: (1) in-memory graph layer, (2) client-side triplestore, (3) server-side graph DB.
+
+### Files Changed (Key)
+- `domain/pipeline/cross-mapping-enricher.ts` — full pipeline: chunking, VS-scoping, write-through, matching filter, zero-guard
+- `domain/pipeline/prompts/pass-e-cross-mapping.ts` — VS-scoped prompt builder, extractElements export, matching filter
+- `domain/pipeline/pipeline-orchestrator.ts` — EnrichmentOutcome, vsFilter parameter
+- `domain/pipeline/llm-client.ts` — DEFAULT_MODEL constant
+- `domain/cross-mapping-metamodel.ts` — 12 relationship types (created Session 33.5)
+- `store/enrichment-store.ts` — ActivityLogEntry type, activity log state + actions
+- `store/network-derivation.ts` — dual-field capability read fix
+- `lib/catalog-configs.ts` — dual-field capability stage count fix
+- `components/Toast.tsx` — NEW: toast notification system
+- `components/EnrichmentView.tsx` — ActivityLogSection, cross-map UI
+- `components/enrichment/EnrichMappingView.tsx` — VS selector, toast wiring
+- `components/enrichment/shared.tsx` — toast + log on all enrichment ops
+- `components/CapabilityInspector.tsx` — cross-map section (Realised in N Stages)
+- `components/CapabilityMapView.tsx` — cross-map info builder
+- `components/canvas/StageColumn.tsx` — delete confirmation
+- `App.tsx` — ToastContainer mount
+- 11 files — DEFAULT_MODEL constant replacement
+
+---
+
 ## Session 33 — R-013 Phase 2 Bug Fix: Lifecycle Adjacency Edges
 **Date:** 2026-04-13
 **Status:** Complete
@@ -970,32 +1102,54 @@ The multi-lens decision resolves a growing tension: the canvas was accumulating 
 
 ---
 
-## Pending Work (updated 10 Mar 2026 — Session 21)
+## Pending Work (updated 17 Apr 2026 — Session 35)
 
-### Immediate
-1. **UX session: lens selector prototype** — design the lens selection UI for Stage View (D-100)
-2. **GSM type definitions** — `gsm.ts` with types isomorphic to the formal nine-tuple (D-102)
-3. Test Enrich Solutions after streaming wiring — confirm vendor feature suggestions
-4. PDS update — reflect Sessions 12–21 progress
+### Post-BBC: Standards Alignment & Metamodel Evolution
+1. **D-119: Outcome externalization** — Refactor ScaffoldOutcome to a first-class entity with `stateOf` → ScaffoldConcept and `triggers` → ScaffoldActivity. Foundation: R-013 lifecycle state work. Prerequisite: graph backend decision. *This is the single highest-leverage metamodel change — unlocks state-based VS navigation, capability→outcome→value chain, non-linear VS patterns.*
+2. **D-120: Graph backend schema design** — Use BIZBOK + BACM gap analyses as mandatory inputs. Consider BACM TTL as initial schema seed. BACM BusinessElement pattern → base node type; BACMRelation → edge model; shortcut associations → materialized views.
+3. **BIZBOK Tier 1 quick wins** — Work through 6 items from BIZBOK analysis that are high impact and relatively easy:
+   - GAP-CM-4: Add BIZBOK definition writing guidelines to capability mapping prompts
+   - GAP-XM-1: Implement "map highest level possible" rule + child inheritance in cross-mapping
+   - GAP-XM-2: Add consistent cross-mapping ordering pattern (management → operational → supporting)
+   - GAP-VS-1: Add formal ValueProposition construct to value stream metamodel
+   - GAP-VS-2: Add triggering/participating/proxy stakeholder distinction
+   - GAP-CM-3: Add matching capability toggle for Guild mode
+4. **BACM Tier 1 alignment** — Address 6 core gaps from BACM comparison:
+   - CAP-1: Add capability→outcome produces/needs associations
+   - CAP-7: Outcome stateOf business object link (part of D-119)
+   - CAP-8: Reify Role as ternary association (ofCapability + ofProcess + assignTo)
+   - VS-1: ValueProposition as formal construct (aligns with BIZBOK GAP-VS-1)
+   - VS-2: ValueItem per stage with incremental accrual model
+   - VS-3: Outcome-triggered stage entry (part of D-119)
+5. **Guild vs Plausible distinction framework** — Work through all BIZBOK gaps and decide which to adopt universally vs keep as Guild-mode/Plausible-mode toggles. Document the framework for PlausibleBA skill variants.
+6. **PlausibleBA skill updates** — Apply adopted BIZBOK/BACM changes to capability-mapping, value-streams, and concept-model skills. Create Guild-endorsed skill variants where toggle behavior is needed.
+
+### Immediate (pre-existing)
+7. **UX session: lens selector prototype** — design the lens selection UI for Stage View (D-100)
+8. **GSM type definitions** — `gsm.ts` with types isomorphic to the formal nine-tuple (D-102)
+9. Test Enrich Solutions after streaming wiring — confirm vendor feature suggestions
+10. PDS update — reflect Sessions 12–35 progress
 
 ### Near Term
-5. **Class Inspector framework** — generalise FrictionPanel/CardPanel into typed inspector pattern (D-101)
-6. **GSM evaluation engine** — decision table evaluator, Eff(), Conflicts(), V() as pure functions (D-102)
-7. **Kernel simulation panel** — Authority Governance lens with 3×3 grid and step-by-step narrative (D-100, D-102)
-8. **Capability selector** — dropdown showing existing capabilities before "create new" (D-097 Step 1 lite)
-9. **Client-side graph index** — in-memory adjacency map on bundle load (D-097 Step 1)
-10. **TypeScript type drift cleanup** — align types with runtime data shapes (D-096)
-11. DiscoveryIR review panel before formalisation (D-068)
-12. Proxy-level temperature enforcement (D-069)
-13. Jira export button for user stories
-14. Prompt logic review session (user requested)
+11. **Class Inspector framework** — generalise FrictionPanel/CardPanel into typed inspector pattern (D-101)
+12. **GSM evaluation engine** — decision table evaluator, Eff(), Conflicts(), V() as pure functions (D-102)
+13. **Kernel simulation panel** — Authority Governance lens with 3×3 grid and step-by-step narrative (D-100, D-102)
+14. **Capability selector** — dropdown showing existing capabilities before "create new" (D-097 Step 1 lite)
+15. **Client-side graph index** — in-memory adjacency map on bundle load (D-097 Step 1)
+16. **TypeScript type drift cleanup** — align types with runtime data shapes (D-096)
+17. DiscoveryIR review panel before formalisation (D-068)
+18. Proxy-level temperature enforcement (D-069)
+19. Jira export button for user stories
+20. Prompt logic review session (user requested)
 
 ### Future
-15. **Graph visualisation** — D3-force/vis.js scaffold network view (D-097 Step 3)
-16. **Ontology-as-schema validation + SHACL Terms** — formal metamodel definitions, replaces TypeScript conditionals in GSM (D-097 Step 2, D-102 seam)
-17. **GPT design spar: Data Architecture Trajectory** — review D-095/D-097 decisions
-18. F-001 phase 2: delete observations, reassign binding constraint
-19. Multi-vendor support beyond Salesforce
-20. Slack MCP integration
-21. Multi-user modelling backend (D-097 upgrade trigger)
-22. **Translation Integrity pipeline** — natural language policy → signed entitlement tables (paper §7.3)
+21. **Graph visualisation** — D3-force/vis.js scaffold network view (D-097 Step 3)
+22. **Ontology-as-schema validation + SHACL Terms** — formal metamodel definitions, replaces TypeScript conditionals in GSM (D-097 Step 2, D-102 seam)
+23. **GPT design spar: Data Architecture Trajectory** — review D-095/D-097 decisions
+24. F-001 phase 2: delete observations, reassign binding constraint
+25. Multi-vendor support beyond Salesforce
+26. Slack MCP integration
+27. Multi-user modelling backend (D-097 upgrade trigger)
+28. **Translation Integrity pipeline** — natural language policy → signed entitlement tables (paper §7.3)
+29. **BACM Tier 2 structural enrichment** — CapabilityBehavior, CapabilityImplementation, externalized state pattern, Performer/OrgUnit hierarchy, Process model, System containment, abstract flag (7 gaps)
+30. **BACM Tier 3 extended scope** — Customer package, Product package, Strategy package, formal measurement framework (lower priority, needed for full BACM compliance)
