@@ -38,6 +38,9 @@ From the source material below, identify ALL Value Streams present. Do not cap t
 - Each stage must have entryCriteria (what must be true to enter) and exitCriteria (what must be true to leave — the value created).
 - If the source contains tab names, sheet names, section headings, or column groupings that map to distinct end-to-end flows — each one is likely a separate VS. Extract them all.
 
+## Output Size Management
+Keep output compact. Each stage needs ONLY: name, entryCriteria (one sentence), exitCriteria (one sentence). Do NOT include stakeholders, valueItem, or metrics per stage — those are extracted in a later pass. Keep all string values concise — one sentence maximum per field.
+
 Return ONLY valid JSON, no markdown fences:
 {
   "org": {
@@ -64,13 +67,7 @@ Return ONLY valid JSON, no markdown fences:
         {
           "name": "Application Received",
           "entryCriteria": "Candidate submits complete application",
-          "exitCriteria": "Application validated and registered in system",
-          "stakeholders": ["Candidate", "Registrar"],
-          "valueItem": "Validated application",
-          "metrics": [
-            { "name": "Application Processing Time", "current": "", "target": "", "evidenced": false }
-          ],
-          "confidence": "high"
+          "exitCriteria": "Application validated and registered"
         }
       ]
     }
