@@ -620,9 +620,18 @@ export async function runPipeline(
     const raw = llmRes.text.replace(/`{3}json|`{3}/g, "").trim();
     try {
       pass1Result = JSON.parse(raw);
-    } catch {
+    } catch (parseErr) {
       console.warn("Pass A1: native JSON.parse failed — attempting jsonrepair");
-      pass1Result = JSON.parse(jsonrepair(raw));
+      try {
+        pass1Result = JSON.parse(jsonrepair(raw));
+      } catch (repairErr) {
+        console.error(`Pass A1 JSON repair failed. Raw length: ${raw.length}, stopReason: ${llmRes.stopReason}`);
+        console.error("Last 200 chars:", raw.slice(-200));
+        throw new Error(
+          `JSON malformed and unrepairable (${raw.length} chars, stopReason: ${llmRes.stopReason}). ` +
+          `Original error: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`
+        );
+      }
     }
   } catch (e) {
     onProgress({ status: "error", errorMessage: `Pass A1 failed: ${e instanceof Error ? e.message : String(e)}` });
@@ -651,9 +660,19 @@ export async function runPipeline(
     const raw = llmRes.text.replace(/`{3}json|`{3}/g, "").trim();
     try {
       pass2Result = JSON.parse(raw);
-    } catch {
+    } catch (parseErr) {
       console.warn("Pass A2: native JSON.parse failed — attempting jsonrepair");
-      pass2Result = JSON.parse(jsonrepair(raw));
+      try {
+        pass2Result = JSON.parse(jsonrepair(raw));
+      } catch (repairErr) {
+        // jsonrepair also failed — log details for debugging
+        console.error(`Pass A2 JSON repair failed. Raw length: ${raw.length}, stopReason: ${llmRes.stopReason}`);
+        console.error("Last 200 chars:", raw.slice(-200));
+        throw new Error(
+          `JSON malformed and unrepairable (${raw.length} chars, stopReason: ${llmRes.stopReason}). ` +
+          `Original error: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`
+        );
+      }
     }
   } catch (e) {
     onProgress({ status: "error", errorMessage: `Pass A2 failed: ${e instanceof Error ? e.message : String(e)}` });
