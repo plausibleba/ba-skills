@@ -18,6 +18,7 @@ import type { GateResult } from "./scaffold-gates";
 import { generateCards } from "./card-generator";
 import type { CardRegistry } from "../../types/cards";
 import { callLLM, DEFAULT_MODEL } from "./llm-client";
+import { jsonrepair } from "jsonrepair";
 import { buildPass1Prompt } from "./prompts/pass-a1-value-streams";
 import { buildPass2Prompt } from "./prompts/pass-a2-capability-mapping";
 import { ScaffoldData, ScaffoldActivity, ScaffoldCapability, PPITEntry, getCapabilityIds } from "../../types";
@@ -620,8 +621,8 @@ export async function runPipeline(
     try {
       pass1Result = JSON.parse(raw);
     } catch {
-      const repaired = raw.replace(/,\s*$/, "") + "}".repeat((raw.match(/{/g) || []).length - (raw.match(/}/g) || []).length);
-      pass1Result = JSON.parse(repaired);
+      console.warn("Pass A1: native JSON.parse failed — attempting jsonrepair");
+      pass1Result = JSON.parse(jsonrepair(raw));
     }
   } catch (e) {
     onProgress({ status: "error", errorMessage: `Pass A1 failed: ${e instanceof Error ? e.message : String(e)}` });
@@ -651,8 +652,8 @@ export async function runPipeline(
     try {
       pass2Result = JSON.parse(raw);
     } catch {
-      const repaired = raw.replace(/,\s*$/, "") + "}".repeat((raw.match(/{/g) || []).length - (raw.match(/}/g) || []).length);
-      pass2Result = JSON.parse(repaired);
+      console.warn("Pass A2: native JSON.parse failed — attempting jsonrepair");
+      pass2Result = JSON.parse(jsonrepair(raw));
     }
   } catch (e) {
     onProgress({ status: "error", errorMessage: `Pass A2 failed: ${e instanceof Error ? e.message : String(e)}` });
