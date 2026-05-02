@@ -606,10 +606,16 @@ export async function runPipeline(
   try {
     const llmRes = await callLLM({
       model: DEFAULT_MODEL,
-      max_tokens: 8000,
+      max_tokens: 32000,
       temperature: 0,
       messages: [{ role: "user", content: buildPass1Prompt(transcript) }],
     });
+    if (llmRes.stopReason === "max_tokens") {
+      throw new Error(
+        "response truncated at max_tokens — the transcript produced more VS detail than the budget. " +
+        "Either trim the input, split into chunks, or raise max_tokens further."
+      );
+    }
     const raw = llmRes.text.replace(/`{3}json|`{3}/g, "").trim();
     try {
       pass1Result = JSON.parse(raw);
@@ -631,10 +637,16 @@ export async function runPipeline(
   try {
     const llmRes = await callLLM({
       model: DEFAULT_MODEL,
-      max_tokens: 12000,
+      max_tokens: 32000,
       temperature: 0,
       messages: [{ role: "user", content: buildPass2Prompt(transcript, confirmedVS) }],
     });
+    if (llmRes.stopReason === "max_tokens") {
+      throw new Error(
+        "response truncated at max_tokens — the capability/role detail exceeded the budget. " +
+        "Either trim the input, split into chunks, or raise max_tokens further."
+      );
+    }
     const raw = llmRes.text.replace(/`{3}json|`{3}/g, "").trim();
     try {
       pass2Result = JSON.parse(raw);
