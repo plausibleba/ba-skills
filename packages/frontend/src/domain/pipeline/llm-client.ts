@@ -138,6 +138,7 @@ async function collectStream(res: Response): Promise<LLMResponse> {
   let buffer = "";
   let fullText = "";
   let stopReason = "end_turn";
+  let receivedMessageStop = false;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -159,6 +160,8 @@ async function collectStream(res: Response): Promise<LLMResponse> {
           fullText += event.delta.text;
         } else if (event.type === "message_delta" && event.delta?.stop_reason) {
           stopReason = event.delta.stop_reason;
+        } else if (event.type === "message_stop") {
+          receivedMessageStop = true;
         }
       } catch {
         // Skip malformed SSE events
@@ -168,6 +171,13 @@ async function collectStream(res: Response): Promise<LLMResponse> {
 
   if (!fullText) {
     throw new Error("Empty response from LLM — no text content received");
+  }
+
+  // If the stream ended without a message_stop event, the connection was cut
+  // externally (e.g. Vercel Edge Runtime timeout). Flag as truncated.
+  if (!receivedMessageStop && fullText.length > 0) {
+    console.warn(`Stream ended without message_stop — likely external timeout (${fullText.length} chars received)`);
+    stopReason = "max_tokens"; // treat as truncated so callers can detect it
   }
 
   return { text: fullText, stopReason };
