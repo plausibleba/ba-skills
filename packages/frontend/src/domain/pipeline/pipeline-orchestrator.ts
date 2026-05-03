@@ -594,6 +594,72 @@ export type ProgressCallback = (progress: PipelineProgress) => void;
 export { generateCards } from "./card-generator";
 export type { CardGenerationResult } from "./card-generator";
 
+// ── Robust JSON recovery ────────────────────────────────────────────────────
+// LLM output at temperature 0 can produce deterministic JSON corruption at the
+// same position. This function tries multiple recovery strategies before giving up.
+
+function repairLLMJson(raw: string, passLabel: string): any {
+  // Strategy 1: native parse
+  try {
+    return JSON.parse(raw);
+  } catch {
+    console.warn(`${passLabel}: native JSON.parse failed`);
+  }
+
+  // Strategy 2: jsonrepair on raw input
+  try {
+    return JSON.parse(jsonrepair(raw));
+  } catch {
+    console.warn(`${passLabel}: jsonrepair on raw input failed`);
+  }
+
+  // Strategy 3: if truncated mid-string, close the string and all open brackets
+  // This helps when Vercel kills the stream or the model stops mid-output
+  let patched = raw;
+  // Close any unterminated string (odd number of unescaped quotes)
+  const quoteCount = (patched.match(/(?<!\\)"/g) ?? []).length;
+  if (quoteCount % 2 !== 0) {
+    patched += '"';
+  }
+  // Count open brackets/braces and close them
+  let openBraces = 0, openBrackets = 0;
+  let inString = false;
+  for (let i = 0; i < patched.length; i++) {
+    const ch = patched[i];
+    if (ch === '"' && (i === 0 || patched[i - 1] !== '\\')) {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (ch === '{') openBraces++;
+    else if (ch === '}') openBraces--;
+    else if (ch === '[') openBrackets++;
+    else if (ch === ']') openBrackets--;
+  }
+  // Remove trailing comma before closing
+  patched = patched.replace(/,\s*$/, '');
+  for (let i = 0; i < openBrackets; i++) patched += ']';
+  for (let i = 0; i < openBraces; i++) patched += '}';
+
+  try {
+    return JSON.parse(patched);
+  } catch {
+    console.warn(`${passLabel}: bracket-closing + parse failed`);
+  }
+
+  // Strategy 4: jsonrepair on the bracket-closed version
+  try {
+    return JSON.parse(jsonrepair(patched));
+  } catch (finalErr) {
+    console.error(`${passLabel}: all repair strategies exhausted. Raw length: ${raw.length}`);
+    console.error("Last 200 chars of raw:", raw.slice(-200));
+    throw new Error(
+      `JSON malformed and unrepairable after 4 strategies (${raw.length} chars). ` +
+      `Final error: ${finalErr instanceof Error ? finalErr.message : String(finalErr)}`
+    );
+  }
+}
+
 // ── Main orchestrator — Pass A ──────────────────────────────────────────────
 
 export async function runPipeline(
@@ -618,21 +684,7 @@ export async function runPipeline(
       );
     }
     const raw = llmRes.text.replace(/`{3}json|`{3}/g, "").trim();
-    try {
-      pass1Result = JSON.parse(raw);
-    } catch (parseErr) {
-      console.warn("Pass A1: native JSON.parse failed — attempting jsonrepair");
-      try {
-        pass1Result = JSON.parse(jsonrepair(raw));
-      } catch (repairErr) {
-        console.error(`Pass A1 JSON repair failed. Raw length: ${raw.length}, stopReason: ${llmRes.stopReason}`);
-        console.error("Last 200 chars:", raw.slice(-200));
-        throw new Error(
-          `JSON malformed and unrepairable (${raw.length} chars, stopReason: ${llmRes.stopReason}). ` +
-          `Original error: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`
-        );
-      }
-    }
+    pass1Result = repairLLMJson(raw, "Pass A1");
   } catch (e) {
     onProgress({ status: "error", errorMessage: `Pass A1 failed: ${e instanceof Error ? e.message : String(e)}` });
     return;
@@ -658,22 +710,7 @@ export async function runPipeline(
       );
     }
     const raw = llmRes.text.replace(/`{3}json|`{3}/g, "").trim();
-    try {
-      pass2Result = JSON.parse(raw);
-    } catch (parseErr) {
-      console.warn("Pass A2: native JSON.parse failed — attempting jsonrepair");
-      try {
-        pass2Result = JSON.parse(jsonrepair(raw));
-      } catch (repairErr) {
-        // jsonrepair also failed — log details for debugging
-        console.error(`Pass A2 JSON repair failed. Raw length: ${raw.length}, stopReason: ${llmRes.stopReason}`);
-        console.error("Last 200 chars:", raw.slice(-200));
-        throw new Error(
-          `JSON malformed and unrepairable (${raw.length} chars, stopReason: ${llmRes.stopReason}). ` +
-          `Original error: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`
-        );
-      }
-    }
+    pass2Result = repairLLMJson(raw, "Pass A2");
   } catch (e) {
     onProgress({ status: "error", errorMessage: `Pass A2 failed: ${e instanceof Error ? e.message : String(e)}` });
     return;

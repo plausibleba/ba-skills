@@ -15,6 +15,9 @@
 //   type, and explicit stage assignments per VS.
 // - Session 26: Extended to L4 Capsicum hierarchy — L1=Business Area,
 //   L2=Domain, L3=Capability Group, L4=Capability (operational, maps to stages)
+// - Session 36: Slimmed output — removed painPoints, metrics, gaps (moved to
+//   later enrichment). Added Output Size Management section to prevent JSON
+//   corruption on large transcripts.
 
 export function buildPass2Prompt(transcript: string, confirmedVS: any[]): string {
   const vsStageRef = confirmedVS.map((vs: any) =>
@@ -56,7 +59,11 @@ Produce a structured L1 → L2 → L3 → L4 capability hierarchy covering the b
 For each VS, map which L4 capabilities participate in each stage.
 - Each stage should have 2-5 participating L4 capabilities
 - Use the L4 capability names exactly as defined in the map
-- Flag any stage with zero capabilities (gap) or any L4 that participates in no stage (unused)
+
+## Output Size Management
+Keep output compact to avoid truncation. Descriptions should be ONE sentence maximum.
+Do NOT include painPoints, metrics, or gaps — those are extracted in a later enrichment pass.
+Tech items: include only systems explicitly named in the source material — do not invent generic ones.
 
 Return ONLY valid JSON, no markdown fences:
 {
@@ -82,7 +89,7 @@ Return ONLY valid JSON, no markdown fences:
                     "name": "Manage Lead Qualification",
                     "number": "1.1.1.1",
                     "businessObject": "Lead",
-                    "description": "Ability to assess and qualify inbound leads for sales readiness"
+                    "description": "Assess and qualify inbound leads"
                   }
                 ]
               }
@@ -105,24 +112,6 @@ Return ONLY valid JSON, no markdown fences:
   ],
   "tech": [
     { "id": 1, "name": "", "type": "CRM|ERP|Comms|Analytics|Custom|Other", "friction": true, "notes": "" }
-  ],
-  "painPoints": [
-    {
-      "id": 1,
-      "description": "",
-      "category": "DataSignalFriction|ProcessHandoffFriction|GovernanceRiskFriction|IncentiveCapacityFriction|TechnologyIntegrationFriction",
-      "intensity": 7,
-      "affectedVsName": "MUST be one of the confirmed VS names above",
-      "affectedStage": "Stage name only",
-      "binding": false,
-      "confidence": "high|medium|low"
-    }
-  ],
-  "metrics": [
-    { "id": 1, "name": "", "current": "", "target": "", "affectedVsName": "confirmed VS name", "stage": "stage name only" }
-  ],
-  "gaps": [
-    { "severity": "required|recommended", "prompt": "Specific question to fill this gap" }
   ]
 }
 

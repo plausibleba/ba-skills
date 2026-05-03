@@ -4,6 +4,31 @@ Chronological record of what was built, decided, and learned.
 
 ---
 
+## Session 36 — Pipeline JSON Corruption Fix (Large Transcripts)
+**Date:** 2026-05-03
+**Status:** Complete
+
+### Theme: Robust LLM JSON Recovery for Discovery Pipeline
+
+Fixed persistent JSON corruption when running discovery on large transcripts (e.g. First Mortgage Trust). Root cause: LLM producing malformed JSON at deterministic positions — model loses structural tracking at high output volume.
+
+### Changes
+
+1. **Slimmed Pass A2 prompt** — removed `painPoints`, `metrics`, and `gaps` from A2 output requirements (all defaulted to `?? []` downstream, no breakage). Added "Output Size Management" section mirroring what fixed A1 in Session 35. Reduces A2 JSON output by ~30-40%.
+
+2. **4-strategy `repairLLMJson()` helper** — centralised JSON recovery in pipeline-orchestrator:
+   - Strategy 1: native `JSON.parse`
+   - Strategy 2: `jsonrepair` on raw input
+   - Strategy 3: close unterminated strings + count/close open brackets/braces, then parse
+   - Strategy 4: `jsonrepair` on the bracket-closed version
+   
+   Replaces the inline try/catch blocks in both A1 and A2.
+
+### Decisions
+- painPoints, metrics, and gaps are discovery-phase signals that can be re-extracted in enrichment passes — removing them from A2 is acceptable for pipeline reliability.
+
+---
+
 ## Session 35 — BIZBOK v15 & BACM v1.0 Alignment Analysis
 **Date:** 2026-04-17
 **Status:** Complete
