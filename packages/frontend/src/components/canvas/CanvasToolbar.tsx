@@ -5,6 +5,9 @@ import type { ModuleFeatures } from "../../lib/module-features.ts";
 import { PPIT_LABELS, PPIT_LAYERS } from "./ppit.ts";
 import { useThemeStore } from "../../store/theme-store.ts";
 import { tv } from "../../theme.ts";
+import { distributionEntries, type AESScore } from "../../domain/agentic-enablement";
+import { useAgenticEnablementStore } from "../../store/agentic-enablement-store.ts";
+import { CLASS_PALETTE_DARK, CLASS_PALETTE_LIGHT, CLASS_SHORT_LABELS } from "./agentic-colors.ts";
 
 /* ── Layer colour map — dark/light variants for contrast ──────────── */
 
@@ -28,23 +31,32 @@ export function CanvasToolbar({
   constraintDAGOpen,
   ppitToggles,
   cardToggles,
+  agenticOpen,
   onToggleConstraintDAG,
   onTogglePPIT,
   onToggleCard,
+  onToggleAgentic,
   heatmapData,
   features,
 }: {
   constraintDAGOpen: boolean;
   ppitToggles: Record<PPITLayer, boolean>;
   cardToggles: Record<CardToggleLayer, boolean>;
+  agenticOpen: boolean;
   onToggleConstraintDAG: () => void;
   onTogglePPIT: (layer: PPITLayer) => void;
   onToggleCard: (layer: CardToggleLayer) => void;
+  onToggleAgentic: () => void;
   heatmapData: HeatmapData | null;
   features: ModuleFeatures;
 }) {
   const isDark = useThemeStore((s) => s.mode) === "dark";
   const layerPalette = isDark ? LAYER_COLORS_DARK : LAYER_COLORS_LIGHT;
+  const classPalette = isDark ? CLASS_PALETTE_DARK : CLASS_PALETTE_LIGHT;
+  const aesScores = useAgenticEnablementStore((s: { scores: Record<string, AESScore> }) => s.scores);
+  const aesScoreList: AESScore[] = Object.values(aesScores);
+  const classDist = distributionEntries(aesScoreList);
+  const totalScored = aesScoreList.length;
   return (
     <div className="flex flex-shrink-0 items-center gap-3">
       {/* Dependencies graph icon */}
@@ -109,6 +121,37 @@ export function CanvasToolbar({
           P
         </button>
       </div>}
+
+      {/* Agentic Enablement toggle + classification distribution */}
+      <div className="flex items-center gap-1.5 rounded-lg px-1.5 py-1 shadow-sm" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.bgCard }}>
+        <button
+          onClick={onToggleAgentic}
+          className="rounded px-2 py-0.5 text-[10px] font-medium transition-all"
+          style={agenticOpen
+            ? { background: "rgba(16,185,129,0.18)", color: isDark ? "#6ee7b7" : "#047857" }
+            : { color: tv.textDim }}
+          title="Agentic Enablement Heatmap — colour capabilities by AES classification"
+        >
+          Agentic
+        </button>
+        {agenticOpen && totalScored > 0 && (
+          <div className="flex items-center gap-0.5">
+            <span className="px-1 text-[9px] font-medium uppercase tracking-wider" style={{ color: tv.textDim }}>
+              {totalScored}
+            </span>
+            {classDist.map((entry) => entry.count > 0 ? (
+              <span
+                key={entry.classification}
+                className="rounded px-1 py-0.5 text-[9px] font-medium"
+                style={{ background: classPalette[entry.classification].badge, color: classPalette[entry.classification].badgeFg }}
+                title={`${entry.label}: ${entry.count}`}
+              >
+                {CLASS_SHORT_LABELS[entry.classification]} {entry.count}
+              </span>
+            ) : null)}
+          </div>
+        )}
+      </div>
 
       {/* State indicators */}
       <div className="flex items-center gap-2">

@@ -24,6 +24,7 @@ export function StageCard({
   cardToggles,
   cardRegistry,
   analyticsOpen,
+  agenticOpen = false,
   onFrictionClick,
   onCardClick,
   onInspect,
@@ -38,6 +39,7 @@ export function StageCard({
   cardToggles?: Record<CardToggleLayer, boolean>;
   cardRegistry?: CardRegistry | null;
   analyticsOpen: boolean;
+  agenticOpen?: boolean;
   onFrictionClick: (activityId: string) => void;
   onCardClick?: (activityId: string) => void;
   onInspect?: (target: InspectorTarget) => void;
@@ -130,6 +132,7 @@ export function StageCard({
               scaffold={scaffold}
               activity={activity}
               ppitToggles={ppitToggles}
+              agenticOpen={agenticOpen}
               isFirst={idx === 0}
               onInspect={onInspect}
             />

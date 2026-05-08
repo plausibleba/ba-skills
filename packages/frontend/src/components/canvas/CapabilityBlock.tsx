@@ -9,6 +9,12 @@ import { useCanvasStore } from "../../store/canvas-store.ts";
 import type { InspectorTarget } from "./InspectorPanel.tsx";
 import { useThemeStore } from "../../store/theme-store.ts";
 import { tv, getTheme } from "../../theme.ts";
+import { useAESForCapability } from "../../store/agentic-enablement-store.ts";
+import {
+  CLASS_PALETTE_DARK,
+  CLASS_PALETTE_LIGHT,
+  CLASS_SHORT_LABELS,
+} from "./agentic-colors.ts";
 
 /* ── PPIT data shape from capabilityPPIT ───────────────────────────── */
 interface CapPPIT {
@@ -134,6 +140,7 @@ export function CapabilityBlock({
   scaffold,
   activity,
   ppitToggles,
+  agenticOpen = false,
   isFirst = false,
   onInspect,
 }: {
@@ -142,12 +149,17 @@ export function CapabilityBlock({
   scaffold: ScaffoldData;
   activity: ScaffoldActivity;
   ppitToggles: Record<PPITLayer, boolean>;
+  agenticOpen?: boolean;
   isFirst?: boolean;
   onInspect?: (target: InspectorTarget) => void;
 }) {
   const { updateCapabilityName, addInfoObjectToCapability, removeInfoObjectFromCapability, addTechAppToCapability, removeTechAppFromCapability, updatePpitActivity, addPpitActivity, removePpitActivity, addRoleToCapability, removeRoleFromCapability, addRole, scaffoldData } = useCanvasStore();
   const isDark = useThemeStore((s) => s.mode) === "dark";
   const chipPalette = isDark ? CHIP_COLORS.dark : CHIP_COLORS.light;
+  const aesScore = useAESForCapability(capabilityId);
+  const aesPalette = (isDark ? CLASS_PALETTE_DARK : CLASS_PALETTE_LIGHT);
+  const aesActive = agenticOpen && !!aesScore;
+  const aesClassPalette = aesActive ? aesPalette[aesScore.classification] : null;
   const cap = scaffold.elements.capabilities[capabilityId];
   const anyToggle = PPIT_LAYERS.some((l) => ppitToggles[l]);
 
@@ -213,8 +225,34 @@ export function CapabilityBlock({
 
   const capDescription = (cap as Record<string, unknown> | undefined)?.description as string | undefined;
 
+  const blockBorder = aesClassPalette
+    ? `1px solid ${aesClassPalette.border}`
+    : `1px solid ${tv.borderSubtle}`;
+  const blockBg = aesClassPalette ? aesClassPalette.bg : tv.tileBg;
+
   return (
-    <div className="relative rounded px-2.5 py-1.5" style={{ border: `1px solid ${tv.borderSubtle}`, background: tv.tileBg }}>
+    <div className="relative rounded px-2.5 py-1.5" style={{ border: blockBorder, background: blockBg }}>
+      {/* AES classification badge — top right when Agentic toggle active */}
+      {aesActive && aesClassPalette && (
+        <div className="absolute -right-1 -top-1.5 flex items-center gap-1">
+          {aesScore.hardFloorTriggered && (
+            <span
+              className="rounded px-1 py-px text-[9px] font-semibold"
+              style={{ background: "rgba(239,68,68,0.20)", color: "#fca5a5", border: "1px solid rgba(239,68,68,0.40)" }}
+              title={`Hard floor: ${aesScore.hardFloorTriggered.reason} (would have been ${aesScore.hardFloorTriggered.classificationBeforeFloor})`}
+            >
+              ⚠
+            </span>
+          )}
+          <span
+            className="rounded px-1.5 py-px text-[9px] font-semibold"
+            style={{ background: aesClassPalette.badge, color: aesClassPalette.badgeFg, border: `1px solid ${aesClassPalette.border}` }}
+            title={`AES ${aesScore.composite.toFixed(1)} — ${CLASS_SHORT_LABELS[aesScore.classification]}`}
+          >
+            {aesScore.composite.toFixed(1)} · {CLASS_SHORT_LABELS[aesScore.classification]}
+          </span>
+        </div>
+      )}
       {/* Capability name + badge counts */}
       <div className="flex items-start justify-between gap-1.5">
         <p className="min-w-0 text-xs font-medium" style={{ color: tv.textSecondary }}>

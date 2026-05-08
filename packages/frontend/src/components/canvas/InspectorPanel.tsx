@@ -3,6 +3,19 @@ import type { ScaffoldData, ScaffoldActivity, SubActivity, LifecycleState } from
 import { humanizeId } from "../../lib/humanize-id.ts";
 import { useThemeStore } from "../../store/theme-store.ts";
 import { tv } from "../../theme.ts";
+import {
+  useAESForCapability,
+  useActiveProfile,
+} from "../../store/agentic-enablement-store.ts";
+import {
+  CLASSIFICATION_LABELS,
+  type AESScore,
+  type ScoringDimension,
+} from "../../domain/agentic-enablement";
+import {
+  CLASS_PALETTE_DARK,
+  CLASS_PALETTE_LIGHT,
+} from "./agentic-colors.ts";
 
 /* ── Inspector selection types ───────────────────────────────────────── */
 
@@ -680,9 +693,126 @@ function StageInspector({ activityId, scaffold, pal }: { activityId: string; sca
 
 /* ── Capability Inspector ────────────────────────────────────────────── */
 
+/* ── AES Section (Agentic Enablement Scoring + future AgentCharter slot) ── */
+
+function AESDimensionBar({ score, weightClass }: { score: number; weightClass: string }) {
+  // Score 1..5 → fill % 20..100. Weight indicated by bar height.
+  const fillPct = (score / 5) * 100;
+  const weightHeight = weightClass === "high" ? 6 : weightClass === "medium" ? 4 : 3;
+  return (
+    <div className="flex-1 rounded-full overflow-hidden" style={{ background: `${tv.textDim}20`, height: weightHeight }}>
+      <div className="h-full transition-all" style={{
+        width: `${fillPct}%`,
+        background: score >= 4 ? "#10b981" : score >= 3 ? "#14b8a6" : score >= 2 ? "#f59e0b" : "#64748b",
+      }} />
+    </div>
+  );
+}
+
+function AgenticSection({ aes }: { aes: AESScore }) {
+  const isDark = useThemeStore((s) => s.mode) === "dark";
+  const palette = isDark ? CLASS_PALETTE_DARK : CLASS_PALETTE_LIGHT;
+  const cls = palette[aes.classification];
+  const profile = useActiveProfile();
+  const dimById: Record<string, ScoringDimension> = {};
+  for (const d of profile.dimensions) dimById[d.id] = d;
+
+  return (
+    <Section title="Agentic Enablement">
+      {/* Headline: composite + classification chip */}
+      <div className="flex items-center gap-2 rounded-md px-2.5 py-2"
+           style={{ background: cls.bg, border: `1px solid ${cls.border}` }}>
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase tracking-wider" style={{ color: tv.textDim }}>AES</span>
+          <span className="text-2xl font-semibold leading-none" style={{ color: cls.fg }}>
+            {aes.composite.toFixed(1)}
+          </span>
+        </div>
+        <div className="flex-1">
+          <p className="text-[11px] font-semibold leading-tight" style={{ color: cls.fg }}>
+            {CLASSIFICATION_LABELS[aes.classification]}
+          </p>
+          <p className="mt-0.5 text-[10px] leading-tight" style={{ color: tv.textDim }}>
+            Profile: {profile.label}
+          </p>
+        </div>
+      </div>
+
+      {/* Hard-floor explanation if triggered */}
+      {aes.hardFloorTriggered && (
+        <div className="rounded-md px-2.5 py-1.5 mt-1.5"
+             style={{ background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.35)" }}>
+          <p className="text-[10px] font-semibold leading-tight" style={{ color: "#fca5a5" }}>
+            ⚠ Hard floor: {aes.hardFloorTriggered.dimensionLabel} = {aes.hardFloorTriggered.actualScore}
+          </p>
+          <p className="mt-1 text-[10px] leading-relaxed" style={{ color: tv.textSecondary }}>
+            {aes.hardFloorTriggered.reason}
+          </p>
+          <p className="mt-1 text-[9px] italic" style={{ color: tv.textDim }}>
+            Without this floor, classification would have been{" "}
+            <strong style={{ color: tv.textSecondary }}>
+              {CLASSIFICATION_LABELS[aes.hardFloorTriggered.classificationBeforeFloor]}
+            </strong>.
+          </p>
+        </div>
+      )}
+
+      {/* Per-dimension breakdown */}
+      <div className="mt-1.5 space-y-1">
+        {aes.perDimensionScores.map((d) => {
+          const dimDef = dimById[d.dimensionId];
+          const isFloorDim = aes.hardFloorTriggered?.dimensionId === d.dimensionId;
+          return (
+            <div key={d.dimensionId} className="flex items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-[10px] truncate" style={{ color: isFloorDim ? "#fca5a5" : tv.textSecondary }}>
+                    {d.label}
+                  </span>
+                  <span className="text-[10px] font-mono tabular-nums" style={{ color: tv.textDim }}>
+                    {d.score}/5
+                    <span className="ml-1 opacity-70">·{d.weightClass[0].toUpperCase()}</span>
+                  </span>
+                </div>
+                <div className="mt-0.5 flex items-center gap-1">
+                  <AESDimensionBar score={d.score} weightClass={d.weightClass} />
+                </div>
+                {dimDef && d.score === 1 && (
+                  <p className="mt-0.5 text-[9px] italic" style={{ color: tv.textDim }}>
+                    {dimDef.scoringGuidance[1]}
+                  </p>
+                )}
+                {dimDef && d.score === 5 && (
+                  <p className="mt-0.5 text-[9px] italic" style={{ color: tv.textDim }}>
+                    {dimDef.scoringGuidance[5]}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Future AgentCharter slot — placeholder for visible roadmap point */}
+      <div className="mt-2 rounded-md border border-dashed px-2.5 py-2"
+           style={{ borderColor: tv.borderSubtle, background: `${tv.textDim}08` }}>
+        <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: tv.textDim }}>
+          Agent Charter — coming with the entitlements specification engine
+        </p>
+        <p className="mt-1 text-[10px] leading-relaxed" style={{ color: tv.textDim }}>
+          Once an agent is chartered for this capability, this section will show the deontic norm tuples
+          (May / Must / MustNot), the four escalation triggers (ε₁..ε₄), and the decision-surface specification.
+          Generated by the Layer-4 commercial entitlements specification engine.
+        </p>
+      </div>
+    </Section>
+  );
+}
+
 function CapabilityInspector({ capabilityId, activityId, scaffold, pal }: { capabilityId: string; activityId: string; scaffold: ScaffoldData; pal: Pal }) {
   const cap = scaffold.elements.capabilities[capabilityId];
   const act = scaffold.elements.activities[activityId] as ScaffoldActivity & Record<string, unknown>;
+  const aes = useAESForCapability(capabilityId);
   const ppitMap = act ? (act.capabilityPPIT as Record<string, { roleIds?: string[]; activities?: string[]; informationObjectIds?: string[]; technologyAppIds?: string[] }> | undefined) : undefined;
   const ppit = ppitMap?.[capabilityId];
 
@@ -746,6 +876,9 @@ function CapabilityInspector({ capabilityId, activityId, scaffold, pal }: { capa
           </Section>
         </>
       )}
+
+      {/* Agentic Enablement (AES) — only when we have a score for this capability */}
+      {aes && <AgenticSection aes={aes} />}
 
       {/* Cross-VS Usage */}
       {crossVs.length > 1 && (

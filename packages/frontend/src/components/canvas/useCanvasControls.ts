@@ -17,6 +17,7 @@ export function useCanvasControls() {
     policies: false,
   });
   const [constraintDAGOpen, setConstraintDAGOpen] = useState(false);
+  const [agenticOpen, setAgenticOpen] = useState(false);
 
   const toggleStructure = useCallback(() => setStructureOpen((p) => !p), []);
   const toggleAnalytics = useCallback(() => setAnalyticsOpen((p) => !p), []);
@@ -27,6 +28,7 @@ export function useCanvasControls() {
     setCardToggles((prev) => ({ ...prev, [layer]: !prev[layer] }));
   }, []);
   const toggleConstraintDAG = useCallback(() => setConstraintDAGOpen((p) => !p), []);
+  const toggleAgentic = useCallback(() => setAgenticOpen((p) => !p), []);
 
   return {
     structureOpen,
@@ -34,10 +36,12 @@ export function useCanvasControls() {
     ppitToggles,
     cardToggles,
     constraintDAGOpen,
+    agenticOpen,
     toggleStructure,
     toggleAnalytics,
     togglePPIT,
     toggleCard,
     toggleConstraintDAG,
+    toggleAgentic,
   };
 }

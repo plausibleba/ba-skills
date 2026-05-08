@@ -35,6 +35,7 @@ export function StageColumn({
   structureOpen,
   onToggleStructure,
   analyticsOpen,
+  agenticOpen = false,
   onFrictionClick,
   onCardClick,
   onInspect,
@@ -55,6 +56,7 @@ export function StageColumn({
   structureOpen: boolean;
   onToggleStructure?: () => void;
   analyticsOpen: boolean;
+  agenticOpen?: boolean;
   onFrictionClick: (activityId: string) => void;
   onCardClick?: (activityId: string) => void;
   onInspect?: (target: InspectorTarget) => void;
@@ -221,6 +223,7 @@ export function StageColumn({
             cardToggles={cardToggles}
             cardRegistry={cardRegistry}
             analyticsOpen={analyticsOpen}
+            agenticOpen={agenticOpen}
             onFrictionClick={onFrictionClick}
             onCardClick={onCardClick}
             onInspect={onInspect}

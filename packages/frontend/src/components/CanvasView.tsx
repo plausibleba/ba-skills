@@ -21,6 +21,8 @@ import { InspectorPanel, type InspectorTarget } from "./canvas/InspectorPanel.ts
 import { useCanvasControls } from "./canvas/useCanvasControls.ts";
 import { useModuleFeatures } from "../hooks/useModuleFeatures.ts";
 import { NBABanner } from "./NBABanner";
+import { useAgenticEnablementStore } from "../store/agentic-enablement-store.ts";
+import { useEffect } from "react";
 
 /* ── Canvas View — orchestrator ────────────────────────────────────── */
 
@@ -39,12 +41,24 @@ export function CanvasView() {
     constraintDAGOpen,
     ppitToggles,
     cardToggles,
+    agenticOpen,
     toggleStructure,
     toggleConstraintDAG,
     togglePPIT,
     toggleCard,
+    toggleAgentic,
   } = useCanvasControls();
   const features = useModuleFeatures();
+  const seedAES = useAgenticEnablementStore((s) => s.seedFromScaffold);
+  const aesScoreCount = useAgenticEnablementStore((s) => Object.keys(s.scores).length);
+
+  // Lazy seed: when the Agentic toggle is opened and the store has no scores
+  // yet, populate from the loaded scaffold using the deterministic heuristic.
+  useEffect(() => {
+    if (agenticOpen && aesScoreCount === 0 && scaffoldData) {
+      seedAES(scaffoldData);
+    }
+  }, [agenticOpen, aesScoreCount, scaffoldData, seedAES]);
 
   const frictionMap = useMemo(() => {
     if (!heatmapData || !scaffoldData) return new Map();
@@ -204,9 +218,11 @@ export function CanvasView() {
               constraintDAGOpen={constraintDAGOpen}
               ppitToggles={ppitToggles}
               cardToggles={cardToggles}
+              agenticOpen={agenticOpen}
               onToggleConstraintDAG={toggleConstraintDAG}
               onTogglePPIT={togglePPIT}
               onToggleCard={toggleCard}
+              onToggleAgentic={toggleAgentic}
               heatmapData={heatmapData}
               features={features}
             />
@@ -264,6 +280,7 @@ export function CanvasView() {
                   hasHeatmap={!!heatmapData}
                   ppitToggles={ppitToggles}
                   cardToggles={cardToggles}
+                  agenticOpen={agenticOpen}
                   cardRegistry={cardRegistry}
                   structureOpen={structureOpen}
                   onToggleStructure={toggleStructure}
