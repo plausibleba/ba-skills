@@ -791,3 +791,102 @@ The R-013 lifecycle state work (Sessions 32-33) is the foundation. The graph bac
 - **Branch mini-sparklines (friction delta per branch):** Already deferred to Phase 3 in D-118.
 
 **Tension:** UI density vs executive aesthetic. As layer badges, NBA, external input chips, and provenance badges accumulate, card visual weight increases. The aggressive desaturation on blocked/stale/future cards is the primary density valve — keep it aggressive.
+
+---
+
+## D-121: SP-Cell Positioning — Capability and ValueStream at REALISE
+**Date:** 2026-05-08
+**Status:** Locked (architect ruling, reaffirmed by SPAR reviewers)
+
+**Context:** During SPAR preparation for the graph-runtime decision, a divergence surfaced between the Capsifi-era 2017 TTLs (which place `CSP:CAPABILITY` as a subclass of `CSP:OBJECTIVE` and `CSP:VALUESTREAM` as a subclass of `CSP:TACTIC` — i.e. at the PLAN row of the Strategic Purpose layer) and the Product Design Spec / current CAPSICUM Framework Reference (which positions both at the REALISE row).
+
+**Decided:** Capability and ValueStream sit at the **REALISE row** of the Strategic Purpose layer:
+- **Realise × Ends (Components):** ScaffoldCapability
+- **Realise × Means (Orchestration):** ScaffoldValueStream
+- **Realise × Intent (Function):** Constraint
+
+The 2017 TTLs predate the addition of the REALISE row to the Purpose layer. The REALISE row was introduced post-thesis to make the assembly and coordination of operational components explicit (per Section 2 of the Logical Model of Endeavour paper, Feb 2026 v2.7). The PDS and the March 2026 CAPSICUM Framework Reference reflect this evolution; the legacy TTLs do not.
+
+**Implication:** Any new ontology artefact (including the v0 CAPSICUM JSON-LD shape published under DEC-122) places these classes at REALISE, not PLAN. The 2017 TTLs are historical reference, not schema source.
+
+**Rationale:** REALISE positioning expresses the correct semantic role: Capabilities are persistent operational building-blocks (designed units of capability), not strategic intent (Objectives) or tactical execution (Tactics). ValueStreams orchestrate Capabilities at the Realise level rather than being a tactic for executing a strategy.
+
+---
+
+## D-122: Graph Runtime / Metamodel Commitment
+**Date:** 2026-05-08
+**Status:** Partially locked (principles + shape + four amendments). Runtime engine selection and pipeline migration sequencing locked pending Spike A (runtime comparison) and Spike B (pipeline producibility).
+**SPAR Participants:**
+- Reviewer 1 — Graph-DB Veteran (GPT, two-pass review)
+- Reviewer 2 — Standards / Ontology Sceptic (Gemini)
+- Reviewer 3 — LLM Pipeline Architect (fresh Claude, codebase access)
+- Reviewer 4 — Commercial / OSS-Strategy Sceptic (GPT, separate session)
+
+**Context:** The flat JSON scaffold reached its expressiveness ceiling. Symptoms documented in Session 34's metamodel audit: dual capability-field names (`requiresCapabilityIds` v4 vs `enabledByCapabilityIds` v5), PPIT as compound blob on Activity, write-through hacks for cross-mapping, reader-side fallbacks (`getCapabilityIds()`, `zone ?? layoutZone`). The agentic-enablement strategic vision (Session 37) raised stakes: VCC repositioned as the published specification layer for an open-source platform under the PlausibleBA Foundation, with JSON-LD becoming the open-core contract and the entitlements-specification engine becoming a proprietary reference plugin grounded in CAPSICUM's GSM formalism.
+
+**Decided:**
+
+*Principles (locked, no spike needed):*
+- Graph is canonical; scaffold (and JSON-LD bundle) serialises it. The bundle's semantic status changes from canonical artefact to canonical-form serialisation. File-level portability (D-095 invariant) survives.
+- CAPSICUM is the metamodel target. BACM v1.0 and BIZBOK are downstream conformance check targets, not schema sources.
+- JSON-LD bundle with a published `@context` is the canonical **machine** contract for the open core.
+- JSON-LD is **not** the practitioner-facing authoring contract. Practitioner-facing surfaces (TypeScript SDK, OpenAPI façade, Excel/Word import templates, visual authoring, plain-language validation reports) are committed Layer 1/2 deliverables, not optional polish.
+- AgentCharter generation is **Layer 4 commercial scope**, not Layer 1 OSS pipeline. The Layer 1 pipeline produces "Capability has AES score and classification" only.
+
+*v0 shape additions (locked):*
+- Versioned namespace adopts `/ns/core/v0/` discipline immediately. Old `@context` URLs remain dereferenceable forever; breaking semantic changes create new context IRIs; deprecated predicates remain recognisable and diagnosable.
+- Scoped `@context`s separate domain terminology (`sp:`, `bv:`) from governance machinery (new `gov:` prefix for Entitlements/Terms/Conditions/Provenance).
+- Deontic-operator vocabulary placeholders included in v0: `Entitlement`, `Permit`, `Prohibit`, `Obligation`, `Term`, `Condition`, `Provenance`, `AuthoritySource`, `EvaluationScope`. Classes only — no evaluation logic. The kernel can be evaluated later without restructuring the metamodel.
+- AgentCharter shape replaces the flat `classification` string with explicit deontic-operator properties.
+
+*Validation strategy (locked):*
+- SPARQL-ASK as in-pipeline gate (with structured natural-language errors for LLM repair loops).
+- Full SHACL via `rdf-validate-shacl` (or equivalent bridge) at runtime/publish boundary.
+- Production code does **not** become the canonical home of business semantics. SPARQL constraints are a thin compilation target; SHACL shapes drive validation behaviour.
+
+**Decided pending spike outcomes:**
+
+- *Spike A — Three-way runtime comparison at Insurance reference-model scale:*
+  - Path 1: oxigraph-wasm + bridged SHACL engine
+  - Path 2: RDF/JS-native (rdf-ext / rdf-store-stream) + shacl-engine or rdf-validate-shacl
+  - Path 3: Minimal typed-quad store + JSON-LD export with predefined traversals only
+  - Tests: graph load, JSON-LD round-trip, v4/v5 migration validation, SHACL report quality, authority-boundary traversal, browser memory and runtime behaviour.
+  - Decision criterion: cleanest contract, least semantic duplication, acceptable browser performance, lowest solo-dev maintenance burden.
+- *Spike B — Pass B externalised-Outcome producibility against real transcript:*
+  - Run modified Pass B against Water Filtration Co. transcript emitting `stateOf`, `triggers`, `primaryRecordClassId`, and a `recordClasses` registry.
+  - Three runs at temperature 0.
+  - Success bar: ≥2/3 runs pass all SHACL constraints with at most one bounded-repair iteration.
+  - Failure modes monitored: hallucinated business object IRIs, linear-`triggers`-in-different-syntax, Outcomes that aren't states.
+
+**Amends:**
+- DEC-108 (Supabase + JSONB): the persistent layer's role is demoted from "canonical model store" to "blob store for serialised JSON-LD bundles + auth/projects/metadata." JSONB ceases to be the semantic substrate.
+- D-095 (Ontology without repository) restated: the architectural invariant "bundle saved today loads in every future version" survives, but with explicit context-versioning discipline making it true rather than aspirational.
+- D-119 (Outcome externalisation): subsumed and operationalised by this DEC. The R-013 lifecycle work is the stepping stone; the graph runtime is the destination.
+- Core Principle #1 ("Scaffold is canonical") restated: the graph is canonical; the scaffold and the JSON-LD bundle serialise it.
+
+**Deferred (with phasing):**
+- Real SHACL engine for runtime validation: bridge `rdf-validate-shacl` (preferred) or equivalent once Spike A resolves the runtime engine. Trigger: Spike A complete + first user-facing validation report needed.
+- GSM kernel evaluation (ε₁..ε₄, V tri-valued function, deontic conflict detection): Phase 2 post-lock work. Trigger: AgentCharter Layer-4 plugin work begins. Reviewer 2's "Conflict Trigger" (ε₂) spike runs at the start of Phase 2.
+- Vertical-alignment derivation rules (Goals → Capabilities formal inference, per Reviewer 2): Phase 3, longer horizon. Coordination with research programme stage 2 outputs.
+- Layer-2 content-authoring pathway (Reviewer 4's Excel/Word → JSON-LD pipeline): post-lock strategy artefact, gated by the SDK/OpenAPI work.
+
+**Tensions identified by SPAR reviewers (and resolutions):**
+
+*Convergent must-resolve:*
+1. *SPARQL-ASK as the canonical validation pattern would create a hand-coded second metamodel* (R1 sharpest, R2 + R3 corroborating). Resolved by validation-strategy split: SPARQL-ASK in-pipeline only; full SHACL at bundle boundary.
+2. *AgentCharter generation cannot be Layer-1 pipeline output* (R3 from pipeline, R4 from strategy — cross-axis convergence). Resolved by scope clarification.
+3. *Namespace and `@context` versioning is v0-load-bearing, not v1 polish* (R1 + R2). Resolved by `/ns/core/v0/` discipline and scoped contexts adopted now.
+4. *Deontic vocabulary placeholders are v0-load-bearing* (R1 + R2). Resolved by adding classes now with no evaluation logic.
+
+*Divergent (resolved):*
+- *Which spike to run before lock?* R1 wanted runtime comparison; R3 wanted pipeline producibility. Both are foundational and they test different things. Resolved by running both in parallel.
+- *Property-graph alternative?* R1 first-pass suggested it; R1 retracted after reading the briefing. Self-resolved.
+
+**Rationale:** Four-reviewer SPAR (technical: runtime / standards / pipeline; strategy: commercial-OSS) all endorsed the direction with amendments. The unanimity on direction (graph canonical, CAPSICUM target, JSON-LD machine contract) is strong evidence the proposal is right at the level of strategic intent. The unanimity on "not yet locked as framed" is strong evidence the proposal was under-specified at the level of operational and ergonomic implementation. The synthesis splits the lock: principles and shape decisions lock now (with R1+R2's v0 additions and R3+R4's scope clarifications); runtime selection and pipeline migration sequencing lock after Spike A and Spike B.
+
+**SPAR materials:**
+- Briefing, role prompts, reviewer responses, synthesis: `spike/graph-runtime/spar/`
+- Reviewer responses verbatim: `docs/spar-archive/dec-122/`
+- Decision Record (this entry): `docs/DECISIONS.md`
+
+**Implementation sequencing:** See `spike/graph-runtime/spar/SYNTHESIS.md` Step 8.

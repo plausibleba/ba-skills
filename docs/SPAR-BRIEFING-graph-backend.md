@@ -1,7 +1,17 @@
 # SPAR Briefing: Graph-Based Backend for VCC
 
+> **STATUS — SUPERSEDED 2026-05-08:** This briefing is the original Session-34 framing of the graph-backend question. It was superseded by the v0.6 SPAR run on 2026-05-08, which produced **DEC-122** ([Decision Record](DECISIONS.md)). The v0.6 SPAR materials, four reviewer responses, and synthesis live at `spike/graph-runtime/spar/` and `docs/spar-archive/dec-122/`. This document is preserved as historical reference for the original question framing — it should not be treated as the current architectural position.
+>
+> Key differences between this briefing and the resolved DEC-122:
+> - Original framing presented three runtime options (in-memory / triplestore / server-side); the SPAR resolved that the metamodel commitment (CAPSICUM, not BACM) was the more important decision underneath, and the runtime narrowed to oxigraph-wasm vs RDF/JS-native (pending Spike A).
+> - Original briefing did not surface the cross-axis convergence on AgentCharter being Layer-4 (a discovery of the four-reviewer SPAR).
+> - Original briefing treated SPARQL-ASK and SHACL as runtime options; the SPAR resolved them as a layered pair (SPARQL-ASK in pipeline gates, full SHACL at bundle boundary).
+
+---
+
 **Filed:** 2026-04-15 (Session 34)
-**Scheduled:** Post-BBC Toronto (late April 2026)
+**Scheduled:** Post-BBC Toronto (late April 2026) — *ran 2026-05-08*
+**Status:** Superseded by DEC-122
 **Context:** The flat JSON scaffold with denormalised FK arrays has reached its expressiveness ceiling. This session should evaluate whether and how to transition to a graph-based backend.
 
 ---

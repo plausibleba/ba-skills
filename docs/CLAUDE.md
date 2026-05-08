@@ -1,6 +1,7 @@
 # Value Cognition Canvas (VCC)
 
 Read `CURRENT-STATE.md` first every session.
+Read `DECISIONS.md` for D-122 and D-121 — the v0.6 architectural anchor (graph runtime / CAPSICUM JSON-LD / SP-cell positioning).
 Read `SPAR_PROTOCOL.md` when design decisions are being discussed.
 Read `DESIGN-PRINCIPLES.md` before any UI/component work.
 Read `REFACTORING-DEBT.md` (R-001..R-017) before structural work.
@@ -82,15 +83,17 @@ Pure logic reused across frontend, backend, and CLI:
 
 ## Core Principles
 
-1. **Scaffold is canonical**: The JSON scaffold is the single source of truth. Everything renders from it.
-2. **Deterministic**: Same inputs produce identical outputs and integrity hashes (`computeScaffoldHash`, not `Date.now()`).
-3. **No mutation**: Validators and generators are pure functions. Never mutate input objects.
-4. **Referential integrity**: All ID references must resolve within the appropriate element map.
-5. **FSM semantics**: Activities have distinct pre/post outcomes (no no-ops). Outcome chains connect stages.
-6. **IR is transient**: The intermediate representation is a workspace, not a durable artefact.
-7. **LLMs propose, humans dispose**: No AI output directly creates canonical artefacts.
-8. **Progressive disclosure**: Every layer of detail is gated behind a toggle or hover interaction.
-9. **Ontology without repository**: Scaffold is an ontology-conformant document — portable, self-contained, no backend required until multi-user (D-095, D-097).
+1. **Graph is canonical; scaffold serialises it** (D-122, supersedes the v0.5 form of this principle which named the JSON scaffold as canonical). The typed RDF graph (CAPSICUM-shaped) is the source of truth; the JSON scaffold and the JSON-LD bundle are serialisations.
+2. **CAPSICUM is the metamodel target** (D-122). BACM v1.0 and BIZBOK are downstream conformance check targets, not schema sources. SP-cell positioning: Capability and ValueStream sit at REALISE (D-121).
+3. **JSON-LD bundle is the canonical machine contract** (D-122). Published at a versioned `@context` URL with stable dereferencing. Not the practitioner-facing authoring contract — that's the SDK, OpenAPI façade, importers, and visual authoring surface (committed Layer 1/2 deliverables).
+4. **Deterministic**: Same inputs produce identical outputs and integrity hashes (`computeScaffoldHash`, not `Date.now()`).
+5. **No mutation**: Validators and generators are pure functions. Never mutate input objects.
+6. **Referential integrity**: All ID references must resolve within the appropriate element map. Enforced at validation time via SHACL (production) / SPARQL-ASK (pipeline gates) — not via reader-side fallback.
+7. **FSM semantics**: Activities have distinct pre/post outcomes (no no-ops). Outcome chains connect stages. Externalised Outcome (`stateOf`/`triggers`) is the v0.6 target shape (D-119, operationalised by D-122).
+8. **IR is transient**: The intermediate representation is a workspace, not a durable artefact.
+9. **LLMs propose, humans dispose**: No AI output directly creates canonical artefacts.
+10. **Progressive disclosure**: Every layer of detail is gated behind a toggle or hover interaction.
+11. **Ontology without repository**: Bundle portability is invariant — a bundle saved today loads in every future version. D-095/D-097 architectural commitment, restated by D-122 with explicit context-versioning discipline.
 
 ## Data Model (Scaffold JSON)
 
@@ -282,6 +285,8 @@ Source: `packages/frontend/ba-skills/`. Four skills (`/plausibleba`, `/capabilit
 ## Versioning & Decision Log
 
 - Each working session produces a dot-release. Notes in `CHANGELOG.md`.
-- Decisions D-001..D-120. Single source of truth: `docs/DECISIONS.md`.
-- Refactoring debt R-001..R-017 in `docs/REFACTORING-DEBT.md`.
+- Decisions D-001..D-122. Single source of truth: `docs/DECISIONS.md`.
+- v0.6 architectural anchor: D-122 (graph runtime / CAPSICUM JSON-LD) + D-121 (SP-cell positioning at REALISE).
+- Refactoring debt R-001..R-017 in `docs/REFACTORING-DEBT.md`. R-016 + R-017 subsumed by D-122.
 - Metamodel audits: `docs/VCC-Metamodel-Audit-v0.4.0.docx`, `docs/BACM-v1.0-vs-VCC-Metamodel-Comparison.md`, `docs/BIZBOK-v15-Analysis-PlausibleBA-Alignment.md`.
+- SPAR archives: `docs/spar-archive/dec-122/` (four reviewer responses + synthesis for the v0.6 graph-runtime decision).

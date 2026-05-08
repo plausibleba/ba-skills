@@ -95,20 +95,15 @@ Tracked choices where we picked expediency over elegance. Each item is a candida
 **What we did:** Extracted LAYER_SCHEMES, DEFAULT_SCHEME, LayerDef, LayerScheme, and detectSchemeId to `lib/layer-schemes.ts`. Both DiscoveryIntake and NetworkView now import from one place.
 **What remains:** The scheme choice isn't yet persisted as a project-level setting (R-007 scope).
 
-## R-016: capabilityPPIT is a compound blob on Activity — should be relationships on Capability
-**Filed:** 2026-04-15 (Session 34)
-**Where:** `ScaffoldActivity.capabilityPPIT: Record<string, PPITEntry>` in `types.ts`
-**What we did:** PPIT is stored as a denormalised compound attribute on the Activity (VS Stage) record, keyed by capability ID. Each entry bundles roleIds, activities (free-text), informationObjectIds, technologyAppIds.
-**What we should do:** PPIT should be direct typed relationships on the Capability class. PPI&T are categories of existing classes (Role=People, InfoObject=Information, TechApp=Technology, Process=Process). Tag classes with a PPIT category, then "People for Capability X" = "find all Roles linked to Capability X" via normal relationship traversal. The relationships already exist in the scaffold (performedByRoleIds, informationObjectIds, technologyAppIds) — they just need to be traversed from the Capability rather than bundled.
-**Why it matters:** (a) Misplaced — PPIT decomposes Capabilities, not Stages; (b) over-bundled — conflates four relationship types into one blob; (c) blocks graph backend migration — a triplestore would represent these as edges, not a compound JSON attribute.
-**Payoff:** Clean ontological alignment. Graph-ready. Eliminates the special-case PPIT enricher — becomes standard cross-mapping with category filtering.
+## R-016: ~~capabilityPPIT is a compound blob on Activity — should be relationships on Capability~~ ✅ SUBSUMED BY DEC-122
+**Filed:** 2026-04-15 (Session 34) | **Re-statused:** 2026-05-08 (Session 37)
+**Resolution path:** Folded into the v0.6 graph-runtime migration (DEC-122). In the CAPSICUM JSON-LD shape, PPI&T become direct typed relationships on Capability via `cap:performedByRole`, `cap:informedByInformationObject`, `cap:enabledByTechnology`, traversed from the Capability node rather than bundled into a compound attribute on Stage. The special-case PPIT enricher disappears once the cross-mapping pipeline operates over the typed graph.
+**Implementation:** Lands as part of the v4/v5 → CAPSICUM JSON-LD migration tool. Scheduled in Phase 1 of the DEC-122 implementation sequencing.
 
-## R-017: Deprecate enabledByCapabilityIds v5 alias
-**Filed:** 2026-04-15 (Session 34)
-**Where:** `ScaffoldActivity.enabledByCapabilityIds` in `types.ts`; ~15 reader sites across codebase
-**What we did:** Introduced `enabledByCapabilityIds` as a v5 "improved name" for `requiresCapabilityIds`, but never migrated all writers. Cross-mapping enricher wrote to v5 while discovery wrote to v4, causing visibility bugs in Workbench Graph Explorer.
-**What we should do:** Canonicalise on `requiresCapabilityIds` everywhere. Remove `enabledByCapabilityIds` from the interface. Update all reader-side fallback patterns to use only v4. Update `getCapabilityIds()` helper to just return `requiresCapabilityIds`.
-**Payoff:** Eliminates an entire class of dual-field bugs. Simplifies every reader site. Prerequisite for graph backend migration.
+## R-017: ~~Deprecate enabledByCapabilityIds v5 alias~~ ✅ SUBSUMED BY DEC-122
+**Filed:** 2026-04-15 (Session 34) | **Re-statused:** 2026-05-08 (Session 37)
+**Resolution path:** The v0 CAPSICUM JSON-LD shape uses a single canonical predicate `cap:enabledByCapability` (not the v4 `requiresCapabilityIds` nor the v5 `enabledByCapabilityIds`). The migration tool re-canonicalises both legacy shapes. The dual-field bug class is closed at validation time via the SHACL constraint that asserts every Stage references at least one Capability via the canonical predicate (proven in the spike). `getCapabilityIds()` helper retires once the migration completes.
+**Implementation:** Migration tool emits canonical predicate; legacy reader-side fallbacks removed when scaffold-store reads switch to graph queries.
 
 ---
 

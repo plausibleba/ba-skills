@@ -1,0 +1,164 @@
+# Claims Settlement value stream — hand-built fixture from the
+# Agentic Enterprise Framework PRD v0.1 (May 2026).
+# 12 capabilities, 7 stages, externalised Outcomes, one AgentCharter for FNOL.
+
+@prefix cap:    <https://capsicum.plausibleba.org/ns/core#> .
+@prefix bv:     <https://capsicum.plausibleba.org/ns/bv#> .
+@prefix sp:     <https://capsicum.plausibleba.org/ns/sp#> .
+@prefix claims: <https://example.org/insurance/claims#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+
+# --- The Value Stream ---
+
+claims:ClaimsSettlement a sp:ValueStream ;
+    rdfs:label "Claims Settlement" ;
+    rdfs:comment "Insurance claims settlement value stream — the agentic enablement worked example from PRD v0.1." ;
+    cap:realisedBy claims:Stage_Receive,
+                   claims:Stage_Validate,
+                   claims:Stage_Adjudicate,
+                   claims:Stage_DetermineQuantum,
+                   claims:Stage_RequestInformation,
+                   claims:Stage_Finalise,
+                   claims:Stage_Pay .
+
+# --- Stages (in PRD canvas order: Receive -> Validate -> Adjudicate -> Determine -> RequestInfo -> Finalise -> Pay) ---
+
+claims:Stage_Receive a cap:Stage ;
+    rdfs:label "Receive Claim" ;
+    cap:position 1 ;
+    cap:enabledByCapability claims:FNOL ;
+    cap:preOutcome  claims:Outcome_ClaimUnsubmitted ;
+    cap:postOutcome claims:Outcome_ClaimReceived ;
+    cap:performedBy claims:Role_ClaimsHandler .
+
+claims:Stage_Validate a cap:Stage ;
+    rdfs:label "Validate Claim" ;
+    cap:position 2 ;
+    cap:enabledByCapability claims:CoverageVerification, claims:FraudTriage ;
+    cap:preOutcome  claims:Outcome_ClaimReceived ;
+    cap:postOutcome claims:Outcome_ClaimValidated ;
+    cap:performedBy claims:Role_ClaimsHandler .
+
+claims:Stage_Adjudicate a cap:Stage ;
+    rdfs:label "Adjudicate Claim" ;
+    cap:position 3 ;
+    cap:enabledByCapability claims:LiabilityAssessment ;
+    cap:preOutcome  claims:Outcome_ClaimValidated ;
+    cap:postOutcome claims:Outcome_LiabilityDetermined ;
+    cap:performedBy claims:Role_ClaimsAdjudicator .
+
+claims:Stage_DetermineQuantum a cap:Stage ;
+    rdfs:label "Determine Quantum" ;
+    cap:position 4 ;
+    cap:enabledByCapability claims:LossQuantification, claims:SubrogationAssessment ;
+    cap:preOutcome  claims:Outcome_LiabilityDetermined ;
+    cap:postOutcome claims:Outcome_QuantumDetermined ;
+    cap:performedBy claims:Role_ClaimsAdjudicator .
+
+claims:Stage_RequestInformation a cap:Stage ;
+    rdfs:label "Request Information" ;
+    cap:position 5 ;
+    cap:enabledByCapability claims:FraudInvestigation ;
+    cap:preOutcome  claims:Outcome_QuantumDetermined ;
+    cap:postOutcome claims:Outcome_InformationGathered ;
+    cap:performedBy claims:Role_FraudInvestigator .
+
+claims:Stage_Finalise a cap:Stage ;
+    rdfs:label "Finalise Claim" ;
+    cap:position 6 ;
+    cap:enabledByCapability claims:SettlementSmall, claims:SettlementLarge, claims:ComplaintHandling, claims:RegulatoryReporting ;
+    cap:preOutcome  claims:Outcome_InformationGathered ;
+    cap:postOutcome claims:Outcome_SettlementAuthorised ;
+    cap:performedBy claims:Role_ClaimsManager .
+
+claims:Stage_Pay a cap:Stage ;
+    rdfs:label "Pay Claim" ;
+    cap:position 7 ;
+    cap:enabledByCapability claims:PaymentProcessing ;
+    cap:preOutcome  claims:Outcome_SettlementAuthorised ;
+    cap:postOutcome claims:Outcome_ClaimPaid ;
+    cap:performedBy claims:Role_PaymentsClerk .
+
+# --- Outcomes (EXTERNALISED — each is a state of the Claim record) ---
+
+claims:Claim a rdfs:Class ;
+    rdfs:label "Claim" ;
+    rdfs:comment "Business object — the record class whose lifecycle this VS governs." .
+
+claims:Outcome_ClaimUnsubmitted   a cap:Outcome ; rdfs:label "Claim Unsubmitted" ;   cap:stateOf claims:Claim .
+claims:Outcome_ClaimReceived      a cap:Outcome ; rdfs:label "Claim Received" ;      cap:stateOf claims:Claim ; cap:triggers claims:Stage_Validate .
+claims:Outcome_ClaimValidated     a cap:Outcome ; rdfs:label "Claim Validated" ;     cap:stateOf claims:Claim ; cap:triggers claims:Stage_Adjudicate .
+claims:Outcome_LiabilityDetermined a cap:Outcome ; rdfs:label "Liability Determined" ; cap:stateOf claims:Claim ; cap:triggers claims:Stage_DetermineQuantum .
+claims:Outcome_QuantumDetermined  a cap:Outcome ; rdfs:label "Quantum Determined" ;  cap:stateOf claims:Claim ; cap:triggers claims:Stage_RequestInformation .
+claims:Outcome_InformationGathered a cap:Outcome ; rdfs:label "Information Gathered" ; cap:stateOf claims:Claim ; cap:triggers claims:Stage_Finalise .
+claims:Outcome_SettlementAuthorised a cap:Outcome ; rdfs:label "Settlement Authorised" ; cap:stateOf claims:Claim ; cap:triggers claims:Stage_Pay .
+claims:Outcome_ClaimPaid          a cap:Outcome ; rdfs:label "Claim Paid (terminal)" ; cap:stateOf claims:Claim .
+
+# --- Capabilities (12, with AES scores from PRD) ---
+
+claims:FNOL a sp:Capability ;
+    rdfs:label "First Notice of Loss" ;
+    cap:aesScore 4.2 .
+
+claims:CoverageVerification a sp:Capability ;
+    rdfs:label "Coverage Verification" ;
+    cap:aesScore 3.8 .
+
+claims:FraudTriage a sp:Capability ;
+    rdfs:label "Fraud Triage & Scoring" ;
+    cap:aesScore 3.1 .
+
+claims:FraudInvestigation a sp:Capability ;
+    rdfs:label "Fraud Investigation" ;
+    cap:aesScore 1.8 ;
+    cap:parentCapability claims:FraudTriage .
+
+claims:LiabilityAssessment a sp:Capability ;
+    rdfs:label "Liability Assessment" ;
+    cap:aesScore 2.4 .
+
+claims:LossQuantification a sp:Capability ;
+    rdfs:label "Loss Quantification" ;
+    cap:aesScore 3.5 .
+
+claims:SettlementSmall a sp:Capability ;
+    rdfs:label "Settlement Authority (<$10k)" ;
+    cap:aesScore 4.0 .
+
+claims:SettlementLarge a sp:Capability ;
+    rdfs:label "Settlement Authority (>$10k)" ;
+    cap:aesScore 2.2 .
+
+claims:SubrogationAssessment a sp:Capability ;
+    rdfs:label "Subrogation Assessment" ;
+    cap:aesScore 3.0 .
+
+claims:ComplaintHandling a sp:Capability ;
+    rdfs:label "Complaint & Dispute Handling" ;
+    cap:aesScore 1.5 .
+
+claims:PaymentProcessing a sp:Capability ;
+    rdfs:label "Payment Processing" ;
+    cap:aesScore 4.5 .
+
+claims:RegulatoryReporting a sp:Capability ;
+    rdfs:label "Regulatory Reporting" ;
+    cap:aesScore 3.8 .
+
+# --- Roles ---
+
+claims:Role_ClaimsHandler      a cap:Role ; rdfs:label "Claims Handler" .
+claims:Role_ClaimsAdjudicator  a cap:Role ; rdfs:label "Claims Adjudicator" .
+claims:Role_FraudInvestigator  a cap:Role ; rdfs:label "Fraud Investigator" .
+claims:Role_ClaimsManager      a cap:Role ; rdfs:label "Claims Manager" .
+claims:Role_PaymentsClerk      a cap:Role ; rdfs:label "Payments Clerk" .
+
+# --- AgentCharter for FNOL (AES 4.2 -> AFK / Fully Autonomous) ---
+
+claims:Charter_FNOL_Agent a cap:AgentCharter ;
+    rdfs:label "FNOL Agent Charter" ;
+    cap:chartersAgentFor claims:FNOL ;
+    cap:classification "FullyAutonomous_AFK" ;
+    rdfs:comment "Fully autonomous agent for First Notice of Loss. AES 4.2. Scope: completeness check, triage classification, acknowledgement dispatch. Authority bounded by claims:FNOL." .

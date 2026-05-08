@@ -1,6 +1,32 @@
 # Current State — VCC Frontend
 
-_Last updated: 2026-04-15 — Session 34 (Cross-mapping pipeline, activity log, metamodel audit) — v0.4.0_
+_Last updated: 2026-05-08 — Session 37 (Graph Runtime SPAR + CAPSICUM Spike + DEC-122) — v0.4.0 in production, v0.6.0 in motion_
+
+---
+
+## v0.6 Anchor — DEC-122 Graph Runtime / Metamodel Commitment
+
+**Status:** Partially locked (principles, shape, four v0 amendments). Runtime engine + pipeline migration sequencing pending Spike A and Spike B.
+
+**What's locked:**
+- Graph is canonical; scaffold and JSON-LD bundle serialise it.
+- CAPSICUM is the metamodel target; BACM/BIZBOK are conformance check targets.
+- JSON-LD bundle with published `@context` is the canonical **machine** contract for the open core; practitioner-facing surfaces (SDK, OpenAPI façade, Excel/Word importers, visual authoring, plain-language validation reports) are committed Layer 1/2 deliverables.
+- AgentCharter generation is Layer 4 commercial scope, not Layer 1 OSS pipeline.
+- v0 namespace adopts `/ns/core/v0/` discipline; scoped contexts separate domain terminology from governance machinery.
+- Deontic-operator vocabulary placeholders included in v0 (Entitlement / Permit / Prohibit / Obligation / Term / Condition / Provenance / AuthoritySource / EvaluationScope).
+- AgentCharter shape replaces flat `classification` string with explicit deontic-operator properties.
+- Validation strategy: SPARQL-ASK in-pipeline gates; full SHACL at bundle boundary.
+
+**SP-cell positioning (D-121, locked):** Capability and ValueStream sit at the REALISE row, not PLAN. The 2017 Capsifi TTLs are historical reference, not schema source.
+
+**Pending spikes (parallel, ~1 week wallclock):**
+- Spike A — three-way runtime comparison at Insurance reference-model scale.
+- Spike B — Pass B externalised-Outcome producibility against Water Filtration Co. transcript.
+
+**Working area:** `spike/graph-runtime/` (with `spar/` archive of the four reviewer responses + synthesis). Promotion to `packages/graph/` follows the spike pair.
+
+**Reference:** Full Decision Record at `docs/DECISIONS.md` (D-122). SPAR materials: `docs/spar-archive/dec-122/`. Synthesis: `spike/graph-runtime/spar/SYNTHESIS.md`.
 
 ---
 

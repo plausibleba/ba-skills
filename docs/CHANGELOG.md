@@ -4,6 +4,40 @@ All notable changes to VCC (Value Cognition Canvas) are documented here. Each re
 
 ---
 
+## [v0.6.0] — UPCOMING — DRAFT
+
+**Theme: Graph Runtime / CAPSICUM JSON-LD as Canonical Layer**
+
+The architectural turning point: VCC's canonical model becomes a typed RDF graph, with CAPSICUM as the metamodel target and JSON-LD bundles as the published machine contract for the open-core platform. The flat scaffold is demoted to a serialisation format.
+
+### Architectural Anchor
+
+**[DEC-122 — Graph Runtime / Metamodel Commitment](DECISIONS.md)** locks the principles, shape decisions, and four v0 amendments (versioned namespace, scoped contexts, deontic vocabulary placeholders, AgentCharter Layer-4 scope). Runtime engine selection and pipeline migration sequencing lock pending two parallel spikes:
+
+- **Spike A** — three-way runtime comparison at Insurance reference-model scale (oxigraph-wasm vs RDF/JS-native + shacl-engine vs minimal typed-quad-store).
+- **Spike B** — Pass B externalised-Outcome producibility against a real transcript.
+
+### What's Coming
+
+- `packages/graph/` — the v0.6 graph runtime, promoted from `spike/graph-runtime/` after the spike pair concludes.
+- v4/v5 → CAPSICUM JSON-LD migration tool (validates scale claim against the IIBA reference model).
+- Versioned namespace `https://capsicum.plausibleba.org/ns/core/v0/` published with stable dereferencing.
+- Scoped `@context`s separating domain terminology from governance machinery.
+- Deontic-operator vocabulary placeholders (Entitlement / Permit / Prohibit / Obligation / Term / Condition / Provenance / AuthoritySource / EvaluationScope).
+- AgentCharter shape replacing the flat classification string with explicit deontic-operator properties.
+- Validation strategy split: SPARQL-ASK in-pipeline gates with bounded LLM repair; full SHACL at the bundle-publish boundary.
+
+### Related Strategy Updates
+
+- `PlausibleBA_Open_Source_Strategy v2.0` amended: JSON-LD positioned as canonical machine contract (not practitioner-facing authoring contract); proprietary moat reframed; Apptio facts corrected; Foundation governance casting-vote refinement flagged for pre-launch tightening.
+- `PRD - Agentic_Enterprise_Framework v0.1` updated: AgentCharter generation explicitly Layer-4 commercial scope.
+
+### SPAR Archive
+
+The four-reviewer SPAR materials and synthesis live at `docs/spar-archive/dec-122/`. The SPAR earned its keep — convergence on the AgentCharter-is-Layer-4 conclusion arrived independently from the pipeline reviewer (R3) and the strategy reviewer (R4), exactly the cross-axis insight the four-reviewer structure was designed to produce.
+
+---
+
 ## [v0.5.0] — 2026-03-22 — DRAFT
 
 **Theme: Canvas → VCC Handoff & Commercial Tier System**

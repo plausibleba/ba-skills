@@ -4,6 +4,116 @@ Chronological record of what was built, decided, and learned.
 
 ---
 
+## Session 37 — Graph Runtime SPAR + CAPSICUM Spike + DEC-122
+**Date:** 2026-05-08
+**Status:** SPAR complete. DEC-122 partially locked (principles + shape + four amendments). Two parallel spikes (S-A, S-B) to follow.
+
+### Theme: Lock the Graph Runtime / Metamodel Commitment Before Further Drift
+
+Strategic-architectural session. Resumed work after the IIBA Summit + Anthropic Academy. The flat scaffold's expressiveness ceiling (dual field names, PPIT-as-blob, write-through hacks, reader-side fallbacks documented in Session 34's metamodel audit) has been a known issue since Session 34 and was about to compound with the new agentic-enablement direction. Decision: tackle the graph backend question now, not after the next round of feature work.
+
+### Architectural Conversation
+
+Worked through the SPAR question in three passes:
+
+1. **First framing — BACM-aligned typed graph (Option 1+).** Initial position leaned on BACM v1.0 as the metamodel anchor, drawing on the Session 35 gap analysis. Recommended Option 1 (in-memory typed graph) with the caveat that the metamodel commitment must include externalised Outcome (BACM CAP-7 / VS-3).
+
+2. **Architect ruling — CAPSICUM, not BACM.** Terry corrected the framing: BACM is a downstream conformance target; CAPSICUM is the source ontology. Uploaded the CAPSICUM Framework Reference (March 2026), the Logical Model of Endeavour paper (arXiv Feb 2026 v2.7), and the historical Capsifi RDF assets (`MetaConcepts.ttl`, `CAPSICUM-BV.ttl`, `CAPSICUM-PV.ttl`, `CAPSICUM-SP.ttl`, `ActionTable.ttl`, `DomainScaffold.ttl`).
+
+3. **Second framing — RDF/SHACL/JSON-LD as natural fit.** With CAPSICUM as the target, Option 1 became the wrong move: the framework is explicitly RDF/SHACL/JSON-LD by design ("Terms are specified as SHACL constraints over a JSON-LD state graph") and was implemented at production scale at Capsifi using TopBraid + SPIN + SPARQL. Recommendation shifted to Option 2 (client-side embedded RDF runtime) with three constraints: narrow runtime (no exposed SPARQL endpoint), JSON-LD bundle preserves portability (D-095 invariant), deferred GSM kernel scaffolded by ontology.
+
+### Architect Rulings (settled in this session, candidates for DEC entries)
+
+- **Graph is canonical, scaffold serialises it.** The bundle becomes a serialisation of the canonical graph rather than the canonical form itself. Bundle portability survives; Core Principle #1 is restated.
+- **CAPSICUM is the metamodel target.** BACM, BIZBOK, and BACM.ttl are downstream conformance check targets, not schema sources.
+- **Capability and ValueStream sit at the REALISE row of the SP layer.** This supersedes the 2017 Capsifi TTLs which placed them at PLAN as Objective and Tactic respectively. The 2017 Capsifi work pre-dates the REALISE row evolution; the framework reference (March 2026) and the PDS shape are canonical.
+
+### Strategic Vision Absorbed Into Memory
+
+Three new context documents loaded into project memory:
+
+- **Agentic Enterprise Framework PRD v0.1** — VCC repositioned as the design surface and living specification for agent-deployed operating models. Five enrichments → eight-dimension AES → five classifications (AFK / Supervised / HiTL Assisted / Human-Primary / Not Yet Viable). Principle: capability boundary IS agent's authority boundary.
+- **Agentic Enablement with Valuestreams (slides)** — three-step methodology over the value stream canvas: Map → Identify Opportunities → Specify Governance.
+- **PlausibleBA Open Source Strategy v2.0** — four-layer stack (Layer 1 open core, Layer 2 association content, Layer 3 hosted platform license, Layer 4 commercial plugin ecosystem) governed by the PlausibleBA Foundation. Apptio/TBM-Council reference case. VCC scaffold engine and entitlements specification engine identified as the two proprietary reference plugins.
+
+The strategic shift makes the graph runtime decision more consequential, not less: the JSON-LD bundle becomes the published Layer-1 contract, and the proprietary entitlements specification engine maps directly onto SHACL Terms.
+
+### Spike Built
+
+`spike/graph-runtime/` — green spike against four success criteria, ~666 lines, runs in ~10 seconds end-to-end.
+
+| Criterion | Result |
+|-----------|--------|
+| #1 Hydrate Claims Settlement VS into oxigraph; cardinalities match the PRD | PASS — 239 quads, 6/6 class counts |
+| #2 SHACL-style constraint catches the dual-field capability bug | PASS — both alias variants detected |
+| #3 JSON-LD bundle round-trip with `@context` | PASS — 20 KB bundle, graph identity preserved |
+| #4 AgentCharter authority-scope shape validates the capability boundary | PASS — unbounded charter rejected |
+
+Stack: `oxigraph` 0.4.11 (3.4 MB WASM), `jsonld` (200 KB minified), `n3`. Constraints expressed as SPARQL-ASK queries (the same compilation target as SHACL-SPARQL — flagged in the report as a fair simplification for spike scope, with production runtime needing real SHACL layered on top).
+
+### SPAR Materials Prepared
+
+`spike/graph-runtime/spar/` contains:
+- `BRIEFING.md` — shared context for all reviewers
+- `REVIEWER-1-graph-veteran.md` — runtime challenges (suggested model: GPT-5)
+- `REVIEWER-2-standards-sceptic.md` — ontology / standards challenges (suggested model: Gemini)
+- `REVIEWER-3-pipeline-architect.md` — LLM pipeline challenges (suggested: fresh Claude session against full repo)
+- `REVIEWER-4-oss-strategy-sceptic.md` — commercial / OSS-strategy challenges (suggested: fresh GPT-5 or Claude session)
+- `COVER-NOTES.md` — one-paragraph intros per reviewer
+- `SYNTHESIS-TEMPLATE.md` — Decision Record framework for combining responses
+
+### Files Created
+- `spike/graph-runtime/` — full spike with `REPORT.md`, six-class CAPSICUM TTL, Claims Settlement fixture, four success-criteria scripts, JSON-LD bundle artefact
+- `spike/graph-runtime/spar/` — eight files of SPAR briefing + role prompts + cover notes + synthesis template
+
+### SPAR Conducted — Four-Reviewer Round
+
+Four reviewers engaged in parallel: Graph-DB Veteran (GPT, two-pass review), Standards/Ontology Sceptic (Gemini), LLM Pipeline Architect (fresh Claude with codebase access), Commercial/OSS-Strategy Sceptic (GPT, separate session). All four endorsed the direction with amendments; none endorsed locking as originally framed.
+
+**Convergent must-resolve issues** (raised by 3+ reviewers):
+1. SPARQL-ASK as the canonical validation pattern would create a hand-coded second metamodel — resolved by validation-strategy split: SPARQL-ASK in-pipeline gates only, full SHACL at bundle-publish boundary.
+2. Another spike required before lock — unanimous; resolved by running two parallel spikes (Spike A runtime comparison + Spike B pipeline producibility).
+3. The decision needs to be re-framed as a "constitutional platform decision," not a binary lock — resolved by splitting the lock (principles now, runtime + migration sequencing pending spikes).
+
+**Convergent should-resolve** (raised by 2 reviewers):
+4. Namespace and `@context` versioning is v0-load-bearing — resolved by adopting `/ns/core/v0/` discipline immediately.
+5. Deontic-operator vocabulary placeholders are v0-load-bearing — resolved by adding classes now without evaluation logic.
+6. AgentCharter generation belongs at Layer 4 (commercial), not Layer 1 (OSS pipeline) — *cross-axis convergence* between R3 (pipeline can't produce decision surfaces without UI grounding) and R4 (proprietary moat needs entitlements engine specifically). Resolved by scope clarification.
+7. Proprietary moat needs reframing — "best LLM-driven generator of public spec" not durable; durable moat is methodology + reference datasets + benchmark evidence + content partnerships + certification.
+
+### DEC-122 Filed (Partial Lock)
+
+`docs/DECISIONS.md` D-122 + D-121 entries appended. Graph-as-canonical, CAPSICUM-as-metamodel, JSON-LD-as-machine-contract, SP positioning at REALISE, AgentCharter at Layer 4 — all locked. Runtime engine and pipeline sequencing locked pending Spike A and Spike B.
+
+### Documentation Updates
+- `docs/spar-archive/dec-122/` — four reviewer responses + synthesis archived
+- `docs/DECISIONS.md` — D-121 (SP positioning) + D-122 (graph runtime / metamodel commitment)
+- `docs/CLAUDE.md` — Core Principles renumbered to reflect graph-canonical; new entries for CAPSICUM target, JSON-LD machine contract; D-122 referenced in Versioning section
+- `docs/CURRENT-STATE.md` — v0.6 anchor section added at top
+- `docs/CHANGELOG.md` — v0.6 draft entry added
+- `docs/SPAR_PROTOCOL.md` — updated with learnings from the four-reviewer round
+- `docs/SPAR-BRIEFING-graph-backend.md` — marked superseded by DEC-122
+- `docs/REFACTORING-DEBT.md` — R-016 + R-017 re-statused as resolved-by-DEC-122
+- `PlausibleBA_Open_Source_Strategy v2.0.docx` — R4 amendments applied
+- `PRD - Agentic_Enterprise_Framework v0.1.docx` — AgentCharter Layer-4 clarification
+
+### Pending / Next Steps
+1. **Run Spike A** — three-way runtime comparison at Insurance reference-model scale (oxigraph-wasm vs RDF/JS-native+shacl-engine vs minimal typed-quad-store). Brief: `spike/graph-runtime/spar/SPIKE-A-runtime-comparison.md`.
+2. **Run Spike B** — Pass B externalised-Outcome producibility against Water Filtration Co. transcript. Brief: `spike/graph-runtime/spar/SPIKE-B-pipeline-producibility.md`.
+3. **Promote `spike/graph-runtime/` to `packages/graph/`** after Spike A and Spike B conclude (not before — the lock is conditional on those outcomes).
+4. **Phase 2 work** (post-v0.6 lock): GSM kernel ramp, Reviewer 2's ε₂ deontic-conflict spike, AgentCharter Layer-4 plugin first cut.
+5. **Phase 3 work** (parallel with Phase 1-2): Reviewer 4's Layer-2 authoring pathway spike, SDK + OpenAPI façade for plugin developers, Foundation governance refinement.
+
+### Decisions
+- **D-121 (filed):** SP-cell positioning. Capability and ValueStream sit at REALISE, not PLAN. Supersedes the 2017 Capsifi TTL placement.
+- **D-122 (partially locked):** Graph runtime / metamodel commitment. Principles + shape + four v0 amendments locked. Runtime engine + pipeline migration sequencing pending spikes.
+
+### Reflection on the SPAR Process
+
+The four-reviewer axis split (technical: runtime / standards / pipeline; strategy: commercial-OSS) earned its keep. The strongest single insight — AgentCharter belongs at Layer 4, not Layer 1 — emerged independently from R3 (pipeline angle) and R4 (strategy angle), exactly the cross-axis convergence the four-reviewer structure was designed to surface. The fresh-Claude-with-codebase-access pattern (R3) produced materially deeper review than briefing-only access; recommend as default for any future SPAR involving codebase decisions. R1's two-pass review (without then with full briefing) showed that contextual depth changes recommendation significantly — incorporate this into the SPAR protocol as a "second-pass after briefing" option.
+
+---
+
 ## Session 36 — Pipeline JSON Corruption Fix (Large Transcripts)
 **Date:** 2026-05-03
 **Status:** Complete

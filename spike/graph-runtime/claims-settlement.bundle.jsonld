@@ -1,0 +1,553 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "cap": "https://capsicum.plausibleba.org/ns/core#",
+    "sp": "https://capsicum.plausibleba.org/ns/sp#",
+    "bv": "https://capsicum.plausibleba.org/ns/bv#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "label": "rdfs:label",
+    "ValueStream": "sp:ValueStream",
+    "Capability": "sp:Capability",
+    "Stage": "cap:Stage",
+    "Outcome": "cap:Outcome",
+    "Role": "cap:Role",
+    "AgentCharter": "cap:AgentCharter",
+    "realisedBy": {
+      "@id": "cap:realisedBy",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "enabledByCapability": {
+      "@id": "cap:enabledByCapability",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "stateOf": {
+      "@id": "cap:stateOf",
+      "@type": "@id"
+    },
+    "triggers": {
+      "@id": "cap:triggers",
+      "@type": "@id"
+    },
+    "preOutcome": {
+      "@id": "cap:preOutcome",
+      "@type": "@id"
+    },
+    "postOutcome": {
+      "@id": "cap:postOutcome",
+      "@type": "@id"
+    },
+    "performedBy": {
+      "@id": "cap:performedBy",
+      "@type": "@id"
+    },
+    "parentCapability": {
+      "@id": "cap:parentCapability",
+      "@type": "@id"
+    },
+    "chartersAgentFor": {
+      "@id": "cap:chartersAgentFor",
+      "@type": "@id"
+    },
+    "classification": "cap:classification",
+    "aesScore": {
+      "@id": "cap:aesScore",
+      "@type": "xsd:decimal"
+    },
+    "position": {
+      "@id": "cap:position",
+      "@type": "xsd:integer"
+    }
+  },
+  "@graph": [
+    {
+      "@id": "bv:BusinessViewCell",
+      "@type": "http://www.w3.org/2002/07/owl#Class",
+      "label": "Business View Cell (Execution layer)"
+    },
+    {
+      "@id": "cap:AgentCharter",
+      "@type": "http://www.w3.org/2002/07/owl#Class",
+      "rdfs:comment": "Formal specification of an agent's authorised action space, scoped to one Capability. (PRD: agent's authority boundary IS the capability definition.)",
+      "label": "Agent Charter"
+    },
+    {
+      "@id": "cap:CAPSICUMOntology",
+      "@type": "http://www.w3.org/2002/07/owl#Ontology",
+      "rdfs:comment": "Minimal CAPSICUM ontology — six core classes for the graph-runtime spike.",
+      "label": "CAPSICUM Core (spike)"
+    },
+    {
+      "@id": "cap:Outcome",
+      "@type": "http://www.w3.org/2002/07/owl#Class",
+      "rdfs:comment": "Process × Domain. EXTERNALISED state of a business object. (BACM CAP-7: Outcome.stateOf -> AbstractBusinessObject.)",
+      "label": "Outcome",
+      "rdfs:subClassOf": {
+        "@id": "bv:BusinessViewCell"
+      }
+    },
+    {
+      "@id": "cap:Role",
+      "@type": "http://www.w3.org/2002/07/owl#Class",
+      "rdfs:comment": "People × Domain. Responsibility-bearing position.",
+      "label": "Role",
+      "rdfs:subClassOf": {
+        "@id": "bv:BusinessViewCell"
+      }
+    },
+    {
+      "@id": "cap:Stage",
+      "@type": "http://www.w3.org/2002/07/owl#Class",
+      "rdfs:comment": "Process × Behaviour. A named activity in a value stream's chain. (BACM ValueStreamStage / VCC ScaffoldActivity.)",
+      "label": "Value Stream Stage",
+      "rdfs:subClassOf": {
+        "@id": "bv:BusinessViewCell"
+      }
+    },
+    {
+      "@id": "cap:aesScore",
+      "@type": "http://www.w3.org/2002/07/owl#DatatypeProperty",
+      "rdfs:comment": "Composite score 1.0–5.0 across 8 dimensions (PRD).",
+      "rdfs:domain": {
+        "@id": "sp:Capability"
+      },
+      "label": "Agentic Enablement Score (AES)",
+      "rdfs:range": {
+        "@id": "xsd:decimal"
+      }
+    },
+    {
+      "@id": "cap:chartersAgentFor",
+      "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+      "rdfs:comment": "The capability that defines this agent's authority boundary. Cardinality: exactly 1 (per PRD).",
+      "rdfs:domain": {
+        "@id": "cap:AgentCharter"
+      },
+      "label": "chartersAgentFor",
+      "rdfs:range": {
+        "@id": "sp:Capability"
+      }
+    },
+    {
+      "@id": "cap:classification",
+      "@type": "http://www.w3.org/2002/07/owl#DatatypeProperty",
+      "rdfs:comment": "AFK / Supervised / HiTL / HumanPrimary — from AES score per PRD.",
+      "rdfs:domain": {
+        "@id": "cap:AgentCharter"
+      },
+      "label": "classification",
+      "rdfs:range": {
+        "@id": "xsd:string"
+      }
+    },
+    {
+      "@id": "cap:enabledByCapability",
+      "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+      "rdfs:domain": {
+        "@id": "cap:Stage"
+      },
+      "label": "enabledByCapability",
+      "rdfs:range": {
+        "@id": "sp:Capability"
+      }
+    },
+    {
+      "@id": "cap:enabledByCapabilityIds_v5",
+      "@type": "http://www.w3.org/2002/07/owl#DeprecatedProperty",
+      "rdfs:comment": "DO NOT USE in new data. Catches v5-shape scaffolds that should canonicalise on cap:enabledByCapability.",
+      "label": "enabledByCapabilityIds (v5 alias)"
+    },
+    {
+      "@id": "cap:parentCapability",
+      "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+      "rdfs:domain": {
+        "@id": "sp:Capability"
+      },
+      "label": "parentCapability",
+      "rdfs:range": {
+        "@id": "sp:Capability"
+      }
+    },
+    {
+      "@id": "cap:performedBy",
+      "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+      "rdfs:domain": {
+        "@id": "cap:Stage"
+      },
+      "label": "performedBy",
+      "rdfs:range": {
+        "@id": "cap:Role"
+      }
+    },
+    {
+      "@id": "cap:position",
+      "@type": "http://www.w3.org/2002/07/owl#DatatypeProperty",
+      "rdfs:domain": {
+        "@id": "cap:Stage"
+      },
+      "label": "position",
+      "rdfs:range": {
+        "@id": "xsd:integer"
+      }
+    },
+    {
+      "@id": "cap:postOutcome",
+      "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+      "rdfs:domain": {
+        "@id": "cap:Stage"
+      },
+      "label": "postOutcome",
+      "rdfs:range": {
+        "@id": "cap:Outcome"
+      }
+    },
+    {
+      "@id": "cap:preOutcome",
+      "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+      "rdfs:domain": {
+        "@id": "cap:Stage"
+      },
+      "label": "preOutcome",
+      "rdfs:range": {
+        "@id": "cap:Outcome"
+      }
+    },
+    {
+      "@id": "cap:realisedBy",
+      "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+      "rdfs:comment": "VS realisedBy Stage (orderable via cap:position).",
+      "rdfs:domain": {
+        "@id": "sp:ValueStream"
+      },
+      "label": "realisedBy",
+      "rdfs:range": {
+        "@id": "cap:Stage"
+      }
+    },
+    {
+      "@id": "cap:requiresCapabilityIds_v4",
+      "@type": "http://www.w3.org/2002/07/owl#DeprecatedProperty",
+      "rdfs:comment": "DO NOT USE in new data. Catches legacy scaffolds during migration.",
+      "label": "requiresCapabilityIds (v4 legacy)"
+    },
+    {
+      "@id": "cap:stateOf",
+      "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+      "rdfs:comment": "BACM CAP-7 / CAPSICUM externalised state. The Outcome IS a state of some business object.",
+      "rdfs:domain": {
+        "@id": "cap:Outcome"
+      },
+      "label": "stateOf",
+      "rdfs:range": {
+        "@id": "http://www.w3.org/2002/07/owl#Thing"
+      }
+    },
+    {
+      "@id": "cap:triggers",
+      "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+      "rdfs:comment": "BACM VS-3. State-based VS navigation (vs the v4 linear nextActivityId chain).",
+      "rdfs:domain": {
+        "@id": "cap:Outcome"
+      },
+      "label": "triggers",
+      "rdfs:range": {
+        "@id": "cap:Stage"
+      }
+    },
+    {
+      "@id": "sp:Capability",
+      "@type": "http://www.w3.org/2002/07/owl#Class",
+      "rdfs:comment": "Realise × Domain. The unit of organisational ability. PER PRD: the capability boundary IS the agent's authority boundary.",
+      "label": "Capability",
+      "rdfs:subClassOf": {
+        "@id": "sp:StrategicPurposeCell"
+      }
+    },
+    {
+      "@id": "sp:StrategicPurposeCell",
+      "@type": "http://www.w3.org/2002/07/owl#Class",
+      "label": "Strategic Purpose Cell (Purpose layer)"
+    },
+    {
+      "@id": "sp:ValueStream",
+      "@type": "http://www.w3.org/2002/07/owl#Class",
+      "rdfs:comment": "Realise × Means. Ordered orchestration of capability through stages.",
+      "label": "Value Stream",
+      "rdfs:subClassOf": {
+        "@id": "sp:StrategicPurposeCell"
+      }
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Charter_FNOL_Agent",
+      "@type": "AgentCharter",
+      "rdfs:comment": "Fully autonomous agent for First Notice of Loss. AES 4.2. Scope: completeness check, triage classification, acknowledgement dispatch. Authority bounded by claims:FNOL.",
+      "label": "FNOL Agent Charter",
+      "chartersAgentFor": "https://example.org/insurance/claims#FNOL",
+      "classification": "FullyAutonomous_AFK"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Claim",
+      "@type": "rdfs:Class",
+      "rdfs:comment": "Business object — the record class whose lifecycle this VS governs.",
+      "label": "Claim"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#ClaimsSettlement",
+      "@type": "ValueStream",
+      "rdfs:comment": "Insurance claims settlement value stream — the agentic enablement worked example from PRD v0.1.",
+      "label": "Claims Settlement",
+      "realisedBy": [
+        "https://example.org/insurance/claims#Stage_Pay",
+        "https://example.org/insurance/claims#Stage_Finalise",
+        "https://example.org/insurance/claims#Stage_RequestInformation",
+        "https://example.org/insurance/claims#Stage_DetermineQuantum",
+        "https://example.org/insurance/claims#Stage_Adjudicate",
+        "https://example.org/insurance/claims#Stage_Validate",
+        "https://example.org/insurance/claims#Stage_Receive"
+      ]
+    },
+    {
+      "@id": "https://example.org/insurance/claims#ComplaintHandling",
+      "@type": "Capability",
+      "label": "Complaint & Dispute Handling",
+      "aesScore": "1.5"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#CoverageVerification",
+      "@type": "Capability",
+      "label": "Coverage Verification",
+      "aesScore": "3.8"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#FNOL",
+      "@type": "Capability",
+      "label": "First Notice of Loss",
+      "aesScore": "4.2"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#FraudInvestigation",
+      "@type": "Capability",
+      "label": "Fraud Investigation",
+      "aesScore": "1.8",
+      "parentCapability": "https://example.org/insurance/claims#FraudTriage"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#FraudTriage",
+      "@type": "Capability",
+      "label": "Fraud Triage & Scoring",
+      "aesScore": "3.1"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#LiabilityAssessment",
+      "@type": "Capability",
+      "label": "Liability Assessment",
+      "aesScore": "2.4"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#LossQuantification",
+      "@type": "Capability",
+      "label": "Loss Quantification",
+      "aesScore": "3.5"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Outcome_ClaimPaid",
+      "@type": "Outcome",
+      "label": "Claim Paid (terminal)",
+      "stateOf": "https://example.org/insurance/claims#Claim"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Outcome_ClaimReceived",
+      "@type": "Outcome",
+      "label": "Claim Received",
+      "stateOf": "https://example.org/insurance/claims#Claim",
+      "triggers": "https://example.org/insurance/claims#Stage_Validate"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Outcome_ClaimUnsubmitted",
+      "@type": "Outcome",
+      "label": "Claim Unsubmitted",
+      "stateOf": "https://example.org/insurance/claims#Claim"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Outcome_ClaimValidated",
+      "@type": "Outcome",
+      "label": "Claim Validated",
+      "stateOf": "https://example.org/insurance/claims#Claim",
+      "triggers": "https://example.org/insurance/claims#Stage_Adjudicate"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Outcome_InformationGathered",
+      "@type": "Outcome",
+      "label": "Information Gathered",
+      "stateOf": "https://example.org/insurance/claims#Claim",
+      "triggers": "https://example.org/insurance/claims#Stage_Finalise"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Outcome_LiabilityDetermined",
+      "@type": "Outcome",
+      "label": "Liability Determined",
+      "stateOf": "https://example.org/insurance/claims#Claim",
+      "triggers": "https://example.org/insurance/claims#Stage_DetermineQuantum"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Outcome_QuantumDetermined",
+      "@type": "Outcome",
+      "label": "Quantum Determined",
+      "stateOf": "https://example.org/insurance/claims#Claim",
+      "triggers": "https://example.org/insurance/claims#Stage_RequestInformation"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Outcome_SettlementAuthorised",
+      "@type": "Outcome",
+      "label": "Settlement Authorised",
+      "stateOf": "https://example.org/insurance/claims#Claim",
+      "triggers": "https://example.org/insurance/claims#Stage_Pay"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#PaymentProcessing",
+      "@type": "Capability",
+      "label": "Payment Processing",
+      "aesScore": "4.5"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#RegulatoryReporting",
+      "@type": "Capability",
+      "label": "Regulatory Reporting",
+      "aesScore": "3.8"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Role_ClaimsAdjudicator",
+      "@type": "Role",
+      "label": "Claims Adjudicator"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Role_ClaimsHandler",
+      "@type": "Role",
+      "label": "Claims Handler"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Role_ClaimsManager",
+      "@type": "Role",
+      "label": "Claims Manager"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Role_FraudInvestigator",
+      "@type": "Role",
+      "label": "Fraud Investigator"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Role_PaymentsClerk",
+      "@type": "Role",
+      "label": "Payments Clerk"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#SettlementLarge",
+      "@type": "Capability",
+      "label": "Settlement Authority (>$10k)",
+      "aesScore": "2.2"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#SettlementSmall",
+      "@type": "Capability",
+      "label": "Settlement Authority (<$10k)",
+      "aesScore": "4"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Stage_Adjudicate",
+      "@type": "Stage",
+      "label": "Adjudicate Claim",
+      "enabledByCapability": [
+        "https://example.org/insurance/claims#LiabilityAssessment"
+      ],
+      "performedBy": "https://example.org/insurance/claims#Role_ClaimsAdjudicator",
+      "position": "3",
+      "postOutcome": "https://example.org/insurance/claims#Outcome_LiabilityDetermined",
+      "preOutcome": "https://example.org/insurance/claims#Outcome_ClaimValidated"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Stage_DetermineQuantum",
+      "@type": "Stage",
+      "label": "Determine Quantum",
+      "enabledByCapability": [
+        "https://example.org/insurance/claims#SubrogationAssessment",
+        "https://example.org/insurance/claims#LossQuantification"
+      ],
+      "performedBy": "https://example.org/insurance/claims#Role_ClaimsAdjudicator",
+      "position": "4",
+      "postOutcome": "https://example.org/insurance/claims#Outcome_QuantumDetermined",
+      "preOutcome": "https://example.org/insurance/claims#Outcome_LiabilityDetermined"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Stage_Finalise",
+      "@type": "Stage",
+      "label": "Finalise Claim",
+      "enabledByCapability": [
+        "https://example.org/insurance/claims#RegulatoryReporting",
+        "https://example.org/insurance/claims#ComplaintHandling",
+        "https://example.org/insurance/claims#SettlementLarge",
+        "https://example.org/insurance/claims#SettlementSmall"
+      ],
+      "performedBy": "https://example.org/insurance/claims#Role_ClaimsManager",
+      "position": "6",
+      "postOutcome": "https://example.org/insurance/claims#Outcome_SettlementAuthorised",
+      "preOutcome": "https://example.org/insurance/claims#Outcome_InformationGathered"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Stage_Pay",
+      "@type": "Stage",
+      "label": "Pay Claim",
+      "enabledByCapability": [
+        "https://example.org/insurance/claims#PaymentProcessing"
+      ],
+      "performedBy": "https://example.org/insurance/claims#Role_PaymentsClerk",
+      "position": "7",
+      "postOutcome": "https://example.org/insurance/claims#Outcome_ClaimPaid",
+      "preOutcome": "https://example.org/insurance/claims#Outcome_SettlementAuthorised"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Stage_Receive",
+      "@type": "Stage",
+      "label": "Receive Claim",
+      "enabledByCapability": [
+        "https://example.org/insurance/claims#FNOL"
+      ],
+      "performedBy": "https://example.org/insurance/claims#Role_ClaimsHandler",
+      "position": "1",
+      "postOutcome": "https://example.org/insurance/claims#Outcome_ClaimReceived",
+      "preOutcome": "https://example.org/insurance/claims#Outcome_ClaimUnsubmitted"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Stage_RequestInformation",
+      "@type": "Stage",
+      "label": "Request Information",
+      "enabledByCapability": [
+        "https://example.org/insurance/claims#FraudInvestigation"
+      ],
+      "performedBy": "https://example.org/insurance/claims#Role_FraudInvestigator",
+      "position": "5",
+      "postOutcome": "https://example.org/insurance/claims#Outcome_InformationGathered",
+      "preOutcome": "https://example.org/insurance/claims#Outcome_QuantumDetermined"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#Stage_Validate",
+      "@type": "Stage",
+      "label": "Validate Claim",
+      "enabledByCapability": [
+        "https://example.org/insurance/claims#FraudTriage",
+        "https://example.org/insurance/claims#CoverageVerification"
+      ],
+      "performedBy": "https://example.org/insurance/claims#Role_ClaimsHandler",
+      "position": "2",
+      "postOutcome": "https://example.org/insurance/claims#Outcome_ClaimValidated",
+      "preOutcome": "https://example.org/insurance/claims#Outcome_ClaimReceived"
+    },
+    {
+      "@id": "https://example.org/insurance/claims#SubrogationAssessment",
+      "@type": "Capability",
+      "label": "Subrogation Assessment",
+      "aesScore": "3"
+    }
+  ]
+}

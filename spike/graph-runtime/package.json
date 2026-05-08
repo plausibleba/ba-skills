@@ -1,0 +1,25 @@
+{
+  "name": "@vcc-spike/graph-runtime",
+  "version": "0.0.1",
+  "description": "SPAR spike: oxigraph-wasm + CAPSICUM JSON-LD runtime — Claims Settlement scenario",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "smoke": "tsx src/00-smoke.ts",
+    "hydrate": "tsx src/10-hydrate.ts",
+    "validate": "tsx src/20-validate.ts",
+    "roundtrip": "tsx src/30-roundtrip.ts",
+    "charter": "tsx src/40-charter.ts",
+    "all": "tsx src/run-all.ts"
+  },
+  "dependencies": {
+    "oxigraph": "^0.4.4",
+    "jsonld": "^8.3.2",
+    "n3": "^1.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}

@@ -1,0 +1,136 @@
+# Minimal CAPSICUM shape for the SPAR spike — Claims Settlement scenario.
+# This is the 30% version: six core classes + the relationships that exercise
+# the externalised-Outcome pattern (BACM CAP-7, CAPSICUM Pr×D cell) and the
+# AgentCharter authority-boundary pattern from the agentic enablement PRD.
+#
+# Production scope (out of this spike): the full CAPSICUM 9-cell matrix,
+# Entitlements as deontic norm tuples, Conditions as RULE subclasses,
+# Terms as full SHACL constraints, the Purpose Layer (Set/Plan/Realise rows).
+
+@prefix cap:    <https://capsicum.plausibleba.org/ns/core#> .
+@prefix bv:     <https://capsicum.plausibleba.org/ns/bv#> .
+@prefix sp:     <https://capsicum.plausibleba.org/ns/sp#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+
+cap:CAPSICUMOntology a owl:Ontology ;
+    rdfs:label "CAPSICUM Core (spike)" ;
+    rdfs:comment "Minimal CAPSICUM ontology — six core classes for the graph-runtime spike." .
+
+# --- Cell-classifier metaclasses (the 3x3 organising principle) ---
+# Every domain class is a subclass of one of these. The spike only models
+# Realise×Domain (cap:Capability) and Realise×Means (cap:ValueStream/Stage)
+# from the Purpose layer (SP), and Process×Domain (Outcome), Process×Behaviour
+# (Activity), and People×Domain (Role) from the Execution layer (BV).
+
+bv:BusinessViewCell    a owl:Class ; rdfs:label "Business View Cell (Execution layer)" .
+sp:StrategicPurposeCell a owl:Class ; rdfs:label "Strategic Purpose Cell (Purpose layer)" .
+
+# --- Core domain classes (spike subset) ---
+
+sp:Capability   a owl:Class ;
+    rdfs:label "Capability" ;
+    rdfs:subClassOf sp:StrategicPurposeCell ;
+    rdfs:comment "Realise × Domain. The unit of organisational ability. PER PRD: the capability boundary IS the agent's authority boundary." .
+
+sp:ValueStream  a owl:Class ;
+    rdfs:label "Value Stream" ;
+    rdfs:subClassOf sp:StrategicPurposeCell ;
+    rdfs:comment "Realise × Means. Ordered orchestration of capability through stages." .
+
+cap:Stage       a owl:Class ;
+    rdfs:label "Value Stream Stage" ;
+    rdfs:subClassOf bv:BusinessViewCell ;
+    rdfs:comment "Process × Behaviour. A named activity in a value stream's chain. (BACM ValueStreamStage / VCC ScaffoldActivity.)" .
+
+cap:Outcome     a owl:Class ;
+    rdfs:label "Outcome" ;
+    rdfs:subClassOf bv:BusinessViewCell ;
+    rdfs:comment "Process × Domain. EXTERNALISED state of a business object. (BACM CAP-7: Outcome.stateOf -> AbstractBusinessObject.)" .
+
+cap:Role        a owl:Class ;
+    rdfs:label "Role" ;
+    rdfs:subClassOf bv:BusinessViewCell ;
+    rdfs:comment "People × Domain. Responsibility-bearing position." .
+
+cap:AgentCharter a owl:Class ;
+    rdfs:label "Agent Charter" ;
+    rdfs:comment "Formal specification of an agent's authorised action space, scoped to one Capability. (PRD: agent's authority boundary IS the capability definition.)" .
+
+# --- Properties (canonical predicates) ---
+
+# VS containment + chain
+cap:realisedBy      a owl:ObjectProperty ;
+    rdfs:domain sp:ValueStream ; rdfs:range cap:Stage ;
+    rdfs:label "realisedBy" ;
+    rdfs:comment "VS realisedBy Stage (orderable via cap:position)." .
+
+cap:position        a owl:DatatypeProperty ;
+    rdfs:domain cap:Stage ; rdfs:range xsd:integer ;
+    rdfs:label "position" .
+
+# Capability requirement on Stage — CANONICAL predicate name.
+# The dual-field bug we want to catch: scaffolds historically used
+# requiresCapabilityIds (v4) AND enabledByCapabilityIds (v5). The spike
+# enforces a single canonical predicate; the SHACL-SPARQL constraint
+# detects either the absence of the canonical OR the presence of a
+# legacy v5 alias that should have been migrated.
+cap:enabledByCapability a owl:ObjectProperty ;
+    rdfs:domain cap:Stage ; rdfs:range sp:Capability ;
+    rdfs:label "enabledByCapability" .
+
+# Externalised Outcome: state of a business object, triggers a stage.
+cap:stateOf         a owl:ObjectProperty ;
+    rdfs:domain cap:Outcome ; rdfs:range owl:Thing ;
+    rdfs:label "stateOf" ;
+    rdfs:comment "BACM CAP-7 / CAPSICUM externalised state. The Outcome IS a state of some business object." .
+
+cap:triggers        a owl:ObjectProperty ;
+    rdfs:domain cap:Outcome ; rdfs:range cap:Stage ;
+    rdfs:label "triggers" ;
+    rdfs:comment "BACM VS-3. State-based VS navigation (vs the v4 linear nextActivityId chain)." .
+
+cap:preOutcome      a owl:ObjectProperty ;
+    rdfs:domain cap:Stage ; rdfs:range cap:Outcome ;
+    rdfs:label "preOutcome" .
+
+cap:postOutcome     a owl:ObjectProperty ;
+    rdfs:domain cap:Stage ; rdfs:range cap:Outcome ;
+    rdfs:label "postOutcome" .
+
+# Capability hierarchy (parent/child)
+cap:parentCapability a owl:ObjectProperty ;
+    rdfs:domain sp:Capability ; rdfs:range sp:Capability ;
+    rdfs:label "parentCapability" .
+
+# Role performance
+cap:performedBy     a owl:ObjectProperty ;
+    rdfs:domain cap:Stage ; rdfs:range cap:Role ;
+    rdfs:label "performedBy" .
+
+# AgentCharter authority binding
+cap:chartersAgentFor a owl:ObjectProperty ;
+    rdfs:domain cap:AgentCharter ; rdfs:range sp:Capability ;
+    rdfs:label "chartersAgentFor" ;
+    rdfs:comment "The capability that defines this agent's authority boundary. Cardinality: exactly 1 (per PRD)." .
+
+cap:classification  a owl:DatatypeProperty ;
+    rdfs:domain cap:AgentCharter ; rdfs:range xsd:string ;
+    rdfs:label "classification" ;
+    rdfs:comment "AFK / Supervised / HiTL / HumanPrimary — from AES score per PRD." .
+
+cap:aesScore        a owl:DatatypeProperty ;
+    rdfs:domain sp:Capability ; rdfs:range xsd:decimal ;
+    rdfs:label "Agentic Enablement Score (AES)" ;
+    rdfs:comment "Composite score 1.0–5.0 across 8 dimensions (PRD)." .
+
+# --- Legacy/deprecated predicates (modelled to enable migration detection) ---
+cap:requiresCapabilityIds_v4 a owl:DeprecatedProperty ;
+    rdfs:label "requiresCapabilityIds (v4 legacy)" ;
+    rdfs:comment "DO NOT USE in new data. Catches legacy scaffolds during migration." .
+
+cap:enabledByCapabilityIds_v5 a owl:DeprecatedProperty ;
+    rdfs:label "enabledByCapabilityIds (v5 alias)" ;
+    rdfs:comment "DO NOT USE in new data. Catches v5-shape scaffolds that should canonicalise on cap:enabledByCapability." .
