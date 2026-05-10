@@ -1,30 +1,21 @@
 {
-  "name": "plausibleba-ba-skills",
-  "owner": {
-    "name": "PlausibleBA",
-    "url": "https://www.plausibleba.com"
-  },
-  "description": "Just enough business architecture. For every BA, on every project.",
+  "name": "plausible-ba",
+  "description": "Institutional-grade Business Analysis skills for Claude. Methodology-grade outputs grounded in BABOK and real delivery experience. Every skill produces a professional XLSX artefact — not a chat response.",
   "plugins": [
     {
-      "name": "ba-plausibleba",
-      "description": "Full PlausibleBA session in one command. Capability Map + Concept Model + Value Stream → single bundle. Start here.",
-      "source": "./ba-plausibleba"
-    },
-    {
       "name": "ba-capability-mapping",
-      "description": "BIZBOK-grounded Business Capability Map. MECE hierarchy, Execution/Governance split, validated XLSX artefact.",
-      "source": "./ba-capability-mapping"
+      "source": "./ba-capability-mapping",
+      "description": "BABOK-grounded Business Capability Map. MECE 4-level hierarchy, Execution/Governance split, validated XLSX artefact."
     },
     {
       "name": "ba-concept-model",
-      "description": "Business Object Taxonomy using the Capsicum Triad (Party/Record/Resource). Cross-validates Capability Map coverage.",
-      "source": "./ba-concept-model"
+      "source": "./ba-concept-model",
+      "description": "Business Object Taxonomy. Names and classifies core business concepts, defines lifecycle and relationships, cross-validates Capability Map coverage."
     },
     {
       "name": "ba-value-streams",
-      "description": "Value Stream Analysis. Maps staged delivery of value, orchestrates capabilities, exports ba-skills-bundle.json for VCC.",
-      "source": "./ba-value-streams"
+      "source": "./ba-value-streams",
+      "description": "Value Stream Analysis. Maps staged delivery of value to recipients, orchestrates capabilities into sequences, surfaces unused capabilities and gaps."
     }
   ]
 }
