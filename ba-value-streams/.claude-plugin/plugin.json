@@ -1,14 +1,14 @@
 {
   "name": "ba-value-streams",
-  "version": "1.7.0",
-  "description": "Value Stream Analysis. Maps staged delivery of value to recipients, orchestrates capabilities into sequences, cross-validates Capability Map and Concept Model, exports ba-skills-bundle.json for VCC.",
+  "version": "1.0.0",
+  "description": "Value Stream Analysis. Maps staged delivery of value, orchestrates capabilities, exports ba-skills-bundle.json for VCC.",
   "author": {
     "name": "PlausibleBA",
     "url": "https://www.plausibleba.com"
   },
   "skills": [
-    "skills/ba-taxonomy-standard",
-    "skills/ba-value-streams"
+    "skills/ba-value-streams",
+    "skills/ba-taxonomy-standard"
   ],
   "commands": [
     "commands/value-stream.md"
