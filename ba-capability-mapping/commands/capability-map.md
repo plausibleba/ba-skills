@@ -1,3 +1,7 @@
+---
+description: Build a BIZBOK-grounded MECE Capability Map (L1–L3) from any input, with two validation checkpoints and XLSX + JSON exports.
+---
+
 # /capability-map
 
 Produce a Business Capability Map from any input — transcript, charter, existing spreadsheet,

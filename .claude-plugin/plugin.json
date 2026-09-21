@@ -1,16 +1,22 @@
 {
-  "name": "ba-capability-mapping",
-  "version": "1.7.0",
-  "description": "Produce rigorous, reusable Capability Maps from any input \u2014 transcripts, charters, spreadsheets, or industry reference models. Guided two-checkpoint elicitation, MECE validation, hierarchical taxonomy numbering, and XLSX + JSON export.",
+  "name": "plausible-ba",
+  "displayName": "PlausibleBA — Business Architecture Skills",
+  "version": "1.8.0",
+  "description": "Methodology-grade business architecture for Claude. Four slash commands — /plausibleba, /capability-map, /concept-model, /value-stream — that elicit, validate and visualise a Capability Map, a Concept Model and a Value Stream from any business description, each with two validation checkpoints and XLSX + JSON exports, plus the shared BA taxonomy standard they all follow.",
   "author": {
     "name": "PlausibleBA",
     "url": "https://www.plausibleba.com"
   },
-  "skills": [
-    "skills/ba-taxonomy-standard",
-    "skills/ba-capability-mapping"
-  ],
-  "commands": [
-    "commands/capability-map.md"
+  "homepage": "https://www.plausibleba.com/install",
+  "repository": "https://github.com/plausibleba/ba-skills",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "business-architecture",
+    "capability-map",
+    "concept-model",
+    "value-stream",
+    "babok",
+    "bizbok",
+    "plausibleba"
   ]
 }
