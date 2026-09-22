@@ -53,7 +53,17 @@ three marks:
 | **ASSUMED** | Industry-typical, not yet found for this organisation | "Delay causes are coded to IATA AHM 730 — assumed; standard practice, not confirmed here" |
 
 A line that cannot be marked is not written. Where two sources disagree, both lines are kept
-and the disagreement goes in §12. A standard says what an operation *should* do; only a source
+and the disagreement goes in §12.
+
+Something a person said is EVIDENCED as a statement, never as a fact about the organisation's
+records: write who said it, when, and where the statement lives ("named by a station manager on
+9 September in an illustrative model built from her experience — not a customer record"). The
+customer's own words are the strongest material in the document, which is exactly why their
+provenance has to be stated precisely.
+
+Public facts that are sore — litigation, penalties, fatalities, industrial disputes — are
+included, marked, and flagged "handle with care in the room". They are never left out to be
+polite; the customer knows them and will notice the omission. A standard says what an operation *should* do; only a source
 about this organisation says what it *does*, so standard-derived lines stay ASSUMED until a
 source about the organisation upgrades them.
 
@@ -123,6 +133,14 @@ kept separate and marked.
 
 Every item lands in §0 with its date before it is read for content.
 
+Gathering splits cleanly into three research passes that can run in parallel, and the first
+run showed each returns a different kind of line: (a) the regulatory and infrastructure frame —
+legislation, the regulator, the ANSP and airports, the statistics agency, the consumer body;
+(b) the organisation's own public record — filings, leadership, careers pages, trade press,
+incidents, complaints; (c) the industry standards' published outlines. Ask each pass for one
+line per fact with a URL and a mark, and a list of what it looked for and could not find — the
+could-not-find list is the first draft of §12.
+
 ### Step 2 — Frame
 
 Write §1 and §2 first and settle the scope: which division, which sites, which flows. A Context
@@ -147,8 +165,12 @@ program name — and quote them. Do not smooth a contradiction; list it in §12.
 
 Write §12 as questions, each paired with the document that would answer it and what it would
 replace in the model. Order them by how much they would change. Then score §13 against the
-readiness weights and say plainly whether the input is Rich, Adequate or Thin. A public-only
-input scoring Rich is not believable; do not inflate it.
+readiness weights and say plainly whether the input is Rich, Adequate or Thin. Provisional
+bands, to be corrected as runs accumulate: below 41 is Thin (the app's Discovery door will not
+generate a scaffold below 41); 41 to 85 is Adequate; above 85 is Rich. A public-only input
+scoring Rich is not believable; do not inflate it. The first real run, from 24 public sources
+on a large listed company, scored 75.5 — thin on roles and technology, which is where public
+record always runs out.
 
 ### Step 6 — Checkpoint, then render
 
@@ -213,4 +235,5 @@ Say so if asked.
 ---
 
 *Part of the PlausibleBA Skills Library | www.plausibleba.com | First run: Qantas Airport
-Operations, 22 September 2026.*
+Operations, 22 September 2026 — three additions came out of it: statements are evidenced as
+statements, sore facts stay in, and the three parallel research passes.*
