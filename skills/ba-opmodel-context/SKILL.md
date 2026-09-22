@@ -102,8 +102,8 @@ Each section names the door in the PlausibleBA app that it feeds. Section templa
 | 1 | Organisation frame | What the business is and does, for whom; group structure and the segment in scope; scale with dates; sponsor; the posture sentence a board would recognise | Discovery §1 · workshop context `businessSnapshot`, `operatingPosture` |
 | 2 | Operating landscape | Sites, fleet or plant, network, seasonality; the ecosystem — outsourced functions, regulators, infrastructure providers, standards bodies | Discovery §1 · PPIT ecosystem roles |
 | 3 | Structure and roles | Divisions to the depth known; the division in scope; operational roles at the level the work is done; who holds which decision | Discovery §3 · Enrich PPIT (roles) |
-| 4 | Candidate value streams | End-to-end flows in scope, each with trigger, outcome, value object, recipient, proposed stages named as states reached; anchored to a standard where one names the stages | Discovery §2 · `/value-stream` |
-| 5 | Reference capability map | L1/L2 from the industry standard, the organisation's own names where public documents give them, a note that the customer's map replaces this | `/capability-map` · Import Model |
+| 4 | The value stream inventory | EVERY end-to-end flow of the operation in scope — not a sample — each with trigger, outcome, value object, recipient and stages named as states reached with entry and exit, anchored to a standard where one names the stages; one may be worked deeper than the rest | Discovery §2 · `/value-stream` |
+| 5 | The complete capability map | L1 from the industry standard's disciplines, L2 and the leaf capabilities beneath them, complete for the operation in scope (a hundred or two for a division is normal); the organisation's own names where public documents give them; a note that the customer's map replaces this | `/capability-map` · Import Model |
 | 6 | Concept model | The business objects that move through the streams in the industry's vocabulary; the ones the customer calls something else | `/concept-model` · Enrich PPIT (information) |
 | 7 | Technology and data landscape | Systems named in public record and what they do; data exchange standards the industry uses; what is not known | Discovery §4 · PPIT technology axis |
 | 8 | Governance instruments | External: legislation, regulator rules, standards and audits. Internal: constitution, charters, published policies. Each with what it constrains and at which stage | Enrich Policies · Discovery controls |
@@ -113,8 +113,15 @@ Each section names the door in the PlausibleBA app that it feeds. Section templa
 | 12 | Known unknowns | What could not be established, each paired with the document that would settle it, in the order they matter | The validation conversation |
 | 13 | Readiness | The Discovery readiness weights applied to §§1–11 — Company and industry 10 · Value streams with stages 35 · Roles 10 · Technology 10 · Pain points 25 · Metrics 10 — and a plain verdict: Rich, Adequate or Thin, and where | The decision to run Discovery now or gather first |
 
-Sections 4, 5 and 6 propose; the three sibling skills produce. Do not run them from inside this
-skill. Offer them as next steps once the customer has corrected the document.
+Sections 4, 5 and 6 are complete inventories, not samples: the customer corrects a whole picture,
+and a reader who runs the operation will look first for the stream or capability that is missing.
+The three sibling skills then produce the structured bundle from the corrected sections; do not run
+them from inside this skill.
+
+Author §§4–6 once as structured data (a small typed module or JSON: streams with stages, the
+capability tree, roles, records) and render both the document's tables and any model file from it.
+The first run learnt this the hard way: a hand-written §4 and a separately built model drift within
+a day. One source, two renderings.
 
 ---
 
@@ -235,5 +242,6 @@ Say so if asked.
 ---
 
 *Part of the PlausibleBA Skills Library | www.plausibleba.com | First run: Qantas Airport
-Operations, 22 September 2026 — three additions came out of it: statements are evidenced as
-statements, sore facts stay in, and the three parallel research passes.*
+Operations, 22 September 2026 — four corrections came out of it: statements are evidenced as
+statements, sore facts stay in, the three parallel research passes, and §§4–6 are complete
+inventories authored once as data and rendered into the document and the model.*
