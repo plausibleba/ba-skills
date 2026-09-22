@@ -52,6 +52,30 @@ tool that supports skill files. The `/slash-commands` are Claude-specific.
 
 ## Available skills
 
+### `ba-opmodel-context` — v1.0.0 (first run September 2026)
+
+Know what can be known before you ask. Build a Context Document for an organisation
+and the division in scope from public and supplied material — annual reports,
+regulator and industry standards, statistics agencies, trade press, the customer's
+own documents — with every line marked EVIDENCED, INFERRED or ASSUMED and sourced.
+Written for the customer to correct before any model is built.
+
+**Command:** `/opmodel-context`
+
+**What you get:**
+- Fourteen sections, each mapped to the PlausibleBA door it feeds — source register,
+  organisation frame, operating landscape, roles, candidate value streams, reference
+  capability map, concept model, technology, governance, directives, metrics, friction
+  signals, known unknowns, readiness
+- The industry standard as the spine (IOSA, IGOM/AHM, A-CDM and AIDM for airlines; a
+  table that grows one sector at a time)
+- Known unknowns paired with the customer document that would settle each one
+- Readiness scored against the Discovery weights before Discovery runs
+- `CONTEXT-<org>-<date>.md` for the customer, `discovery-transcript.md` for the app
+
+---
+
+
 ### `ba-capability-mapping` — v1.0.0 ✅
 
 Map what the business can do. Produce a MECE, investment-relevant capability map
@@ -120,6 +144,8 @@ Run all three skills in sequence on the same engagement and you get a complete,
 cross-validated operating model slice:
 
 ```
+/opmodel-context   What can be known before anyone is asked — corrected by the customer
+      ↓
 /capability-map    What the organisation can do
       ↓
 /concept-model     What the organisation manages

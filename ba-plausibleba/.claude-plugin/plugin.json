@@ -1,7 +1,7 @@
 {
   "name": "ba-plausibleba",
-  "version": "1.8.0",
-  "description": "Full PlausibleBA session — Capability Map + Concept Model + Value Stream in one guided flow, delivering a single ba-skills-bundle.json at the end.",
+  "version": "1.9.0",
+  "description": "Full PlausibleBA session \u2014 Capability Map + Concept Model + Value Stream in one guided flow, delivering a single ba-skills-bundle.json at the end.",
   "author": {
     "name": "PlausibleBA",
     "url": "https://www.plausibleba.com"
