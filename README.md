@@ -38,9 +38,11 @@ elicitation, gap analysis, solution design. PlausibleBA makes them accessible.
 
 ```bash
 claude plugin marketplace add plausibleba/ba-skills
-claude plugin install ba-capability-mapping@ba-skills
-claude plugin install ba-concept-model@ba-skills
-claude plugin install ba-value-streams@ba-skills
+claude plugin install ba-opmodel-context@plausible-ba
+claude plugin install ba-plausibleba@plausible-ba
+claude plugin install ba-capability-mapping@plausible-ba
+claude plugin install ba-concept-model@plausible-ba
+claude plugin install ba-value-streams@plausible-ba
 ```
 
 ### Other AI assistants
