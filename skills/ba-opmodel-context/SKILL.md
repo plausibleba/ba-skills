@@ -107,9 +107,9 @@ Each section names the door in the PlausibleBA app that it feeds. Section templa
 | 1 | Organisation frame | What the business is and does, for whom; group structure and the segment in scope; scale with dates; sponsor; the posture sentence a board would recognise | Discovery §1 · workshop context `businessSnapshot`, `operatingPosture` |
 | 2 | Operating landscape | Sites, fleet or plant, network, seasonality; the ecosystem — outsourced functions, regulators, infrastructure providers, standards bodies | Discovery §1 · PPIT ecosystem roles |
 | 3 | Structure and roles | Divisions to the depth known; the division in scope; operational roles at the level the work is done; who holds which decision | Discovery §3 · Enrich PPIT (roles) |
-| 4 | The value stream inventory | EVERY end-to-end flow of the operation in scope — not a sample — each with trigger, outcome, value object, recipient and stages named as states reached with entry and exit, anchored to a standard where one names the stages; one may be worked deeper than the rest | Discovery §2 · `/value-stream` |
-| 5 | The complete capability map | L1 from the industry standard's disciplines, L2 and the leaf capabilities beneath them, complete for the operation in scope (a hundred or two for a division is normal); the organisation's own names where public documents give them; a note that the customer's map replaces this | `/capability-map` · Import Model |
-| 6 | Concept model | The business objects that move through the streams in the industry's vocabulary; the ones the customer calls something else | `/concept-model` · Enrich PPIT (information) |
+| 4 | The value stream inventory | EVERY end-to-end flow of the operation in scope — not a sample — each with trigger, outcome, value object, recipient and stages named as states reached with entry and exit, anchored to a standard where one names the stages; one may be worked deeper than the rest | Discovery §2 · `/ba-value-streams` |
+| 5 | The complete capability map | L1 from the industry standard's disciplines, L2 and the leaf capabilities beneath them, complete for the operation in scope (a hundred or two for a division is normal); the organisation's own names where public documents give them; a note that the customer's map replaces this | `/ba-capability-mapping` · Import Model |
+| 6 | Concept model | The business objects that move through the streams in the industry's vocabulary; the ones the customer calls something else | `/ba-concept-model` · Enrich PPIT (information) |
 | 7 | Technology and data landscape | Systems named in public record and what they do; data exchange standards the industry uses; what is not known | Discovery §4 · PPIT technology axis |
 | 8 | Governance instruments | External: legislation, regulator rules, standards and audits. Internal: constitution, charters, published policies. Each with what it constrains and at which stage | Enrich Policies · Discovery controls |
 | 9 | Directives and pressures | What the board and executive have said they want, in their words, with the source | Discovery directives |
@@ -253,7 +253,7 @@ Say so if asked.
 2. Load `discovery-transcript.md` at Elaborate → Discovery to build the scaffold — before or
    after correction depending on what the model is for (a demonstration of what public input
    produces runs it before).
-3. `/capability-map`, `/concept-model`, `/value-stream` on the corrected §§4–6 for the
+3. `/ba-capability-mapping`, `/ba-concept-model`, `/ba-value-streams` on the corrected §§4–6 for the
    structured bundle.
 4. Ask for the documents in §12, in the order listed.
 

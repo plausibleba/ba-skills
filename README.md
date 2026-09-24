@@ -27,28 +27,28 @@ elicitation, gap analysis, solution design. PlausibleBA makes them accessible.
 
 ## Installation
 
-### Claude Cowork (recommended)
+One plugin, **PlausibleBA — Business Architecture Skills**, installs all six skills.
 
-1. Open Cowork → Plugins → Browse → Personal → **+**
-2. Select **Add marketplace from GitHub**
-3. Enter: `plausibleba/ba-skills`
-4. Install the plugins you need
+### Claude (claude.ai and Cowork)
+
+1. Go to **Customize** → **Plugins** and choose **+ Add**
+2. Add the marketplace from GitHub: `plausibleba/ba-skills`
+3. Add **PlausibleBA — Business Architecture Skills**
 
 ### Claude Code (CLI)
 
 ```bash
 claude plugin marketplace add plausibleba/ba-skills
-claude plugin install ba-opmodel-context@plausible-ba
-claude plugin install ba-plausibleba@plausible-ba
-claude plugin install ba-capability-mapping@plausible-ba
-claude plugin install ba-concept-model@plausible-ba
-claude plugin install ba-value-streams@plausible-ba
+claude plugin install plausible-ba@plausible-ba
 ```
+
+Run a skill by asking for what it does ("prepare a context document for …", "build a
+capability map from these notes") or by name, for example `/ba-opmodel-context`.
 
 ### Other AI assistants
 
 The `skills/*/SKILL.md` files follow the universal skill format and work with any
-tool that supports skill files. The `/slash-commands` are Claude-specific.
+tool that supports skill files.
 
 ---
 
@@ -62,7 +62,7 @@ regulator and industry standards, statistics agencies, trade press, the customer
 own documents — with every line marked EVIDENCED, INFERRED or ASSUMED and sourced.
 Written for the customer to correct before any model is built.
 
-**Command:** `/opmodel-context`
+**Run it:** `/ba-opmodel-context`
 
 **What you get:**
 - Fourteen sections, each mapped to the PlausibleBA door it feeds — source register,
@@ -84,7 +84,7 @@ Map what the business can do. Produce a MECE, investment-relevant capability map
 from any input — transcripts, charters, existing spreadsheets, or industry reference
 models. Grounded in BIZBOK principles and validated against BABOK technique standards.
 
-**Command:** `/capability-map`
+**Run it:** `/ba-capability-mapping`
 
 **What you get:**
 - Two-checkpoint elicitation: L1/L2 confirmed before L3 derivation
@@ -107,7 +107,7 @@ Uses the **Capsicum Triad** (Party / Record / Resource) — a principled three-t
 classification consistent with REA (McCarthy 1982) and Bunge's ontology for
 information systems. A custom hierarchy option is also offered.
 
-**Command:** `/concept-model`
+**Run it:** `/ba-concept-model`
 
 **What you get:**
 - Classification Checkpoint: choose Capsicum Triad or custom hierarchy
@@ -126,7 +126,7 @@ Map how the business delivers value. Decompose a value stream into 4–8 stages,
 each with entry/exit criteria, participating capabilities, and business objects in
 play. Cross-validates both the Capability Map and Concept Model.
 
-**Command:** `/value-stream`
+**Run it:** `/ba-value-streams`
 
 **What you get:**
 - Recipient-centric stage naming (state reached, not activity performed)
@@ -146,13 +146,13 @@ Run all three skills in sequence on the same engagement and you get a complete,
 cross-validated operating model slice:
 
 ```
-/opmodel-context   What can be known before anyone is asked — corrected by the customer
+/ba-opmodel-context      What can be known before anyone is asked — corrected by the customer
       ↓
-/capability-map    What the organisation can do
+/ba-capability-mapping   What the organisation can do
       ↓
-/concept-model     What the organisation manages
+/ba-concept-model        What the organisation manages
       ↓
-/value-stream      How the organisation delivers value
+/ba-value-streams        How the organisation delivers value
       ↓
 ba-skills-bundle.json   →   VCC session
 ```
@@ -177,7 +177,7 @@ fit together:
 - **Cross-taxonomy traceability:** Business Objects as the shared thread
 - **Branding:** consistent PlausibleBA header on all XLSX outputs
 
-See [`ba-capability-mapping/skills/ba-taxonomy-standard/SKILL.md`](ba-capability-mapping/skills/ba-taxonomy-standard/SKILL.md)
+See [`skills/ba-taxonomy-standard/SKILL.md`](skills/ba-taxonomy-standard/SKILL.md)
 
 ---
 

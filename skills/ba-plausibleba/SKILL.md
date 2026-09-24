@@ -4,7 +4,7 @@ description: >
   Use this skill when someone wants to run a complete business architecture session —
   producing a Capability Map, Concept Model, and Value Stream in one guided flow.
   Trigger on phrases like: "run PlausibleBA", "build my business architecture",
-  "I want a full BA model", "run all three", or when someone invokes /plausibleba.
+  "I want a full BA model", "run all three", or when someone invokes /ba-plausibleba.
   This skill orchestrates the three individual skills in sequence and packages the
   result into a single ba-skills-bundle.json for VCC import.
 ---
@@ -29,7 +29,7 @@ needs two: L1/L2 before L3).
 
 ## Session Opening
 
-After `/plausibleba` is invoked, state the plan clearly before asking anything:
+After `/ba-plausibleba` is invoked, state the plan clearly before asking anything:
 
 > *"We'll build three artefacts in sequence:*
 > *Phase 1 — Capability Map: what your organisation can do*

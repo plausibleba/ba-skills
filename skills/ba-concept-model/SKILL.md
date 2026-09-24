@@ -321,8 +321,8 @@ Then present the deliverables and next steps with clickable links:
 > - *[View Concept Model JSON](computer:///<workspace_path>/<organisation>_concept_model.json) — VCC pipeline format*
 >
 > **Build the full business architecture stack:**
-> - *Type `/capability-map` to produce or refine the **Capability Map** — cross-validates that every object has at least one grounding capability*
-> - *Type `/value-stream` to map **Value Streams** — trace how these business objects flow through staged delivery sequences*
+> - *Type `/ba-capability-mapping` to produce or refine the **Capability Map** — cross-validates that every object has at least one grounding capability*
+> - *Type `/ba-value-streams` to map **Value Streams** — trace how these business objects flow through staged delivery sequences*
 > - *[Open in PlausibleBA Canvas](https://www.plausibleba.com/canvas) — upload the JSON for full interactive visualisation"*
 
 Replace `<workspace_path>` with the actual workspace output path and `<organisation>` with the client/organisation name from this session (snake_case for filenames).
@@ -477,5 +477,5 @@ A good Concept Model for a single business domain:
 ## Next Steps
 
 Next steps are now presented inline with the downloads after the concept graph is rendered (see Step 8).
-The `/capability-map` and `/value-stream` commands are offered as clickable follow-on actions,
+The `/ba-capability-mapping` and `/ba-value-streams` skills are offered as clickable follow-on actions,
 and the XLSX/JSON exports are generated automatically — there is no separate export gate.

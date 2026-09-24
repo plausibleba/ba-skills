@@ -245,8 +245,8 @@ Then present the deliverables and next steps with clickable links:
 > - *[View Capability Map JSON](computer:///<workspace_path>/<organisation>_capability_map.json) — VCC pipeline format*
 >
 > **Build the full business architecture stack:**
-> - *Type `/concept-model` to derive the **Concept Model** — identifies the core business objects that ground these capabilities (Party / Record / Resource)*
-> - *Type `/value-stream` to map **Value Streams** — orchestrate these capabilities into staged delivery sequences*
+> - *Type `/ba-concept-model` to derive the **Concept Model** — identifies the core business objects that ground these capabilities (Party / Record / Resource)*
+> - *Type `/ba-value-streams` to map **Value Streams** — orchestrate these capabilities into staged delivery sequences*
 > - *[Open in PlausibleBA Canvas](https://www.plausibleba.com/canvas) — upload the JSON for full interactive visualisation"*
 
 Replace `<workspace_path>` with the actual workspace output path and `<organisation>` with the client/organisation name from this session (snake_case for filenames).
@@ -440,5 +440,5 @@ Note which reference was used and where capabilities were adapted vs. adopted wh
 ## Next Steps
 
 Next steps are now presented inline with the downloads after the treemap is rendered (see Step 6).
-The `/concept-model` and `/value-stream` commands are offered as clickable follow-on actions,
+The `/ba-concept-model` and `/ba-value-streams` skills are offered as clickable follow-on actions,
 and the XLSX/JSON exports are generated automatically — there is no separate "Export Options" gate.
