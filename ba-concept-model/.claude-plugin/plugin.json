@@ -1,6 +1,7 @@
 {
   "name": "ba-concept-model",
-  "version": "1.9.0",
+  "displayName": "PlausibleBA — Concept Model",
+  "version": "1.9.1",
   "description": "Business Object Taxonomy using the Capsicum Triad (Party/Record/Resource). Cross-validates Capability Map coverage.",
   "author": {
     "name": "PlausibleBA",

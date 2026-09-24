@@ -1,6 +1,7 @@
 {
   "name": "ba-opmodel-context",
-  "version": "1.9.0",
+  "displayName": "PlausibleBA — Operating Model Context",
+  "version": "1.9.1",
   "description": "Operating Model Context. A sourced overview of a business operation from public and supplied material, every line marked for evidence, for the customer to correct before Discovery; renders a Discovery transcript.",
   "author": {
     "name": "PlausibleBA",

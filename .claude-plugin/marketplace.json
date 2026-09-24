@@ -1,7 +1,7 @@
 {
   "name": "plausible-ba",
-  "description": "Institutional-grade Business Analysis skills for Claude. Methodology-grade outputs grounded in BABOK and real delivery experience. Every skill produces a professional XLSX artefact \u2014 not a chat response.",
-  "version": "1.9.0",
+  "description": "Institutional-grade Business Analysis skills for Claude. Methodology-grade outputs grounded in BABOK and real delivery experience. Every skill produces a professional XLSX artefact — not a chat response.",
+  "version": "1.9.1",
   "owner": {
     "name": "PlausibleBA"
   },
@@ -9,7 +9,7 @@
     {
       "name": "ba-opmodel-context",
       "source": "./ba-opmodel-context",
-      "version": "1.9.0",
+      "version": "1.9.1",
       "description": "Operating Model Context. A sourced overview of a business operation from public and supplied material, every line marked EVIDENCED / INFERRED / ASSUMED, for the customer to correct before Discovery. Renders a Discovery transcript.",
       "author": {
         "name": "PlausibleBA"
@@ -27,7 +27,7 @@
     {
       "name": "ba-capability-mapping",
       "source": "./ba-capability-mapping",
-      "version": "1.9.0",
+      "version": "1.9.1",
       "description": "BABOK-grounded Business Capability Map. MECE 4-level hierarchy, Execution/Governance split, validated XLSX artefact.",
       "author": {
         "name": "PlausibleBA"
@@ -44,7 +44,7 @@
     {
       "name": "ba-concept-model",
       "source": "./ba-concept-model",
-      "version": "1.9.0",
+      "version": "1.9.1",
       "description": "Business Object Taxonomy. Names and classifies core business concepts, defines lifecycle and relationships, cross-validates Capability Map coverage.",
       "author": {
         "name": "PlausibleBA"
@@ -61,7 +61,7 @@
     {
       "name": "ba-value-streams",
       "source": "./ba-value-streams",
-      "version": "1.9.0",
+      "version": "1.9.1",
       "description": "Value Stream Analysis. Maps staged delivery of value to recipients, orchestrates capabilities into sequences, surfaces unused capabilities and gaps.",
       "author": {
         "name": "PlausibleBA"
@@ -77,8 +77,8 @@
     {
       "name": "ba-plausibleba",
       "source": "./ba-plausibleba",
-      "version": "1.9.0",
-      "description": "Full PlausibleBA session \u2014 Capability Map + Concept Model + Value Stream in one guided flow, delivering a single ba-skills-bundle.json at the end.",
+      "version": "1.9.1",
+      "description": "Full PlausibleBA session — Capability Map + Concept Model + Value Stream in one guided flow, delivering a single ba-skills-bundle.json at the end.",
       "author": {
         "name": "PlausibleBA"
       },

@@ -1,8 +1,8 @@
 {
   "name": "plausible-ba",
-  "displayName": "PlausibleBA \u2014 Business Architecture Skills",
-  "version": "1.9.0",
-  "description": "Methodology-grade business architecture for Claude. Five slash commands \u2014 /opmodel-context, /plausibleba, /capability-map, /concept-model, /value-stream \u2014 that build a sourced Context Document before discovery, then elicit, validate and visualise a Capability Map, a Concept Model and a Value Stream from any business description, each with validation checkpoints and XLSX + JSON exports, plus the shared BA taxonomy standard they all follow.",
+  "displayName": "PlausibleBA — Business Architecture Skills",
+  "version": "1.9.1",
+  "description": "Methodology-grade business architecture for Claude. Five slash commands — /opmodel-context, /plausibleba, /capability-map, /concept-model, /value-stream — that build a sourced Context Document before discovery, then elicit, validate and visualise a Capability Map, a Concept Model and a Value Stream from any business description, each with validation checkpoints and XLSX + JSON exports, plus the shared BA taxonomy standard they all follow.",
   "author": {
     "name": "PlausibleBA",
     "url": "https://www.plausibleba.com"
