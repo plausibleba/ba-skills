@@ -8,7 +8,7 @@ line, followed by the source in brackets. Plain prose between tables. Scope sent
 # <Organisation> — <Division or function> — Context Document
 
 **Prepared:** <date> · **Scope:** <one sentence: which division, which sites, which flows>
-**Built from:** <N> public sources and <M> supplied documents (§0). **Readiness:** <Rich / Adequate / Thin> (§13).
+**Built from:** <N> public sources and <M> supplied documents (§0). **Readiness:** <score>, <Insufficient / Draft / Viable / Rich> (§13).
 **Marks:** every factual line carries EVIDENCED (a named source says it), INFERRED (a reading of sources), or ASSUMED (industry-typical, not found for this organisation).
 
 ## 0. Source register
@@ -95,14 +95,16 @@ Ordered by how much the answer would change the model.
 
 ## 13. Readiness
 
-| Section | Weight | Score | Weighted |
-|---|---|---|---|
-| Company and industry | 10% | | |
-| Value streams with stage names | 35% | | |
-| Roles (≥3) | 10% | | |
-| Technology (≥2) | 10% | | |
-| Pain points (≥2 with category and anchor) | 25% | | |
-| Metrics (≥1) | 10% | | |
-| **Total** | | | |
+Scored as SKILL.md Step 5 sets out; ASSUMED rows count for nothing.
 
-One sentence: Rich / Adequate / Thin, and where it is thin.
+| Section | Out of | Score |
+|---|---|---|
+| Company and industry | 10 | |
+| Value streams with stage names | 35 | |
+| Roles | 10 | |
+| Technology | 10 | |
+| Pain points with category and stage | 25 | |
+| Metrics | 10 | |
+| **Total** | 100 | |
+
+One sentence: Insufficient / Draft / Viable / Rich, and where it is thin.

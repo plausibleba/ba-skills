@@ -61,9 +61,14 @@ records: write who said it, when, and where the statement lives ("named by a sta
 customer's own words are the strongest material in the document, which is exactly why their
 provenance has to be stated precisely.
 
-Public facts that are sore — litigation, penalties, fatalities, industrial disputes — are
-included, marked, and flagged "handle with care in the room". They are never left out to be
-polite; the customer knows them and will notice the omission. A standard says what an operation *should* do; only a source
+Sensitive findings about the organisation are left out of the document entirely: errors in its
+own published material, lapses in its licences or compliance, penalties and litigation against
+it, and anything about its people's personal or past conduct. The document is written to be put
+in front of that organisation, and raising these with them does nothing for the work (ruled by
+PlausibleBA, 24 September 2026, after the second run). Do not flag them in the document either.
+Tell the person running the skill about them separately, in the conversation, so they can decide
+what to do. Industry-wide material (a sector inquiry, an industry pay audit) may stay, marked
+as being about the industry and not this organisation. A standard says what an operation *should* do; only a source
 about this organisation says what it *does*, so standard-derived lines stay ASSUMED until a
 source about the organisation upgrades them.
 
@@ -111,7 +116,7 @@ Each section names the door in the PlausibleBA app that it feeds. Section templa
 | 10 | Metrics and public performance | The numbers the operation is measured on, published values and trend, the standard definitions | Discovery §6 |
 | 11 | Friction signals | Where the operation is known to hurt: regulator and ombudsman findings, published incident material, trade press, anything the customer has said — each with who said it and where it lives | Enrich Friction |
 | 12 | Known unknowns | What could not be established, each paired with the document that would settle it, in the order they matter | The validation conversation |
-| 13 | Readiness | The Discovery readiness weights applied to §§1–11 — Company and industry 10 · Value streams with stages 35 · Roles 10 · Technology 10 · Pain points 25 · Metrics 10 — and a plain verdict: Rich, Adequate or Thin, and where | The decision to run Discovery now or gather first |
+| 13 | Readiness | The PlausibleBA app's own readiness score applied to the rows of §§1–11 (see Step 5), and a plain verdict: Insufficient, Draft, Viable or Rich, and where it is thin | The decision to run Discovery now or gather first |
 
 Sections 4, 5 and 6 are complete inventories, not samples: the customer corrects a whole picture,
 and a reader who runs the operation will look first for the stream or capability that is missing.
@@ -171,13 +176,25 @@ program name — and quote them. Do not smooth a contradiction; list it in §12.
 ### Step 5 — Question and score
 
 Write §12 as questions, each paired with the document that would answer it and what it would
-replace in the model. Order them by how much they would change. Then score §13 against the
-readiness weights and say plainly whether the input is Rich, Adequate or Thin. Provisional
-bands, to be corrected as runs accumulate: below 41 is Thin (the app's Discovery door will not
-generate a scaffold below 41); 41 to 85 is Adequate; above 85 is Rich. A public-only input
-scoring Rich is not believable; do not inflate it. The first real run, from 24 public sources
-on a large listed company, scored 75.5 — thin on roles and technology, which is where public
-record always runs out.
+replace in the model. Order them by how much they would change. Then score §13 with the same
+function the PlausibleBA app uses, so the number in the document is the number the app shows
+when the document is imported (the app recomputes it; it never takes the document's word):
+
+| Section | How it scores | Most |
+|---|---|---|
+| Company and industry | 10 when the organisation and its industry or function are named | 10 |
+| Value streams | 12 for each stream with two or more stages | 35 |
+| Roles | 3 for each role | 10 |
+| Technology | 4 for each system (a row recording that none was found does not count) | 10 |
+| Pain points | 9 for each friction signal with a category and a stage it touches | 25 |
+| Metrics | 5 for each metric | 10 |
+
+A row marked ASSUMED counts for nothing: it was not found for this organisation, so it says
+nothing about readiness to model it. A stream takes the mark most of its stages carry. Tiers:
+below 41 Insufficient (the app will not generate a scaffold), 41–60 Draft, 61–80 Viable, 81 and
+above Rich. The two runs so far scored 77 (Qantas, 28 public sources) and 65 (Sheridan Security
+Group, 29), both Viable; public record runs out on roles and technology, and a stream staged from
+a standard counts for nothing until a source about the organisation names its stages.
 
 ### Step 6 — Checkpoint, then render
 
@@ -208,7 +225,8 @@ Say so if asked.
 - The scope sentence at the top, and the document scoped to a division or function, not a group.
 - §§4–6 cite the standard they were anchored to, and say where the organisation's names differ.
 - §12 ordered by how much each answer would change the model, not by how easy it is to ask.
-- §13 scored against the weights and stated plainly. Thin is a legitimate result.
+- §13 scored with the app's function and stated plainly. Insufficient is a legitimate result.
+- Nothing in the document the organisation would take as an accusation (see The rule).
 - The organisation's own words quoted where the source gives them; nothing paraphrased into
   our vocabulary that the customer would not recognise.
 - Plain prose. The test for any sentence is whether you would say it aloud to the person it is
@@ -243,5 +261,7 @@ Say so if asked.
 
 *Part of the PlausibleBA Skills Library | www.plausibleba.com | First run: Qantas Airport
 Operations, 22 September 2026 — four corrections came out of it: statements are evidenced as
-statements, sore facts stay in, the three parallel research passes, and §§4–6 are complete
-inventories authored once as data and rendered into the document and the model.*
+statements, the three parallel research passes, and §§4–6 are complete inventories authored
+once as data and rendered into the document and the model. Second run: Sheridan Security Group,
+24 September 2026 — sensitive findings about the organisation are left out and told to the person
+running the skill instead, and §13 is the app's own score.*
