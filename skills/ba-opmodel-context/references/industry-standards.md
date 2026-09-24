@@ -21,6 +21,23 @@ Lines derived from a standard are ASSUMED until a source about the organisation 
 | §8 controls (Australia) | ICAO Annex 19 (safety management); CASA CASR Parts 119 (AOC), 121 (large aeroplane air transport), 42 (continuing airworthiness), 145 (maintenance organisations), 139 (aerodromes); CAO 48.1 (fatigue, FRMS); Sydney Airport Curfew Act 1995 (23:00–06:00) and Sydney Airport Demand Management Act 1997 (80 movements an hour, slot compliance) with the 2024 reforms (recovery periods after disruption); Aviation Customer Rights Charter and Aviation Consumer Ombuds Scheme (legislation expected 2026) | Crew legality, airworthiness, curfew, slot and passenger-entitlement controls a recovery decision is bound by |
 | §10 metrics | BITRE monthly domestic on-time performance (departures and arrivals within 15 minutes, cancellations, by airline, with long-term averages); IATA delay code taxonomy; A-CDM KPIs | Public numbers with standard definitions |
 
+## Contract security services (first used: Sheridan Security Group, September 2026)
+
+No single reference model exists for a contract security business; assemble one from what the trade is
+audited and trained against.
+
+| Layer of the document | Standard | What it supplies |
+|---|---|---|
+| §5 capabilities, L1/L2 | AS 4421:2023 Guard and patrol security services — Section 2 Governance (site review, subcontracting, contract, assignment instructions, quality), Section 3 Terms of employment (vetting, licence, uniform, equipment, training), Section 4 Operations (operations room, communications, records); public preview runs to 4.5. ISO 18788:2015 private security management system (full clause tree public in the ISO sample). APQC PCF 5.0, 7.6.6, 9.0, 11.0 for delivery, scheduling, finance, risk | The governance, workforce and operations spine; service lines then follow the firm's own list |
+| §5 service-line L2s | BS 7499:2020 static guarding; BS 7984-1:2016 keyholding and response (BS 7984-3 mobile patrol); BS 8507-1 close protection; AS 2201.2:2022 monitoring centres (grades A1–C3, ASIAL-audited); Crowded Places Strategy and Security Audit for events | Guarding, response, close protection, control room, events |
+| §4 activity vocabulary | CPP20218 Cert II Security Operations, CPP31318 Cert III, CPP31418 Close Protection, CPP40719 Cert IV Security Management — unit titles on training.gov.au | Verbs of the work: patrol premises, control access and exit, screen, monitor crowd behaviour, remove persons, escort and protect, respond to alarms, coordinate from control rooms |
+| §6 concepts | NSW Security Industry Regulation — the sign-on register and incident register with prescribed fields (3-year retention); licence classes 1A–1F, 2A–2E and master subclasses MA–ME | The nearest thing to a prescribed record; there is no industry data standard |
+| §8 controls (NSW) | Security Industry Act 1997 (incl. s 38A subcontracting consent and disclosure) and Security Industry Regulation 2026; Security Services Industry Award 2020 (MA000016); WHS Act and 2026 digital work systems duty; Workplace Surveillance Act 2005; ASIC/MSIC and screener accreditation for airports and ports; SOCI CIRMP rules; NSW Health Protecting People and Property for hospitals | Who may work, how many a firm may supply, how subcontracting must be disclosed, pay |
+| §10 metrics | AS 4421:2023 response time chart (values paywalled); BS 7499 6.5 performance evaluation; otherwise contract KPIs with no public definitions (patrol completion, shift fill, report timeliness, turnover) | Few public numbers — expect §10 to be thin |
+
+Check the public licence register first: the master licence subclass caps how many people the firm can
+supply, which shapes every delivery stream.
+
 ## Higher education (Microsoft engagement, June 2026)
 
 CAUDIT Higher Education Reference Models — capability model and data reference model. Used as the
