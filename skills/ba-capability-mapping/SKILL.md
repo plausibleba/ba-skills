@@ -7,8 +7,8 @@ description: >
   capabilities do we need for this initiative", "capability assessment", "business capability
   map", "organisational abilities", or when someone uploads a project charter, discovery
   transcript, existing Excel capability model, or industry reference model and asks for
-  structured analysis. Also trigger when someone wants to prepare for a VCC (Value Cognition
-  Canvas) session or asks what capabilities a value stream requires. The skill handles any
+  structured analysis. Also trigger when someone wants to prepare for a VCC (Virtual Control
+  Center) session or asks what capabilities a value stream requires. The skill handles any
   input format — raw transcripts, structured documents, Excel files, or verbal descriptions.
 ---
 

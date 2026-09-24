@@ -1,7 +1,7 @@
 {
   "name": "plausible-ba",
   "description": "Institutional-grade Business Analysis skills for Claude. Methodology-grade outputs grounded in BABOK and real delivery experience. Every skill produces a professional XLSX artefact — not a chat response.",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "owner": {
     "name": "PlausibleBA"
   },
@@ -9,7 +9,7 @@
     {
       "name": "plausible-ba",
       "source": "./",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Methodology-grade business architecture for Claude. Six skills: ba-opmodel-context builds a sourced Context Document before discovery; ba-plausibleba, ba-capability-mapping, ba-concept-model and ba-value-streams elicit, validate and visualise a Capability Map, a Concept Model and a Value Stream from any business description, with validation checkpoints and XLSX + JSON exports; ba-taxonomy-standard is the shared standard they all follow.",
       "author": {
         "name": "PlausibleBA"

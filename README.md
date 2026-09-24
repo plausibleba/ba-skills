@@ -158,8 +158,8 @@ ba-skills-bundle.json   →   VCC session
 ```
 
 The `ba-skills-bundle.json` is the handoff to the
-[Value Cognition Canvas](https://www.plausibleba.com/vcc) — a facilitated session
-tool for operating model assessment, friction identification, and investment
+[Virtual Control Center](https://www.plausibleba.com/vcc) (VCC) — PlausibleBA's
+workspace for operating model assessment, friction identification, and investment
 prioritisation.
 
 **Example bundle:** [`examples/portfolioprop_ba-skills-bundle_v1.json`](examples/portfolioprop_ba-skills-bundle_v1.json)
